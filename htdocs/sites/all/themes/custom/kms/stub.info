@@ -1,0 +1,20 @@
+name        = stub
+description = Empty theme. Ready for development.
+screenshot  = screenshot.png
+
+core        = 7.x
+engine      = phptemplate
+base theme  = adapt
+
+; Regions =====================================================================
+
+;regions[content] = Content
+
+; Stylesheets =================================================================
+
+stylesheets[all][] = css/style.css
+
+
+; Scripts =====================================================================
+
+;scripts[] = js/main.js

@@ -1,0 +1,132 @@
+<?php
+/**
+ * @file
+ * Install operations for kms install profile.
+ *
+ * @author Mikkel Jakobsen <mikkel@kms.dk>
+ */
+
+/**
+ * Implements hook_install. 
+ */
+function kms_install(){
+  $conf = install_profile_info('kms');
+  kms_install_save_filters($conf);
+  if(module_exists('wysiwyg')) kms_install_save_wysiwyg_settings();
+  kms_install_save_roles($conf);
+  kms_install_save_node_types();
+  kms_install_save_variables($conf);
+}
+
+/**
+ * Save roles and permissions.
+ * 
+ * @param array $conf
+ *   .info settings 
+ */
+function kms_install_save_roles($conf){
+  foreach($conf['permissions'] as $name => $perms){
+    _kms_install_save_role($name, $perms);
+  }
+}
+
+/**
+ * Save role and permissions.
+ * 
+ * @param string $name
+ *   Role name.
+ * @param array $perms
+ *   Permissions.
+ */
+function _kms_install_save_role($name, $perms){
+  if(!in_array($name, array('anonymous', 'authenticated'))){
+    $role = new stdClass();
+    $role->name = $name;
+    $role->weight = 3;
+    user_role_save($role);
+    user_role_grant_permissions($role->rid, $perms);
+  }else{
+    switch ($name) {
+      case 'anonymous':
+        user_role_grant_permissions(DRUPAL_ANONYMOUS_RID, $perms);
+        break;
+      case 'authenticated':
+        user_role_grant_permissions(DRUPAL_AUTHENTICATED_RID, $perms);
+        break;
+    }
+  }
+}
+
+/**
+ * Save input filters.
+ * Depends on plugin files with a file name pattern like:  FILTERNAME.filter.inc.
+ * 
+ * @param array $conf
+ *   .info settings 
+ */
+function kms_install_save_filters($conf){
+  $plugins = kms_install_load_plugins('filter');
+  foreach($plugins as $plugin){
+    include $plugin->filename;
+    if(empty($filter)) continue;
+    filter_format_save((object)$filter);
+  }
+}
+
+/**
+ * Save save variables.
+ * 
+ * @param array $conf
+ *   .info settings 
+ */
+function kms_install_save_variables($conf){
+  foreach ($conf['variables'] as $variable => $value) {
+    variable_set($variable, $value);
+  }
+}
+
+/**
+ * Save wysiwyg settings for various filters.
+ * Depends on plugin files with a file name pattern like:  FILTERNAME.wysiwyg.inc. 
+ */
+function kms_install_save_wysiwyg_settings() {
+  $plugins = kms_install_load_plugins('wysiwyg');
+  foreach($plugins as $plugin){
+    include $plugin->filename;
+    if(empty($wysiwyg)) continue;
+    $fields = array(
+      'format' => $wysiwyg['format'],
+      'editor' => $wysiwyg['editor'],
+      'settings' => serialize($wysiwyg['settings']),
+    );
+    db_insert('wysiwyg')->fields($fields)->execute();
+  }
+}
+
+/**
+ * Save node types.
+ * Depends on plugin files with a file name pattern like:  NODETYPE.node_type.inc. 
+ */
+function kms_install_save_node_types(){
+  $plugins = kms_install_load_plugins('node_type');
+  foreach($plugins as $plugin){
+    include $plugin->filename;
+    if(empty($node_type)) continue;
+    $node_type = node_type_set_defaults($node_type);
+    node_type_save($node_type);
+    node_add_body_field($node_type);
+  }
+}
+
+/**
+ * Load plugins (.inc).
+ * @param string $name
+ * @return object
+ *   Drupal file object.
+ */
+function kms_install_load_plugins($name){
+  return file_scan_directory(
+    drupal_get_path('profile', 'kms'),
+    "/.*\.$name\.inc$/"
+  );
+}

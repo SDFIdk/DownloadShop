@@ -1,0 +1,139 @@
+name = kms
+description = The super awesome kms install profile.
+core = 7.x
+theme = seven
+
+; Core
+dependencies[] = block
+;dependencies[] = blog
+dependencies[] = color
+;dependencies[] = comment
+dependencies[] = contextual
+dependencies[] = dashboard
+dependencies[] = dblog
+dependencies[] = field
+dependencies[] = field_sql_storage
+dependencies[] = field_ui
+dependencies[] = file
+dependencies[] = filter
+dependencies[] = help
+dependencies[] = image
+dependencies[] = menu
+dependencies[] = node
+dependencies[] = number
+dependencies[] = options
+;dependencies[] = overlay
+dependencies[] = path
+dependencies[] = rdf
+dependencies[] = search
+dependencies[] = shortcut
+dependencies[] = system
+dependencies[] = taxonomy
+dependencies[] = text
+dependencies[] = update
+dependencies[] = user
+
+; Contrib
+dependencies[] = admin_menu
+dependencies[] = admin_menu_toolbar
+dependencies[] = ctools
+dependencies[] = ctools_custom_content
+dependencies[] = date
+dependencies[] = email
+dependencies[] = features
+dependencies[] = link
+dependencies[] = masquerade
+dependencies[] = menu_block
+dependencies[] = menu_position
+dependencies[] = page_manager
+dependencies[] = panels
+dependencies[] = panels_mini
+dependencies[] = panels_node
+dependencies[] = pathauto
+dependencies[] = security_review
+dependencies[] = token
+dependencies[] = views
+dependencies[] = views_content
+dependencies[] = wysiwyg
+dependencies[] = imce
+dependencies[] = imce_wysiwyg
+dependencies[] = imce_mkdir
+dependencies[] = filefield_paths
+dependencies[] = filefield_sources
+dependencies[] = themekey
+dependencies[] = xmlsitemap
+dependencies[] = xmlsitemap_node
+dependencies[] = googleanalytics
+dependencies[] = references
+dependencies[] = node_reference
+dependencies[] = jquery_update
+dependencies[] = libraries
+dependencies[] = metatag
+dependencies[] = smtp
+dependencies[] = securepages
+
+; Custom
+dependencies[] = adapt
+dependencies[] = adapt_metatag
+
+
+; Permissions
+permissions[anonymous][] = access content
+permissions[anonymous][] = search content
+
+permissions[authenticated][] = access content
+permissions[authenticated][] = search content
+
+permissions[editor][] = access administration menu
+;permissions[editor][] = access comments
+permissions[editor][] = administer menu
+permissions[editor][] = view revisions
+permissions[editor][] = delete revisions
+permissions[editor][] = revert revisions
+permissions[editor][] = access content overview
+permissions[editor][] = view own unpublished content
+permissions[editor][] = create url aliases
+permissions[editor][] = administer url aliases
+permissions[editor][] = administer shortcuts
+permissions[editor][] = switch shortcut sets
+permissions[editor][] = customize shortcut links
+permissions[editor][] = access administration pages
+permissions[editor][] = administer taxonomy
+permissions[editor][] = use text format filtered_html
+
+permissions[superuser][] = access administration menu
+;permissions[superuser][] = post comments
+;permissions[superuser][] = access comments
+;permissions[superuser][] = edit own comments
+;permissions[superuser][] = administer comments
+;permissions[superuser][] = skip comment approval
+permissions[superuser][] = opt-in or out of tracking
+permissions[superuser][] = administer google analytics
+permissions[superuser][] = administer imce
+permissions[superuser][] = administer menu
+permissions[superuser][] = administer nodes
+permissions[superuser][] = create url aliases
+permissions[superuser][] = administer url aliases
+permissions[superuser][] = search content
+permissions[superuser][] = administer search
+permissions[superuser][] = administer shortcuts
+permissions[superuser][] = switch shortcut sets
+permissions[superuser][] = customize shortcut links
+permissions[superuser][] = access administration pages
+permissions[superuser][] = administer taxonomy
+permissions[superuser][] = cancel account
+permissions[superuser][] = administer users
+permissions[superuser][] = change own username
+permissions[superuser][] = access user profiles
+permissions[superuser][] = administer xmlsitemap
+permissions[superuser][] = use text format filtered_html
+permissions[superuser][] = administer smtp module
+
+variables[admin_theme] = seven
+variables[node_admin_theme] = 1
+
+variables[smtp_host] = 127.0.0.1
+variables[smtp_library] = sites/all/modules/contrib/smtp/smtp.module
+variables[smtp_on] = 1
+variables[smtp_port] = 25
+variables[smtp_protocol] = standard
