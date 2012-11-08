@@ -5,6 +5,7 @@ $drupal_base_url = 'http://kms.fe.dev.cd.adapt.dk/';
 
 $stdout = fopen('php://stdout', 'w');
 fwrite($stdout, "KMS service import\n");
+fwrite($stdout, str_repeat('-', 30) . "\n");
 
 // Set cwd and DRUPAL_ROOT to Drupal root directory
 chdir($drupalroot);
@@ -75,7 +76,7 @@ array_walk($mapping, function($v, $k) use (&$mapping) {
 
 
 // Import those babes.
-import_users($mapping, $filename, 3);
+import_users($mapping, $filename);
 
 
 /**
@@ -85,12 +86,12 @@ import_users($mapping, $filename, 3);
  *   Mapping configuration.
  * @param string $filename
  *   The absolute path to the csv file.
- * @param integer $limit
- *   For debug use you can limit the number of users. 0 = unlimited.
+ * @param mixed $limit
+ *   For debug use you can limit the number of users. FALSE = unlimited.
  *
  * @return void
  */
-function import_users($mapping, $filename, $limit = 0) {
+function import_users($mapping, $filename, $limit = FALSE) {
   global $stdout;
 
   $row_count = 0;
@@ -103,18 +104,20 @@ function import_users($mapping, $filename, $limit = 0) {
         continue;
       }
 
-      if ($limit != 0 && $row_count <= $limit) {
+      if ($limit === FALSE || $row_count <= $limit) {
         // Save user intially.
         $account = import_users_save_user($mapping, $row);
         // Save fields on user.
         $user_wrapper = import_users_save_fields($mapping, $row, $account);
+        fwrite($stdout, "[$row_count] Imported: {$account->name}\n");
+        $row_count++;
       }
 
-      $row_count++;
     }
 
     fclose($handle);
-    fwrite($stdout, $row_count . " users were imported\n");
+    fwrite($stdout, str_repeat('-', 30) . "\n");
+    fwrite($stdout, ($row_count - 1) . " users were imported\n");
 
   }
 
@@ -194,7 +197,6 @@ function import_users_save_user_init($user, $role = array(6 => TRUE)) {
 function import_users_save_fields($mapping, $row, $account) {
   $col = 0;
   foreach ($mapping as $conf) {
-    var_dump(str_repeat('-', 20));
     if (empty($row[$col])) {
       $col++;
       continue;
@@ -235,6 +237,15 @@ function import_users_translate_country(&$value) {
   switch ($value) {
     case 'Danmark':
       $value = 'DK';
+      break;
+    case 'Norge':
+      $value = 'NO';
+      break;
+    case 'Sverige':
+      $value = 'SE';
+      break;
+    case 'USA':
+      $value = 'US';
       break;
   }
 }
