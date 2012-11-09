@@ -31,7 +31,6 @@ ini_set('memory_limit', '256M');
 global $user;
 $user = user_load(array('uid' => 1));
 
-
 // Absolute path to csv file.
 $filename = "/home/drupal/kms.dev/scripts/import_users/SM_Oracle_export.csv";
 
@@ -43,7 +42,7 @@ $mapping = array(
   array('col' => 'PASSWORD', 'init_field' => 'pass'),
   array('col' => 'LASTNAME', 'field' => array('field_address', 'last_name')),
   array('col' => 'FIRSTNAME', 'field' => array('field_address', 'first_name')),
-  array('col' => 'EMAILADDRESS', 'ignore' => TRUE),
+  array('col' => 'EMAILADDRESS', 'init_field' => 'mail', 'value_callback' => 'import_users_process_empty_email'),
   array('col' => 'TELEPHONENUMBER', 'field' => 'field_phone'),
   array('col' => 'DISABLED', 'ignore' => TRUE),
   array('col' => 'PIN', 'ignore' => TRUE),
@@ -58,11 +57,11 @@ $mapping = array(
   array('col' => 'POSTNR', 'field' => array('field_address', 'postal_code')),
   array('col' => 'UBY', 'field' => array('field_address', 'locality')),
   array('col' => 'LAND', 'field' => array('field_address', 'country')),
-  array('col' => 'USERREMARK', 'ignore' => TRUE),
+  array('col' => 'USERREMARK', 'field' => 'field_user_remark'),
   array('col' => 'OPRETTET', 'ignore' => TRUE),
-  array('col' => 'OPRETTETDATO', 'ignore' => TRUE),
+  array('col' => 'OPRETTETDATO', 'init_field' => 'created', 'value_callback' => 'strtotime'),
   array('col' => 'REDIGERET', 'ignore' => TRUE),
-  array('col' => 'REDIGERETDATO', 'ignore' => TRUE),
+  array('col' => 'REDIGERETDATO', 'field' => 'field_updated', 'value_callback' => 'strtotime'),
 );
 
 // Add default values.
@@ -71,12 +70,28 @@ array_walk($mapping, function($v, $k) use (&$mapping) {
     'field' => NULL,
     'ignore' => FALSE,
     'init_field' => NULL,
+    'value_callback' => NULL,
   );
 });
 
 
 // Import those babes.
-import_users($mapping, $filename);
+$users = import_users($mapping, $filename);
+
+// Remove duplicate emails.
+if (!empty($users)) {
+  $mails = $dupes = array();
+  foreach($users as $user) {
+    $mails[$user->mail]++;
+    if ($mails[$user->mail] > 1) {
+      $dupes[] = $user->mail;
+    }
+  }
+  if (!empty($dupes)) {
+    $query = "UPDATE {users} set mail = 'userneeds@tochange.this' WHERE mail IN (:dupes)";
+    db_query($query, array(':dupes' => array_unique($dupes)));
+  } 
+}
 
 
 /**
@@ -89,11 +104,13 @@ import_users($mapping, $filename);
  * @param mixed $limit
  *   For debug use you can limit the number of users. FALSE = unlimited.
  *
- * @return void
+ * @return mixed
+ *   $users/FALSE - Either users or false.
  */
 function import_users($mapping, $filename, $limit = FALSE) {
   global $stdout;
 
+  $users = array();
   $row_count = 0;
   if (($handle = fopen($filename, "r")) !== FALSE) {
     
@@ -107,6 +124,7 @@ function import_users($mapping, $filename, $limit = FALSE) {
       if ($limit === FALSE || $row_count <= $limit) {
         // Save user intially.
         $account = import_users_save_user($mapping, $row);
+        $users[$account->uid] = $account;
         // Save fields on user.
         $user_wrapper = import_users_save_fields($mapping, $row, $account);
         fwrite($stdout, "[$row_count] Imported: {$account->name}\n");
@@ -118,8 +136,10 @@ function import_users($mapping, $filename, $limit = FALSE) {
     fclose($handle);
     fwrite($stdout, str_repeat('-', 30) . "\n");
     fwrite($stdout, ($row_count - 1) . " users were imported\n");
-
+    return $users;
   }
+
+  return FALSE;
 
 }
 
@@ -143,8 +163,11 @@ function import_users_save_user($mapping, $row) {
       continue;
     }
 
-    if(!empty($conf['init_field'])) {
+    if (!empty($conf['init_field'])) {
       $value = $row[$col];
+      if (!empty($conf['value_callback'])) {
+        $value = call_user_func($conf['value_callback'], $value);
+      }
       // Convert value to UTF-8.
       import_users_convert_2_utf8($value);
       $user->{$conf['init_field']} = $value;
@@ -173,9 +196,12 @@ function import_users_save_user_init($user, $role = array(6 => TRUE)) {
   $account = new stdClass;
   $account->is_new = TRUE;
   $account->name = $user->name;
-  $account->mail = $account->init = 'userneeds@tochange.this';
+  $account->mail = $account->init = $user->mail;
   $account->status = TRUE;
   $account->roles = $role;
+  if (!empty($user->created)) {
+    $account->created = $user->created;
+  }
   $account->timezone = variable_get('date_default_timezone', '');
   return user_save($account, array('pass' => $user->pass));
 
@@ -205,6 +231,9 @@ function import_users_save_fields($mapping, $row, $account) {
       $field = $conf['field'];
       $user_wrapper = entity_metadata_wrapper('user', $account);
       $value = $row[$col];
+      if (!empty($conf['value_callback'])) {
+        $value = call_user_func($conf['value_callback'], $value);
+      }
       // Convert value to UTF-8.
       import_users_convert_2_utf8($value);
       // Translate country code.
@@ -260,6 +289,11 @@ function import_users_translate_country(&$value) {
 function import_users_convert_2_utf8(&$value) {
   $value = iconv("ISO-8859-1", "UTF-8", $value);
 }
+
+function import_users_process_empty_email($value) {
+ return !empty($value) ? $value :'userneeds@tochange.this';
+}
+
 
 /*
 USERID
