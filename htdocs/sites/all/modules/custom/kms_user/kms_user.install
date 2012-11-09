@@ -1,0 +1,5 @@
+<?php
+
+function kms_user_install() {
+  db_query('ALTER TABLE {field_data_field_address} ADD field_address_phone_number VARCHAR');
+}

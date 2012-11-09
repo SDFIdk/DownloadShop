@@ -1,0 +1,4 @@
+name = KMS login
+package = KMS
+description = "Handles user logins"
+core = 7.x
