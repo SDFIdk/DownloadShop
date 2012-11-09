@@ -11,17 +11,20 @@ function kms_user_ctools_plugin_directory($owner, $plugin_type) {
 }
 
 function kms_user_form_alter(&$form, &$form_state, $form_id) {
-  // var_dump($form_id); die;
+  if (in_array($form_id, array('user_register_form', 'user_profile_form'))) {
+    $form['account']['name']['#element_validate'] = array('_kms_user_validate_username');
+    $form['account']['name']['#description'] = t(
+      'Spaces are not allowed; punctuation is not allowed except for periods, hyphens, apostrophes, and underscores.'
+    );
+  }
 }
 
-
-function kms_user_form_user_profile_form_alter(&$form, &$form_state, $form_id) {
-  $form['account']['name']['#element_validate'] = array('_kms_user_validate_username');
-  $form['account']['name']['#description'] = t(
-    'Spaces are not allowed; punctuation is not allowed except for periods, hyphens, apostrophes, and underscores.'
-  );
-}
-
+// function kms_user_form_user_profile_form_alter(&$form, &$form_state, $form_id) {
+//   $form['account']['name']['#element_validate'] = array('_kms_user_validate_username');
+//   $form['account']['name']['#description'] = t(
+//     'Spaces are not allowed; punctuation is not allowed except for periods, hyphens, apostrophes, and underscores.'
+//   );
+// }
 
 function kms_user_form_user_register_form_alter(&$form, &$form_state, $form_id) {
   global $user;
