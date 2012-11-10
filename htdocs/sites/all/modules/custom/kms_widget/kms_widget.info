@@ -1,0 +1,4 @@
+name = KMS widget
+package = KMS
+description = "Handles map widget"
+core = 7.x

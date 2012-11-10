@@ -1,5 +1,8 @@
 <?php
-// die('kkkkk');
+
+function kms_user_cron() {
+  
+}
 
 function kms_user_ctools_plugin_directory($owner, $plugin_type) {
   // we'll be nice and limit scandir() calls
@@ -7,7 +10,6 @@ function kms_user_ctools_plugin_directory($owner, $plugin_type) {
   if (in_array($owner, array('ctools'))) {
     return "plugins/$plugin_type";
   }
-
 }
 
 function kms_user_form_alter(&$form, &$form_state, $form_id) {
@@ -78,6 +80,7 @@ function _kms_user_validate_username($element, &$form_state, $form) {
     foreach ($m as $match) {
       if (!empty($match)) {
         form_error($element, t('Username contains invalid characters.'));
+        return;
       }
     }
   }

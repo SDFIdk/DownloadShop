@@ -1,0 +1,26 @@
+<?php
+
+function kms_widget_ctools_plugin_directory($owner, $plugin_type) {
+  // we'll be nice and limit scandir() calls
+  if ($owner == 'ctools' && $plugin_type == 'content_types') {
+    return 'plugins/content_types';
+  }
+} 
+
+// function kms_widget_views_query_alter(&$view, &$query)
+// {
+//   if ($view->name == 'product_list') {
+//     if ($view->current_display == 'default') {
+//       $query->groupby[] = 'nid';
+//     }
+//   }
+// }
+
+// function kms_widget_views_pre_execute(&$view){
+//   if ($view->name == 'product_list') {
+//     if($view->current_display == 'default') {
+//        $view->build_info['query']->groupBy('nid');
+//        adapt_debug('tom',$view->build_info['query']->__toString());
+//     }
+//   }
+// }
