@@ -1,7 +1,10 @@
 <?php
 
+/**
+ * Implements hook_cron.
+ */
 function kms_user_cron() {
-  
+  _kms_user_cron_expire_users();
 }
 
 function kms_user_ctools_plugin_directory($owner, $plugin_type) {
@@ -12,6 +15,9 @@ function kms_user_ctools_plugin_directory($owner, $plugin_type) {
   }
 }
 
+/**
+ * Implements hook_form_alter().
+ */
 function kms_user_form_alter(&$form, &$form_state, $form_id) {
   if (in_array($form_id, array('user_register_form', 'user_profile_form'))) {
     $form['account']['name']['#element_validate'] = array('_kms_user_validate_username');
@@ -20,13 +26,6 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
     );
   }
 }
-
-// function kms_user_form_user_profile_form_alter(&$form, &$form_state, $form_id) {
-//   $form['account']['name']['#element_validate'] = array('_kms_user_validate_username');
-//   $form['account']['name']['#description'] = t(
-//     'Spaces are not allowed; punctuation is not allowed except for periods, hyphens, apostrophes, and underscores.'
-//   );
-// }
 
 function kms_user_form_user_register_form_alter(&$form, &$form_state, $form_id) {
   global $user;
@@ -57,23 +56,19 @@ proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
     return $form_element;
 }
 
-
-function kms_user_auth_test() {
-  require_once DRUPAL_ROOT . '/' . variable_get('password_inc', 'includes/password.inc');  $stored_hash = "$S$Dcal7Lv.PBorAyoc5tqmA9m7.oXkSYiXGB4QUFZ59ru87.0XarV6";
-  $password = "1234";
-  $stored_hash = "$S$Dcal7Lv.PBorAyoc5tqmA9m7.oXkSYiXGB4QUFZ59ru87.0XarV6";
-  // var_dump(mb_detect_encoding($stored_hash, 'UTF-8, ISO-8859-1', TRUE));
-  var_dump(mb_strlen($stored_hash));
-  $user = user_load(10);
-  $stored_hash = $user->pass;
-  // var_dump(mb_detect_encoding($stored_hash, 'UTF-8, ISO-8859-1', TRUE));
-  var_dump(mb_strlen($stored_hash));
-  var_dump(_password_crypt('sha512', $password, $stored_hash));
-  var_dump('heps');
-  // die;
-}
-
-
+/**
+ * Form element validator.
+ * Checks a username for invaild characters.
+ *
+ * @param array $element
+ *   Drupal form element.
+ * @param array $form_state
+ *   Drupal form state array.
+ * @param array $form
+ *   Drupal form array.
+ *
+ * @return void
+ */
 function _kms_user_validate_username($element, &$form_state, $form) {
   if (!empty($element['#value'])) {
     preg_match_all("#(\/)|(\\\\)|(=)|(\?)|(\&)|(\s)#Uis", $element['#value'], $m);
@@ -86,46 +81,39 @@ function _kms_user_validate_username($element, &$form_state, $form) {
   }
 }
 
-
-
-// function _kms_user_phone_render_address(&$format) {
-//   $address = $format['#address'];
-//   $format['phone_block'] = array(
-//     '#title' => t('Phone'),
-//     '#type' => 'addressfield_container',
-//     'phone_number' => array(
-//       '#title' => t('Phone'),
-//       '#size' => 15,
-//       '#attributes' => array('class' => array('phone-number')),
-//       '#tag' => 'span',
-//     )
-//   );
-// }
-
 /**
- * Format callback.
+ * Expire users that are past or at their expiration date.
  *
- * @see CALLBACK_addressfield_format_callback()
+ * @return void
  */
-// function kms_user_format_phone_generate(&$format, $address, $context) {
-//   if ($context['mode'] == 'form') {
-//     $format['phone_block'] = array(
-//       '#type' => 'addressfield_container',
-//       '#attributes' => array('class' => array('custom-block')),
-//       '#weight' => 200,
-//     );
-//     $format['phone_block']['phone_number'] = array(
-//       '#title' => t('Phone'),
-//       '#size' => 15,
-//       '#attributes' => array('class' => array('phone-number')),
-//       '#type' => 'textfield',
-//       '#tag' => 'span',
-//       '#default_value' => isset($address['phone_number']) ? $address['phone_number'] : '',
-      
-//     );
-//   }
-//   else {
-//     // Add our own render callback for the format view
-//     $format['#pre_render'][] = '_kms_user_phone_render_address';
-//   }
-// }
+function _kms_user_cron_expire_users() {
+  $query = "
+    SELECT u.uid FROM {field_data_field_expire_date} ed
+    LEFT JOIN users u ON u.uid = ed.entity_id
+    WHERE
+      ed.field_expire_date_value <= :time
+    AND
+      u.status = 1
+  ";
+  $result = db_query($query, array(':time' => time()));
+  foreach ($result as $row) {
+    if (empty($row->uid)) {
+      continue;
+    }
+    $user = user_load($row->uid);
+    if (empty($user)) {
+      continue;
+    }
+    $user_w = entity_metadata_wrapper('user', $user);
+    $user_w->status = 0;
+    $user_w->save();
+    watchdog(
+      'kms_user',
+      t(
+        'User: %user has been deactivated',
+        array('%user' => $user_w->name->value())
+      )
+    );
+  }
+
+}
