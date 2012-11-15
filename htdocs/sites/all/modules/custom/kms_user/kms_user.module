@@ -1,5 +1,84 @@
 <?php
 
+define('ROLES_SYSTEM_ACCOUNT_NAME', 'systemaccount');
+define('ROLES_SYSTEM_ACCOUNT_ID', 7);
+
+/**
+ * Implements hook_watchdog().
+ */
+function kms_user_watchdog(array $log_entry) {
+  global $user;
+
+  // If a system account is prohibited access to a page
+  // then set a message and redirect to front.
+  if (
+    $log_entry['type'] == 'access denied'
+    && $log_entry['user']->uid == $user->uid
+    && in_array(ROLES_SYSTEM_ACCOUNT_NAME, $log_entry['user']->roles)
+  ) {
+    drupal_set_message(
+      t(
+        'You cannot access %uri as a system account',
+        array('%uri' => $log_entry['message'])
+      )
+    );
+    drupal_goto('<front>');
+  }
+}
+
+/**
+ * Implements hook_menu_alter().
+ */
+function kms_user_menu_alter(&$items) {
+  $restricted_paths = variable_get(
+    'kms_user_system_account_restricted_paths',
+    array(
+      'edit/profile',
+      'user/password',
+      'user/register',
+      'user/%user/edit',
+      'user/%user',
+      'user/%user/cancel',
+      'user/%user/cancel/confirm/%/%',
+      'user/%user/view',
+    )
+  );
+  
+  foreach($items as $path => &$item) {
+    if(!in_array($path, $restricted_paths)) {
+      continue;
+    }
+    $item['access arguments'] = _kms_user_menu_item_access_args_system_account();
+  }
+}
+
+
+function _kms_user_menu_item_access_args_system_account() {
+  return array (
+    0 => 
+    array (
+      'plugins' => 
+      array (
+        0 => 
+        array (
+          'name' => 'role',
+          'settings' => 
+          array (
+            'rids' => 
+            array (
+              0 => ROLES_SYSTEM_ACCOUNT_ID,
+            ),
+          ),
+          'context' => 'logged-in-user',
+          'not' => true,
+        ),
+      ),
+      'logic' => 'and',
+      'type' => 'none',
+      'settings' => NULL,
+    ),
+  );
+}
 /**
  * Implements hook_cron.
  */
