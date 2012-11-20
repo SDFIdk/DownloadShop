@@ -32,7 +32,14 @@ global $user;
 $user = user_load(array('uid' => 1));
 
 // Absolute path to csv file.
-$filename = "/home/drupal/kms.dev/scripts/import_users/SM_Oracle_export.csv";
+$settings = array(
+  'filename' => "/home/drupal/kms.dev/scripts/import_users/SM_Oracle_export.csv",
+  'roles' => array(6 => TRUE),
+  'nonmail' => 'userneeds@tochange.this'
+);
+// $filename = "/home/drupal/kms.dev/scripts/import_users/SM_Oracle_export.csv";
+// // User roles.
+// $roles = array(6 => TRUE);
 
 // Mapping configuration.
 // What is being used where...
@@ -62,6 +69,7 @@ $mapping = array(
   array('col' => 'OPRETTETDATO', 'init_field' => 'created', 'value_callback' => 'strtotime'),
   array('col' => 'REDIGERET', 'ignore' => TRUE),
   array('col' => 'REDIGERETDATO', 'field' => 'field_updated', 'value_callback' => 'strtotime'),
+  array('col' => 'SYSTEMACCOUNT', 'role' => 7),
 );
 
 // Add default values.
@@ -76,7 +84,8 @@ array_walk($mapping, function($v, $k) use (&$mapping) {
 
 
 // Import those babes.
-$users = import_users($mapping, $filename);
+// TODO: remove limit when it is for real.
+$users = import_users($mapping, 50);
 
 // Remove duplicate emails.
 if (!empty($users)) {
@@ -88,8 +97,14 @@ if (!empty($users)) {
     }
   }
   if (!empty($dupes)) {
-    $query = "UPDATE {users} set mail = 'userneeds@tochange.this' WHERE mail IN (:dupes)";
-    db_query($query, array(':dupes' => array_unique($dupes)));
+    $query = "UPDATE {users} set mail = :nonmail WHERE mail IN (:dupes)";
+    db_query(
+      $query,
+      array(
+        ':nonmail' => $settings['nonmail'],
+        ':dupes' => array_unique($dupes),
+      )
+    );
   } 
 }
 
@@ -97,6 +112,7 @@ if (!empty($users)) {
 /**
  * Import KMS users.
  *
+ * @todo update desc.
  * @param array $mapping
  *   Mapping configuration.
  * @param string $filename
@@ -107,12 +123,12 @@ if (!empty($users)) {
  * @return mixed
  *   $users/FALSE - Either users or false.
  */
-function import_users($mapping, $filename, $limit = FALSE) {
-  global $stdout;
+function import_users($mapping, $limit = FALSE) {
+  global $stdout, $settings;
 
   $users = array();
   $row_count = 0;
-  if (($handle = fopen($filename, "r")) !== FALSE) {
+  if (($handle = fopen($settings['filename'], "r")) !== FALSE) {
     
     while (($row = fgetcsv($handle, 1000, ",")) !== FALSE) {
       // Don't do anything at header row.
@@ -123,7 +139,7 @@ function import_users($mapping, $filename, $limit = FALSE) {
 
       if ($limit === FALSE || $row_count <= $limit) {
         // Save user intially.
-        $account = import_users_save_user($mapping, $row);
+        $account = import_users_save_user($mapping, $row, $settings['roles']);
         $users[$account->uid] = $account;
         // Save fields on user.
         $user_wrapper = import_users_save_fields($mapping, $row, $account);
@@ -146,6 +162,8 @@ function import_users($mapping, $filename, $limit = FALSE) {
 /**
  * Save user without additional fields.
  *
+ * @todo Change description.
+ * 
  * @param array $mapping
  *   Mapping configuration.
  * @param array $row
@@ -154,7 +172,7 @@ function import_users($mapping, $filename, $limit = FALSE) {
  * @return object
  *   Drupal user object.
  */
-function import_users_save_user($mapping, $row) {
+function import_users_save_user($mapping, $row, $roles) {
   $col = 0;
   $user = new stdClass;
   foreach($mapping as $conf) {
@@ -174,8 +192,11 @@ function import_users_save_user($mapping, $row) {
     }
     $col++;
   }
-
-  return import_users_save_user_init($user);
+  // if ()
+  $roles += !empty($conf['role']) ? array((int)$conf['role'] => TRUE) : array();
+  // var_dump($roles);
+  // die;
+  return import_users_save_user_init($user, $roles);
 }
 
 /**
@@ -189,7 +210,7 @@ function import_users_save_user($mapping, $row) {
  * @return object $account
  *   Drupal user object.
  */
-function import_users_save_user_init($user, $role = array(6 => TRUE)) {
+function import_users_save_user_init($user, $roles) {
   if (empty($user->name) || empty($user->pass)) {
     return FALSE;
   }
@@ -198,7 +219,7 @@ function import_users_save_user_init($user, $role = array(6 => TRUE)) {
   $account->name = $user->name;
   $account->mail = $account->init = $user->mail;
   $account->status = TRUE;
-  $account->roles = $role;
+  $account->roles = $roles;
   if (!empty($user->created)) {
     $account->created = $user->created;
   }
