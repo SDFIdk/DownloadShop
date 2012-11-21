@@ -1,20 +1,19 @@
 <?php
 
-define('ROLES_SYSTEM_ACCOUNT_NAME', 'systemaccount');
-define('ROLES_SYSTEM_ACCOUNT_ID', 7);
+define('KMS_USER_ROLES_SYSTEM_ACCOUNT_NAME', 'systemaccount');
+define('KMS_USER_ROLES_SYSTEM_ACCOUNT_ID', 7);
 
 /**
  * Implements hook_watchdog().
  */
 function kms_user_watchdog(array $log_entry) {
   global $user;
-
   // If a system account is prohibited access to a page
   // then set a message and redirect to front.
   if (
     $log_entry['type'] == 'access denied'
     && $log_entry['user']->uid == $user->uid
-    && in_array(ROLES_SYSTEM_ACCOUNT_NAME, $log_entry['user']->roles)
+    && in_array(KMS_USER_ROLES_SYSTEM_ACCOUNT_NAME, $log_entry['user']->roles)
   ) {
     drupal_set_message(
       t(
@@ -24,6 +23,15 @@ function kms_user_watchdog(array $log_entry) {
     );
     drupal_goto('<front>');
   }
+}
+
+function kms_user_permission() {
+  return array(
+    'access kms user pages' => array(
+      'title' => t('Access kms user pages'), 
+      'description' => t('Access kms user pages.'),
+    ),
+  );
 }
 
 /**
@@ -45,40 +53,31 @@ function kms_user_menu_alter(&$items) {
   );
   
   foreach($items as $path => &$item) {
-    if(!in_array($path, $restricted_paths)) {
-      continue;
+    if(in_array($path, $restricted_paths)) {
+      $item['access arguments'][] = $item['access callback'];
+      $item['access callback'] = '_kms_user_access_callback_deny_system_account';
     }
-    $item['access arguments'] = _kms_user_menu_item_access_args_system_account();
   }
 }
 
 
-function _kms_user_menu_item_access_args_system_account() {
-  return array (
-    0 => 
-    array (
-      'plugins' => 
-      array (
-        0 => 
-        array (
-          'name' => 'role',
-          'settings' => 
-          array (
-            'rids' => 
-            array (
-              0 => ROLES_SYSTEM_ACCOUNT_ID,
-            ),
-          ),
-          'context' => 'logged-in-user',
-          'not' => true,
-        ),
-      ),
-      'logic' => 'and',
-      'type' => 'none',
-      'settings' => NULL,
-    ),
-  );
+function _kms_user_access_callback_deny_system_account() {
+  global $user;
+  $args = func_get_args();
+  $access_callback = array_pop($args);
+  $original_access = TRUE;
+  if(!empty($access_callback)) {
+    $original_access = call_user_func_array($access_callback, $args);
+  }
+  $roles = $user->roles;
+  // Todo. Do this the right way.
+  // For some reason user_access is flaky
+  // but that is the one that should be used instead of $is_systemaccount;
+  $is_systemaccount = in_array(KMS_USER_ROLES_SYSTEM_ACCOUNT_NAME, $roles);
+  // return $original_access && user_access('Access kms user pages');
+  return $original_access && !$is_systemaccount;
 }
+
 /**
  * Implements hook_cron.
  */
