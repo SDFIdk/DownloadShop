@@ -33,17 +33,15 @@ $user = user_load(array('uid' => 1));
 
 // Absolute path to csv file.
 $settings = array(
-  'filename' => "/home/drupal/kms.dev/scripts/import_users/SM_Oracle_export.csv",
+  // 'filename' => "/home/drupal/kms.dev/scripts/import_users/SM_Oracle_export.csv",
+  'filename' => "/home/drupal/kms.dev/scripts/import_users/Siteminder_users_incl_TermID_abt.csv",
   'roles' => array(6 => TRUE),
   'nonmail' => 'userneeds@tochange.this'
 );
-// $filename = "/home/drupal/kms.dev/scripts/import_users/SM_Oracle_export.csv";
-// // User roles.
-// $roles = array(6 => TRUE);
 
 // Mapping configuration.
 // What is being used where...
-$mapping = array(
+$mapping_1 = array(
   array('col' => 'USERID', 'field' => 'field_kms_user_id'),
   array('col' => 'NAME', 'init_field' => 'name'),
   array('col' => 'PASSWORD', 'init_field' => 'pass'),
@@ -71,10 +69,39 @@ $mapping = array(
   array('col' => 'REDIGERETDATO', 'field' => 'field_updated', 'value_callback' => 'strtotime'),
   array('col' => 'SYSTEMACCOUNT', 'role' => 7),
 );
+$mapping_2 = array(
+  array('col' => 'SYSTEMACCOUNT', 'role' => 7),
+  array('col' => 'TERMID', 'field' => 'field_user_type', 'field_type' => 'term_ref_hierarical'),
+  array('col' => 'DEBITORNO', 'field' => 'field_debtor_nr'),
+  array('col' => 'FIRMANAVN', 'field' => array('field_address', 'organisation_name')),
+  array('col' => 'FIRSTNAME', 'field' => array('field_address', 'first_name')),
+  array('col' => 'LASTNAME', 'field' => array('field_address', 'last_name')),
+  array('col' => 'NAME', 'init_field' => 'name'),
+  array('col' => 'OPRETTETDATO', 'init_field' => 'created', 'value_callback' => 'import_users_fuckedup_kms_time2unix'),
+  array('col' => 'SLUTDATO', 'ignore' => TRUE),
+  array('col' => 'REDIGERETDATO', 'field' => 'field_updated', 'value_callback' => 'import_users_fuckedup_kms_time2unix'),
+  array('col' => 'USERREMARK', 'field' => 'field_user_remark'),
+  array('col' => 'TELEPHONENUMBER', 'field' => 'field_phone'),
+  array('col' => 'USERID', 'field' => 'field_kms_user_id'),
+  array('col' => 'DISABLED', 'ignore' => TRUE),
+  array('col' => 'PIN', 'ignore' => TRUE),
+  array('col' => 'PASSWORD', 'init_field' => 'pass'),
+  array('col' => 'MILEAGE', 'ignore' => TRUE),
+  array('col' => 'PASSWORDDATA', 'ignore' => TRUE),
+  array('col' => 'STARTDATO', 'ignore' => TRUE),
+  array('col' => 'FAKTURAADRESSE', 'field' => array('field_address', 'thoroughfare')),
+  array('col' => 'POSTNR', 'field' => array('field_address', 'postal_code')),
+  array('col' => 'UBY', 'field' => array('field_address', 'locality')),
+  array('col' => 'LAND', 'field' => array('field_address', 'country')),
+  array('col' => 'OPRETTET', 'ignore' => TRUE),
+  array('col' => 'REDIGERET', 'ignore' => TRUE),
+  array('col' => 'EMAILADDRESS', 'init_field' => 'mail', 'value_callback' => 'import_users_process_empty_email'),
+  // array('col' => 'USERID_1', 'ignore' => TRUE),
+);
 
 // Add default values.
-array_walk($mapping, function($v, $k) use (&$mapping) {
-  $mapping[$k] += array(
+array_walk($mapping_2, function($v, $k) use (&$mapping_2) {
+  $mapping_2[$k] += array(
     'field' => NULL,
     'ignore' => FALSE,
     'init_field' => NULL,
@@ -85,7 +112,7 @@ array_walk($mapping, function($v, $k) use (&$mapping) {
 
 // Import those babes.
 // TODO: remove limit when it is for real.
-$users = import_users($mapping, 50);
+$users = import_users($mapping_2);
 
 // Remove duplicate emails.
 if (!empty($users)) {
@@ -175,14 +202,16 @@ function import_users($mapping, $limit = FALSE) {
 function import_users_save_user($mapping, $row, $roles) {
   $col = 0;
   $user = new stdClass;
+
   foreach($mapping as $conf) {
-    if (empty($conf['init_field'])) {
+    if (empty($conf['init_field']) && empty($conf['role'])) {
       $col++;
       continue;
     }
 
+    $value = $row[$col];
+
     if (!empty($conf['init_field'])) {
-      $value = $row[$col];
       if (!empty($conf['value_callback'])) {
         $value = call_user_func($conf['value_callback'], $value);
       }
@@ -190,12 +219,14 @@ function import_users_save_user($mapping, $row, $roles) {
       import_users_convert_2_utf8($value);
       $user->{$conf['init_field']} = $value;
     }
+    
+    if (!empty($conf['role']) && !empty($value)) {
+      $roles += array((int)$conf['role'] => TRUE);
+    }
+
     $col++;
   }
-  // if ()
-  $roles += !empty($conf['role']) ? array((int)$conf['role'] => TRUE) : array();
-  // var_dump($roles);
-  // die;
+
   return import_users_save_user_init($user, $roles);
 }
 
@@ -262,9 +293,20 @@ function import_users_save_fields($mapping, $row, $account) {
         import_users_translate_country($value);
       }
 
+      // If hierarical term ref is used.
+      if (
+        !empty($conf['field_type'])
+        && $conf['field_type'] == 'term_ref_hierarical'
+      ) {
+        $term_lineage = taxonomy_get_parents_all($value);
+        $value = !empty($term_lineage) ? $term_lineage : $value;
+      }
+
+      // If the field value is available at root level.
       if (!is_array($field)){
         $user_wrapper->$field->set($value);
       }
+      // Otherwise if the field value is at the second level.
       else {
         $user_wrapper->{$field[0]}->{$field[1]}->set($value);
       }
@@ -311,8 +353,33 @@ function import_users_convert_2_utf8(&$value) {
   $value = iconv("ISO-8859-1", "UTF-8", $value);
 }
 
+/**
+ * Simple function. Replaces empty string with predefined mail address.
+ *
+ * @param string $value
+ *   Email value.
+ *
+ * @return string
+ *   Non-empty string (email).
+ */
 function import_users_process_empty_email($value) {
  return !empty($value) ? $value :'userneeds@tochange.this';
+}
+
+/**
+ * Handles changed kms timestamp.
+ *
+ * @param string $kms_time
+ *   Kms timestamp that needs to be converted.
+ *
+ * @return string
+ *   UNIX time stamp.
+ */
+function import_users_fuckedup_kms_time2unix($kms_time) {
+  $t = explode('/', $kms_time);
+  return strtotime(
+    implode('/', array($t[1], $t[0], $t[2]))
+  );
 }
 
 
@@ -343,3 +410,34 @@ OPRETTETDATO
 REDIGERET
 REDIGERETDATO
 */
+
+
+/*
+Nye felter:
+SYSTEMACCOUNT
+TERMID
+DEBITORNO
+FIRMANAVN
+FIRSTNAME
+LASTNAME
+NAME
+OPRETTETDATO
+SLUTDATO
+REDIGERETDATO
+USERREMARK
+TELEPHONENUMBER
+USERID
+DISABLED
+PIN
+PASSWORD
+MILEAGE
+PASSWORDDATA
+STARTDATO
+FAKTURAADRESSE
+POSTNR
+UBY
+LAND
+OPRETTET
+REDIGERET
+EMAILADDRESS
+ */
