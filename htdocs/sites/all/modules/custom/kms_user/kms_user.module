@@ -44,6 +44,7 @@ function kms_user_menu_alter(&$items) {
       'edit/profile',
       'user/password',
       'user/register',
+      'user/reset/%/%/%',
       'user/%user/edit',
       'user/%user',
       'user/%user/cancel',
@@ -51,7 +52,7 @@ function kms_user_menu_alter(&$items) {
       'user/%user/view',
     )
   );
-  
+
   foreach($items as $path => &$item) {
     if(in_array($path, $restricted_paths)) {
       $item['access arguments'][] = $item['access callback'];
@@ -98,8 +99,6 @@ function kms_user_ctools_plugin_directory($owner, $plugin_type) {
  */
 function kms_user_form_alter(&$form, &$form_state, $form_id) {
 
-  //adapt_debug('tom',$form_id);
-
   if (in_array($form_id, array('user_register_form', 'user_profile_form'))) {
     $form['account']['name']['#element_validate'] = array('_kms_user_validate_username');
     $form['account']['name']['#description'] = t(
@@ -108,8 +107,49 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
     // Update user 'updated' time stamp.
     $form['#submit'][] = '_kms_user_update_user';
     $form['field_updated']['#disabled'] = TRUE;
+    if ($form_id == 'user_profile_form') {
+      // The terms and conditions must(!) be accepted on the register-form. After that the terms and conditions
+      // can NOT be altered by the user. So we change the default value to 'accepted', and disable the checkbox
+      $form['field_terms_and_conditions']['#default_value'] = 1;
+      $form['field_terms_and_conditions']['und']['#default_value'] = 1;
+      $form_state['field']['field_terms_and_conditions']['und']['instance']['default_value'][0]['value'] = 1;
+      $form['field_terms_and_conditions']['#disabled'] = TRUE;
+
+      // The user-profile-form has some trouble remembering the user-provided values for
+      // the fields "field_contact_me", and "field_newsletter". We must fetch the values
+      // and set the fields accordingly
+      $user_contact_me = db_select('field_data_field_contact_me', 'cme')
+      ->fields('cme', array('field_contact_me_value'))
+      ->condition('entity_id', $form['#user']->uid, '=')
+      ->execute()
+      ->fetchAssoc();
+      $form['field_contact_me']['und']['#default_value'] = $user_contact_me['field_contact_me_value'];
+
+      $user_newsletter = db_select('field_data_field_newsletter', 'news')
+      ->fields('news', array('field_newsletter_value'))
+      ->condition('entity_id', $form['#user']->uid, '=')
+      ->execute()
+      ->fetchAssoc();
+      $form['field_newsletter']['und']['#default_value'] = $user_newsletter['field_newsletter_value'];
+    }
+    if ($form_id == 'user_register_form') {
+      // On the user-register form users must be presented with a textfield if the user-type selected 
+      // via Hiearchical Select is either 'NGO' (tid=3518) or 'Forening' (tid=3520)
+      drupal_add_js('jQuery(function() {
+              jQuery("#hierarchical-select-0-wrapper").live("change-hierarchical-select", function() {
+                    var Selected = jQuery("#edit-field-user-type-und-hierarchical-select-selects-0").val();
+                    if (Selected == "3518" || Selected == "3520") {
+                        jQuery("#field-user-type-info-add-more-wrapper").show(200);
+                    }
+                    else {
+                        jQuery("#field-user-type-info-add-more-wrapper").hide(200);
+                    }
+              }); });', 'inline');
+    }
   }
-  
+  elseif ($form_id == 'user_pass') {
+    $form['#validate'][] = 'kms_user_user_pass_validate';
+  }
 }
 
 function kms_user_form_user_register_form_alter(&$form, &$form_state, $form_id) {
@@ -123,11 +163,33 @@ function kms_user_form_user_account_form_alter(&$form, &$form_state, $form_id) {
 
 }
 
+function kms_user_user_pass_validate($form, &$form_state) {
+  $name = trim($form_state['values']['name']);
+  // Try to load by email.
+  $users = user_load_multiple(array(), array('mail' => $name, 'status' => '1'));
+  $account = reset($users);
+  if (!$account) {
+    // No success, try to load by name.
+    $users = user_load_multiple(array(), array('name' => $name, 'status' => '1'));
+    $account = reset($users);
+  }
+
+  if (isset($account->uid)) {
+    // Check if this account is a system-account, and if so tell the user no-no
+    $roles = $account->roles;
+    $is_systemaccount = in_array(KMS_USER_ROLES_SYSTEM_ACCOUNT_NAME, $roles);
+    if ($is_systemaccount) {
+      form_set_error('name', t('It is not possible to change or reset the password for users with the role systemaccount. Contact the site administrator to do this.'));
+      $target = variable_get('systemaccount_node_help', 'node/7');
+      drupal_goto($target);
+    }
+  }
+}
+
 function kms_user_register_after_build($form_element) {
-    //adapt_debug('tom', $form_element['und']);
     $terms_and_conditions = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
 tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+quis  nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
 consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
 cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
 proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
@@ -144,6 +206,7 @@ proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
 
     return $form_element;
 }
+
 
 /**
  * Form element validator.
@@ -217,7 +280,6 @@ function _kms_user_update_user($form, &$form_state) {
   ->fields(array('field_updated_value' => $time))
   ->condition('entity_id'  , $form['#user']->uid, '=')
   ->execute();
-
 }
 
 // function _kms_user_test($uid = 10) {
