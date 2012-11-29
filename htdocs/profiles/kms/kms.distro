@@ -18,6 +18,42 @@ projects[securepages][subdir] = "contrib"
 projects[drupal][patch][] = "http://drupal.org/files/471970-28.patch"
 projects[drupal][patch][] = "http://drupal.org/files/961508-23-32-D7.patch"
 
+; Custom modules
+; projects[features_export][download][type] = "svn"
+; projects[features_export][download][url] = "https://svnhost.adapt.dk/subversion/drupal/kms/trunk/htdocs/sites/all/modules/custom/features_export"
+; projects[features_export][type] = "module"
+; projects[features_export][subdir] = "custom"
+
+projects[commerce_cart_panels][download][type] = "svn"
+projects[commerce_cart_panels][download][url] = "https://svnhost.adapt.dk/subversion/drupal/kms/trunk/htdocs/sites/all/modules/custom/commerce_cart_panels"
+projects[commerce_cart_panels][type] = "module"
+projects[commerce_cart_panels][subdir] = "custom"
+
+projects[commerce_checkout_panels][download][type] = "svn"
+projects[commerce_checkout_panels][download][url] = "https://svnhost.adapt.dk/subversion/drupal/kms/trunk/htdocs/sites/all/modules/custom/commerce_checkout_panels"
+projects[commerce_checkout_panels][type] = "module"
+projects[commerce_checkout_panels][subdir] = "custom"
+
+projects[kms_commerce_files][download][type] = "svn"
+projects[kms_commerce_files][download][url] = "https://svnhost.adapt.dk/subversion/drupal/kms/trunk/htdocs/sites/all/modules/custom/kms_commerce_files"
+projects[kms_commerce_files][type] = "module"
+projects[kms_commerce_files][subdir] = "custom"
+
+projects[kms_login][download][type] = "svn"
+projects[kms_login][download][url] = "https://svnhost.adapt.dk/subversion/drupal/kms/trunk/htdocs/sites/all/modules/custom/kms_login"
+projects[kms_login][type] = "module"
+projects[kms_login][subdir] = "custom"
+
+projects[kms_user][download][type] = "svn"
+projects[kms_user][download][url] = "https://svnhost.adapt.dk/subversion/drupal/kms/trunk/htdocs/sites/all/modules/custom/kms_user"
+projects[kms_user][type] = "module"
+projects[kms_user][subdir] = "custom"
+
+projects[kms_widget][download][type] = "svn"
+projects[kms_widget][download][url] = "https://svnhost.adapt.dk/subversion/drupal/kms/trunk/htdocs/sites/all/modules/custom/kms_widget"
+projects[kms_widget][type] = "module"
+projects[kms_widget][subdir] = "custom"
+
 ; Libraries
 ;; Ckeditor
 libraries[ckeditor][download][type] = 'svn'
