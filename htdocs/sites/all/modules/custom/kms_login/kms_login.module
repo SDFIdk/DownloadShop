@@ -1,0 +1,36 @@
+<?php
+/**
+ * When a new user has received a confirmation mail with a one-time-login-url, or
+ * an existing user has received a forgotten-password-mail the user will be sent
+ * to /user/reset/%UID/%TIME/%TOKEN, to /user/reset/%UID/%TIME/%TOKEN/login, and
+ * finally the function in user.pages.inc will call this drupal_goto:
+ * drupal_goto('user/' . $user->uid . '/edit', array('query' => array('pass-reset-token' => $token)));
+ *
+ * But we would rather have the user going to /edit/profile?pass-reset-token=%TOKEN
+ */
+function kms_login_init() {
+  if (arg(0) == 'user') {
+    if (is_numeric(arg(1)) && arg(2) == 'edit') {
+      // This is a URL of type /user/$account_uid/edit?pass-reset-token=TOKEN-VALUE
+      // We must only redirect these requests if the current user equals the 
+      // user being edited:
+      global $user;
+      if ($user->uid == arg(1)) {
+        $token = (isset($_REQUEST['pass-reset-token'])) ? $_REQUEST['pass-reset-token'] : FALSE;
+        if ($token) {
+          drupal_goto("edit/profile", array('query' => array('pass-reset-token' => $token)));
+        }
+        else {
+          drupal_goto("edit/profile");
+        }
+      }
+    }
+  }
+}
+
+function kms_login_ctools_plugin_directory($owner, $plugin_type) {
+  // we'll be nice and limit scandir() calls
+  if ($owner == 'ctools' && $plugin_type == 'content_types') {
+    return 'plugins/content_types';
+  }
+}
