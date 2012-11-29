@@ -1,0 +1,31 @@
+/* Welcome to Compass. Use this file to write IE specific override styles.
+ * Import this file using the following HTML or equivalent:
+ * <!--[if IE]>
+ *   <link href="/stylesheets/ie.css" media="screen, projection" rel="stylesheet" type="text/css" />
+ * <![endif]--> */
+
+/* Main menu */
+.main-menu {
+  clear: both;
+  height: 29px;
+  position: relative;
+  padding-top: 17px;
+  .pane-content {
+    padding: 0 12px;
+    background: none repeat scroll 0 0 #97BC00;
+    height: 29px;
+    li {
+      display: inline-block;
+      a {
+        background: url("../images/arrow-white.gif") no-repeat scroll 6px 10px transparent;
+        display: block;
+        padding: 0px 10px 0px 19px;
+        height: 29px;
+        line-height: 29px !important;
+        color: #FFFFFF;
+        font-weight: bold;
+        text-decoration: none;
+      }
+    }
+  }
+}
