@@ -7,6 +7,14 @@ projects[drupal][version] = "7.17"
 ; Modules
 includes[kms_distro_inc] = "kms.distro.inc"
 
+;filefield_paths - dev
+projects[filefield_paths][subdir] = "contrib"
+projects[filefield_paths][version] = "1.x-dev"
+
+;hierarchical_select - dev
+projects[hierarchical_select][subdir] = "contrib"
+projects[hierarchical_select][version] = "3.x-dev"
+
 projects[adapt_module][type] = 'module'
 projects[adapt_module][download][type] = 'svn'
 projects[adapt_module][download][url] = 'svn+ssh://svnhost/data/subversion/drupal/global/tags/modules/adapt-7.x-0.5'
