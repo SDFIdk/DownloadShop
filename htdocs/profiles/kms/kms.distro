@@ -75,6 +75,6 @@ projects[adapt_theme][type] = "theme"
 projects[adapt_theme][subdir] = "global"
 
 projects[kms_theme][download][type] = "svn"
-projects[kms_theme][download][url] = "https://svnhost.adapt.dk/subversion/drupal/kms/trunk/htdocs/sites/all/themes/kms"
+projects[kms_theme][download][url] = "https://svnhost.adapt.dk/subversion/drupal/kms/trunk/htdocs/sites/all/themes/custom/kms"
 projects[kms_theme][type] = "theme"
 projects[kms_theme][directory_name] = "kms"
