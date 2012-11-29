@@ -1,0 +1,7 @@
+name = Checkout
+description = Integrates the commerce checkout with panels.
+package = Commerce Panels
+dependencies[] = commerce
+dependencies[] = commerce_checkout
+dependencies[] = page_manager
+core = 7.x

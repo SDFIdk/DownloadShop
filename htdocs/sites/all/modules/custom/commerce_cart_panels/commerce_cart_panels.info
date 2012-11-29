@@ -1,0 +1,7 @@
+name = Cart
+description = Integrates the commerce cart with panels.
+package = Commerce Panels
+dependencies[] = commerce
+dependencies[] = commerce_cart
+dependencies[] = page_manager
+core = 7.x

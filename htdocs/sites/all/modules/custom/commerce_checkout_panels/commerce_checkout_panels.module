@@ -1,0 +1,49 @@
+<?php
+/**
+ * @file
+ * Extends panels support to the commerce checkout module.
+ *
+ * The URL /checkout is provided as a page-manager task which can override the
+ * base implementation from the commerce checkout module.
+ * The contents of that URL are exposed in a panel pane.
+ */
+
+/**
+ * Implements hook_ctools_plugin_directory() to let the system know
+ * where our task and task_handler plugins are.
+ */
+function commerce_checkout_panels_ctools_plugin_directory($owner, $plugin_type) {
+  if ($owner == 'page_manager' || $owner == 'ctools') {
+    return 'plugins/' . $plugin_type;
+  }
+}
+
+/* Add the HTML5 placeholders to the contact form */
+
+function commerce_checkout_panels_form_alter(&$form, &$form_state, $form_id) {
+  
+
+  if ($form_id == 'commerce_checkout_form_checkout') {
+  	
+  	//drupal_set_message(print_r($form['customer_profile_billing'],true));  
+
+    //$form['customer_profile_billing']['commerce_customer_address']['#attributes']['class'][] = 'SUPER';
+
+  	  /*
+      
+      cart_contents
+      commerce_customer_address
+      buttons
+
+
+
+
+                )
+
+     $form['#prefix'] = '<div class="user-reset-form">'. $message;
+     $form['#suffix'] = '</div>'; 
+
+     */
+  }   
+
+} 

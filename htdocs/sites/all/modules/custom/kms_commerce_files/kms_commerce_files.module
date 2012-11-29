@@ -1,0 +1,85 @@
+<?php
+
+/**
+ * Implements hook_rules_action_info().
+ */
+function kms_commerce_files_rules_action_info() {
+  $actions = array();
+
+  $actions['kms_commerce_files_add_files'] = array(
+    'label' => t('Add selected files to the order'),
+    'parameter' => array(
+      'line_item' => array(
+        'type' => 'commerce_line_item',
+        'label' => t('Commerce line item'),
+        'restriction' => 'selector',
+      ),
+    ),
+    'group' => 'KMS',
+    'callbacks' => array(
+      'execute' => 'kms_commerce_files_add_files',
+    ),
+  );
+
+  return $actions;
+
+}
+
+/*
+ Column   |          Type                                    
+-----------+-----------------------
+ fid       | integer               
+ uid       | bigint                
+ filename  | character varying(255)
+ uri       | character varying(255)
+ filemime  | character varying(255)
+ filesize  | bigint                
+ status    | smallint              
+ timestamp | bigint                
+ origname  | character varying(255)
+ */
+
+
+function kms_commerce_files_add_files( $li ) {
+  
+  adapt_debug('tom',"Creating new product");
+  
+  //adapt_debug('tom', $li);
+  
+  $files = json_decode($li->field_selection[LANGUAGE_NONE][0]['value']);
+  
+  foreach ($files as $file) {
+      adapt_debug('tom',$file);
+      // INSERT INTO file_managed (uid,filename,uri,filemime,filesize,status,timestamp,origname)
+      // VALUES (1, :filename,:uri,:filemime,:filesize,:status,:timestamp,:origname)
+  }
+
+  /*
+  $li->order_id
+  $li->line_item_id
+  $li->commerce_product[LANGUAGE_NONE][0]['product_id']
+  $li->field_selection[LANGUAGE_NONE][0]['value']
+  */
+
+  $op = commerce_product_load($li->commerce_product[LANGUAGE_NONE][0]['product_id']);
+
+  $product = commerce_product_new('file_collection');
+  $product->sku = uniqid('FILES-', true);
+  $product->uid      = 1;
+  $product->language = LANGUAGE_NONE;
+  $product->title    = $op->title;
+  $product->status   = 1;
+  $product->created  = $product->changed = time();
+
+  $price = array(LANGUAGE_NONE => array(0 => array(
+    'amount' => 0, 
+    'currency_code' => commerce_default_currency(),
+  )));
+
+  $product->commerce_price = $price;
+  commerce_product_save($product);
+
+  $li->commerce_product[LANGUAGE_NONE][0]['product_id'] = $product->product_id;
+  commerce_line_item_save($li);
+
+}

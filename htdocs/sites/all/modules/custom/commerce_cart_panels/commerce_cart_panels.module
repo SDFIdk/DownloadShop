@@ -1,0 +1,19 @@
+<?php
+/**
+ * @file
+ * Extends panels support to the commerce cart module.
+ *
+ * The URL /cart is provided as a page-manager task which can override the base
+ * implementation from the commerce cart module.
+ * The contents of that URL are exposed in a panel pane.
+ */
+
+/**
+ * Implements hook_ctools_plugin_directory() to let the system know
+ * where our task and task_handler plugins are.
+ */
+function commerce_cart_panels_ctools_plugin_directory($owner, $plugin_type) {
+  if ($owner == 'page_manager' || $owner == 'ctools') {
+    return 'plugins/' . $plugin_type;
+  }
+}

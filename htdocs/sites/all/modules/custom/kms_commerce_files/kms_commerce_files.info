@@ -1,0 +1,4 @@
+name = KMS commerce files
+package = KMS
+description = "Handles adding setting the selected files"
+core = 7.x

@@ -26,7 +26,7 @@ VisStedet.Ticket = VisStedet.Utils.Class ({
      * APIProperty: cookieName
      * {String} The name of the cookie set on server. Default is "kfticket".
      */
-    cookieName: 'kfticket',
+    cookieName: 'downloadticket',
     
     /**
      * Constructor: VisStedet.Ticket
