@@ -2,39 +2,14 @@
 core = 7.x
 api = 2
 
+projects[drupal][version] = "7.17"
+
 ; Modules
-projects[admin_menu][subdir] = "contrib"
-projects[ctools][subdir] = "contrib"
-projects[date][subdir] = "contrib"
-projects[email][subdir] = "contrib"
-projects[features][subdir] = "contrib"
-projects[link][subdir] = "contrib"
-projects[masquerade][subdir] = "contrib"
-projects[menu_block][subdir] = "contrib"
-projects[menu_position][subdir] = "contrib"
-projects[panels][subdir] = "contrib"
-projects[pathauto][subdir] = "contrib"
-projects[security_review][subdir] = "contrib"
-projects[token][subdir] = "contrib"
-projects[views][subdir] = "contrib"
-projects[wysiwyg][subdir] = "contrib"
-projects[imce][subdir] = "contrib"
-projects[imce_wysiwyg][subdir] = "contrib"
-projects[imce_mkdir][subdir] = "contrib"
-projects[filefield_paths][subdir] = "contrib"
-projects[filefield_sources][subdir] = "contrib"
-projects[themekey][subdir] = "contrib"
-projects[xmlsitemap][subdir] = "contrib"
-projects[google_analytics][subdir] = "contrib"
-projects[references][subdir] = "contrib"
-projects[jquery_update][subdir] = "contrib"
-projects[libraries][subdir] = "contrib"
-projects[metatag][subdir] = "contrib"
-projects[smtp][subdir] = "contrib"
+includes[kms_distro_inc] = "kms.distro.inc"
 
 projects[adapt_module][type] = 'module'
 projects[adapt_module][download][type] = 'svn'
-projects[adapt_module][download][url] = 'svn+ssh://svnhost/data/subversion/drupal/global/tags/modules/adapt-7.x-0.4'
+projects[adapt_module][download][url] = 'svn+ssh://svnhost/data/subversion/drupal/global/tags/modules/adapt-7.x-0.5'
 projects[adapt_module][directory_name] = "adapt"
 projects[adapt_module][subdir] = "global"
 
@@ -43,11 +18,10 @@ projects[securepages][subdir] = "contrib"
 projects[drupal][patch][] = "http://drupal.org/files/471970-28.patch"
 projects[drupal][patch][] = "http://drupal.org/files/961508-23-32-D7.patch"
 
-
 ; Libraries
 ;; Ckeditor
 libraries[ckeditor][download][type] = 'svn'
-libraries[ckeditor][download][url] = 'svn+ssh://svnhost/data/subversion/drupal/global/tags/libraries/ckeditor-3.6.3'
+libraries[ckeditor][download][url] = 'svn+ssh://svnhost/data/subversion/drupal/global/tags/libraries/ckeditor-3.6.4'
 
 ; Themes
 projects[adapt_theme][download][type] = "svn"
@@ -55,3 +29,8 @@ projects[adapt_theme][download][url] = "svn+ssh://svnhost/data/subversion/drupal
 projects[adapt_theme][directory_name] = "adapt"
 projects[adapt_theme][type] = "theme"
 projects[adapt_theme][subdir] = "global"
+
+projects[kms_theme][download][type] = "svn"
+projects[kms_theme][download][url] = "https://svnhost.adapt.dk/subversion/drupal/kms/trunk/htdocs/sites/all/themes/kms"
+projects[kms_theme][type] = "theme"
+projects[kms_theme][directory_name] = "kms"
