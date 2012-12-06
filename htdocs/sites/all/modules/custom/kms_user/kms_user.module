@@ -55,7 +55,8 @@ function kms_user_menu_alter(&$items) {
 
   foreach($items as $path => &$item) {
     if(in_array($path, $restricted_paths)) {
-      $item['access arguments'][] = $item['access callback'];
+      if (!empty($item['access callback']))
+        $item['access arguments'][] = $item['access callback'];
       $item['access callback'] = '_kms_user_access_callback_deny_system_account';
     }
   }
@@ -136,19 +137,7 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
       $form['field_newsletter']['und']['#default_value'] = $user_newsletter['field_newsletter_value'];
     }
     if ($form_id == 'user_register_form') {
-      // On the user-register form users must be presented with a textfield if the user-type selected 
-      // via Hiearchical Select is either 'NGO' (tid=3518) or 'Forening' (tid=3520)
-      drupal_add_js('jQuery(function() {
-              jQuery("#hierarchical-select-0-wrapper").live("change-hierarchical-select", function() {
-                    var Selected = jQuery("#edit-field-user-type-und-hierarchical-select-selects-0").val();
-                    if (Selected == "3518" || Selected == "3520") {
-                        jQuery("#field-user-type-info-add-more-wrapper").show(200);
-                    }
-                    else {
-                        jQuery("#field-user-type-info-add-more-wrapper").hide(200);
-                    }
-              }); });', 'inline');
-
+      
       // We need to store the new password
       $form['#submit'][] = '_kms_user_insert_user_pass';
     }
@@ -209,6 +198,20 @@ proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
                  jQuery('#terms_and_conditions').lightbox_me({ centered: true });
                  e.preventDefault(); 
                }); });",'inline');
+               
+      // On the user-register form users must be presented with a textfield if the user-type selected 
+      // via Hiearchical Select is either 'NGO' (tid=3518) or 'Forening' (tid=3520)
+      drupal_add_js('jQuery(function() {
+              jQuery("#hierarchical-select-0-wrapper").live("change-hierarchical-select", function() {
+                    var Selected = jQuery("#edit-field-user-type-und-hierarchical-select-selects-0").val();
+                    if (Selected == "3518" || Selected == "3520") {
+                        jQuery("#field-user-type-info-add-more-wrapper").show(200);
+                    }
+                    else {
+                        jQuery("#field-user-type-info-add-more-wrapper").hide(200);
+                    }
+              }); });', 'inline');
+
 
     return $form_element;
 }

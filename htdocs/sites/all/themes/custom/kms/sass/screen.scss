@@ -239,6 +239,14 @@ body {
           padding:10px;
         }
         
+        .pane-content {
+          h2 {
+            margin-top: -15px;
+            margin-left: -15px;
+            margin-bottom: 15px;
+          }
+        }
+        
       /* Login form */
       
       .pane-user-login {
@@ -436,8 +444,28 @@ body {
     color: #676767;
   }
   
+  .commerce-product-title {
+    .commerce-product-title-label {
+      display: none;
+    }
+  }
+  
+  .product-link {
+    display: inline-block;
+    float: right;
+    margin: 0px 22px;
+    padding-bottom: 10px;
+  }
+  .attribute-widgets {
+    padding-bottom: 10px;
+  }
+  
   .commerce-add-to-cart {
     float: right;
+    clear: both;
+    .form-wrapper {
+      display: none;
+    }
   }
 }
 
@@ -499,6 +527,35 @@ body {
     .views-row-last {
       margin-right: 0px;
     }
+  }
+}
+
+/* My downloads */
+
+.view-grouping {
+  caption {
+    text-align: left;
+    font-size: 11px;
+    padding-bottom: 10px;
+  }
+  
+  table {
+    .downloads {
+      a {
+        background: url(../images/download.png) no-repeat;
+        padding-left: 23px;
+      }
+    }
+  }
+  .view-grouping-header {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+    background: url(../images/map.png) no-repeat;
+    background-position: 0px 3px;
+    padding-left: 23px;
+    line-height: 21px;
+    margin-bottom: 5px;
   }
 }
 
@@ -565,9 +622,6 @@ body {
     margin-top: 10px;
   }
   
-  #field-user-type-info-add-more-wrapper {
-    display: none;
-  }
 }
 
 #user-profile-form {
@@ -723,7 +777,7 @@ a#terms_and_conditions_link {
 
 /* Shopping cart */
 
-.page-cart, .page-checkout {
+.page-cart, .page-checkout, .node-type-downloads {
   table {
     border: 1px solid #cecece;
   }
@@ -769,3 +823,30 @@ a#terms_and_conditions_link {
   }
 }
 
+// Geosearch field 
+
+#geosearch {
+  margin-top: 15px;
+  @include border-radius(3px);
+  height: 30px;
+  line-height: 25px;
+  border: 1px solid #cccccc;
+  float: left;
+  padding: 0px 5px;
+  width: 447px;
+}
+
+.ui-autocomplete.ui-menu {
+  @include border-radius(3px);
+  border: 1px solid #cccccc;
+  .ui-menu-item {
+    a {
+      font-size: 12px;
+    }
+    a.ui-state-hover {
+      @include submit;
+      border: 1px solid #CCCCCC;
+      color: #333;
+    }
+  }
+}

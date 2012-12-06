@@ -2,8 +2,9 @@
  
  $header = module_invoke('panels_mini', 'block_view', 'top');
  $footer = module_invoke('panels_mini', 'block_view', 'bottom');
+ $attr   = (!empty($attributes)) ? $attributes : '';
 ?>
-<div class="profile"<?php print $attributes; ?>>
+<div class="profile"<?php print $attr; ?>>
 
   <header>
     <?php echo( $header['content'] ); ?>

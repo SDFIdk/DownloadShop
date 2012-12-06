@@ -42,26 +42,62 @@ function kms_commerce_files_rules_action_info() {
 
 function kms_commerce_files_add_files( $li ) {
   
-  adapt_debug('tom',"Creating new product");
-  
-  //adapt_debug('tom', $li);
-  
-  $files = json_decode($li->field_selection[LANGUAGE_NONE][0]['value']);
-  
-  foreach ($files as $file) {
-      adapt_debug('tom',$file);
-      // INSERT INTO file_managed (uid,filename,uri,filemime,filesize,status,timestamp,origname)
-      // VALUES (1, :filename,:uri,:filemime,:filesize,:status,:timestamp,:origname)
-  }
-
-  /*
-  $li->order_id
-  $li->line_item_id
-  $li->commerce_product[LANGUAGE_NONE][0]['product_id']
-  $li->field_selection[LANGUAGE_NONE][0]['value']
-  */
+  if (empty($li->field_selection[LANGUAGE_NONE][0]['value']))
+    return;
 
   $op = commerce_product_load($li->commerce_product[LANGUAGE_NONE][0]['product_id']);
+  $ow = entity_metadata_wrapper('commerce_order', $op);
+  
+  $folder  = $op->field_folder[LANGUAGE_NONE][0]['value'];
+  $finfo = finfo_open(FILEINFO_MIME_TYPE);
+
+  $files = json_decode($li->field_selection[LANGUAGE_NONE][0]['value']);
+
+  $downloads = array();
+
+  foreach ($files as $file) {
+         
+    $uri = 'private://' . $folder . '/' . $file;
+
+    // Try to load exsting file
+    $flist = file_load_multiple(array(), array('uri' => $uri));
+    // If empty, $file will be false, otherwise will contain the required file 
+    $f = reset($flist); 
+    
+    // If files is new, then insert to file_managed and load again to get fid
+    if (!$f) {
+      $stat = stat(DRUPAL_ROOT."/sites/private/$folder/$file");
+      $values = array( 
+        1,
+        $file,
+        $uri,
+        finfo_file($finfo, DRUPAL_ROOT."/sites/private/$folder/$file"),
+        $stat['size'],
+        FILE_STATUS_PERMANENT,
+        $stat['mtime'],
+        $file
+      );
+
+      $sql = 'INSERT INTO file_managed (uid,filename,uri,filemime,filesize,status,timestamp,origname)'
+         . 'VALUES (?,?,?,?,?,?,?,?)';
+
+      $dbh = Database::getConnection();
+      $stmt = $dbh->prepare($sql);
+      $stmt->execute($values);
+
+      $flist = file_load_multiple(array(), array('uri' => $uri));
+      $f = reset($flist);
+
+      file_usage_add($f,'kms_commerce_files','user', 1, 1);
+    }
+
+    $downloads[] = array('fid' => $f->fid,
+          'data' => array("duration"       => 3600,
+                          "download_limit" => -1,
+                          "address_limit"  => -1,
+                         )
+    );
+  }
 
   $product = commerce_product_new('file_collection');
   $product->sku = uniqid('FILES-', true);
@@ -70,6 +106,8 @@ function kms_commerce_files_add_files( $li ) {
   $product->title    = $op->title;
   $product->status   = 1;
   $product->created  = $product->changed = time();
+
+  $product->field_downloads[LANGUAGE_NONE] = $downloads;
 
   $price = array(LANGUAGE_NONE => array(0 => array(
     'amount' => 0, 
