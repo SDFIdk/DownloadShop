@@ -1,7 +1,7 @@
-// KMS WMS contrywide Widge
-// Allways download 1 file, entire dataset
+// KMS WMS tile Widge
 
 var conf;
+var selectLayer;
 var searchLayer
 
 jQuery(function($) { 
@@ -19,14 +19,16 @@ jQuery(function($) {
 (function($) {
   $.fn.updateForm = function(data) {
     var files = Array();
-    files[0] = conf.selection_details
+    for (var i=0; i<selectLayer.selectedFeatures.length; i++) {
+    files[i] = selectLayer.selectedFeatures[i].attributes.filename;
+  }
     $('#edit-line-item-fields-field-selection-und-0-value').val(JSON.stringify(files));
-    $('#edit-line-item-fields-field-selection-text-und-0-value').val( '1 samlet fil');
+    $('#edit-line-item-fields-field-selection-text-und-0-value').val( i.toString() + ' udvalgte filer');
   };
 })(jQuery);
 
 function initService() {
-
+  
   OpenLayers.ImgPath = "/sites/all/themes/custom/kms/images/";
 
   kmsticket: '',  
@@ -103,11 +105,34 @@ function initService() {
 		}
 	);
 
+    oLayers[2] = new OpenLayers.Layer.Vector('Grid', {
+		styleMap:new OpenLayers.StyleMap({
+		   "default":new OpenLayers.Style(OpenLayers.Util.applyDefaults({
+			'strokeWidth' : 0.2,
+			'strokeColor' : '#000000',
+			'fillOpacity' : 0
+		   }, OpenLayers.Feature.Vector.style["default"])),
+		   "select":new OpenLayers.Style({'fillColor' : '#00FF00', 'fillOpacity' : 0.2}),
+		   "highlight":new OpenLayers.Style({'fillColor' : '#0000FF', 'fillOpacity' : 0.1})
+		})
+
+    });
+
+    jQuery.getJSON(conf.grid_folder + conf.selection_details,
+      function(data) {
+	    var geojson_format = new OpenLayers.Format.GeoJSON();
+	    var features = geojson_format.read(data);
+	    oLayers[2].addFeatures(features);
+      }
+    );
+
 	for (var i=0; i<oLayers.length; i++)
     {
         map.addLayer(oLayers[i]);
     }
-       		
+  
+  selectLayer = oLayers[2];
+
 	// The buttons and bar in upper left corner:
 	map.addControl(new OpenLayers.Control.PanZoomBar());
     //map.addControl(new OpenLayers.Control.PanZoomBar({'div':OpenLayers.Util.getElement('panzoombar')}));
@@ -123,8 +148,41 @@ function initService() {
 	// Set center and zoom 
 	map.setCenter(new OpenLayers.LonLat(conf.center_longitude, conf.center_latitude),conf.zoom_level);
 
-  initSearch(map);
+  var selectCtrl = new OpenLayers.Control.SelectFeature(selectLayer,
+      { clickout: false,  
+	    toggle: true,
+	    multiple: true, 
+	  	onSelect:selected,
+		onUnselect:unselected
+	  }
+	);
+  
+  var highlightCtrl = new OpenLayers.Control.SelectFeature(selectLayer, {
+       hover: true,
+       highlightOnly: true,
+       renderIntent: "temporary"
+   });
 
+   // This sould be set to make mouse pan work
+   selectCtrl.handlers.feature.stopDown = false;  
+   highlightCtrl.handlers.feature.stopDown = false;
+
+   map.addControl(selectCtrl);
+   map.addControl(highlightCtrl);
+   
+   highlightCtrl.activate();
+   selectCtrl.activate();
+
+   initSearch(map);
+
+   function selected(feature) {
+	   jQuery.fn.updateForm();
+   }
+
+   function unselected(feature) {
+	   jQuery.fn.updateForm();
+   }
+   
 }
 
 

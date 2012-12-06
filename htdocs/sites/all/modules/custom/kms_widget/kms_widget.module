@@ -7,20 +7,68 @@ function kms_widget_ctools_plugin_directory($owner, $plugin_type) {
   }
 } 
 
-// function kms_widget_views_query_alter(&$view, &$query)
-// {
-//   if ($view->name == 'product_list') {
-//     if ($view->current_display == 'default') {
-//       $query->groupby[] = 'nid';
-//     }
-//   }
-// }
+/*
+ *  Implements HOOK_commerce_cart_attributes_refresh_alter
+ *  
+ *  Update javascript conf when selecting a product 
+ *  Then update the form fields for selected files
+ */
 
-// function kms_widget_views_pre_execute(&$view){
-//   if ($view->name == 'product_list') {
-//     if($view->current_display == 'default') {
-//        $view->build_info['query']->groupBy('nid');
-//        adapt_debug('tom',$view->build_info['query']->__toString());
-//     }
-//   }
-// }
+function kms_widget_commerce_cart_attributes_refresh_alter(&$commands, $form, $form_state) {
+  
+  $product = $form_state['default_product'];
+
+  $merge =
+    array('kms_widget' => array(
+      'dataformat'        => $product->field_dataformat['und'][0]['taxonomy_term']->name,
+      'koordinatsystem'   => $product->field_koordinatsystem['und'][0]['taxonomy_term']->name,
+      'selection_details' =>  empty($product->field_selection_details['und'][0]['value']) ?
+                              false : $product->field_selection_details['und'][0]['value'],
+    ));
+
+  $commands[] = ajax_command_settings($merge, TRUE);
+  $commands[] = ajax_command_invoke(NULL, "updateForm", array() );
+}
+
+
+
+
+/*
+function kms_widget_field_widget_info() {
+  return array(
+    'kms_widget' => array(
+      'label' => t('KMS map widget'),
+      'field types' => array('text'),
+    )
+  );
+}
+
+function kms_widget_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+   return $element;
+}
+
+function kms_widget_field_formatter_info() {
+  return array(
+    'kms_widget' => array(
+      'label' => t('KMS map widget'),
+      'field types' => array('text'),
+    )
+  );
+}  
+
+function kms_widget_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  
+  adapt_debug('tom',$entity->product_id);
+
+  $element   = array();
+  
+  switch ($display['type']) {
+    case 'kms_widget' : 
+      $element[] = array('#markup' => kms_widget_render_map_widget($entity->product_id));
+      break;
+  }
+
+  return $element;
+}
+
+*/

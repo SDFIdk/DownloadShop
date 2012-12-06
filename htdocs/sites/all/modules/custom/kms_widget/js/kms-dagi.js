@@ -1,15 +1,41 @@
-// KMS WMS tile Widge
+// KMS DAGI SELECTION
 
-jQuery(function() { 
-  var conf = Drupal.settings.kms_widget;
+var conf;
+var selectLayer;
+var searchLayer
+
+jQuery(function($) { 
+  conf = Drupal.settings.kms_widget;
   conf.center_longitude = parseInt(conf.center_longitude);
   conf.center_latitude = parseInt(conf.center_latitude);
   conf.zoom_level = parseInt(conf.zoom_level);
   conf.selection_type = parseInt(conf.selection_type);
-  initService(conf);   
+
+  initService();   
+
+  $.fn.updateForm();
+
 });
 
-function initService(conf) {
+(function($) {
+  $.fn.updateForm = function(data) {
+  var files = Array();
+  var seen = Array();
+  for (var i=0; i<selectLayer.selectedFeatures.length; i++) {
+    var cpr_noegle = selectLayer.selectedFeatures[i].attributes.CPR_noegle;
+    var filename = cpr_noegle + '_' + conf.dataformat + '_' + conf.koordinatsystem + '.zip';
+    if (!seen[filename]) {
+      files[i] = filename;
+      seen[filename] = true;
+    } 
+  }
+	
+  $('#edit-line-item-fields-field-selection-und-0-value').val(JSON.stringify(files));
+  $('#edit-line-item-fields-field-selection-text-und-0-value').val( i.toString() + ' udvalgte filer');
+  };
+})(jQuery);
+
+function initService() {
   
   OpenLayers.ImgPath = "/sites/all/themes/custom/kms/images/";
 
@@ -78,36 +104,35 @@ function initService(conf) {
 		{ layers: conf.service_layer, 
 		  format: 'image/jpeg', 
 		  bgcolor: '0xFFFFFF',
-		  ticket: kmsticket,
+		  ticket: kmsticket
 		},
 		{ singleTile: true, 
 		  transitionEffect: 'resize', 
 		  buffer: 0, 
-		  isBaseLayer : true,
+		  isBaseLayer : true
 		}
 	);
 
-    oLayers[2] = new OpenLayers.Layer.Vector('Grid', {
-
+	oLayers[2] = new OpenLayers.Layer.Vector(
+		conf.selection_details, {
+		strategies : [new OpenLayers.Strategy.BBOX()],
 		styleMap:new OpenLayers.StyleMap({
 		   "default":new OpenLayers.Style(OpenLayers.Util.applyDefaults({
-			'strokeWidth' : 0.2,
-			'strokeColor' : '#000000',
+			'strokeWidth' : 0.1,
 			'fillOpacity' : 0
 		   }, OpenLayers.Feature.Vector.style["default"])),
 		   "select":new OpenLayers.Style({'fillColor' : '#00FF00', 'fillOpacity' : 0.2}),
 		   "highlight":new OpenLayers.Style({'fillColor' : '#0000FF', 'fillOpacity' : 0.1})
+		}),
+    		protocol : new OpenLayers.Protocol.WFS({
+			url : "/dagi_gml2?",
+			version : "1.0.0",
+			featurePrefix : "kms",
+		    featureType : conf.selection_details,
+	   	    geometryName : "geometri",
+			params : { ticket: kmsticket }
 		})
-
-    });
-
-    jQuery.getJSON(conf.grid_folder + conf.selection_details,
-      function(data) {
-	    var geojson_format = new OpenLayers.Format.GeoJSON();
-	    var features = geojson_format.read(data);
-	    oLayers[2].addFeatures(features);
-      }
-    );
+	  });
 
 	for (var i=0; i<oLayers.length; i++)
     {
@@ -129,7 +154,7 @@ function initService(conf) {
 	// Set center and zoom 
 	map.setCenter(new OpenLayers.LonLat(conf.center_longitude, conf.center_latitude),conf.zoom_level);
 
-    var selectLayer = oLayers[2];
+    selectLayer = oLayers[2];
 
     var selectCtrl = new OpenLayers.Control.SelectFeature(selectLayer,
       { clickout: false,  
@@ -142,8 +167,8 @@ function initService(conf) {
    
     var highlightCtrl = new OpenLayers.Control.SelectFeature(selectLayer, {
        hover: true,
-       highlightOnly: true,
-       renderIntent: "temporary",
+       highlightOnly: true
+       //renderIntent: "temporary",
    });
 
    // This sould be set to make mouse pan work
@@ -156,22 +181,16 @@ function initService(conf) {
    highlightCtrl.activate();
    selectCtrl.activate();
 
+   initSearch(map);
+
    function selected(feature) {
-	 updateForm();
+	   jQuery.fn.updateForm();
    }
 
    function unselected(feature) {
-	 updateForm();
+	   jQuery.fn.updateForm();
    }
-
-  function updateForm() {
-  	var files = Array();
-    for (var i=0; i<selectLayer.selectedFeatures.length; i++) {
-	  files[i] = selectLayer.selectedFeatures[i].attributes.filename;
-	}
-    jQuery('#edit-line-item-fields-field-selection-und-0-value').val(JSON.stringify(files));
-	jQuery('#edit-line-item-fields-field-selection-text-und-0-value').val( i.toString() + ' udvalgte filer');
-  }
+  
 }
 
 
