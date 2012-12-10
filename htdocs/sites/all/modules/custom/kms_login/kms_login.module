@@ -1,4 +1,6 @@
 <?php
+define('KMS_LOGIN_PAGE_PRODUCT_LISTING', 'node/2');
+
 /**
  * When a new user has received a confirmation mail with a one-time-login-url, or
  * an existing user has received a forgotten-password-mail the user will be sent
@@ -32,5 +34,22 @@ function kms_login_ctools_plugin_directory($owner, $plugin_type) {
   // we'll be nice and limit scandir() calls
   if ($owner == 'ctools' && $plugin_type == 'content_types') {
     return 'plugins/content_types';
+  }
+}
+
+/**
+ * Implements hhok_user_login().
+ */
+function kms_login_user_login(&$edit, $account) {
+  if (empty($_POST['form_id'])) {
+    return;
+  }
+  $redirect = variable_get(
+    'kms_login_page_product_listing',
+    KMS_LOGIN_PAGE_PRODUCT_LISTING
+  );
+  // If we are not using reset pass form then redirect to $redirect.
+  if ($_POST['form_id'] != 'user_pass_reset') {
+    $_GET['destination'] = $redirect; // Should we use $edit['redirect'] instead..?
   }
 }
