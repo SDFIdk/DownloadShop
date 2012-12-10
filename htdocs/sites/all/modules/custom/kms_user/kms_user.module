@@ -1,7 +1,7 @@
 <?php
 
 define('KMS_USER_ROLES_SYSTEM_ACCOUNT_ID', 7);
-define('KMS_USER_CONTACT_PAGE', 'node/7');
+define('KMS_USER_PAGE_CONTACT', 'node/7');
 
 /**
  * Implements hook_watchdog().
@@ -17,11 +17,12 @@ function kms_user_watchdog(array $log_entry) {
   ) {
     drupal_set_message(
       t(
-        'You cannot access %uri as a system account',
+        'You cannot access %uri as a system account.',
         array('%uri' => $log_entry['message'])
-      )
+      ),
+      'error'
     );
-    drupal_goto(variable_get('kms_user_contact_page', KMS_USER_CONTACT_PAGE));
+    drupal_goto(variable_get('kms_user_page_contact', KMS_USER_PAGE_CONTACT));
   }
 }
 
@@ -177,7 +178,7 @@ function kms_user_user_pass_validate($form, &$form_state) {
     $roles = $account->roles;
     if (kms_user_is_system_account($roles)) {
       form_set_error('name', t('It is not possible to change or reset the password for users with the role systemaccount. Contact the site administrator to do this.'));
-      drupal_goto(variable_get('kms_user_contact_page', KMS_USER_CONTACT_PAGE));
+      drupal_goto(variable_get('kms_user_page_contact', KMS_USER_PAGE_CONTACT));
     }
   }
 }
@@ -233,7 +234,7 @@ proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
  */
 function _kms_user_validate_username($element, &$form_state, $form) {
   if (!empty($element['#value'])) {
-    preg_match_all("#(\/)|(\\\\)|(=)|(\?)|(\&)|(\s)#Uis", $element['#value'], $m);
+    preg_match_all("#(\/)|(\\\\)|(=)|(\?)|(\&)|(\.)|(\@)|(\s)#Uis", $element['#value'], $m);
     foreach ($m as $match) {
       if (!empty($match)) {
         form_error($element, t('Username contains invalid characters.'));
