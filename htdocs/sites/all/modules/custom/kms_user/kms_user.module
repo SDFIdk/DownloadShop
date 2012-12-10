@@ -1,7 +1,7 @@
 <?php
 
-define('KMS_USER_ROLES_SYSTEM_ACCOUNT_NAME', 'systemaccount');
 define('KMS_USER_ROLES_SYSTEM_ACCOUNT_ID', 7);
+define('KMS_USER_CONTACT_PAGE', 'node/7');
 
 /**
  * Implements hook_watchdog().
@@ -13,7 +13,7 @@ function kms_user_watchdog(array $log_entry) {
   if (
     $log_entry['type'] == 'access denied'
     && $log_entry['user']->uid == $user->uid
-    && in_array(KMS_USER_ROLES_SYSTEM_ACCOUNT_NAME, $log_entry['user']->roles)
+    && kms_user_is_system_account($log_entry['user']->roles)
   ) {
     drupal_set_message(
       t(
@@ -21,7 +21,7 @@ function kms_user_watchdog(array $log_entry) {
         array('%uri' => $log_entry['message'])
       )
     );
-    drupal_goto('<front>');
+    drupal_goto(variable_get('kms_user_contact_page', KMS_USER_CONTACT_PAGE));
   }
 }
 
@@ -62,7 +62,6 @@ function kms_user_menu_alter(&$items) {
   }
 }
 
-
 function _kms_user_access_callback_deny_system_account() {
   global $user;
   $args = func_get_args();
@@ -75,9 +74,8 @@ function _kms_user_access_callback_deny_system_account() {
   // Todo. Do this the right way.
   // For some reason user_access is flaky
   // but that is the one that should be used instead of $is_systemaccount;
-  $is_systemaccount = in_array(KMS_USER_ROLES_SYSTEM_ACCOUNT_NAME, $roles);
   // return $original_access && user_access('Access kms user pages');
-  return $original_access && !$is_systemaccount;
+  return $original_access && !kms_user_is_system_account($roles);
 }
 
 /**
@@ -108,38 +106,43 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
     // Update user 'updated' time stamp.
     $form['#submit'][] = '_kms_user_update_user';
     $form['field_updated']['#disabled'] = TRUE;
-    if ($form_id == 'user_profile_form') {
-      // The terms and conditions must(!) be accepted on the register-form. After that the terms and conditions
-      // can NOT be altered by the user. So we change the default value to 'accepted', and disable the checkbox
-      $form['field_terms_and_conditions']['#default_value'] = 1;
-      $form['field_terms_and_conditions']['und']['#default_value'] = 1;
-      $form_state['field']['field_terms_and_conditions']['und']['instance']['default_value'][0]['value'] = 1;
-      $form['field_terms_and_conditions']['#disabled'] = TRUE;
+    switch ($form_id) {
+      case 'user_profile_form':
+        // The terms and conditions must(!) be accepted on the register-form. After that the terms and conditions
+        // can NOT be altered by the user. So we change the default value to 'accepted', and disable the checkbox
+        $form['field_terms_and_conditions']['#default_value'] = 1;
+        $form['field_terms_and_conditions'][LANGUAGE_NONE]['#default_value'] = 1;
+        $form_state['field']['field_terms_and_conditions'][LANGUAGE_NONE]['instance']['default_value'][0]['value'] = 1;
+        $form['field_terms_and_conditions']['#disabled'] = TRUE;
 
-      // We need to store any changes to the password
-      $form['#submit'][] = '_kms_user_update_user_pass';
+        // We need to store any changes to the password
+        $form['#submit'][] = '_kms_user_update_user_pass';
 
-      // The user-profile-form has some trouble remembering the user-provided values for
-      // the fields "field_contact_me", and "field_newsletter". We must fetch the values
-      // and set the fields accordingly
-      $user_contact_me = db_select('field_data_field_contact_me', 'cme')
-      ->fields('cme', array('field_contact_me_value'))
-      ->condition('entity_id', $form['#user']->uid, '=')
-      ->execute()
-      ->fetchAssoc();
-      $form['field_contact_me']['und']['#default_value'] = $user_contact_me['field_contact_me_value'];
+        // The user-profile-form has some trouble remembering the user-provided values for
+        // the fields "field_contact_me", and "field_newsletter". We must fetch the values
+        // and set the fields accordingly
+        $user_contact_me = db_select('field_data_field_contact_me', 'cme')
+        ->fields('cme', array('field_contact_me_value'))
+        ->condition('entity_id', $form['#user']->uid, '=')
+        ->execute()
+        ->fetchAssoc();
+        $form['field_contact_me'][LANGUAGE_NONE]['#default_value'] = $user_contact_me['field_contact_me_value'];
 
-      $user_newsletter = db_select('field_data_field_newsletter', 'news')
-      ->fields('news', array('field_newsletter_value'))
-      ->condition('entity_id', $form['#user']->uid, '=')
-      ->execute()
-      ->fetchAssoc();
-      $form['field_newsletter']['und']['#default_value'] = $user_newsletter['field_newsletter_value'];
-    }
-    if ($form_id == 'user_register_form') {
+        $user_newsletter = db_select('field_data_field_newsletter', 'news')
+        ->fields('news', array('field_newsletter_value'))
+        ->condition('entity_id', $form['#user']->uid, '=')
+        ->execute()
+        ->fetchAssoc();
+        $form['field_newsletter'][LANGUAGE_NONE]['#default_value'] = $user_newsletter['field_newsletter_value'];
+
+        // No one should be able to change clear text password in admin area.
+        $form['field_pass_clear']['#disabled'] = TRUE;
+        break;
       
-      // We need to store the new password
-      $form['#submit'][] = '_kms_user_insert_user_pass';
+      case 'user_register_form':
+        // We need to store the new password
+        $form['#submit'][] = '_kms_user_insert_user_pass';
+        break;
     }
   }
   elseif ($form_id == 'user_pass') {
@@ -172,11 +175,9 @@ function kms_user_user_pass_validate($form, &$form_state) {
   if (isset($account->uid)) {
     // Check if this account is a system-account, and if so tell the user no-no
     $roles = $account->roles;
-    $is_systemaccount = in_array(KMS_USER_ROLES_SYSTEM_ACCOUNT_NAME, $roles);
-    if ($is_systemaccount) {
+    if (kms_user_is_system_account($roles)) {
       form_set_error('name', t('It is not possible to change or reset the password for users with the role systemaccount. Contact the site administrator to do this.'));
-      $target = variable_get('systemaccount_node_help', 'node/7');
-      drupal_goto($target);
+      drupal_goto(variable_get('kms_user_contact_page', KMS_USER_CONTACT_PAGE));
     }
   }
 }
@@ -189,8 +190,8 @@ consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
 cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
 proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
 
-    $form_element['und']["#description"] = '<a href="#" id="terms_and_conditions_link">'.t('Read here').'</a>';
-    $form_element['und']['#suffix'] = '<div id="terms_and_conditions" style="display:none;">' . $terms_and_conditions .'<a id="terms_and_conditions_close" class="close" href="#">close</a></div>';
+    $form_element[LANGUAGE_NONE]["#description"] = '<a href="#" id="terms_and_conditions_link">'.t('Read here').'</a>';
+    $form_element[LANGUAGE_NONE]['#suffix'] = '<div id="terms_and_conditions" style="display:none;">' . $terms_and_conditions .'<a id="terms_and_conditions_close" class="close" href="#">close</a></div>';
 
     drupal_add_js(drupal_get_path('module', 'kms_user') .'/js/jquery.lightbox_me.js');
     drupal_add_js("jQuery(function() { 
@@ -326,13 +327,17 @@ function _kms_user_insert_user_pass($form, &$form_state) {
 		      'deleted' => 0, 
 		      'entity_id' => $form['#user']->uid,
 		      'revision_id' => $form['#user']->uid,
-		      'language' => 'und',
+		      'language' => LANGUAGE_NONE,
 		      'delta' => 0,
 		      'field_pass_clear_value' => $new_pass,
 		      'field_pass_clear_format' => ''))
       ->execute();
     }
   }
+}
+
+function kms_user_is_system_account($roles) {
+  return in_array(KMS_USER_ROLES_SYSTEM_ACCOUNT_ID, array_keys($roles));
 }
 
 
