@@ -294,6 +294,10 @@ function _kms_user_update_user($form, &$form_state) {
 }
 
 function _kms_user_update_user_pass($form, &$form_state) {
+  if (empty($form_state['user']->current_pass)) {
+    form_set_error('current_pass', t('Current password was not specified.'));
+    return;
+  }
   $old_pass = $form_state['user']->current_pass;
   $new_pass = $form_state['user']->pass;
   $etxt = '_kms_user_update_user_pass'."\n";
