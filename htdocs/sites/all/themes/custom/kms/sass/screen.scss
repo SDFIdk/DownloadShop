@@ -111,6 +111,27 @@ $link-color: #c2712b;
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9f9f9', endColorstr='#f2f2f2',GradientType=0 ); /* IE6-8 */
 }
 
+* {
+  padding: 0px;
+  margin: 0px;
+}
+
+body {
+  background: url("../images/body-bg.gif") repeat scroll 0 0 transparent;
+  font: 75% Verdana,Geneva,sans-serif;
+  min-width: 1160px;
+}
+
+#page {
+  margin: 0 auto;
+  width: 1160px;
+  background: #fff;
+  }
+
+.panel-2col-stacked .panel-separator {
+  margin: 0px;
+}
+
 a {
   color:$link-color;
   text-decoration:none;
@@ -121,22 +142,16 @@ a:hover {
  text-decoration:underline;
 }
 
-h1 {
+h1, .commerce-product-title {
   font-size: 16px;
   color: #333;
   border-bottom: 1px dotted #999;
   padding-bottom: 9px;
+  margin-bottom: 9px;
 }
 
 .product-title h1 {
   font-size: 30px;
-}
-
-body {
-  background: url("../images/body-bg.gif") repeat scroll 0 0 transparent;
-  font: 75% Verdana,Geneva,sans-serif;
-  min-width: 1160px;
-  padding-top: 3px;
 }
 
 /* Main layout */
@@ -170,10 +185,10 @@ body {
       background: none repeat scroll 0 0 #97BC00;
       height: 29px;
       li {
-        display: inline-block;
+        float: left;
         a {
           background: url("../images/arrow-white.gif") no-repeat scroll 6px 10px transparent;
-          display: block;
+          display: inline-block;
           padding: 0px 10px 0px 19px;
           height: 29px;
           line-height: 27px;
@@ -232,20 +247,28 @@ body {
         }
       }
       
-          h2 {
+      .panel-pane {
+        position: relative;
+        h2 {
           background: #cbd2c0;
           width: 260px;
           font: bold 1.67em/1 "Trebuchet MS",Arial,Helvetica,sans-serif;
           padding:10px;
+          position: absolute;
+          left: 0px;
+          top:0px;
         }
+      }
         
-        .pane-content {
-          h2 {
-            margin-top: -15px;
-            margin-left: -15px;
-            margin-bottom: 15px;
-          }
+      .pane-content {
+        position: relative;
+        padding-top: 55px !important;
+        h2 {
+          position: absolute;
+          top:0px;
+          left: 0px;
         }
+      }
         
       /* Login form */
       
@@ -331,12 +354,6 @@ body {
   }
 }
 
-#page {
-  margin: 0 auto;
-  width: 1160px;
-  background: #fff;
-}
-
 /* Product-list */
 
 .node-type-product-listing {
@@ -418,7 +435,6 @@ body {
 
 .node-type-product-display {
   .product-type {
-    float: left;
     color: #A4A4A4;
     * {
       display: inline-block;
@@ -437,11 +453,44 @@ body {
   }
   
   .product-body {
-    float: left;
+    float: right;
     width: 320px;
     padding-left: 30px;
     padding-top: 10px;
     color: #676767;
+  }
+  
+  .add-to-cart-btn {
+    float: right;
+  }
+  
+  .useful-links {
+    clear: both;
+    float: left;
+    width: 460px;
+    background: url(../images/linkicon.png) no-repeat left center;
+    padding-left: 25px;
+    .views-field {
+      float:left;
+      padding-right: 25px;
+      .views-label {
+        font-size: 10px;
+      }
+    }
+  }
+  
+  #selection_message {
+    clear: both;
+    padding-top: 10px;
+    ul {
+      li {
+        padding: 5px 0px;
+        background: url(../images/arrow_grey.png) no-repeat left center;
+        padding-left: 15px;
+        font-size: 11px;
+        color: #8e8e8e;
+      }
+    }
   }
   
   .commerce-product-title {
@@ -455,6 +504,7 @@ body {
     float: right;
     margin: 0px 22px;
     padding-bottom: 10px;
+    padding-top: 10px;
   }
   .attribute-widgets {
     padding-bottom: 10px;
@@ -465,6 +515,9 @@ body {
     clear: both;
     .form-wrapper {
       display: none;
+    }
+    #edit-submit {
+      margin-top: 10px;
     }
   }
 }
@@ -515,7 +568,8 @@ body {
       }
     }
     
-    .view-footer {
+    .view-footer { 
+      clear: both;
       a {
         float: right;
         font-size: 13px;
@@ -621,6 +675,10 @@ body {
   #edit-submit {
     margin-top: 10px;
   }
+
+  #field-user-type-info-add-more-wrapper {
+    display: none;
+  }
   
 }
 
@@ -703,6 +761,7 @@ div.error, tr.error {
   @include border-radius(3px);
   padding: 5px;
   color: #333 !important;
+  margin-bottom: 15px;
 }
 
 /* Overlay */
@@ -733,13 +792,13 @@ div.error, tr.error {
 
 a#terms_and_conditions_link {
   overflow: hidden;
-  display: inline-block;
   text-indent: -100px;
   width: 16px;
   height: 16px;
   background: url(../images/questionmark.png) no-repeat;
   position: absolute;
   top:0px;
+  left: 365px;
 }
 
 /* Ajax progress */

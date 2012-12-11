@@ -19,19 +19,26 @@ jQuery(function($) {
 
 (function($) {
   $.fn.updateForm = function(data) {
-  var files = Array();
-  var seen = Array();
-  for (var i=0; i<selectLayer.selectedFeatures.length; i++) {
-    var cpr_noegle = selectLayer.selectedFeatures[i].attributes.CPR_noegle;
-    var filename = cpr_noegle + '_' + conf.dataformat + '_' + conf.koordinatsystem + '.zip';
-    if (!seen[filename]) {
+    var files = Array();
+    $('#selection_message').empty();
+    $('#selection_message').append('<ul></ul');
+    for (var i=0; i<selectLayer.selectedFeatures.length; i++) {
+      var region, name;
+      if ( conf.selection_type == 3563 ) {
+        region = selectLayer.selectedFeatures[i].attributes.KOMKODE;
+        name = selectLayer.selectedFeatures[i].attributes.KOMNAVN;
+      } else {
+        region = selectLayer.selectedFeatures[i].attributes.REGIONKODE;
+        name = selectLayer.selectedFeatures[i].attributes.REGIONNAVN;
+      }
+      
+      var filename = region + '_' + conf.dataformat + '_' + conf.koordinatsystem + '.zip';
       files[i] = filename;
-      seen[filename] = true;
-    } 
-  }
-	
-  $('#edit-line-item-fields-field-selection-und-0-value').val(JSON.stringify(files));
-  $('#edit-line-item-fields-field-selection-text-und-0-value').val( i.toString() + ' udvalgte filer');
+      $('#selection_message ul').append('<li>' + name + ' (' + filename + ')</li>');
+    }
+    
+    $('#edit-line-item-fields-field-selection-und-0-value').val(JSON.stringify(files));
+    $('#edit-line-item-fields-field-selection-text-und-0-value').val( i.toString() + ' udvalgte filer');
   };
 })(jQuery);
 
@@ -92,7 +99,6 @@ function initService() {
 			matrixIds: kmsWmtsSkaermkortMatrixIds,
 			format: "image/jpeg",
 			style: "default",
-			opacity: 1.0,
 			isBaselayer: true,
 			params: { ticket: kmsticket }  
 		}
@@ -102,37 +108,37 @@ function initService() {
 		conf.name,
 		"http://kortforsyningen.kms.dk/" + conf.service_name + '?',
 		{ layers: conf.service_layer, 
-		  format: 'image/jpeg', 
-		  bgcolor: '0xFFFFFF',
+		  format: 'image/jpeg',
+		  transparent: true,
 		  ticket: kmsticket
 		},
 		{ singleTile: true, 
 		  transitionEffect: 'resize', 
-		  buffer: 0, 
-		  isBaseLayer : true
+		  buffer: 0,
+		  opacity: 0.9, 
+		  isBaseLayer : false
 		}
 	);
-
-	oLayers[2] = new OpenLayers.Layer.Vector(
-		conf.selection_details, {
-		strategies : [new OpenLayers.Strategy.BBOX()],
+		  
+    oLayers[2] = new OpenLayers.Layer.Vector('Administrativ inddeling', {
 		styleMap:new OpenLayers.StyleMap({
 		   "default":new OpenLayers.Style(OpenLayers.Util.applyDefaults({
-			'strokeWidth' : 0.1,
+			'strokeWidth' : 0.5,
+			'strokeColor' : '#000000',
 			'fillOpacity' : 0
 		   }, OpenLayers.Feature.Vector.style["default"])),
-		   "select":new OpenLayers.Style({'fillColor' : '#00FF00', 'fillOpacity' : 0.2}),
-		   "highlight":new OpenLayers.Style({'fillColor' : '#0000FF', 'fillOpacity' : 0.1})
-		}),
-    		protocol : new OpenLayers.Protocol.WFS({
-			url : "/dagi_gml2?",
-			version : "1.0.0",
-			featurePrefix : "kms",
-		    featureType : conf.selection_details,
-	   	    geometryName : "geometri",
-			params : { ticket: kmsticket }
+		   "select":new OpenLayers.Style({'strokeColor' : 'green', 'fillOpacity' : 0.3, 'strokeWidth' : 1.0 })
 		})
-	  });
+
+    });
+
+    jQuery.getJSON(conf.grid_folder + conf.selection_details,
+      function(data) {
+	    var geojson_format = new OpenLayers.Format.GeoJSON();
+	    var features = geojson_format.read(data);
+	    oLayers[2].addFeatures(features);
+      }
+    );	    
 
 	for (var i=0; i<oLayers.length; i++)
     {
@@ -157,7 +163,8 @@ function initService() {
     selectLayer = oLayers[2];
 
     var selectCtrl = new OpenLayers.Control.SelectFeature(selectLayer,
-      { clickout: false,  
+      { clickout: false,
+        hover: false,  
 	    toggle: true,
 	    multiple: true, 
 	  	onSelect:selected,
@@ -167,8 +174,9 @@ function initService() {
    
     var highlightCtrl = new OpenLayers.Control.SelectFeature(selectLayer, {
        hover: true,
-       highlightOnly: true
-       //renderIntent: "temporary",
+       highlightOnly: true,
+       multiple:false
+       //renderIntent: "temporary"
    });
 
    // This sould be set to make mouse pan work

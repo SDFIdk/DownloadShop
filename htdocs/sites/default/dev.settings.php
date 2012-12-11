@@ -210,7 +210,7 @@ $databases = array (
       'password' => 'rDWnkhZCyTAbxA4N_dev',
       'host' => 'kms.mysql.dev.cd.adapt.dk',
       'port' => '',
-      'driver' => 'mysql',
+      'driver' => 'pgsql',
       'prefix' => '',
     ),
   ),

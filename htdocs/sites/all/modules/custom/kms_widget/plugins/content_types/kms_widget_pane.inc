@@ -52,7 +52,8 @@ function kms_widget_pane_render($subtype, $conf, $panel_args, $context) {
     case 3524: 
       drupal_add_js(drupal_get_path('module', 'kms_widget').'/js/kms-countrywide.js');
       break;
-    case 3525: 
+    case 3525:
+    case 3563:  
       drupal_add_js(drupal_get_path('module', 'kms_widget').'/js/kms-dagi.js');
       break;    
     case 3526: 
@@ -62,7 +63,7 @@ function kms_widget_pane_render($subtype, $conf, $panel_args, $context) {
 
  
   $content = '<div id="mapTag" style="width: 400px; height: 500px"></div>'
-           . '<input id="geosearch" placeholder="Søg her"/><div id="selection_message"></div>';
+           . '<input id="geosearch"/><div id="selection_message"></div>';
 
   $block = new stdClass();
   $block->content = $content;
