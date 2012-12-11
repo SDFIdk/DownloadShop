@@ -62,7 +62,7 @@ function kms_widget_pane_render($subtype, $conf, $panel_args, $context) {
 
  
   $content = '<div id="mapTag" style="width: 400px; height: 500px"></div>'
-           . '<input id="geosearch" placeholder="Søg her"/>';
+           . '<input id="geosearch" placeholder="Søg her"/><div id="selection_message"></div>';
 
   $block = new stdClass();
   $block->content = $content;
