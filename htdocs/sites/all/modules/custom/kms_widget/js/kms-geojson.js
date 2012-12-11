@@ -19,9 +19,13 @@ jQuery(function($) {
 (function($) {
   $.fn.updateForm = function(data) {
     var files = Array();
+    $('#selection_message').empty();
+    $('#selection_message').append('<ul></ul');
     for (var i=0; i<selectLayer.selectedFeatures.length; i++) {
-    files[i] = selectLayer.selectedFeatures[i].attributes.filename;
-  }
+      var filename = selectLayer.selectedFeatures[i].attributes.filename;
+      files[i] = filename;
+      $('#selection_message ul').append('<li>' + filename + '</li>');
+    }
     $('#edit-line-item-fields-field-selection-und-0-value').val(JSON.stringify(files));
     $('#edit-line-item-fields-field-selection-text-und-0-value').val( i.toString() + ' udvalgte filer');
   };

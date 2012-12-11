@@ -12,12 +12,12 @@ function initSearch(map) {
         })
     });
    
-    map.addLayer(searchLayer);
+  map.addLayer(searchLayer);
 
-   geosearch = new VisStedet.Search.GeoSearch ({
+  var geosearch = new VisStedet.Search.GeoSearch ({
     ticket: kmsticket,
-      resources: ['Stednavne','Kommuner','Regioner','Adresser','Matrikelnumre'],
-    });
+    resources: ['Stednavne','Kommuner','Regioner','Adresser','Matrikelnumre']
+  });
  
   jQuery('#geosearch').autocomplete({
         autoFocus: true,
