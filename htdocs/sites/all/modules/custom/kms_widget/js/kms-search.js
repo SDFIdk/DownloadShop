@@ -16,7 +16,7 @@ function initSearch(map) {
 
    geosearch = new VisStedet.Search.GeoSearch ({
     ticket: kmsticket,
-      resources: ['Adresser','Kommuner','Regioner','Matrikelnumre'],
+      resources: ['Stednavne','Kommuner','Regioner','Adresser','Matrikelnumre'],
     });
  
   jQuery('#geosearch').autocomplete({
