@@ -17,3 +17,12 @@ function commerce_cart_panels_ctools_plugin_directory($owner, $plugin_type) {
     return 'plugins/' . $plugin_type;
   }
 }
+
+/**
+* Implements hook_form_alter().
+*
+* Hides `update cart` button
+*/
+function commerce_cart_panels_form_views_form_commerce_cart_form_default_alter(&$form, &$form_state) {
+  $form['actions']['submit']['#access'] = FALSE;
+}
