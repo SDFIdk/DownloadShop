@@ -15,6 +15,13 @@ $plugin = array(
 
 function kms_widget_pane_render($subtype, $conf, $panel_args, $context) {
 
+  if (empty($_COOKIE['downloadticket'])) {
+    preg_match("/^(.+):/", $_SERVER['HTTP_HOST'], $matches);
+    $domain = $matches[1];
+    $ticket = file_get_contents("http://kortforsyningen.kms.dk/?request=GetTicket&login=nikam&password=KMS2012");
+    setcookie("downloadticket", $ticket, time()+60*60*24, '/', $domain); 
+  }
+
   $product = commerce_product_load($context->data->field_product['und'][0]['product_id']);
   
   $selection_type = $product->field_selection_type['und'][0]['tid'];
@@ -40,7 +47,6 @@ function kms_widget_pane_render($subtype, $conf, $panel_args, $context) {
   drupal_add_library('system', 'ui.autocomplete');
   drupal_add_js('http://openlayers.org/api/2/OpenLayers.js');
   drupal_add_css(drupal_get_path('module', 'kms_widget').'/css/style.css');
-  drupal_add_js(drupal_get_path('module', 'kms_widget').'/kfticket.php');
   drupal_add_js(drupal_get_path('module', 'kms_widget').'/js/json2.js');
   drupal_add_js(drupal_get_path('module', 'kms_widget').'/js/VisStedet/Utils.js');
   drupal_add_js(drupal_get_path('module', 'kms_widget').'/js/VisStedet/Ticket.js'); 

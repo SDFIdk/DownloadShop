@@ -12,9 +12,12 @@
 
 	else
 	{
-        preg_match("/[^\.\/]+\.[^\.\/]+$/", $_SERVER['HTTP_HOST'], $matches);
-        $domain = 'download.kortforsyningen.dk'; // $matches[0];
+        //preg_match("/[^\.\/]+\.[^\.\/]+$/", $_SERVER['HTTP_HOST'], $matches);
+        //$domain = 'download.kortforsyningen.dk'; // $matches[0];
 
+        preg_match("/^(.+):/", $_SERVER['HTTP_HOST'], $matches);
+        $domain = $matches[1];
+		
 		$ticket = file_get_contents(
 				"http://kortforsyningen.kms.dk/?request=GetTicket&login=nikam&password=KMS2012");
 		setcookie("downloadticket", $ticket, time()+60*60*24, '/', $domain); 
