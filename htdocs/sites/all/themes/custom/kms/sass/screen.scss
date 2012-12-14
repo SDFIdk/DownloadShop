@@ -245,6 +245,16 @@ h1, .commerce-product-title {
         .pane-content {
           padding: 15px;
         }
+       .user-register .pane-content {
+          ul {
+            padding: 5px 0px;
+            li {
+              list-style: disc;
+              margin-left: 15px;
+              padding: 3px 0px;
+            }
+          }
+        }
       }
       
       .panel-pane {
@@ -790,7 +800,7 @@ div.error, tr.error {
   }
 }
 
-a#terms_and_conditions_link {
+a#terms_conditions {
   overflow: hidden;
   text-indent: -100px;
   width: 16px;
