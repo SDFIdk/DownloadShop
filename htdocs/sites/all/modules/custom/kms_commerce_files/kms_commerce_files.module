@@ -46,7 +46,6 @@ function kms_commerce_files_add_files( $li ) {
     return;
 
   $op = commerce_product_load($li->commerce_product[LANGUAGE_NONE][0]['product_id']);
-  $ow = entity_metadata_wrapper('commerce_order', $op);
   
   $folder  = $op->field_folder[LANGUAGE_NONE][0]['value'];
   $finfo = finfo_open(FILEINFO_MIME_TYPE);
@@ -106,6 +105,7 @@ function kms_commerce_files_add_files( $li ) {
   $product->title    = $op->title;
   $product->status   = 1;
   $product->created  = $product->changed = time();
+  $product->field_order_id[LANGUAGE_NONE][0]['value'] = $li->order_id;
 
   $product->field_downloads[LANGUAGE_NONE] = $downloads;
 
@@ -121,3 +121,28 @@ function kms_commerce_files_add_files( $li ) {
   commerce_line_item_save($li);
 
 }
+
+/**
+ *   Implement hook_views_pre_render
+ *
+ *   Alter the uid field in the download view to contain the Order ID
+ *
+ *   Any attemps to insert this directly in views resulted in duplicate rows ..
+ *
+ */
+
+ function kms_commerce_files_views_pre_render(&$view) {
+   
+  if ($view->name == 'commerce_user_file_licenses') {
+    foreach ($view->result as $item) {
+      $license = entity_load('commerce_file_license', array($item->license_id));
+      $line_item = entity_load('commerce_line_item',$license[key($license)]->line_item_ids);
+      $item->commerce_file_license_uid = $line_item[key($line_item)]->order_id;
+
+    }
+  }
+
+ }
+
+
+
