@@ -1,5 +1,6 @@
 <?php
 define('KMS_LOGIN_PAGE_PRODUCT_LISTING', 'node/2');
+define('KMS_LOGIN_PAGE_PRODUCT_DOWNLOADS', 'node/23');
 
 /**
  * When a new user has received a confirmation mail with a one-time-login-url, or
@@ -10,6 +11,7 @@ define('KMS_LOGIN_PAGE_PRODUCT_LISTING', 'node/2');
  *
  * But we would rather have the user going to /edit/profile?pass-reset-token=%TOKEN
  */
+
 function kms_login_init() {
   if (arg(0) == 'user') {
     if (is_numeric(arg(1)) && arg(2) == 'edit') {
@@ -38,18 +40,26 @@ function kms_login_ctools_plugin_directory($owner, $plugin_type) {
 }
 
 /**
- * Implements hhok_user_login().
+ * Implements hook_user_login().
  */
+
 function kms_login_user_login(&$edit, $account) {
+
   if (empty($_POST['form_id'])) {
     return;
   }
-  $redirect = variable_get(
-    'kms_login_page_product_listing',
-    KMS_LOGIN_PAGE_PRODUCT_LISTING
-  );
-  // If we are not using reset pass form then redirect to $redirect.
-  if ($_POST['form_id'] != 'user_pass_reset') {
+
+  // Redirect to product list, if logging in from the front page
+  // or the /user page
+
+  if ( drupal_is_front_page() || arg(0) == 'login' ) {
+    $redirect = variable_get( 'kms_login_page_product_listing', KMS_LOGIN_PAGE_PRODUCT_LISTING);
     $_GET['destination'] = $redirect; // Should we use $edit['redirect'] instead..?
   }
+}
+
+function kms_login_form_commerce_checkout_form_login_alter(&$form, &$form_state) {
+  $form["login_pane"]['#title'] = '';
+  $form["login_pane"]['#description'] = t('You must login to complete the order');
+  $form["login_pane"]['name']['#title'] = t('Username');
 }
