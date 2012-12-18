@@ -1,7 +1,13 @@
 <?php
 
-$drupalroot      = '/home/drupal/kms.dev/htdocs';
-$drupal_base_url = 'http://kms.fe.dev.cd.adapt.dk/';
+if (gethostname() == 'w3live3.kmsext.dk') {
+  $drupalroot      = '/home/drupal/kms.live/site/htdocs';
+  $drupal_base_url = 'http://download.kortforsyningen.dk/';
+} else {
+  $drupalroot      = '/home/drupal/kms.dev/htdocs';
+  $drupal_base_url = 'http://dev.download.kortforsyningen.dk/';
+}
+
 $service_url     = 'http://kortforsyningen.kms.dk/?request=GetServices&login=YdelsesKatalog&password=YdelsesKatalog';
 
 $stdout = fopen('php://stdout', 'w');
