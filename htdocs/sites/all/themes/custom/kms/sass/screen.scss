@@ -661,7 +661,7 @@ h1, .commerce-product-title {
 }
 
 /* Forms */
-#user-register-form {
+#user-register-form, #user-profile-form {
   fieldset {
     legend {
       font-size: 14px;
@@ -674,6 +674,10 @@ h1, .commerce-product-title {
     .description {
       display: inline-block;
     }
+  }
+  
+  #edit-field-address-und-0-first-name, #edit-field-address-und-0-postal-code {
+    margin-right: 10px;
   }
   
   #edit-account {
@@ -689,7 +693,10 @@ h1, .commerce-product-title {
   #field-user-type-info-add-more-wrapper {
     display: none;
   }
-  
+  #username {
+    font-size: 20px;
+    /* font-style: italic; */
+  }
 }
 
 #user-profile-form {

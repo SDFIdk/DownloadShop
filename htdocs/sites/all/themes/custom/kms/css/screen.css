@@ -639,69 +639,78 @@ h1, .commerce-product-title {
 
 /* Forms */
 /* line 666, ../sass/screen.scss */
-#user-register-form fieldset legend {
+#user-register-form fieldset legend, #user-profile-form fieldset legend {
   font-size: 14px;
   font-weight: bold;
   display: none;
 }
 /* line 672, ../sass/screen.scss */
-#user-register-form .form-item-field-terms-and-conditions-und {
+#user-register-form .form-item-field-terms-and-conditions-und, #user-profile-form .form-item-field-terms-and-conditions-und {
   position: relative;
 }
 /* line 674, ../sass/screen.scss */
-#user-register-form .form-item-field-terms-and-conditions-und .description {
+#user-register-form .form-item-field-terms-and-conditions-und .description, #user-profile-form .form-item-field-terms-and-conditions-und .description {
   display: inline-block;
 }
-/* line 680, ../sass/screen.scss */
-#user-register-form #edit-account .form-item {
+/* line 679, ../sass/screen.scss */
+#user-register-form #edit-field-address-und-0-first-name, #user-register-form #edit-field-address-und-0-postal-code, #user-profile-form #edit-field-address-und-0-first-name, #user-profile-form #edit-field-address-und-0-postal-code {
+  margin-right: 10px;
+}
+/* line 684, ../sass/screen.scss */
+#user-register-form #edit-account .form-item, #user-profile-form #edit-account .form-item {
   margin: 5px 0px;
 }
-/* line 685, ../sass/screen.scss */
-#user-register-form #edit-submit {
+/* line 689, ../sass/screen.scss */
+#user-register-form #edit-submit, #user-profile-form #edit-submit {
   margin-top: 10px;
 }
-/* line 689, ../sass/screen.scss */
-#user-register-form #field-user-type-info-add-more-wrapper {
+/* line 693, ../sass/screen.scss */
+#user-register-form #field-user-type-info-add-more-wrapper, #user-profile-form #field-user-type-info-add-more-wrapper {
   display: none;
 }
-
 /* line 696, ../sass/screen.scss */
+#user-register-form #username, #user-profile-form #username {
+  font-size: 20px;
+  /* font-style: italic; */
+}
+
+/* line 703, ../sass/screen.scss */
 #user-profile-form .form-item {
   margin: 5px 0px;
 }
-/* line 701, ../sass/screen.scss */
+/* line 708, ../sass/screen.scss */
 #user-profile-form #edit-field-contact-me .form-item, #user-profile-form #edit-field-newsletter .form-item {
   margin: 0px;
 }
-/* line 707, ../sass/screen.scss */
+/* line 714, ../sass/screen.scss */
 #user-profile-form fieldset legend {
   display: none;
 }
-/* line 712, ../sass/screen.scss */
+/* line 719, ../sass/screen.scss */
 #user-profile-form #edit-submit {
   margin-top: 10px;
 }
 
-/* line 718, ../sass/screen.scss */
+/* line 725, ../sass/screen.scss */
 #commerce-checkout-form-login legend {
   padding-bottom: 10px;
 }
-/* line 720, ../sass/screen.scss */
+/* line 727, ../sass/screen.scss */
 #commerce-checkout-form-login legend span {
   font-weight: bold;
   font-size: 13px;
   color: #333;
 }
-/* line 726, ../sass/screen.scss */
+/* line 733, ../sass/screen.scss */
 #commerce-checkout-form-login .fieldset-content {
   margin-top: 10px;
 }
-/* line 729, ../sass/screen.scss */
+/* line 736, ../sass/screen.scss */
 #commerce-checkout-form-login #edit-cancel {
   margin-left: 30px;
 }
 
-/* line 734, ../sass/screen.scss */
+/* line 741, ../sass/screen.scss */
 input.form-text {
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
@@ -730,7 +739,7 @@ input.form-text {
   padding: 0px 5px;
 }
 
-/* line 741, ../sass/screen.scss */
+/* line 748, ../sass/screen.scss */
 textarea.form-textarea {
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
@@ -758,12 +767,12 @@ textarea.form-textarea {
   padding: 5px;
 }
 
-/* line 747, ../sass/screen.scss */
+/* line 754, ../sass/screen.scss */
 input.form-text:focus, textarea.form-textarea:focus {
   border: 1px solid #999;
 }
 
-/* line 751, ../sass/screen.scss */
+/* line 758, ../sass/screen.scss */
 input.form-submit {
   background: #f2f2f2;
   /* Old browsers */
@@ -798,7 +807,7 @@ input.form-submit {
   margin: 0px 3px;
 }
 
-/* line 764, ../sass/screen.scss */
+/* line 771, ../sass/screen.scss */
 input.form-submit:hover {
   background: #f9f9f9;
   /* Old browsers */
@@ -822,7 +831,7 @@ input.form-submit:hover {
 }
 
 /* Status messages */
-/* line 770, ../sass/screen.scss */
+/* line 777, ../sass/screen.scss */
 div.error, tr.error {
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
@@ -835,7 +844,7 @@ div.error, tr.error {
 }
 
 /* Overlay */
-/* line 779, ../sass/screen.scss */
+/* line 786, ../sass/screen.scss */
 #terms_and_conditions {
   background: #fff;
   width: 700px;
@@ -871,7 +880,7 @@ div.error, tr.error {
   position: relative;
   color: #333;
 }
-/* line 791, ../sass/screen.scss */
+/* line 798, ../sass/screen.scss */
 #terms_and_conditions a.close {
   position: absolute;
   bottom: 0px;
@@ -902,7 +911,7 @@ div.error, tr.error {
   /* IE6-8 */
 }
 
-/* line 803, ../sass/screen.scss */
+/* line 810, ../sass/screen.scss */
 a#terms_conditions {
   overflow: hidden;
   text-indent: -100px;
@@ -915,22 +924,22 @@ a#terms_conditions {
 }
 
 /* Ajax progress */
-/* line 815, ../sass/screen.scss */
+/* line 822, ../sass/screen.scss */
 .view-filters {
   border-bottom: 1px dotted #999;
   padding-bottom: 10px;
   margin-bottom: 20px;
 }
-/* line 819, ../sass/screen.scss */
+/* line 826, ../sass/screen.scss */
 .view-filters .views-submit-button {
   position: relative;
   float: left;
 }
-/* line 824, ../sass/screen.scss */
+/* line 831, ../sass/screen.scss */
 .view-filters .views-submit-button .form-submit {
   margin-top: 10px;
 }
-/* line 828, ../sass/screen.scss */
+/* line 835, ../sass/screen.scss */
 .view-filters .views-submit-button .ajax-progress-throbber {
   background: url(../images/loader.gif) no-repeat;
   width: 16px;
@@ -941,23 +950,23 @@ a#terms_conditions {
 }
 
 /* Pager */
-/* line 842, ../sass/screen.scss */
+/* line 849, ../sass/screen.scss */
 .pager li {
   margin-right: 10px;
 }
 
 /* Shopping cart */
-/* line 850, ../sass/screen.scss */
+/* line 857, ../sass/screen.scss */
 .page-cart table, .page-checkout table, .node-type-downloads table {
   border: 1px solid #cecece;
 }
-/* line 853, ../sass/screen.scss */
+/* line 860, ../sass/screen.scss */
 .page-cart thead th, .page-cart td, .page-checkout thead th, .page-checkout td, .node-type-downloads thead th, .node-type-downloads td {
   border-bottom: 1px solid #cecece;
   padding: 10px;
   text-align: left;
 }
-/* line 859, ../sass/screen.scss */
+/* line 866, ../sass/screen.scss */
 .page-cart thead th, .page-checkout thead th, .node-type-downloads thead th {
   background: white;
   /* Old browsers */
@@ -979,25 +988,25 @@ a#terms_conditions {
   /* IE6-8 */
 }
 
-/* line 867, ../sass/screen.scss */
+/* line 874, ../sass/screen.scss */
 .page-checkout #commerce-checkout-form-checkout #edit-cart-contents legend {
   margin-bottom: 10px;
 }
-/* line 872, ../sass/screen.scss */
+/* line 879, ../sass/screen.scss */
 .page-checkout #commerce-checkout-form-checkout div.fieldset-content {
   margin-top: 15px;
 }
-/* line 877, ../sass/screen.scss */
+/* line 884, ../sass/screen.scss */
 .page-checkout .checkout-buttons {
   margin-top: 15px;
   padding-top: 15px;
   border-top: 1px solid #CECECE;
 }
-/* line 883, ../sass/screen.scss */
+/* line 890, ../sass/screen.scss */
 .page-checkout #edit-continue {
   margin-right: 30px;
 }
-/* line 887, ../sass/screen.scss */
+/* line 894, ../sass/screen.scss */
 .page-checkout #edit-back {
   background: url(../images/back.png) no-repeat right center;
   padding: 0px 20px;
@@ -1005,7 +1014,7 @@ a#terms_conditions {
   border: none;
 }
 
-/* line 897, ../sass/screen.scss */
+/* line 904, ../sass/screen.scss */
 #geosearch {
   margin-top: 15px;
   -webkit-border-radius: 3px;
@@ -1021,7 +1030,7 @@ a#terms_conditions {
   width: 447px;
 }
 
-/* line 908, ../sass/screen.scss */
+/* line 915, ../sass/screen.scss */
 .ui-autocomplete.ui-menu {
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
@@ -1030,11 +1039,11 @@ a#terms_conditions {
   border-radius: 3px;
   border: 1px solid #cccccc;
 }
-/* line 912, ../sass/screen.scss */
+/* line 919, ../sass/screen.scss */
 .ui-autocomplete.ui-menu .ui-menu-item a {
   font-size: 12px;
 }
-/* line 915, ../sass/screen.scss */
+/* line 922, ../sass/screen.scss */
 .ui-autocomplete.ui-menu .ui-menu-item a.ui-state-hover {
   background: #f2f2f2;
   /* Old browsers */
