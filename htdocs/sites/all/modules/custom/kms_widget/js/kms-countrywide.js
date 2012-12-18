@@ -92,11 +92,11 @@ function initService() {
 		conf.name,
 		"http://kortforsyningen.kms.dk/" + conf.service_name + '?',
 		{ layers: conf.service_layer, 
-		  format: 'image/jpeg', 
+		  format: 'image/png',
 		  bgcolor: '0xFFFFFF',
 		  ticket: kmsticket
 		},
-		{ singleTile: true, 
+		{ singleTile: false, 
 		  transitionEffect: 'resize', 
 		  buffer: 0, 
 		  isBaseLayer : true
