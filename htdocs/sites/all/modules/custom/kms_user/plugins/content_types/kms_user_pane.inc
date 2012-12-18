@@ -1,8 +1,8 @@
   <?php
 
 $plugin = array(
-  'title' => t('KMS something'),
-  'description' => t('Something something'),
+  'title' => t('KMS login/logout'),
+  'description' => t('KMS login/logout'),
   'category' => t('KMS'),
   'defaults' => array(),
   'render callback' => 'kms_user_pane_render',

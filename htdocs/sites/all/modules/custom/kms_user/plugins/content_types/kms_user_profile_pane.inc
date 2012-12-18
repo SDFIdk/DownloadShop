@@ -18,7 +18,7 @@ function kms_user_profile_form_pane_render($subtype, $conf, $panel_args, $contex
   module_load_include('inc', 'user', 'user.pages');
   
   $block = new stdClass();
-  $form = drupal_get_form('user_profile_form', $user);
+  $form = drupal_get_form('user_profile_form', user_load($user->uid));
   $block->content = drupal_render($form);
   return $block;
 

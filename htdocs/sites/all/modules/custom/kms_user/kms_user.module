@@ -1,6 +1,7 @@
 <?php
 
 define('KMS_USER_ROLES_SYSTEM_ACCOUNT_ID', 7);
+define('KMS_USER_ROLES_SUPERUSER_ID', 4);
 define('KMS_USER_PAGE_CONTACT', 'node/7');
 
 /**
@@ -98,12 +99,16 @@ function kms_user_ctools_plugin_directory($owner, $plugin_type) {
  * Implements hook_form_alter().
  */
 function kms_user_form_alter(&$form, &$form_state, $form_id) {
+  global $user;
 
   if (in_array($form_id, array('user_register_form', 'user_profile_form'))) {
     $form['account']['name']['#element_validate'] = array('_kms_user_validate_username');
     $form['account']['name']['#description'] = t(
       'Spaces are not allowed; punctuation is not allowed except for periods, hyphens, apostrophes, and underscores.'
     );
+
+    $form['field_terms_and_conditions']['#after_build'] = array('kms_user_form_after_build');
+
     // Update user 'updated' time stamp.
     $form['#submit'][] = '_kms_user_update_user';
     $form['field_updated']['#disabled'] = TRUE;
@@ -138,6 +143,36 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
 
         // No one should be able to change clear text password in admin area.
         $form['field_pass_clear']['#disabled'] = TRUE;
+        
+        // Show user name.
+        $form['username'] = array(
+          '#type' => 'markup',
+          '#markup' => kms_user_render_username($user),
+          '#disabled' => TRUE,
+          '#weight' => -100,
+        );
+
+        // Add to js if user is super admin.
+        drupal_add_js(
+          array(
+            'kms_user' => array('isSuperAdmin' => kms_user_is_superadmin($user))
+          ),
+          'setting'
+        );
+        
+        // Do not allow editing of user type to anybody else than super admin.
+        if (!kms_user_is_superadmin($user)) {
+          $form['field_user_type']['#disabled'] = TRUE;
+        }
+
+        // Altering of user profile form by js.
+        $form['#attached'] = array(
+          'js' => array(
+            'type' => 'file',
+            'data' => drupal_get_path('module', 'kms_user')
+            . '/js/user_forms.js',
+          ),
+        );  
         break;
       
       case 'user_register_form':
@@ -145,21 +180,12 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
         $form['#submit'][] = '_kms_user_insert_user_pass';
         break;
     }
+
+
   }
   elseif ($form_id == 'user_pass') {
     $form['#validate'][] = 'kms_user_user_pass_validate';
   }
-}
-
-function kms_user_form_user_register_form_alter(&$form, &$form_state, $form_id) {
-  global $user;
-  if ($user->uid == 0) {
-      $form['field_terms_and_conditions']['#after_build'] = array('kms_user_register_after_build');
-  }
-}
-
-function kms_user_form_user_account_form_alter(&$form, &$form_state, $form_id) {
-
 }
 
 function kms_user_user_pass_validate($form, &$form_state) {
@@ -183,7 +209,7 @@ function kms_user_user_pass_validate($form, &$form_state) {
   }
 }
 
-function kms_user_register_after_build($form_element) {
+function kms_user_form_after_build($form_element) {
     $terms_and_conditions = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
 tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
 quis  nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
@@ -341,12 +367,48 @@ function _kms_user_insert_user_pass($form, &$form_state) {
   }
 }
 
+/**
+ * Is the user a system account.
+ *
+ * @param array $roles
+ *
+ * @return boolean
+ */
 function kms_user_is_system_account($roles) {
   return in_array(KMS_USER_ROLES_SYSTEM_ACCOUNT_ID, array_keys($roles));
 }
 
+/**
+ * Is user a super admin (drupal admin or superuser).
+ *
+ * @param object $user
+ *   Drupal user object.
+ *
+ * @return boolean
+ */
+function kms_user_is_superadmin($user) {
+  return (
+    $user->uid == 1
+    || in_array(KMS_USER_ROLES_SUPERUSER_ID, array_keys($user->roles))
+  );
+}
 
-// function _kms_user_test($uid = 10) {
-//   $user = user_load($uid);
-//   var_dump($user->field_updated);
-// }
+/**
+ * Render thye user name of a user object.
+ *
+ * @param object $user
+ *   Drupal user object.
+ *
+ * @return string
+ *   HTML.
+ */
+function kms_user_render_username($user) {
+  $name = $user->name;
+  $label = t('Username');
+  return <<<EOD
+    <div class="form-item" id="username-wrapper">
+      <label for="username">$label</label>
+      <em id="username">$name</em>
+  </div>
+EOD;
+}
