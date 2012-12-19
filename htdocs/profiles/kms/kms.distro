@@ -29,10 +29,10 @@ projects[adapt_module][subdir] = "global"
 ; projects[drupal][patch][] = "http://drupal.org/files/961508-23-32-D7.patch"
 
 ; Custom modules
-; projects[features_export][download][type] = "svn"
-; projects[features_export][download][url] = "https://svnhost.adapt.dk/subversion/drupal/kms/trunk/htdocs/sites/all/modules/custom/features_export"
-; projects[features_export][type] = "module"
-; projects[features_export][subdir] = "custom"
+projects[features_export][download][type] = "svn"
+projects[features_export][download][url] = "https://svnhost.adapt.dk/subversion/drupal/kms/trunk/htdocs/sites/all/modules/custom/features_export"
+projects[features_export][type] = "module"
+projects[features_export][subdir] = "custom"
 
 projects[commerce_cart_panels][download][type] = "svn"
 projects[commerce_cart_panels][download][url] = "https://svnhost.adapt.dk/subversion/drupal/kms/trunk/htdocs/sites/all/modules/custom/commerce_cart_panels"
