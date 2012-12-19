@@ -13,15 +13,22 @@ jQuery(function($) {
  
   initService();   
 
-  $.fn.updateForm();
+  $.fn.updateForm('init');
 });
 
 (function($) {
   $.fn.updateForm = function(data) {
     var files = Array();
-    files[0] = conf.selection_details
+    $('#selection_message').empty();
+    $('#selection_message').append('<ul></ul');
+    $('#selection_message ul').append('<li>' + conf.selection_details + '</li>');
+    files[0] = conf.selection_details;
     $('#edit-line-item-fields-field-selection-und-0-value').val(JSON.stringify(files));
     $('#edit-line-item-fields-field-selection-text-und-0-value').val( '1 samlet fil');
+    if (data != 'init') {
+      $('.useful-links').empty();
+      $('.useful-links').append(conf.usefull_links);
+    }
   };
 })(jQuery);
 

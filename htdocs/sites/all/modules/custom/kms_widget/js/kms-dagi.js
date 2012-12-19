@@ -13,7 +13,7 @@ jQuery(function($) {
 
   initService();   
 
-  $.fn.updateForm();
+  $.fn.updateForm('init');
 
 });
 
@@ -39,6 +39,12 @@ jQuery(function($) {
     
     $('#edit-line-item-fields-field-selection-und-0-value').val(JSON.stringify(files));
     $('#edit-line-item-fields-field-selection-text-und-0-value').val( i.toString() + ' udvalgte filer');
+    
+    if (data != 'init') {
+      $('.useful-links').empty();
+      $('.useful-links').append(conf.usefull_links);
+    }
+    
   };
 })(jQuery);
 

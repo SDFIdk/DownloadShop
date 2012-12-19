@@ -26,13 +26,20 @@ function kms_widget_pane_render($subtype, $conf, $panel_args, $context) {
   
   $selection_type = $product->field_selection_type['und'][0]['tid'];
 
+  $df = '';
+  if (!empty($product->field_dataformat['und'][0]['tid'])) {
+    $df_term = taxonomy_term_load($product->field_dataformat['und'][0]['tid']);
+    if (!empty($df_term->field_filename_part[LANGUAGE_NONE][0]['value']))
+      $df = $df_term->field_filename_part[LANGUAGE_NONE][0]['value'];
+  }
+
   drupal_add_js(
     array('kms_widget' => array(
       'name'             => $product->title,
       'service_name'     => $product->field_service_name['und'][0]['taxonomy_term']->name, 
       'service_layer'    => $product->field_service_layer['und'][0]['value'],
       'selection_type'   => $selection_type,
-      'dataformat'       => $product->field_dataformat['und'][0]['taxonomy_term']->name,
+      'dataformat'       => $df,
       'koordinatsystem'  => $product->field_koordinatsystem['und'][0]['taxonomy_term']->name,
       'center_longitude' => $product->field_center_longitude['und'][0]['value'],
       'center_latitude'  => $product->field_center_latitude['und'][0]['value'],

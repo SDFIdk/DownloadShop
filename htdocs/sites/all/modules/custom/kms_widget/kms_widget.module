@@ -17,13 +17,21 @@ function kms_widget_ctools_plugin_directory($owner, $plugin_type) {
 function kms_widget_commerce_cart_attributes_refresh_alter(&$commands, $form, $form_state) {
   
   $product = $form_state['default_product'];
+  
+  $df = '';
+  if (!empty($product->field_dataformat['und'][0]['tid'])) {
+    $df_term = taxonomy_term_load($product->field_dataformat['und'][0]['tid']);
+    if (!empty($df_term->field_filename_part[LANGUAGE_NONE][0]['value']))
+      $df = $df_term->field_filename_part[LANGUAGE_NONE][0]['value'];
+  }
 
   $merge =
     array('kms_widget' => array(
-      'dataformat'        => $product->field_dataformat['und'][0]['taxonomy_term']->name,
+      'dataformat'        => $df,
       'koordinatsystem'   => $product->field_koordinatsystem['und'][0]['taxonomy_term']->name,
       'selection_details' =>  empty($product->field_selection_details['und'][0]['value']) ?
                               false : $product->field_selection_details['und'][0]['value'],
+      'usefull_links'     => views_embed_view('product_links', 'default', $product->product_id )
     ));
 
   $commands[] = ajax_command_settings($merge, TRUE);
