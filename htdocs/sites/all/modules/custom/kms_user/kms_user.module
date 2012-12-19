@@ -162,9 +162,14 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
         
         // Do not allow editing of user type to anybody else than super admin.
         if (!kms_user_is_superadmin($user)) {
-          $form['field_user_type']['#disabled'] = TRUE;
+          $form['field_user_type']['#access'] = FALSE;
+          $form['field_address']['und'][0]['street_block']['#access'] = FALSE;
+          $form['field_address']['und'][0]['country']['#access'] = FALSE;
+          $form['field_address']['und'][0]['locality_block']['#access'] = FALSE;
+          $form['field_address']['und'][0]['organisation_block']['#access'] = FALSE;
         }
 
+        /*
         // Altering of user profile form by js.
         $form['#attached'] = array(
           'js' => array(
@@ -174,7 +179,8 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
           ),
         );  
         break;
-      
+        */
+        
       case 'user_register_form':
         // We need to store the new password
         $form['#submit'][] = '_kms_user_insert_user_pass';
