@@ -25,7 +25,7 @@ jQuery(function($) {
     files[0] = conf.selection_details;
     $('#edit-line-item-fields-field-selection-und-0-value').val(JSON.stringify(files));
     $('#edit-line-item-fields-field-selection-text-und-0-value').val( '1 samlet fil');
-    if (data != 'init') {
+    if (data != 'init' && conf.usefull_links) {
       $('.useful-links').empty();
       $('.useful-links').append(conf.usefull_links);
     }
