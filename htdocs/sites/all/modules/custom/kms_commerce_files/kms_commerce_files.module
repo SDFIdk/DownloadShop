@@ -91,7 +91,7 @@ function kms_commerce_files_add_files( $li ) {
     }
 
     $downloads[] = array('fid' => $f->fid,
-          'data' => array("duration"       => 3600,
+          'data' => array("duration"       => 3600 * 24,
                           "download_limit" => -1,
                           "address_limit"  => -1,
                          )
