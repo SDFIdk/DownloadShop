@@ -107,6 +107,8 @@ function kms_commerce_files_add_files( $li ) {
   $product->created  = $product->changed = time();
   $product->field_order_id[LANGUAGE_NONE][0]['value'] = $li->order_id;
 
+  $product->field_original_product[LANGUAGE_NONE][0]['product_id'] = $op->product_id;
+
   $product->field_downloads[LANGUAGE_NONE] = $downloads;
 
   $price = array(LANGUAGE_NONE => array(0 => array(

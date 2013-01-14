@@ -1,0 +1,9 @@
+name = view_commerce_user_file_licenses
+description = View with User Licensed Files 
+core = 7.x
+package = Features
+dependencies[] = commerce_file
+dependencies[] = ctools
+dependencies[] = views
+features[ctools][] = views:views_default:3.0
+features[features_api][] = api:1

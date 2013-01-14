@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the view_commerce_user_file_licenses feature.
+ */
+
+include_once 'view_commerce_user_file_licenses.features.inc';
