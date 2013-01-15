@@ -189,13 +189,16 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
 
 
   }
-  elseif ($form_id == 'user_pass') {
-    $form['#validate'][] = 'kms_user_user_pass_validate';
+  
+  if (in_array($form_id, array('user_pass', 'user_profile_form'))) {
+    $form['#validate'][] = '_kms_user_user_pass_validate';
   }
+
 }
 
-function kms_user_user_pass_validate($form, &$form_state) {
+function _kms_user_user_pass_validate($form, &$form_state) {
   $name = trim($form_state['values']['name']);
+  _kms_user_user_pass_validate_chars($form_state['values']['pass']);
   // Try to load by email.
   $users = user_load_multiple(array(), array('mail' => $name, 'status' => '1'));
   $account = reset($users);
@@ -214,6 +217,30 @@ function kms_user_user_pass_validate($form, &$form_state) {
     }
   }
 }
+
+function _kms_user_user_pass_validate_chars($value) {
+  preg_match_all("#([æøå])#uis", $value, $m);
+
+  foreach ($m as $match) {
+    if (empty($match)) {
+      continue;
+    }
+
+    form_set_error(
+      'pass',
+      t(
+        'Password contains invalid characters: %chars',
+        array(
+          '%chars' => implode(', ', array_unique($match)),
+        )
+      )
+    );
+
+    return;
+  }
+
+}
+
 
 function kms_user_form_after_build($form_element) {
     $terms_and_conditions = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
@@ -266,15 +293,38 @@ proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
  * @return void
  */
 function _kms_user_validate_username($element, &$form_state, $form) {
-  if (!empty($element['#value'])) {
-    preg_match_all("#(\/)|(\\\\)|(=)|(\?)|(\&)|(\.)|(\@)|(\s)#Uis", $element['#value'], $m);
-    foreach ($m as $match) {
-      if (!empty($match)) {
-        form_error($element, t('Username contains invalid characters.'));
-        return;
-      }
-    }
+    _kms_user_validate_chars(
+      $element,
+      "#(\/)|(\\\\)|(=)|(\?)|(\&)|(\.)|(\@)|(\s)|([æøå])#uis"
+    );
+}
+
+function _kms_user_validate_chars($element, $pattern) {
+  if (empty($element['#value'])) {
+    return;
   }
+
+  preg_match_all($pattern, $element['#value'], $m);
+
+  foreach ($m as $match) {
+    if (empty($match)) {
+      continue;
+    }
+
+    form_error(
+      $element,
+      t(
+        '"!element" contains invalid characters: %chars',
+        array(
+          '!element' => $element['#title'],
+          '%chars' => implode(', ', array_unique($match)),
+        )
+      )
+    );
+
+    return;
+  }
+
 }
 
 /**
@@ -418,3 +468,68 @@ function kms_user_render_username($user) {
   </div>
 EOD;
 }
+
+// function kms_user_insert(&$edit, $account, $category) {
+  // // db_insert('smuser')
+  // //   ->fields(array(
+  // //   'myfield' => $edit['myfield'], 
+  // //   'uid' => $account->uid,
+  // // ))->execute();
+  // adapt_debug('mikkel', "edit\n");
+  // adapt_debug('mikkel', $edit);
+  // adapt_debug('mikkel', str_repeat('-', 20));
+  // adapt_debug('mikkel', "account\n");
+  // adapt_debug('mikkel', $account);
+  // adapt_debug('mikkel', str_repeat('-', 20));
+// }
+
+/*
+field_address
+field_user_remark
+field_user_type
+field_user_type_info
+field_bundles
+field_debtor_nr
+field_webservices_extra
+field_billing_address
+field_newsletter
+field_terms_and_conditions
+field_contact_me
+field_kms_user_id
+field_pass_clear
+field_phone
+field_expire_date
+field_updated
+------
+SELECT
+  CASE WHEN
+    (fdf_kui.field_kms_user_id_value IS NULL)
+  THEN
+    (u.uid)::character varying(32)
+  ELSE
+    fdf_kui.field_kms_user_id_value
+  END AS userid,
+  u.name,
+  fdf_pc.field_pass_clear_value AS password,
+  fdf_a.field_address_last_name AS lastname,
+  fdf_a.field_address_first_name AS firstname,
+  u.mail AS emailaddress,
+  fdf_p.field_phone_value AS telephonenumber,
+  CASE WHEN
+    (u.status = 1)
+  THEN
+    0
+  WHEN
+    (u.status = 0)
+  THEN
+    1
+  ELSE
+    NULL::integer
+  END AS disabled,
+  fdf_dn.field_debtor_nr_value AS debitorno
+  FROM
+  (((((users u
+  LEFT JOIN field_data_field_pass_clear fdf_pc ON ((fdf_pc.entity_id = u.uid))) LEFT JOIN field_data_field_address fdf_a
+ ON ((fdf_a.entity_id = u.uid))) LEFT JOIN field_data_field_phone fdf_p ON ((fdf_p.entity_id = u.uid))) LEFT JOIN field_data_field_debtor_nr fdf_dn ON ((fdf_
+dn.entity_id = u.uid))) LEFT JOIN field_data_field_kms_user_id fdf_kui ON ((fdf_kui.entity_id = u.uid)));
+ */
