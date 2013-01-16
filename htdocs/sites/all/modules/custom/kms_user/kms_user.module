@@ -392,6 +392,10 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
     $data['user']['telephonenumber'] =
     $account->field_phone[LANGUAGE_NONE][0]['value'];
   }
+  if (!empty($account->field_debtor_nr[LANGUAGE_NONE][0]['value'])) {
+    $data['user']['debitorno'] =
+    $account->field_debtor_nr[LANGUAGE_NONE][0]['value'];
+  }
   // smuser_extra.
   if (!empty($account->field_user_type[LANGUAGE_NONE][0]['tid'])) {
     $data['user_extra']['usertype'] =
