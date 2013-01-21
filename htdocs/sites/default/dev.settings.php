@@ -214,8 +214,32 @@ $databases = array (
       'prefix' => '',
     ),
   ),
+  'oracle' =>
+  array (
+    'default' => 
+    array (
+      'database' => 'kmsoracle_dev',
+      'username' => 'root',
+      'password' => 'foxyl',
+      'host' => 'kms.mysql.dev.cd.adapt.dk',
+      'port' => '',
+      'driver' => 'mysql',
+    ),
+  ),
+  // 'oracle' =>
+  // array (
+  //   'default' => 
+  //   array (
+  //     'driver' => 'oracle',
+  //     'database' => 'ldsdb5.kms.adroot.dk',
+  //     'username' => 'kf_download',
+  //     'password' => 'cruyu8uf',
+  //     'host' => 'localhost',
+  //     'port' => '1521'
+  //   ),
+  // ),
 );
-
+// http://kmslds51.kms.adroot.dk/ldsdb5.kms.adroot.dk'
 /**
  * Access control for update.php script.
  *
