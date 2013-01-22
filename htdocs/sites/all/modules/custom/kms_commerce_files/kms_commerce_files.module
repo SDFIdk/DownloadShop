@@ -88,6 +88,25 @@ function kms_commerce_files_add_files( $li ) {
       $f = reset($flist);
 
       file_usage_add($f,'kms_commerce_files','user', 1, 1);
+    } else { 
+
+      // Update fileinfo ( if files in NFS-share was updated )
+    
+      $stat = stat(DRUPAL_ROOT."/sites/private/$folder/$file");
+      
+      $values = array( 
+        finfo_file($finfo, DRUPAL_ROOT."/sites/private/$folder/$file"), // filemime
+        $stat['size'],                                                  // filesize
+        $stat['mtime'],                                                 // timestamp
+        $uri                                                            // uri
+      );
+
+      $sql = 'UPDATE file_managed SET filemime=?,filesize=?,timestamp=? WHERE uri=?';
+
+      $dbh = Database::getConnection();
+      $stmt = $dbh->prepare($sql);
+      $stmt->execute($values);
+
     }
 
     $downloads[] = array('fid' => $f->fid,
@@ -96,7 +115,7 @@ function kms_commerce_files_add_files( $li ) {
                           "address_limit"  => -1,
                          )
     );
-  }
+  } 
 
   $product = commerce_product_new('file_collection');
   $product->sku = uniqid('FILES-', true);
