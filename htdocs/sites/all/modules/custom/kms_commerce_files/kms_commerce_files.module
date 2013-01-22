@@ -88,25 +88,6 @@ function kms_commerce_files_add_files( $li ) {
       $f = reset($flist);
 
       file_usage_add($f,'kms_commerce_files','user', 1, 1);
-    } else { 
-
-      // Update fileinfo ( if files in NFS-share was updated )
-    
-      $stat = stat(DRUPAL_ROOT."/sites/private/$folder/$file");
-      
-      $values = array( 
-        finfo_file($finfo, DRUPAL_ROOT."/sites/private/$folder/$file"), // filemime
-        $stat['size'],                                                  // filesize
-        $stat['mtime'],                                                 // timestamp
-        $uri                                                            // uri
-      );
-
-      $sql = 'UPDATE file_managed SET filemime=?,filesize=?,timestamp=? WHERE uri=?';
-
-      $dbh = Database::getConnection();
-      $stmt = $dbh->prepare($sql);
-      $stmt->execute($values);
-
     }
 
     $downloads[] = array('fid' => $f->fid,
@@ -159,11 +140,39 @@ function kms_commerce_files_add_files( $li ) {
       $license = entity_load('commerce_file_license', array($item->license_id));
       $line_item = entity_load('commerce_line_item',$license[key($license)]->line_item_ids);
       $item->commerce_file_license_uid = $line_item[key($line_item)]->order_id;
-
+      
+      foreach ($license as $lic) {
+        foreach ($lic->commerce_file_license_file[LANGUAGE_NONE] as $delta => $file) {
+          kms_commerce_files_update_file($file);
+        }
+      }
     }
   }
 
  }
 
+/*
+  Update fileinfo ( if files in NFS-share was updated )
+*/
 
+function kms_commerce_files_update_file($file) {
+  
+  $orig = DRUPAL_ROOT."/sites/private/" . str_replace('private://','',$file['uri']);
+  $finfo = finfo_open(FILEINFO_MIME_TYPE);
 
+  $stat = stat($orig);
+      
+  $values = array( 
+    finfo_file($finfo, $orig), // filemime
+    $stat['size'],             // filesize
+    $file['uri']               // uri
+  );  
+  
+  if ($file['filemime']  != $values[0] || $file['filesize']  != $values[1] ) {
+    $sql = 'UPDATE file_managed SET filemime=?,filesize=? WHERE uri=?';
+    $dbh = Database::getConnection();
+    $stmt = $dbh->prepare($sql);
+    $stmt->execute($values);
+  }
+
+}
