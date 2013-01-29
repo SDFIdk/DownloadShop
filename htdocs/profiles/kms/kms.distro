@@ -64,6 +64,12 @@ projects[kms_widget][download][url] = "https://svnhost.adapt.dk/subversion/drupa
 projects[kms_widget][type] = "module"
 projects[kms_widget][subdir] = "custom"
 
+projects[kms_oci][download][type] = "svn"
+projects[kms_oci][download][url] = "https://svnhost.adapt.dk/subversion/drupal/kms/trunk/htdocs/sites/all/modules/custom/kms_oci"
+projects[kms_oci][type] = "module"
+projects[kms_oci][subdir] = "custom"
+
+
 ; Libraries
 ;; Ckeditor
 libraries[ckeditor][download][type] = 'svn'
