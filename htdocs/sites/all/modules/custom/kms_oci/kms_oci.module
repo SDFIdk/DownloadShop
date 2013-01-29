@@ -1,0 +1,145 @@
+<?php
+
+/**
+ * Implements hook_boot().
+ *
+ * @return void.
+ */
+function kms_oci_boot() {
+  global $oci;
+
+  $user = variable_get('kms_oci_conn_user');
+  $pass = variable_get('kms_oci_conn_pass');
+  $host = variable_get('kms_oci_conn_host');
+  $db = variable_get('kms_oci_conn_db');
+
+  foreach(array($user, $pass, $host, $db) as $var) {
+    if(empty($var)) {
+      $oci = FALSE;
+      return;
+    }
+  }
+  // Atodo: Handle if connection does not work.:
+  $oci = oci_connect($user, $pass, "$host/$db");
+}
+
+/**
+ * Get Oracle connection.
+ *
+ * @return void.
+ */
+function kms_oci_get_conn() {
+  global $oci;
+  return $oci;
+}
+
+/**
+ * Perform a insert query based on a key/value array.
+ *
+ * @param array $data
+ *   Ex.: array(':name' => 'miksan', ':userid' => "9999999999")
+ * @param string $table
+ *   Which table should be used.
+ *
+ * @return void.
+ */
+function kms_oci_insert($data, $table) {
+  
+  $keys = array_keys($data);
+  $pholders = implode(', ', $keys);
+  $cols = str_replace(':', '', $pholders);
+  kms_oci_query(
+    "INSERT INTO $table ($cols) VALUES ($pholders)",
+    $data
+  );
+
+}
+
+/**
+ * Perform an update query based on a key/value array.
+ *
+ * @param array $data
+ *   Ex.: array(':name' => 'miksan', ':userid' => "9999999999")
+ * @param string $table
+ *   Which table should be used.
+ *
+ * @return void.
+ */
+function kms_oci_update($data, $table) {
+  
+  $values = array();
+  array_walk($data, function($v, $k) use (&$values) {
+    if ($k != ':userid') {
+      $values[] = str_replace(':', '', $k) . " = $k";
+    }
+  });
+
+  kms_oci_query(
+    sprintf("UPDATE %s SET %s WHERE userid = :userid", $table, implode(', ', $values)),
+    $data
+  );
+
+}
+
+/**
+ * Perform an query based on a query and a pholder/value array.
+ *
+ * @param array $data
+ *   Ex.: array(':name' => 'miksan', ':userid' => "9999999999")
+ * @param string $table
+ *   Which table should be used.
+ *
+ * @return void.
+ */
+function kms_oci_query($query, $data = array()) {
+
+  $oci = kms_oci_get_conn();
+
+  // Atodo: Proper error handling:
+  if ($oci === FALSE) {
+    return;
+  }
+
+  $stid = oci_parse($oci, $query);
+
+  if (!$stid) {
+    $e = oci_error($oci);
+    watchdog('kms_oci', $e['message'], array(), 'error');
+    #throw new Exception('Oci error: ' . $e['message']);
+  }
+  
+  foreach ($data as $pholder => $arg) {
+    oci_bind_by_name($stid, $pholder, $data[$pholder]);
+  }
+
+  $r = oci_execute($stid);
+
+  if (!$r) {
+    $e = oci_error($stid);
+    watchdog('kms_oci', $e['message'], array(), 'error');
+    #throw new Exception('Oci error: ' . $e['message']);
+  }
+
+  oci_free_statement($stid);
+
+}
+
+/**
+ * Implements hook_exit().
+ */
+function kms_oci_exit($destination = NULL) {
+  global $oci;
+
+  if ($oci !== FALSE) {
+    oci_close($oci);
+  }
+  
+}
+
+function kms_oci_check_userid_exists_in_table($userid, $table) {
+  $oci = kms_oci_get_conn();
+  $stid = oci_parse($oci, sprintf("SELECT * FROM %s WHERE userid = '%s'", $table, $userid));
+  oci_execute($stid);
+  $row = oci_fetch_array($stid);
+  return $row;
+}

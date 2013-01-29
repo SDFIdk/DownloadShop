@@ -110,7 +110,7 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
     $form['field_terms_and_conditions']['#after_build'] = array('kms_user_form_after_build');
 
     // Update user 'updated' time stamp.
-    $form['#submit'][] = '_kms_user_update_user';
+    $form['#submit'][] = '_kms_user_update_timestamp';
     $form['field_updated']['#disabled'] = TRUE;
     switch ($form_id) {
       case 'user_profile_form':
@@ -122,8 +122,9 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
         $form['field_terms_and_conditions']['#disabled'] = TRUE;
 
         // We need to store any changes to the password
-        $form['#submit'][] = '_kms_user_update_user_pass';
-
+        $form['#submit'][] = '_kms_user_submit_update_user_pass';
+        // Store user data in Oracle.
+        $form['#submit'][] = '_kms_user_submit_update_user_oracle';
         // The user-profile-form has some trouble remembering the user-provided values for
         // the fields "field_contact_me", and "field_newsletter". We must fetch the values
         // and set the fields accordingly
@@ -169,21 +170,13 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
           $form['field_address']['und'][0]['organisation_block']['#access'] = FALSE;
         }
 
-        /*
-        // Altering of user profile form by js.
-        $form['#attached'] = array(
-          'js' => array(
-            'type' => 'file',
-            'data' => drupal_get_path('module', 'kms_user')
-            . '/js/user_forms.js',
-          ),
-        );  
-        break;
-        */
-        
       case 'user_register_form':
         // We need to store the new password
         $form['#submit'][] = '_kms_user_insert_user_pass';
+        // Store user data in Oracle.
+        if (!$user->uid) {
+          $form['#submit'][] = '_kms_user_submit_insert_user_oracle';
+        }
         break;
     }
 
@@ -364,7 +357,8 @@ function _kms_user_cron_expire_users() {
 
 }
 
-function _kms_user_update_user($form, &$form_state) {
+function _kms_user_update_timestamp($form, &$form_state) {
+  // Update time stamp.
   $time = time();
   $user_updated = db_update('field_data_field_updated') 
   ->fields(array('field_updated_value' => $time))
@@ -376,13 +370,75 @@ function _kms_user_update_user($form, &$form_state) {
   ->execute();
 }
 
-function _kms_user_update_user_pass($form, &$form_state) {
+function _kms_user_submit_update_user_oracle($form, &$form_state) {
+  $account = (object)$form_state['values'];
+  $user = $form['#user'];
+
+  $data = _kms_user_oracle_default_user_data($account);
+  unset($data['user_extra'][':usertype']);
+  unset($data['user_extra'][':usertype_info']);
+
+  // smuser.
+  $data['user']['disabled'] = (integer)!$account->status;
+  if (!empty($account->field_address[LANGUAGE_NONE][0]['first_name'])) {
+    $data['user'][':firstname'] =
+    $account->field_address[LANGUAGE_NONE][0]['first_name'];
+  }
+  if (!empty($account->field_address[LANGUAGE_NONE][0]['last_name'])) {
+    $data['user'][':lastname'] =
+    $account->field_address[LANGUAGE_NONE][0]['last_name'];
+  }
+  if (!empty($account->field_phone[LANGUAGE_NONE][0]['value'])) {
+    $data['user'][':telephonenumber'] =
+    $account->field_phone[LANGUAGE_NONE][0]['value'];
+  }
+  if (!empty($account->field_debtor_nr[LANGUAGE_NONE][0]['value'])) {
+    $data['user'][':debitorno'] =
+    $account->field_debtor_nr[LANGUAGE_NONE][0]['value'];
+  }
+  // smuser_extra.
+  if (!empty($account->field_user_type[LANGUAGE_NONE][0]['tid'])) {
+    $data['user_extra'][':usertype'] =
+    $account->field_user_type[LANGUAGE_NONE][0]['tid'];
+  }
+  if (!empty($account->field_user_type_info[LANGUAGE_NONE][0]['value'])) {
+    $data['user_extra'][':usertype_info'] =
+    $account->field_user_type_info[LANGUAGE_NONE][0]['value'];
+  }
+  if (!empty($account->field_newsletter[LANGUAGE_NONE][0]['value'])) {
+    $data['user_extra'][':receive_newsletter'] =
+    $account->field_newsletter[LANGUAGE_NONE][0]['value'];
+  }
+  if (!empty($account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'])) {
+    $data['user_extra'][':accept_terms'] =
+    $account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'];
+  }
+  if (!empty($account->field_contact_me[LANGUAGE_NONE][0]['value'])) {
+    $data['user_extra'][':contact_me'] =
+    $account->field_contact_me[LANGUAGE_NONE][0]['value'];
+  }
+  
+  // If users have an old kms id use that as Oracle userid.
+  // Otherwise use Drupals uid.
+  $userid = $user->uid;
+  if (!empty($account->field_kms_user_id_value[LANGUAGE_NONE][0]['value'])) {
+    $userid = $account->field_kms_user_id_value[LANGUAGE_NONE][0]['value'];
+  }
+  $data['smuser'][':userid'] = $data['smuser_extra'][':userid'] = $userid;
+
+  // Update Oracle tables.
+  kms_oci_update($data['user'], 'smuser');
+  kms_oci_update($data['user_extra'], 'smuser_extra');
+
+}
+
+function _kms_user_submit_update_user_pass($form, &$form_state) {
   if (empty($form_state['user']->current_pass)) {
     return;
   }
   $old_pass = $form_state['user']->current_pass;
   $new_pass = $form_state['user']->pass;
-  $etxt = '_kms_user_update_user_pass'."\n";
+  $etxt = '_kms_user_submit_update_user_pass'."\n";
   if ($new_pass !== $old_pass) {
     _kms_user_insert_user_pass($form, $form_state);
   }
@@ -469,67 +525,169 @@ function kms_user_render_username($user) {
 EOD;
 }
 
-// function kms_user_insert(&$edit, $account, $category) {
-  // // db_insert('smuser')
-  // //   ->fields(array(
-  // //   'myfield' => $edit['myfield'], 
-  // //   'uid' => $account->uid,
-  // // ))->execute();
-  // adapt_debug('mikkel', "edit\n");
-  // adapt_debug('mikkel', $edit);
-  // adapt_debug('mikkel', str_repeat('-', 20));
-  // adapt_debug('mikkel', "account\n");
-  // adapt_debug('mikkel', $account);
-  // adapt_debug('mikkel', str_repeat('-', 20));
-// }
+function _kms_user_submit_insert_user_oracle($form, &$form_state) {
+  $account = (object)$form_state['values'];
+  $user = $form['#user'];
+  if (empty($user->uid)) {
+    return;
+  }
+  // Do not store Drupal tmp password.
+  $account->pass = '';
+  // Get default data.
+  $data = _kms_user_oracle_default_user_data($account);
+
+  if (!empty($account->field_user_type[LANGUAGE_NONE][0]['tid'])) {
+    $data['user_extra'][':usertype'] =
+    $account->field_user_type[LANGUAGE_NONE][0]['tid'];
+  }
+  if (!empty($account->field_user_type_info[LANGUAGE_NONE][0]['value'])) {
+    $data['user_extra'][':usertype_info'] =
+    $account->field_user_type_info[LANGUAGE_NONE][0]['value'];
+  }
+  if (!empty($account->field_newsletter[LANGUAGE_NONE][0]['value'])) {
+    $data['user_extra'][':receive_newsletter'] =
+    $account->field_newsletter[LANGUAGE_NONE][0]['value'];
+  }
+  if (!empty($account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'])) {
+    $data['user_extra'][':accept_terms'] =
+    $account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'];
+  }
+  if (!empty($account->field_contact_me[LANGUAGE_NONE][0]['value'])) {
+    $data['user_extra'][':contact_me']
+    = $account->field_contact_me[LANGUAGE_NONE][0]['value'];
+  }
+
+  $smuser_extra_exist = kms_oci_check_userid_exists_in_table($account->uid, 'smuser_extra');
+  if(empty($smuser_extra_exist)){
+    kms_oci_insert($data['user_extra'], 'smuser_extra');
+  }
+  $smuser_exist = kms_oci_check_userid_exists_in_table($account->uid, 'smuser');
+  if(empty($smuser_exist)){
+    kms_oci_insert($data['user'], 'smuser');
+  }
+}
+
+function _kms_user_oracle_default_user_data($account) {
+  $data = array();
+
+  $data['user'] = array(
+    ':userid' => $account->uid,
+    ':name' =>  $account->name,
+    ':emailaddress' => $account->mail,
+  );
+
+  if (!empty($account->pass)) {
+    $data['user'][':password'] = $account->pass;
+  }
+
+  $data['user_extra'] = array(
+    ':userid' => $account->uid,
+    ':usertype' => 0,
+    ':usertype_info' => '',
+    ':receive_newsletter' => 0,
+    ':accept_terms' => 0,
+    ':contact_me' => 0,
+  );
+
+  return $data;
+}
+
+function _kms_user_oracle_user_insert($table, $data) {
+  db_set_active('oracle');
+  $columns = implode(', ', array_keys($data));
+  db_query(
+    "INSERT INTO $table ($columns) VALUES (:data)",
+    array(':data' => array_values($data))
+  );
+  db_set_active();
+}
+
+function _kms_user_oracle_user_update($table, $uid, $data) {
+  db_set_active('oracle');
+  db_merge($table)
+  ->key(array('userid' => $uid))
+  ->fields($data)
+  ->execute();
+  db_set_active();
+}
+
 
 /*
 field_address
 field_user_remark
-field_user_type
-field_user_type_info
+*field_user_type
+*field_user_type_info
 field_bundles
 field_debtor_nr
 field_webservices_extra
 field_billing_address
-field_newsletter
-field_terms_and_conditions
-field_contact_me
+*field_newsletter
+*field_terms_and_conditions
+*field_contact_me
 field_kms_user_id
 field_pass_clear
 field_phone
 field_expire_date
 field_updated
 ------
-SELECT
-  CASE WHEN
-    (fdf_kui.field_kms_user_id_value IS NULL)
-  THEN
-    (u.uid)::character varying(32)
-  ELSE
-    fdf_kui.field_kms_user_id_value
+                             View "public.smuser"
+     Column      |          Type          | Modifiers | Storage  | Description 
+-----------------+------------------------+-----------+----------+-------------
+ userid          | character varying      |           | extended | 
+ name            | character varying(60)  |           | extended | 
+ password        | character varying(255) |           | extended | 
+ lastname        | character varying(255) |           | extended | 
+ firstname       | character varying(255) |           | extended | 
+ emailaddress    | character varying(254) |           | extended | 
+ telephonenumber | character varying(255) |           | extended | 
+ disabled        | integer                |           | plain    | 
+ debitorno       | integer                |           | plain    | 
+View definition:
+SELECT 
+  CASE
+    WHEN fdf_kui.field_kms_user_id_value IS NULL THEN u.uid::character varying(32)
+    ELSE fdf_kui.field_kms_user_id_value
   END AS userid,
   u.name,
   fdf_pc.field_pass_clear_value AS password,
   fdf_a.field_address_last_name AS lastname,
   fdf_a.field_address_first_name AS firstname,
   u.mail AS emailaddress,
-  fdf_p.field_phone_value AS telephonenumber,
-  CASE WHEN
-    (u.status = 1)
-  THEN
-    0
-  WHEN
-    (u.status = 0)
-  THEN
-    1
-  ELSE
-    NULL::integer
+  fdf_p.field_phone_value AS telephonenumber, 
+  CASE
+    WHEN u.status = 1 THEN 0
+    WHEN u.status = 0 THEN 1
+    ELSE NULL::integer
   END AS disabled,
   fdf_dn.field_debtor_nr_value AS debitorno
-  FROM
-  (((((users u
-  LEFT JOIN field_data_field_pass_clear fdf_pc ON ((fdf_pc.entity_id = u.uid))) LEFT JOIN field_data_field_address fdf_a
- ON ((fdf_a.entity_id = u.uid))) LEFT JOIN field_data_field_phone fdf_p ON ((fdf_p.entity_id = u.uid))) LEFT JOIN field_data_field_debtor_nr fdf_dn ON ((fdf_
-dn.entity_id = u.uid))) LEFT JOIN field_data_field_kms_user_id fdf_kui ON ((fdf_kui.entity_id = u.uid)));
+FROM users u
+LEFT JOIN field_data_field_pass_clear fdf_pc ON fdf_pc.entity_id = u.uid
+LEFT JOIN field_data_field_address fdf_a ON fdf_a.entity_id = u.uid
+LEFT JOIN field_data_field_phone fdf_p ON fdf_p.entity_id = u.uid
+LEFT JOIN field_data_field_debtor_nr fdf_dn ON fdf_dn.entity_id = u.uid
+LEFT JOIN field_data_field_kms_user_id fdf_kui ON fdf_kui.entity_id = u.uid;
+---------------
+CREATE TABLE `smuser` (
+  `userid` varchar(100) NOT NULL,
+  `name` varchar(60) NOT NULL DEFAULT '',
+  `password` varchar(255) NOT NULL DEFAULT '',
+  `lastname` varchar(255) NOT NULL DEFAULT '',
+  `firstname` varchar(255) NOT NULL DEFAULT '',
+  `emailaddress` varchar(255) NOT NULL DEFAULT '',
+  `telephonenumber` varchar(255) NOT NULL DEFAULT '',
+  `disabled` BOOLEAN NOT NULL DEFAULT 0,
+  `debitorno` int(10) DEFAULT NULL,
+  PRIMARY KEY (`userid`)
+);
+CREATE TABLE smuser_extra (
+  id int NOT NULL AUTO_INCREMENT, 
+  userid varchar(255),
+  usertype int(10) NULL,
+  usertype_info TEXT NOT NULL DEFAULT '',
+  receive_newsletter BOOLEAN NOT NULL DEFAULT 0,
+  accept_terms BOOLEAN NOT NULL DEFAULT 0 ,
+  contact_me BOOLEAN NOT NULL DEFAULT 0,
+  PRIMARY KEY(id)
+);
+
  */

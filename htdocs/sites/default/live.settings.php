@@ -599,4 +599,10 @@ $conf['404_fast_html'] = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
                       ),
                     ),
                   );
-                
+
+// Oracle db 
+$conf['kms_oci_conn_user'] = 'kf_download';
+$conf['kms_oci_conn_pass'] = 'cruyu8uf';
+$conf['kms_oci_conn_host'] = 'kmslds51.kms.adroot.dk';
+$conf['kms_oci_conn_db'] = 'ldsdb5.kms.adroot.dk';
+               

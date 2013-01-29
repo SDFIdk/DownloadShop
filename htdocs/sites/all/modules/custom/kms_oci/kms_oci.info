@@ -1,0 +1,4 @@
+name = KMS Oracle handler
+package = KMS
+description = "Creates an termintaes an oci connection."
+core = 7.x
