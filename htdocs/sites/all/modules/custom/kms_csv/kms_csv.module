@@ -6,16 +6,44 @@ define('KMS_CSV_CONCAT_SEPARATOR', '|');
  * Implements hook_menu().
  */
 function kms_csv_menu() {
+
+  $items['admin/content/csv'] = array(
+    'title' => 'CSV export',
+    'description' => 'Export data as CSV.',
+    'access arguments' => array('download csv'),
+  );
+ 
+  $items['admin/content/csv/download'] = array(
+    'title' =>'Download CSV',
+    'description' => 'Download CSV page',
+    'page callback' => '_kms_csv_admin_page',
+    'access arguments' => array('download csv'),
+  );
+
   $items['csv/download/%'] = array(
     'title' => 'Download csv file',
     'page callback' => 'kms_csv_generate',
     'page arguments' => array(2),
     'type' => MENU_CALLBACK,
-    'access arguments' => array('access content'),
+    'access arguments' => array('download csv'),
   );
 
   return $items;
 }
+
+/**
+ * Implement hook_permission().
+ */
+function kms_csv_permission(){
+  return array(
+    'download csv' => array(
+      'title' => t('Download GST csv files'),
+      'description' =>
+      t('Export data from GST as CSV.')
+    ),
+  );
+}
+
 
 function kms_csv_generate($name) {
   $function = "_kms_csv_generate_data_$name";
@@ -219,4 +247,16 @@ function _kms_csv_generate_data_orders_rows($oid, &$rows){
 
 function _kms_csv_one_zero($value) {
   return (boolean)$value ? '1' : '0';
+}
+
+function _kms_csv_admin_page() {
+  return array(
+    'csv_download_list' => array(
+      '#items' => array(
+        l(t('Download Users'), 'csv/download/users'),
+        l(t('Download Orders'), 'csv/download/orders'),
+      ),
+      '#theme' => 'item_list',
+    ),
+  );
 }
