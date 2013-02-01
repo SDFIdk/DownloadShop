@@ -1,0 +1,222 @@
+<?php
+
+define('KMS_CSV_CONCAT_SEPARATOR', '|');
+
+/**
+ * Implements hook_menu().
+ */
+function kms_csv_menu() {
+  $items['csv/download/%'] = array(
+    'title' => 'Download csv file',
+    'page callback' => 'kms_csv_generate',
+    'page arguments' => array(2),
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('access content'),
+  );
+
+  return $items;
+}
+
+function kms_csv_generate($name) {
+  $function = "_kms_csv_generate_data_$name";
+  if (empty($name) || !function_exists($function)) {
+    return FALSE;
+  }
+  $data = call_user_func($function);
+  if (empty($data)) {
+    return FALSE;
+  }
+  header('Content-Type: text/csv');
+  header('Content-Disposition: attachment;filename="' . $name . '.csv"');
+  header('Cache-Control: max-age=0');
+  $file = new CsvWriter('php://output');
+  foreach ($data as $line) {
+    $file->addLine($line);
+  }
+}
+
+function _kms_csv_generate_data_users() {
+  $query = db_select('users', 'u');
+
+  $query
+  ->condition('u.uid', 0, '<>')
+  ->fields('u', array('uid'));
+
+  $result = $query->execute();
+  $headers = array(
+    'Brugernavn',
+    'Brugertype',
+    'E-mail',
+    'Aktiv',
+    'Roller',
+    'Fornavn',
+    'Efternavn',
+    'Virksomhed',
+    'Land',
+    'Adresse 1',
+    'Adresse 2',
+    'Post nr.',
+    'By',
+    'Telefon',
+    'Fakt. Adresse 1',
+    'Fakt. Adresse 2',
+    'Fakt. Post nr.',
+    'Fakt. By',
+    'KMS User ID',
+    'Debitor nr',
+    'Udløbsdato',
+    'Brugerbemærkning',
+    'Rettigheder',
+    'Nyhedsbrev',
+    'Kontakt',
+  );
+  $rows = array($headers);
+  while($record = $result->fetchAssoc()) {
+    if(empty($record['uid'])) {
+      continue;
+    }
+    $rows[] = _kms_csv_generate_data_users_row($record['uid']);
+  }
+  return $rows;
+}
+
+function _kms_csv_generate_data_users_row($uid) {
+  $uwrapper = entity_metadata_wrapper('user', user_load($uid));
+  $row = array();
+
+  // Brugernavn
+  $row[] = $uwrapper->name->value(); 
+  // Brugertype
+  $types = array();
+  foreach ($uwrapper->field_user_type as $type) {
+    $value_check = $type->value();
+    if (empty($value_check)) {
+      continue;
+    }
+    $types[] = $type->name->value();
+  }
+  $row[] = implode(KMS_CSV_CONCAT_SEPARATOR, $types); // Brugertype
+  
+  // E-mail
+  $row[] = $uwrapper->mail->value();
+  // Aktiv
+  $row[] = $uwrapper->status->value();
+  // Roller
+  $roles = array();
+  foreach ($uwrapper->roles as $role) {
+    $roles[] = $role->label();
+  }
+  $row[] = implode(KMS_CSV_CONCAT_SEPARATOR, $roles);
+  // Address
+  $address_check = $uwrapper->field_address->value();
+  if (!empty($address_check)) {
+    // adapt_debug('mikkel', $uwrapper->field_address->value());
+    // Fornavn
+    $row[] = $uwrapper->field_address->first_name->value();
+    // Efternavn
+    $row[] = $uwrapper->field_address->last_name->value();
+    // Virksomhed
+    $row[] = $uwrapper->field_address->organisation_name->value();
+    // Land
+    $row[] = $uwrapper->field_address->country->value();
+    // Adresse 1
+    $row[] = $uwrapper->field_address->thoroughfare->value();
+    // Adresse 2
+    $row[] = $uwrapper->field_address->premise->value();
+    // Post nr.
+    $row[] = $uwrapper->field_address->postal_code->value();
+    // By
+    $row[] = $uwrapper->field_address->locality->value();
+  }
+  // Telefon
+  $row[] = $uwrapper->field_phone->value();
+  // Billing address
+  $baddress_check = $uwrapper->field_address->value();
+  if (!empty($baddress_check)) {
+    // Fakt. Adresse 1
+    $row[] = $uwrapper->field_billing_address->thoroughfare->value();
+    // Fakt. Adresse 2
+    $row[] = $uwrapper->field_billing_address->premise->value();
+    // Fakt. Post nr.
+    $row[] = $uwrapper->field_billing_address->postal_code->value();
+    // Fakt. By
+    $row[] = $uwrapper->field_billing_address->locality->value();
+  }
+  // KMS User ID
+  $row[] = $uwrapper->field_kms_user_id->value();
+  // Debitor nr.
+  $row[] = $uwrapper->field_debtor_nr->value();
+  // Udløbs dato
+  $row[] = $uwrapper->field_expire_date->value();
+  // Brugerbemærkning
+  $row[] = $uwrapper->field_user_remark->value();
+  // Rettigheder
+  $row[] = _kms_csv_one_zero($uwrapper->field_terms_and_conditions->value());
+  // Nyhedsbrev
+  $row[] = _kms_csv_one_zero($uwrapper->field_newsletter->value());
+  // Kontakt
+  $row[] = _kms_csv_one_zero($uwrapper->field_contact_me->value());
+  
+  return $row;
+}
+
+function _kms_csv_generate_data_orders() {
+  // die('hep');
+  $query = db_select('commerce_order', 'o');
+
+  $query
+  ->condition('o.status', 'completed', '=')
+  ->fields('o', array('order_id'));
+
+  $result = $query->execute();
+  $headers = array(
+    'Brugernavn',
+    'Brugertype',
+    'Title',
+    'Dato',
+  );
+  $rows = array($headers);
+  while($record = $result->fetchAssoc()) {
+    if(empty($record['order_id'])) {
+      continue;
+    }
+    // Rows are passed by ref.
+    _kms_csv_generate_data_orders_rows($record['order_id'], $rows);
+  }
+  return $rows;
+}
+
+function _kms_csv_generate_data_orders_rows($oid, &$rows){
+  $order = commerce_order_load($oid);
+  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
+  $user = $order_wrapper->owner->value();
+  if (empty($user)) {
+    return;
+  }
+
+  // Brugernavn
+  $username = $user->name;
+  // Brugertype
+  $types = array();
+  foreach ($order_wrapper->owner->field_user_type as $type) {
+    $value_check = $type->value();
+    if (empty($value_check)) {
+      continue;
+    }
+    $types[] = $type->name->value();
+  }
+  // Brugertype
+  $usertypes = implode(KMS_CSV_CONCAT_SEPARATOR, $types);
+  // Dato (created).
+  $date = $order_wrapper->created->value();
+
+  // Get line items.
+  foreach ($order_wrapper->commerce_line_items as $delta => $line_item_wrapper) {
+    $product = $line_item_wrapper->commerce_product->title->value();
+    $rows[] = array($username, $usertypes, $product, $date);
+  }
+}
+
+function _kms_csv_one_zero($value) {
+  return (boolean)$value ? '1' : '0';
+}

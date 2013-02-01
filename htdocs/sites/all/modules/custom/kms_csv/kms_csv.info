@@ -1,0 +1,5 @@
+name = KMS Csv
+package = KMS
+description = "Handles csv export"
+core = 7.x
+files[] = library/php-csv/csv.php
