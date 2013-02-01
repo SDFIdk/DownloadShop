@@ -131,19 +131,27 @@ function kms_commerce_files_add_files( $li ) {
  *
  *   Any attemps to insert this directly in views resulted in duplicate rows ..
  *
+ *   Filter out duplicate files
+ *
  */
 
  function kms_commerce_files_views_pre_render(&$view) {
    
   if ($view->name == 'commerce_user_file_licenses') {
-    foreach ($view->result as $item) {
+    $seen = array();    
+    foreach ($view->result as $view_delta => $item) {
       $license = entity_load('commerce_file_license', array($item->license_id));
       $line_item = entity_load('commerce_line_item',$license[key($license)]->line_item_ids);
-      $item->commerce_file_license_uid = $line_item[key($line_item)]->order_id;
-      
+      $order_id = $line_item[key($line_item)]->order_id;
+      $item->commerce_file_license_uid = $order_id;
       foreach ($license as $lic) {
         foreach ($lic->commerce_file_license_file[LANGUAGE_NONE] as $delta => $file) {
-          kms_commerce_files_update_file($file);
+          if (!empty($seen[$order_id][$file['fid']])) {
+            unset($view->result[$view_delta]);
+          } else {
+            $seen[$order_id][$file['fid']] = TRUE;
+            kms_commerce_files_update_file($file);
+          }
         }
       }
     }
