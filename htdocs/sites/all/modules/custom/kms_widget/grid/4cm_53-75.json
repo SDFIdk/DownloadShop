@@ -146,7 +146,7 @@
 ,{"type":"Feature","geometry":{"type": "Polygon","coordinates":[[[550000,6375000],[550000,6400000],[575000,6400000],[575000,6375000],[550000,6375000]]]},"properties": {"fileid": "6375_550","filename": "D25_57-76_6375_550.zip"}}
 ,{"type":"Feature","geometry":{"type": "Polygon","coordinates":[[[575000,6375000],[575000,6400000],[600000,6400000],[600000,6375000],[575000,6375000]]]},"properties": {"fileid": "6375_575","filename": "D25_57-76_6375_575.zip"}}
 ,{"type":"Feature","geometry":{"type": "Polygon","coordinates":[[[600000,6375000],[600000,6400000],[625000,6400000],[625000,6375000],[600000,6375000]]]},"properties": {"fileid": "6375_600","filename": "D25_57-76_6375_600.zip"}}
-,{"type":"Feature","geometry":{"type": "Polygon","coordinates":[[[550000,6425000],[550000,6450000],[575000,6450000],[575000,6425000],[550000,6425000]]]},"properties": {"fileid": "6425_550","filename": "D25_57-76_6425_550.zip"}}
-,{"type":"Feature","geometry":{"type": "Polygon","coordinates":[[[575000,6425000],[575000,6450000],[600000,6450000],[600000,6425000],[575000,6425000]]]},"properties": {"fileid": "6425_575","filename": "D25_57-76_6425_575.zip"}}
-,{"type":"Feature","geometry":{"type": "Polygon","coordinates":[[[600000,6425000],[600000,6450000],[625000,6450000],[625000,6425000],[600000,6425000]]]},"properties": {"fileid": "6425_600","filename": "D25_57-76_6425_600.zip"}}
+,{"type":"Feature","geometry":{"type": "Polygon","coordinates":[[[550000,6400000],[550000,6425000],[575000,6425000],[575000,6400000],[550000,6400000]]]},"properties": {"fileid": "6425_550","filename": "D25_57-76_6400_550.zip"}}
+,{"type":"Feature","geometry":{"type": "Polygon","coordinates":[[[575000,6400000],[575000,6425000],[600000,6425000],[600000,6400000],[575000,6400000]]]},"properties": {"fileid": "6425_575","filename": "D25_57-76_6400_575.zip"}}
+,{"type":"Feature","geometry":{"type": "Polygon","coordinates":[[[600000,6400000],[600000,6425000],[625000,6425000],[625000,6400000],[600000,6400000]]]},"properties": {"fileid": "6425_600","filename": "D25_57-76_6400_600.zip"}}
 ]}
