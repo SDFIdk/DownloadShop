@@ -69,6 +69,11 @@ projects[kms_oci][download][url] = "https://svnhost.adapt.dk/subversion/drupal/k
 projects[kms_oci][type] = "module"
 projects[kms_oci][subdir] = "custom"
 
+projects[kms_csv][download][type] = "svn"
+projects[kms_csv][download][url] = "https://svnhost.adapt.dk/subversion/drupal/kms/trunk/htdocs/sites/all/modules/custom/kms_csv"
+projects[kms_csv][type] = "module"
+projects[kms_csv][subdir] = "custom"
+
 
 ; Libraries
 ;; Ckeditor
