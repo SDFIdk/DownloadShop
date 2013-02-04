@@ -50,7 +50,7 @@ function kms_oci_insert($data, $table, $encode2latin1 = TRUE) {
   $cols = str_replace(':', '', $pholders);
 
   array_walk($data, function(&$v) use ($encode2latin1) {
-    $v = $encode2latin1 ? iconv('UTF-8', 'ISO-8859-1', $v) : $v;
+    #$v = $encode2latin1 ? iconv('UTF-8', 'ISO-8859-1', $v) : $v;
   });
 
   kms_oci_query(
@@ -76,7 +76,7 @@ function kms_oci_update($data, $table, $encode2latin1 = TRUE) {
   array_walk($data, function(&$v, $k) use (&$values, $encode2latin1) {
     if ($k != ':userid') {
       $values[] = str_replace(':', '', $k) . " = $k";
-      $v = $encode2latin1 ? iconv('UTF-8', 'ISO-8859-1', $v) : $v;
+      #$v = $encode2latin1 ? iconv('UTF-8', 'ISO-8859-1', $v) : $v;
     }
   });
 
