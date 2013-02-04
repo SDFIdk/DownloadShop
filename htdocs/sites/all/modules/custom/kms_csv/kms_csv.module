@@ -63,15 +63,8 @@ function kms_csv_generate($name) {
   }
 }
 
-function _kms_csv_generate_data_users() {
-  $query = db_select('users', 'u');
-
-  $query
-  ->condition('u.uid', 0, '<>')
-  ->fields('u', array('uid'));
-
-  $result = $query->execute();
-  $headers = array(
+function _kms_csv_generate_data_users_headers() {
+  return array(
     'Brugernavn',
     'Brugertype',
     'E-mail',
@@ -98,7 +91,20 @@ function _kms_csv_generate_data_users() {
     'Nyhedsbrev',
     'Kontakt',
   );
-  $rows = array($headers);
+}
+
+function _kms_csv_generate_data_users() {
+  $query = db_select('users', 'u');
+
+  $query
+  ->condition('u.uid', 0, '<>')
+  ->fields('u', array('uid'));
+
+  $result = $query->execute();
+  
+  // Add headers.
+  $rows = array(_kms_csv_generate_data_users_headers());
+  
   while($record = $result->fetchAssoc()) {
     if(empty($record['uid'])) {
       continue;
@@ -138,7 +144,6 @@ function _kms_csv_generate_data_users_row($uid) {
   // Address
   $address_check = $uwrapper->field_address->value();
   if (!empty($address_check)) {
-    // adapt_debug('mikkel', $uwrapper->field_address->value());
     // Fornavn
     $row[] = $uwrapper->field_address->first_name->value();
     // Efternavn
@@ -175,7 +180,13 @@ function _kms_csv_generate_data_users_row($uid) {
   // Debitor nr.
   $row[] = $uwrapper->field_debtor_nr->value();
   // Udløbs dato
-  $row[] = $uwrapper->field_expire_date->value();
+  $expire = $uwrapper->field_expire_date->value();
+  if (!empty($expire)) {
+    $row[] = kms_csv_date_unix_2_excel($uwrapper->field_expire_date->value());
+  }
+  else {
+    $row[] = '';
+  }
   // Brugerbemærkning
   $row[] = $uwrapper->field_user_remark->value();
   // Rettigheder
@@ -188,8 +199,17 @@ function _kms_csv_generate_data_users_row($uid) {
   return $row;
 }
 
+function _kms_csv_generate_data_orders_headers(){
+  return array(
+    'Brugernavn',
+    'Brugertype',
+    'Title',
+    'Dato',
+    'Order_id'
+  );
+}
+
 function _kms_csv_generate_data_orders() {
-  // die('hep');
   $query = db_select('commerce_order', 'o');
 
   $query
@@ -197,13 +217,9 @@ function _kms_csv_generate_data_orders() {
   ->fields('o', array('order_id'));
 
   $result = $query->execute();
-  $headers = array(
-    'Brugernavn',
-    'Brugertype',
-    'Title',
-    'Dato',
-  );
-  $rows = array($headers);
+  // Add headers.
+  $rows = array(_kms_csv_generate_data_orders_headers());
+  
   while($record = $result->fetchAssoc()) {
     if(empty($record['order_id'])) {
       continue;
@@ -236,12 +252,13 @@ function _kms_csv_generate_data_orders_rows($oid, &$rows){
   // Brugertype
   $usertypes = implode(KMS_CSV_CONCAT_SEPARATOR, $types);
   // Dato (created).
-  $date = $order_wrapper->created->value();
-
+  $date = kms_csv_date_unix_2_excel($order_wrapper->created->value());
+  // Order id
+  $order_id = $order_wrapper->order_id->value();
   // Get line items.
   foreach ($order_wrapper->commerce_line_items as $delta => $line_item_wrapper) {
     $product = $line_item_wrapper->commerce_product->title->value();
-    $rows[] = array($username, $usertypes, $product, $date);
+    $rows[] = array($username, $usertypes, $product, $date, $order_id);
   }
 }
 
@@ -253,10 +270,17 @@ function _kms_csv_admin_page() {
   return array(
     'csv_download_list' => array(
       '#items' => array(
-        l(t('Download Users'), 'csv/download/users'),
-        l(t('Download Orders'), 'csv/download/orders'),
+        l(t('Download Users'), 'csv/download/users') .
+        '<p>' . implode(', ', _kms_csv_generate_data_users_headers()) . '</p>',
+        l(t('Download Orders'), 'csv/download/orders') .
+        '<p>' . implode(', ', _kms_csv_generate_data_orders_headers()) . '</p>',
       ),
       '#theme' => 'item_list',
     ),
   );
+}
+
+function kms_csv_date_unix_2_excel($timestamp) {
+  setlocale(LC_TIME, "da_DK");
+  return ucfirst(strftime('%a, %d/%m/%G', $timestamp));
 }
