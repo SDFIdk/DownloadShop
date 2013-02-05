@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the contenttype_product_display feature.
+ */
+
+include_once 'contenttype_product_display.features.inc';
