@@ -37,6 +37,14 @@ function kms_csv_menu() {
   return $items;
 }
 
+/**
+ * Generate csv file
+ *
+ * @param string $name
+ *   The name of csv type. Needs supported functions.
+ *
+ * @return void
+ */
 function kms_csv_generate($name) {
   $function = "_kms_csv_create_batch_$name";
   if (empty($name) || !function_exists($function)) {
@@ -63,7 +71,7 @@ function _kms_csv_create_batch_users(&$batch) {
   $query = db_select('users', 'u');
 
   $query
-  ->condition('u.uid', 0, '<>')
+  ->condition('u.uid', 1, '>')
   ->fields('u', array('uid'));
 
   $result = $query->execute();
@@ -71,14 +79,14 @@ function _kms_csv_create_batch_users(&$batch) {
   // Add headers.
   $headers = _kms_csv_generate_data_users_headers();
   kms_csv_convert_row2latin1($headers);
-  $file = file_directory_temp() . '/' . uniqid() . ".csv";
+  $file = file_directory_temp() . '/' . uniqid();
   $_SESSION['kms_csv_download_file_users'] = $file;
   $handle = fopen($file, 'w'); // Create the file.
   fputcsv($handle, $headers, ';'); // Write the labels to the header row.
   fclose($handle);
 
   $max = db_query(
-    'SELECT COUNT(DISTINCT uid) FROM {users}'
+    'SELECT COUNT(DISTINCT uid) FROM {users} WHERE uid > 1'
   )->fetchField();
   
   while($record = $result->fetchAssoc()) {
@@ -92,8 +100,14 @@ function _kms_csv_create_batch_users(&$batch) {
   }
 }
 
-
-
+/**
+ * Create batch: orders.
+ *
+ * @param arry $batch
+ *   Drupal batch API array.
+ *
+ * @return void.
+ */
 function _kms_csv_create_batch_orders(&$batch) {
   $query = db_select('commerce_order', 'o');
 
@@ -106,7 +120,7 @@ function _kms_csv_create_batch_orders(&$batch) {
   $headers = _kms_csv_generate_data_orders_headers();
   kms_csv_convert_row2latin1($headers);
   // Create the file and print the labels in the header row.
-  $file = file_directory_temp() . '/' . uniqid() . ".csv";
+  $file = file_directory_temp() . '/' . uniqid();
   $_SESSION['kms_csv_download_file_orders'] = $file;
   $handle = fopen($file, 'w'); // Create the file.
   fputcsv($handle, $headers, ';'); // Write the labels to the header row.
@@ -129,7 +143,20 @@ function _kms_csv_create_batch_orders(&$batch) {
   
 }
 
-
+/**
+ * Batch create csv rows: orders.
+ *
+ * @param integer $oid
+ *   Drupal commerce order_id.
+ * @param string $file
+ *   Absolute path to tmp csv file.
+ * @param integer $max
+ *   The amount of total rows.
+ * @param array $context
+ *   Drupal batch API array.
+ *
+ * @return void.
+ */
 function _kms_csv_generate_data_orders_rows($oid, $file, $max, &$context){
   $handle = fopen($file, 'a');
   
@@ -187,6 +214,15 @@ function _kms_csv_generate_data_orders_rows($oid, $file, $max, &$context){
   fclose($handle);
 }
 
+/**
+ * Batch API 'finished' function.
+ *
+ * @param boolean $success
+ * @param array $results
+ * @param array $operations
+ *
+ * @return void.
+ */
 function kms_csv_batch_finished_orders($success, $results, $operations) {
 
   if ($success) {
@@ -194,7 +230,7 @@ function kms_csv_batch_finished_orders($success, $results, $operations) {
     // We just display the number of nodes we processed...
     drupal_set_message(t('@count orders processed.', array('@count' => count($results))));
     drupal_set_message(t('The final result was "%final"', array('%final' => end($results))));
-    drupal_set_message(t('Download file: !download', array('!download' => l('orders.csv', 'csv/download/orders'))), 'warning');
+    drupal_set_message(t('Download file (one-time link): !download', array('!download' => l('orders.csv', 'csv/download/orders'))), 'warning');
   }
   else {
     // An error occurred.
@@ -204,7 +240,14 @@ function kms_csv_batch_finished_orders($success, $results, $operations) {
   }
 }
 
-
+/**
+ * Translate $value to 1/0
+ *
+ * @param string $value
+ *
+ * @return string
+ *   1 or 0
+ */
 function _kms_csv_one_zero($value) {
   return (boolean)$value ? '1' : '0';
 }
@@ -223,11 +266,23 @@ function _kms_csv_admin_page() {
   );
 }
 
-function kms_csv_date_unix_2_excel($timestamp) {
+/**
+ * Translate unix timestamp to excel format.
+ *
+ * @param integer $timestamp
+ *
+ * @return string
+ */
+function kms_csv_date_unix_2_excel($timestamp, $format = '%a, %d/%m/%G') {
   setlocale(LC_TIME, "da_DK");
-  return ucfirst(strftime('%a, %d/%m/%G', $timestamp));
+  return ucfirst(strftime($format, $timestamp));
 }
 
+/**
+ * Csv header: orders.
+ *
+ * @return array
+ */
 function _kms_csv_generate_data_orders_headers(){
   return array(
     'Brugernavn',
@@ -238,6 +293,11 @@ function _kms_csv_generate_data_orders_headers(){
   );
 }
 
+/**
+ * Csv header: users.
+ *
+ * @return array
+ */
 function _kms_csv_generate_data_users_headers() {
   return array(
     'Brugernavn',
@@ -268,6 +328,19 @@ function _kms_csv_generate_data_users_headers() {
   );
 }
 
+/**
+ * Generate user row
+ *
+ * @param integer $uid
+ * @param string $file
+ *   Absolute path to file.
+ * @param integer $max
+ *   Total amount of users.
+ * @param array $context
+ *   Drupal batch API array.
+ *
+ * @return void.
+ */
 function _kms_csv_generate_data_users_row($uid, $file, $max, &$context){
   $handle = fopen($file, 'a');
   
@@ -279,7 +352,6 @@ function _kms_csv_generate_data_users_row($uid, $file, $max, &$context){
 
   $uwrapper = entity_metadata_wrapper('user', user_load($uid));
   $row = array();
-
   // Brugernavn
   $username = $uwrapper->name->value();
   $row[] = $username; 
@@ -290,8 +362,10 @@ function _kms_csv_generate_data_users_row($uid, $file, $max, &$context){
     if (empty($value_check)) {
       continue;
     }
-    $types[] = $type->name->value();
+    $types[$type->tid->value()] = $type->name->value();
   }
+  // Make sure user types are in the right order
+  ksort($types);
   $row[] = implode(KMS_CSV_CONCAT_SEPARATOR, $types); // Brugertype
   
   // E-mail
@@ -301,8 +375,13 @@ function _kms_csv_generate_data_users_row($uid, $file, $max, &$context){
   // Roller
   $roles = array();
   foreach ($uwrapper->roles as $role) {
-    $roles[] = $role->label();
+    $rid = $role->value();
+    if ($rid < 3) {
+      continue;
+    }
+    $roles[$rid] = $role->label();
   }
+  ksort($roles);
   $row[] = implode(KMS_CSV_CONCAT_SEPARATOR, $roles);
   // Address
   $address_check = $uwrapper->field_address->value();
@@ -372,6 +451,15 @@ function _kms_csv_generate_data_users_row($uid, $file, $max, &$context){
   fclose($handle);
 }
 
+/**
+ * Batch API 'finished' function.
+ *
+ * @param boolean $success
+ * @param array $results
+ * @param array $operations
+ *
+ * @return void.
+ */
 function kms_csv_batch_finished_users($success, $results, $operations) {
 
   if ($success) {
@@ -379,7 +467,7 @@ function kms_csv_batch_finished_users($success, $results, $operations) {
     // We just display the number of nodes we processed...
     drupal_set_message(t('@count things processed.', array('@count' => count($results))));
     drupal_set_message(t('The final result was "%final"', array('%final' => end($results))));
-    drupal_set_message(t('Download file: !download', array('!download' => l('users.csv', 'csv/download/users'))), 'warning');
+    drupal_set_message(t('Download file (one-time link): !download', array('!download' => l('users.csv', 'csv/download/users'))), 'warning');
 
   }
   else {
@@ -390,15 +478,31 @@ function kms_csv_batch_finished_users($success, $results, $operations) {
   }
 }
 
+/**
+ * Download csv file.
+ *
+ * @param string $name
+ *   Csv file data type (users/orders etc.)
+ *
+ * @return void.
+ */
 function kms_csv_download($name) {
   // For added security, make sure the beginning of the path is the same as that
   // returned by file_directory_temp() (to prevent users from gaining access to
   // arbitrary files on the server).
-  if (empty($_SESSION['kms_csv_download_file_orders'])) {
-    drupal_access_denied();
+  $session_key = "kms_csv_download_file_$name";
+  if (empty($_SESSION[$session_key])) {
+    drupal_set_message(
+      t(
+        'The file: !file is either outdated or you do not have permission to download it',
+        array('!file' => "$name.csv")
+      ),
+      'error'
+    );
+    drupal_goto('admin/content/csv/download');
   }
-
-  $file = $_SESSION["kms_csv_download_file_$name"];
+  $file = $_SESSION[$session_key];
+  unset($_SESSION[$session_key]);
   // Add HTTP headers for CSV file download.
   drupal_add_http_header('Content-Type', 'text/csv; iso-8859-1');
   drupal_add_http_header(
@@ -410,12 +514,24 @@ function kms_csv_download($name) {
   drupal_add_http_header('Cache-Control', 'max-age=300; must-revalidate');
 
   // Read the file to the output buffer and exit.
-  readfile($file);
+  echo @file_get_contents($file);
+  unlink($file);
   exit;
 }
 
+/**
+ * Convert UTF-8 to single byte latin 1.
+ *
+ * @param array $row
+ *   CSV data row.
+ *
+ * @return void.
+ */
 function kms_csv_convert_row2latin1(&$row) {
   array_walk($row, function(&$v) {
     $v = utf8_decode($v);
+    if (preg_match("#^rhus(.*)$#", $v, $m)) {
+      $v = utf8_decode('Århus' . $m[1]);
+    }
   });
 }
