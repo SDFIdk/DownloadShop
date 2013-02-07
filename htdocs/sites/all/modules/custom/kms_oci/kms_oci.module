@@ -44,10 +44,13 @@ function kms_oci_get_conn() {
  * @return void.
  */
 function kms_oci_insert($data, $table) {
-  
+  // Only use variables with values.
+  $data = array_filter($data);
+
   $keys = array_keys($data);
   $pholders = implode(', ', $keys);
   $cols = str_replace(':', '', $pholders);
+  
   kms_oci_query(
     "INSERT INTO $table ($cols) VALUES ($pholders)",
     $data
@@ -66,14 +69,16 @@ function kms_oci_insert($data, $table) {
  * @return void.
  */
 function kms_oci_update($data, $table) {
-  
+  // Only use variables with values.
+  $data = array_filter($data);
+
   $values = array();
   array_walk($data, function($v, $k) use (&$values) {
     if ($k != ':userid') {
       $values[] = str_replace(':', '', $k) . " = $k";
     }
   });
-
+  
   kms_oci_query(
     sprintf("UPDATE %s SET %s WHERE userid = :userid", $table, implode(', ', $values)),
     $data
@@ -92,7 +97,6 @@ function kms_oci_update($data, $table) {
  * @return void.
  */
 function kms_oci_query($query, $data = array()) {
-
   $oci = kms_oci_get_conn();
 
   // Atodo: Proper error handling:
@@ -136,10 +140,10 @@ function kms_oci_exit($destination = NULL) {
   
 }
 
-function kms_oci_check_userid_exists_in_table($userid, $table) {
+function kms_oci_check_userid_exists($userid, $table) {
   $oci = kms_oci_get_conn();
   $stid = oci_parse($oci, sprintf("SELECT * FROM %s WHERE userid = '%s'", $table, $userid));
   oci_execute($stid);
   $row = oci_fetch_array($stid);
-  return $row;
+  return !empty($row);
 }

@@ -424,11 +424,26 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
   if (!empty($account->field_kms_user_id_value[LANGUAGE_NONE][0]['value'])) {
     $userid = $account->field_kms_user_id_value[LANGUAGE_NONE][0]['value'];
   }
-  $data['smuser'][':userid'] = $data['smuser_extra'][':userid'] = $userid;
+  elseif(!empty($user->field_kms_user_id[LANGUAGE_NONE][0]['value'])) {
+    $userid = $user->field_kms_user_id[LANGUAGE_NONE][0]['value'];
+  }
+
+  $data['user'][':userid'] = $data['user_extra'][':userid'] = $userid;
 
   // Update Oracle tables.
-  kms_oci_update($data['user'], 'smuser');
-  kms_oci_update($data['user_extra'], 'smuser_extra');
+  if(kms_oci_check_userid_exists($userid, 'smuser_extra')){
+    kms_oci_update($data['user_extra'], 'smuser_extra');
+  }
+  else {
+    kms_oci_insert($data['user_extra'], 'smuser_extra');
+  }
+
+  if(kms_oci_check_userid_exists($userid, 'smuser')){
+    kms_oci_update($data['user'], 'smuser');
+  }
+  else {
+    kms_oci_insert($data['user'], 'smuser');
+  }
 
 }
 
@@ -557,12 +572,10 @@ function _kms_user_submit_insert_user_oracle($form, &$form_state) {
     = $account->field_contact_me[LANGUAGE_NONE][0]['value'];
   }
 
-  $smuser_extra_exist = kms_oci_check_userid_exists_in_table($account->uid, 'smuser_extra');
-  if(empty($smuser_extra_exist)){
+  if(!kms_oci_check_userid_exists($account->uid, 'smuser_extra')){
     kms_oci_insert($data['user_extra'], 'smuser_extra');
   }
-  $smuser_exist = kms_oci_check_userid_exists_in_table($account->uid, 'smuser');
-  if(empty($smuser_exist)){
+  if(!kms_oci_check_userid_exists($account->uid, 'smuser')){
     kms_oci_insert($data['user'], 'smuser');
   }
 }
