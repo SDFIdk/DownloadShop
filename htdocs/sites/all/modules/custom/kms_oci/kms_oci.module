@@ -1,5 +1,9 @@
 <?php
 
+define('KMS_OCI_MAIL_DEFAULT_TO', 'mikkel@adapt.dk');
+define('KMS_OCI_MAIL_DEFAULT_FROM', 'info@adapt.dk');
+define('KMS_OCI_WD_KEY', 'kms_oci');
+
 /**
  * Implements hook_boot().
  *
@@ -19,8 +23,9 @@ function kms_oci_boot() {
       return;
     }
   }
-  // Atodo: Handle if connection does not work.:
+
   $oci = oci_connect($user, $pass, "$host/$db");
+
 }
 
 /**
@@ -97,6 +102,12 @@ function kms_oci_update($data, $table) {
  * @return void.
  */
 function kms_oci_query($query, $data = array()) {
+  global $base_url;
+
+  array_walk($data, function(&$v) {
+    $v = utf8_decode($v);
+  });
+
   $oci = kms_oci_get_conn();
 
   // Atodo: Proper error handling:
@@ -108,8 +119,8 @@ function kms_oci_query($query, $data = array()) {
 
   if (!$stid) {
     $e = oci_error($oci);
-    watchdog('kms_oci', $e['message'], array(), 'error');
-    #throw new Exception('Oci error: ' . $e['message']);
+    watchdog(KMS_OCI_WD_KEY, $e['message'], array(), WATCHDOG_ERROR);
+    kms_oci_send_mail_error($e['message'], $query, $data);
   }
   
   foreach ($data as $pholder => $arg) {
@@ -120,8 +131,8 @@ function kms_oci_query($query, $data = array()) {
 
   if (!$r) {
     $e = oci_error($stid);
-    watchdog('kms_oci', $e['message'], array(), 'error');
-    #throw new Exception('Oci error: ' . $e['message']);
+    watchdog(KMS_OCI_WD_KEY, $e['message'], array(), WATCHDOG_ERROR);
+    kms_oci_send_mail_error($e['message'], $query, $data);
   }
 
   oci_free_statement($stid);
@@ -146,4 +157,91 @@ function kms_oci_check_userid_exists($userid, $table) {
   oci_execute($stid);
   $row = oci_fetch_array($stid);
   return !empty($row);
+}
+
+/**
+ * Send mail with oci error.
+ *
+ * @param string $error
+ *   Oci error with error code.
+ * @param string $query
+ *   The query that is failing.
+ * @param array $data
+ *   Placeholders and data.
+ *
+ * @return void.
+ */
+function kms_oci_send_mail_error($error, $query = '', $data = array()) {
+  global $base_url;
+
+  // Debug info.
+  ob_start();
+  if(!empty($query) || !empty($data)) {
+    echo "Debug info:\n";
+  }
+  if (!empty($query)) {
+    echo "Query:\n";
+    var_dump($query);
+  }
+  if (!empty($data)) {
+    echo "Data:\n";
+    var_dump($data);
+  }
+  $debug = ob_get_clean();
+  // Send mail.
+  kms_oci_send_mail(
+    array(
+      'subject' => t(
+        'Oracle error at !base_url',
+        array('!base_url' => $base_url)
+      ),
+      'body' => t(
+        "Oracle error at !base_url.\nError: !error.\n!debug",
+        array('!base_url' => $base_url, '!error' => $error, '!debug' => $debug)
+      ),
+    )
+  );
+
+}
+
+/**
+ * Send mail.
+ *
+ * @param array $message
+ *   Parameters used to construct email.
+ * @param string $module
+ *   Name of module sending the mail.
+ *
+ * @return boolean
+ */
+function kms_oci_send_mail($message, $module = 'kms_oci') {
+  $message += array(
+    'from' => variable_get('system_mail', KMS_OCI_MAIL_DEFAULT_FROM),
+    'to' => variable_get('kms_oci_mail_default_to', KMS_OCI_MAIL_DEFAULT_TO),
+    'subject' => '',
+    'body' => '',
+  );
+
+  $token = microtime();
+  
+  $mail_conf = array(
+    'id' => $module . '_' . $token,
+    'to' => $message['to'],
+    'subject' => $message['subject'],
+    'body' => array($message['body']),
+    'headers' => array(
+      'From' => $message['from'], 
+      'Sender' => $message['from'], 
+      'Return-Path' => $message['from'],
+    ),
+  );
+
+  $system = drupal_mail_system($module, $token);
+  $mail = $system->format($mail_conf);
+  if ($system->mail($mail)) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
 }
