@@ -465,7 +465,7 @@ function kms_csv_batch_finished_users($success, $results, $operations) {
   if ($success) {
     // Here we could do something meaningful with the results.
     // We just display the number of nodes we processed...
-    drupal_set_message(t('@count things processed.', array('@count' => count($results))));
+    drupal_set_message(t('@count users processed.', array('@count' => count($results))));
     drupal_set_message(t('The final result was "%final"', array('%final' => end($results))));
     drupal_set_message(t('Download file (one-time link): !download', array('!download' => l('users.csv', 'csv/download/users'))), 'warning');
 
