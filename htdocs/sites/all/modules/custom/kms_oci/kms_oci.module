@@ -1,8 +1,25 @@
 <?php
 
-define('KMS_OCI_MAIL_DEFAULT_TO', 'mikkel@adapt.dk');
-define('KMS_OCI_MAIL_DEFAULT_FROM', 'info@adapt.dk');
+define('KMS_OCI_MAIL_DEFAULT_TO', 'drift@kortforsyningen.dk');
+define('KMS_OCI_MAIL_DEFAULT_FROM', 'download@kortforsyningen.dk');
 define('KMS_OCI_WD_KEY', 'kms_oci');
+
+/**
+ * Implements hook_menu().
+ */
+function kms_oci_menu() {
+
+  $items['admin/config/oci'] = array(
+    'title' =>'Oracle (oci) settings',
+    'description' => 'Configure GST oracle integration',
+    'access arguments' => array('administer oci settings'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('_kms_oci_settings_form'),
+
+  );
+
+  return $items;
+}
 
 /**
  * Implements hook_boot().
@@ -214,9 +231,17 @@ function kms_oci_send_mail_error($error, $query = '', $data = array()) {
  *
  * @return boolean
  */
-function kms_oci_send_mail($message, $module = 'kms_oci') {
+function kms_oci_send_mail($message, $module = 'kms_oci') { 
+  // Explanation follows...
+  $default_from = variable_get(
+    'kms_oci_mail_default_from',
+    KMS_OCI_MAIL_DEFAULT_FROM
+  );
+
   $message += array(
-    'from' => variable_get('system_mail', KMS_OCI_MAIL_DEFAULT_FROM),
+    // from: If system_mail is configured use that.
+    // Otherwise use variable. Otherwise use constant.
+    'from' => variable_get('system_mail', $default_from),
     'to' => variable_get('kms_oci_mail_default_to', KMS_OCI_MAIL_DEFAULT_TO),
     'subject' => '',
     'body' => '',
@@ -245,3 +270,68 @@ function kms_oci_send_mail($message, $module = 'kms_oci') {
     return FALSE;
   }
 }
+
+function _kms_oci_settings_form() {
+  $form['connection'] = array(
+    '#type' => 'fieldset', 
+    '#title' => t('Connection'), 
+    '#collapsible' => TRUE, 
+    '#collapsed' => FALSE,
+  );
+  $form['connection']['kms_oci_conn_user'] = array(
+    '#type' => 'textfield', 
+    '#title' => t('User'), 
+    '#default_value' => variable_get('kms_oci_conn_user'), 
+    '#required' => TRUE,
+  );
+  $form['connection']['kms_oci_conn_pass'] = array(
+    '#type' => 'textfield', 
+    '#title' => t('Pass'), 
+    '#default_value' => variable_get('kms_oci_conn_pass'), 
+    '#required' => TRUE,
+  );
+  $form['connection']['kms_oci_conn_host'] = array(
+    '#type' => 'textfield', 
+    '#title' => t('Host'), 
+    '#default_value' => variable_get('kms_oci_conn_host'), 
+    '#required' => TRUE,
+  );
+  $form['connection']['kms_oci_conn_db'] = array(
+    '#type' => 'textfield', 
+    '#title' => t('Db'), 
+    '#default_value' => variable_get('kms_oci_conn_db'), 
+    '#required' => TRUE,
+  );
+  $form['oci_mails'] = array(
+    '#type' => 'fieldset', 
+    '#title' => t('Oracle mails'), 
+    '#collapsible' => TRUE, 
+    '#collapsed' => FALSE,
+  );
+  $default_from = variable_get(
+    'kms_oci_mail_default_from',
+    KMS_OCI_MAIL_DEFAULT_FROM
+  );
+  $form['oci_mails']['kms_oci_mail_default_from'] = array(
+    '#type' => 'textfield', 
+    '#title' => t('From'), 
+    '#description' => t(
+      'If nothing is specified !mail is used.',
+      array('!mail' => variable_get('system_mail'))
+    ), 
+    '#default_value' => variable_get('system_mail', $default_from),
+    '#required' => TRUE,
+  );
+  $form['oci_mails']['kms_oci_mail_default_to'] = array(
+    '#type' => 'textfield', 
+    '#title' => t('To'), 
+    '#default_value' => variable_get(
+      'kms_oci_mail_default_to',
+      KMS_OCI_MAIL_DEFAULT_TO
+    ),
+    '#required' => TRUE,
+  );
+
+  return system_settings_form($form);
+}
+

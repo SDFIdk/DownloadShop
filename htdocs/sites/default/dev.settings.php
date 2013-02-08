@@ -548,3 +548,11 @@ $conf['404_fast_html'] = '<html xmlns="http://www.w3.org/1999/xhtml"><head><titl
  * Remove the leading hash signs to disable.
  */
 # $conf['allow_authorize_operations'] = FALSE;
+
+// Oracle db 
+$conf['kms_oci_conn_user'] = 'kf_download_test';
+$conf['kms_oci_conn_pass'] = 'kf_download_test';
+$conf['kms_oci_conn_host'] = 'kmslds51.kms.adroot.dk';
+$conf['kms_oci_conn_db'] = 'ldsdb5.kms.adroot.dk';
+$conf['kms_oci_mail_default_from'] = 'download@kortforsyningen.dk';
+$conf['kms_oci_mail_default_to'] = 'mikkel@adapt.dk';
