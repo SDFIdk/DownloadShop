@@ -41,7 +41,7 @@ function kms_oci_boot() {
     }
   }
 
-  $oci = oci_connect($user, $pass, "$host/$db");
+  $oci = oci_connect($user, $pass, "$host/$db", 'UTF8');
 
 }
 
@@ -121,9 +121,10 @@ function kms_oci_update($data, $table) {
 function kms_oci_query($query, $data = array()) {
   global $base_url;
 
-  array_walk($data, function(&$v) {
-    $v = utf8_decode($v);
-  });
+  // We do not need this anymore.
+  // array_walk($data, function(&$v) {
+  //   $v = utf8_decode($v);
+  // });
 
   $oci = kms_oci_get_conn();
 
