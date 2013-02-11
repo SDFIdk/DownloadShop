@@ -366,16 +366,7 @@ function _kms_csv_generate_data_users_row($uid, $file, $max, &$context){
   // Aktiv
   $row[] = $uwrapper->status->value();
   // Roller
-  $roles = array();
-  foreach ($uwrapper->roles as $role) {
-    $rid = $role->value();
-    if ($rid < 3) {
-      continue;
-    }
-    $roles[$rid] = $role->label();
-  }
-  ksort($roles);
-  $row[] = implode(KMS_CSV_CONCAT_SEPARATOR, $roles);
+  $row[] = implode(KMS_CSV_CONCAT_SEPARATOR, _kms_csv_user_roles($uwrapper));
   // Address
   $address_check = $uwrapper->field_address->value();
   if (!empty($address_check)) {
@@ -549,4 +540,25 @@ function _kms_csv_user_types($uwrapper) {
   // Make sure user types are in the right order
   ksort($types);
   return $types;
+}
+
+/**
+ * Create user roles array ordered by role id.
+ *
+ * @param object $uwrapper
+ *   Entity metadata wrapper.
+ *
+ * @return array $roles
+ */
+function _kms_csv_user_roles($uwrapper) {
+  $roles = array();
+  foreach ($uwrapper->roles as $role) {
+    $rid = $role->value();
+    if ($rid < 2) {
+      continue;
+    }
+    $roles[$rid] = $role->label();
+  }
+  ksort($roles);
+  return $roles;
 }
