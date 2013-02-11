@@ -167,7 +167,6 @@ function _kms_csv_generate_data_orders_rows($oid, $file, $max, &$context){
     $context['sandbox']['line_items'] = 0;
   }
 
-  // $order = commerce_order_load($oid);
   $order_wrapper = entity_metadata_wrapper('commerce_order', commerce_order_load($oid));
   $user = $order_wrapper->owner->value();
   if (empty($user)) {
@@ -177,15 +176,7 @@ function _kms_csv_generate_data_orders_rows($oid, $file, $max, &$context){
   // Brugernavn
   $username = $user->name;
   // Brugertype
-  $types = array();
-  foreach ($order_wrapper->owner->field_user_type as $type) {
-    $value_check = $type->value();
-    if (empty($value_check)) {
-      continue;
-    }
-    $types[] = $type->name->value();
-  }
-  // Brugertype
+  $types = _kms_csv_user_types($order_wrapper->owner);
   $usertypes = implode(KMS_CSV_CONCAT_SEPARATOR, $types);
   // Dato (created).
   $date = kms_csv_date_unix_2_excel($order_wrapper->created->value());
@@ -302,7 +293,9 @@ function _kms_csv_generate_data_users_headers() {
   return array(
     'Brugernavn',
     'Brugertype',
+    'Brugertype info',
     'E-mail',
+    'Oprettet',
     'Aktiv',
     'Roller',
     'Fornavn',
@@ -352,24 +345,24 @@ function _kms_csv_generate_data_users_row($uid, $file, $max, &$context){
 
   $uwrapper = entity_metadata_wrapper('user', user_load($uid));
   $row = array();
+
   // Brugernavn
   $username = $uwrapper->name->value();
   $row[] = $username; 
-  // Brugertype
-  $types = array();
-  foreach ($uwrapper->field_user_type as $type) {
-    $value_check = $type->value();
-    if (empty($value_check)) {
-      continue;
-    }
-    $types[$type->tid->value()] = $type->name->value();
-  }
-  // Make sure user types are in the right order
-  ksort($types);
-  $row[] = implode(KMS_CSV_CONCAT_SEPARATOR, $types); // Brugertype
-  
+
+  // Brugertype.
+  $row[] = implode(KMS_CSV_CONCAT_SEPARATOR, _kms_csv_user_types($uwrapper));
+
+  // User type info.
+  $user_type_info = $uwrapper->field_user_type_info->value();
+  $row[] = !empty($user_type_info) ? $user_type_info : '';
+
   // E-mail
   $row[] = $uwrapper->mail->value();
+
+  // Oprettet
+  $row[] = kms_csv_date_unix_2_excel($uwrapper->created->value());
+
   // Aktiv
   $row[] = $uwrapper->status->value();
   // Roller
@@ -534,4 +527,26 @@ function kms_csv_convert_row2latin1(&$row) {
       $v = utf8_decode('Århus' . $m[1]);
     }
   });
+}
+
+/**
+ * Create user type array ordered by term id.
+ *
+ * @param object $uwrapper
+ *   Entity metadata wrapper.
+ *
+ * @return array $types
+ */
+function _kms_csv_user_types($uwrapper) {
+  $types = array();
+  foreach ($uwrapper->field_user_type as $type) {
+    $value_check = $type->value();
+    if (empty($value_check)) {
+      continue;
+    }
+    $types[$type->tid->value()] = $type->name->value();
+  }
+  // Make sure user types are in the right order
+  ksort($types);
+  return $types;
 }
