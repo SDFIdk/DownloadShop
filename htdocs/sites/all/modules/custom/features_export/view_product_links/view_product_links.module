@@ -1,7 +1,0 @@
-<?php
-/**
- * @file
- * Code for the view_product_links feature.
- */
-
-include_once 'view_product_links.features.inc';
