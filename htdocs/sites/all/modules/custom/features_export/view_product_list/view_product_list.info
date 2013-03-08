@@ -2,6 +2,7 @@ name = view_product_list
 description = view_product_list
 core = 7.x
 package = Features
+php = 5.2.4
 dependencies[] = ctools
 dependencies[] = views
 features[ctools][] = views:views_default:3.0

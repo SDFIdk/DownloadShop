@@ -22,11 +22,14 @@ function view_product_list_views_default_views() {
 
   /* Display: Master */
   $handler = $view->new_display('default', 'Master', 'default');
-  $handler->display->display_options['use_ajax'] = TRUE;
   $handler->display->display_options['use_more_always'] = FALSE;
   $handler->display->display_options['group_by'] = TRUE;
   $handler->display->display_options['access']['type'] = 'perm';
-  $handler->display->display_options['cache']['type'] = 'none';
+  $handler->display->display_options['cache']['type'] = 'time';
+  $handler->display->display_options['cache']['results_lifespan'] = '3600';
+  $handler->display->display_options['cache']['results_lifespan_custom'] = '0';
+  $handler->display->display_options['cache']['output_lifespan'] = '3600';
+  $handler->display->display_options['cache']['output_lifespan_custom'] = '0';
   $handler->display->display_options['query']['type'] = 'views_query';
   $handler->display->display_options['query']['options']['query_tags'] = array(
     0 => 'querylist',
@@ -62,6 +65,13 @@ function view_product_list_views_default_views() {
   }
 ?>';
   $handler->display->display_options['header']['area']['format'] = 'php_code';
+  /* No results behavior: Global: Text area */
+  $handler->display->display_options['empty']['area']['id'] = 'area';
+  $handler->display->display_options['empty']['area']['table'] = 'views';
+  $handler->display->display_options['empty']['area']['field'] = 'area';
+  $handler->display->display_options['empty']['area']['empty'] = TRUE;
+  $handler->display->display_options['empty']['area']['content'] = 'Der er ikke nogle resultater der matcher din søgning';
+  $handler->display->display_options['empty']['area']['format'] = 'filtered_html';
   /* Relationship: Content: Referenced product */
   $handler->display->display_options['relationships']['field_product_product_id']['id'] = 'field_product_product_id';
   $handler->display->display_options['relationships']['field_product_product_id']['table'] = 'field_data_field_product';
@@ -183,7 +193,6 @@ function view_product_list_views_default_views() {
   $handler->display->display_options['filters']['field_korttype_tid']['expose']['label'] = 'Korttype';
   $handler->display->display_options['filters']['field_korttype_tid']['expose']['operator'] = 'field_korttype_tid_op';
   $handler->display->display_options['filters']['field_korttype_tid']['expose']['identifier'] = 'korttype';
-  $handler->display->display_options['filters']['field_korttype_tid']['expose']['remember'] = TRUE;
   $handler->display->display_options['filters']['field_korttype_tid']['expose']['remember_roles'] = array(
     2 => '2',
     1 => '1',
@@ -208,7 +217,6 @@ function view_product_list_views_default_views() {
   $handler->display->display_options['filters']['field_aktualitet_tid']['expose']['label'] = 'Aktualitet';
   $handler->display->display_options['filters']['field_aktualitet_tid']['expose']['operator'] = 'field_aktualitet_tid_op';
   $handler->display->display_options['filters']['field_aktualitet_tid']['expose']['identifier'] = 'aktualitet';
-  $handler->display->display_options['filters']['field_aktualitet_tid']['expose']['remember'] = TRUE;
   $handler->display->display_options['filters']['field_aktualitet_tid']['expose']['remember_roles'] = array(
     2 => '2',
     1 => '1',
@@ -233,7 +241,6 @@ function view_product_list_views_default_views() {
   $handler->display->display_options['filters']['field_datastruktur_tid']['expose']['label'] = 'Datastruktur';
   $handler->display->display_options['filters']['field_datastruktur_tid']['expose']['operator'] = 'field_datastruktur_tid_op';
   $handler->display->display_options['filters']['field_datastruktur_tid']['expose']['identifier'] = 'datastruktur';
-  $handler->display->display_options['filters']['field_datastruktur_tid']['expose']['remember'] = TRUE;
   $handler->display->display_options['filters']['field_datastruktur_tid']['expose']['remember_roles'] = array(
     2 => '2',
     1 => '1',
@@ -257,7 +264,6 @@ function view_product_list_views_default_views() {
   $handler->display->display_options['filters']['field_scheme_tid']['expose']['label'] = 'Dataskema';
   $handler->display->display_options['filters']['field_scheme_tid']['expose']['operator'] = 'field_scheme_tid_op';
   $handler->display->display_options['filters']['field_scheme_tid']['expose']['identifier'] = 'dataskema';
-  $handler->display->display_options['filters']['field_scheme_tid']['expose']['remember'] = TRUE;
   $handler->display->display_options['filters']['field_scheme_tid']['expose']['remember_roles'] = array(
     2 => '2',
     1 => '1',
@@ -271,6 +277,14 @@ function view_product_list_views_default_views() {
   $handler->display->display_options['filters']['field_scheme_tid']['type'] = 'select';
   $handler->display->display_options['filters']['field_scheme_tid']['vocabulary'] = 'data_schema';
   $handler->display->display_options['filters']['field_scheme_tid']['error_message'] = FALSE;
+
+  /* Display: Content pane */
+  $handler = $view->new_display('panel_pane', 'Content pane', 'panel_pane_1');
+  $handler->display->display_options['defaults']['hide_admin_links'] = FALSE;
+  $handler->display->display_options['defaults']['link_display'] = FALSE;
+  $handler->display->display_options['link_display'] = 'custom_url';
+  $handler->display->display_options['link_url'] = 'content/kort-liste';
+  $handler->display->display_options['inherit_panels_path'] = '0';
   $translatables['product_list'] = array(
     t('Master'),
     t('more'),
@@ -298,6 +312,7 @@ function view_product_list_views_default_views() {
     echo $GLOBALS[\'base_url\'] . \'/\' . drupal_get_path_alias(current_path()) .\'?\' .  join(\'&\',$args);
   }
 ?>'),
+    t('Der er ikke nogle resultater der matcher din søgning'),
     t('Produkt'),
     t('<a href="[path]">[field_product_image]</a>'),
     t('<div class="content">
@@ -309,6 +324,8 @@ function view_product_list_views_default_views() {
     t('Aktualitet'),
     t('Datastruktur'),
     t('Dataskema'),
+    t('Content pane'),
+    t('View panes'),
   );
   $export['product_list'] = $view;
 
