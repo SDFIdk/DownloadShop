@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the view_kms_subuser feature.
+ */
+
+include_once 'view_kms_subuser.features.inc';
