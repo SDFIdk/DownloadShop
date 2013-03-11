@@ -1,0 +1,7 @@
+name = KMS Subuser
+package = KMS
+description = "Handles subusers"
+core = 7.x
+
+dependencies[] = relation
+dependencies[] = subuser

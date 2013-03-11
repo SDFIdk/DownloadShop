@@ -1,0 +1,22 @@
+#kms-subuser-add-form {
+  float: left;
+}
+#subuser-popup-link {
+  display: block;
+  float: left;
+  padding: 20px 5px;
+}
+#subuser-popup {
+  display: block;
+  float: left;
+}
+#subuser-popup .form-item {
+  float: left;
+  padding: 0px 8px 0px 8px;
+}
+#subuser-popup .password-strength {
+  display: none;
+}
+#subuser-popup div.password-confirm {
+  display: none;
+}

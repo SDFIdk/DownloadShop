@@ -1,0 +1,331 @@
+<?php
+/**
+ * File
+ * Kms subuser module.
+ * Handles users of users functionality (subusers).
+ */
+
+/**
+ * Fake mail used for subusers.
+ */
+define('KMS_SUBUSER_FAKE_MAIL', 'subuser@fake.mail');
+define('KMS_SUBUSER_ROLE_NAME', 'subuser');
+
+/**
+ * Implements hook_ctools_plugin_directory
+ */
+function kms_subuser_ctools_plugin_directory($module, $plugin) {
+  // we'll be nice and limit scandir() calls
+  if ($module == 'ctools') {
+    return "plugins/$plugin";
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function kms_subuser_menu() {
+  $items = array();
+
+  $items['kms-subuser/ajax/load-view/%'] = array(
+    'title' => 'Subuser load view',
+    'page callback' => 'kms_subuser_render_view',
+    'access arguments' => array('access content'),
+    'page arguments' => array(3),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_theme().
+ */
+function kms_subuser_theme($existing, $type, $theme, $path) {
+  return array(
+    'subuser_add_user_popup' => array('variables' => array('master_uid' => NULL)),
+  );
+} 
+
+/**
+ * Drupal form.
+ * Add subuser.
+ *
+ * @param array $form
+ *   Drupal form array.
+ * @param array $form_state
+ *   Drupal form state array.
+ * @param int $master_uid
+ *   The uid of the creator (master).
+ *
+ * @return array
+ *   Drupal form array.
+ */
+function kms_subuser_add_form($form, &$form_state, $master_uid) {
+  global $user;
+  
+  $form['#user'] = $user;
+  // adapt_debug('mikkel', kms_subuser_render_view(1));
+  $form['#prefix'] = '<div id="kms-subuser-add-form-wrapper">';
+  $form['#suffix'] = '</div>';
+  $form['#submit'][] = '_kms_user_submit_insert_user_oracle';
+  
+  $form['master_uid'] = array('#type' => 'hidden', '#value' => $master_uid);
+
+  $form['add_subuser'] = array(
+    '#type' => 'checkbox', 
+    '#title' => t('Add subuser'),
+  );
+
+  $states_add_subuser = array(
+    'visible' => array(
+      ':input[name="add_subuser"]' => array('checked' => TRUE),
+    ),
+  );
+  $form['name'] = array(
+    '#type' => 'textfield', 
+    '#title' => t('Username'), 
+    '#size' => 16, 
+    '#maxlength' => 128, 
+    '#required' => TRUE,
+    '#states' => $states_add_subuser,
+    '#element_validate' => array('_kms_user_validate_username'),
+  );
+  $form['pass'] = array(
+    '#type' => 'textfield', 
+    '#size' => 16, 
+    '#maxlength' => 128, 
+    '#title' => t('Password'), 
+    '#required' => TRUE,
+    '#states' => $states_add_subuser,
+  );
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+    '#submit' => array('kms_subuser_ajax_form_submit'),
+    '#ajax' => array(
+      'wrapper' => 'kms-subuser-add-form-wrapper',
+      'callback' => 'kms_subuser_ajax_callback',
+    ),
+    '#states' => $states_add_subuser,
+  );
+
+  return $form;
+}
+
+/**
+ * Add subuser ajax submit handler.
+ *
+ * @param array $form
+ *   Drupal form array.
+ * @param array $form_state
+ *   Drupal form array.
+ *
+ * @return void.
+ */
+function kms_subuser_ajax_form_submit(&$form, &$form_state) {
+  global $user;
+  //You'll get an error about undefined index without this
+  $form_state['rebuild'] = FALSE;
+  $values = $form_state['values'];
+  $new_user = array(
+    // The below name field must be unique.
+    'name' => $values['name'],
+    'pass' => $values['pass'],
+    'mail' => KMS_SUBUSER_FAKE_MAIL,
+    'init' => KMS_SUBUSER_FAKE_MAIL,
+    'status' => 1,
+    'access' => REQUEST_TIME,
+    // 'roles' => $roles,
+  );
+
+  // $account returns user object
+  $account = user_save(null, $new_user);
+  // Save subuser relation.
+  kms_subuser_save_relation($user->uid, $account->uid);
+  $form['#user'] = $account;
+  // Add account values to form_state
+  // the way the oracle insert function likes it.
+  $form_state['values'] += (array)$account;
+  // Insert user data into oracle.
+  _kms_user_submit_insert_user_oracle($form, $form_state);
+}
+
+/**
+ * Validate add-subuser-form.
+ * 
+ * @param array $form
+ *   Drupal form array.
+ * @param array $form_state
+ *   Drupal form array.
+ *
+ * @return void.
+ */
+function kms_subuser_add_form_validate($form, &$form_state) {
+  $values = $form_state['values'];
+  $user = user_load_by_name($values['name']);
+  if ($user) {
+    form_set_error("name", t('The username already exists.'));
+  }
+  user_validate_name($values['name']);
+  _kms_user_user_pass_validate_chars($values['pass']);
+}
+
+/**
+ * Drupal ajax callback function.
+ * Returns form array. That's it.
+ *
+ * @param array $form
+ *   Drupal form array.
+ * @param array $form_state
+ *   Drupal form array.
+ *
+ * @return array
+ *   Drupal form array.
+ */
+function kms_subuser_ajax_callback(&$form, &$form_state) {
+  return $form;
+}
+
+/**
+ * Render "add subuser" - pop up.
+ *
+ * @param array $vars
+ *   Theme variables.
+ *
+ * @return string
+ *   HTML.
+ */
+function theme_subuser_add_user_popup($vars) {
+  $module_path = drupal_get_path('module', 'kms_subuser');
+  $lib_datatables =  "$module_path/library/datatables";
+  $output = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'id' => array('subuser-popup'),
+    ),
+    '#attached' => array(
+      'js' => array(
+        array(
+          'data' => "$module_path/js/subuser_popup.js",
+          'type' => 'file'
+        ),
+        array(
+          'data' => "$lib_datatables/media/js/jquery.dataTables.min.js",
+          'type' => 'file'
+        ),
+      ),
+      'css' => array(
+        array(
+          'data' => "$module_path/css/subuser_popup.css",
+        ),
+        array(
+          'data' => "$lib_datatables/media/css/demo_table.css",
+        ),
+      ),
+    ),
+    'form' => drupal_get_form('kms_subuser_add_form', $vars['master_uid']),
+  );
+  return drupal_render($output);
+}
+
+/**
+ * Render view as json.
+ *
+ * @param array $args
+ *   Views arguments.
+ * @param boolean $json
+ *   Render as JSON or not.
+ * @param string $name
+ *   View name.
+ * @param string $display
+ *   View display
+ *
+ * @return string
+ *   Rendered view.
+ */
+function kms_subuser_render_view($args, $json = TRUE, $name = 'kms_subuser', $display = 'block_1'){
+  $output = views_embed_view($name, $display, $args);
+  if ($json) {
+    drupal_json_output($output);
+    drupal_exit();
+  }
+  return $output;
+}
+
+/**
+ * Save subuser relation via the Relation module.
+ *
+ * @param integer $master_uid
+ *   The uid of the creator (master).
+ * @param integer $slave_uid
+ *   The uid of the 'slave' (subuser).
+ *
+ * @return void.
+ */
+function kms_subuser_save_relation($master_uid, $slave_uid) {
+  $endpoints = array(
+    array('entity_type' => 'user', 'entity_id' => $slave_uid),
+    array('entity_type' => 'user', 'entity_id' => $master_uid),
+  );
+  $relation = relation_create('subuser', $endpoints);
+  relation_save($relation);
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function kms_subuser_form_user_pass_alter(&$form, &$form_state, $form_id) {
+  $form['#validate'][] = 'kms_subuser_validate_subuser_exist';
+}
+
+/**
+ * Validate if user is a subuser.
+ * If user is a subuser then throw a form error.
+ *
+ * @param array $form
+ *   Drupal form array.
+ * @param array $form_state
+ *   Drupal form state array.
+ *
+ * @return void
+ */
+function kms_subuser_validate_subuser_exist($form, &$form_state) {
+  // $values = $form_state['values'];
+  $name = trim($form_state['values']['name']);
+  // Try to load by email.
+  $users = user_load_multiple(array(), array('mail' => $name, 'status' => '1'));
+  $account = reset($users);
+  if (!$account) {
+    // No success, try to load by name.
+    $users = user_load_multiple(array(), array('name' => $name, 'status' => '1'));
+    $account = reset($users);
+  }
+  if (kms_subuser_is_subuser($account)) {
+    form_set_error(
+      'name',
+      t(
+        'Sorry, %name is registered as a subuser. Request password is not allowed for this type of user.',
+        array('%name' => $name)
+      )
+    );
+  }
+}
+
+/**
+ * Check if user is a subuser.
+ *
+ * @param object $user
+ *   Drupal user object.
+ *
+ * @return boolean
+ */
+function kms_subuser_is_subuser($user) {
+  // If $user is a uid then load user with that.
+  if (is_int($user)) {
+    $user = user_load($user);
+  }
+  // If user has 'subuser' role and has a related entity.
+  return in_array(KMS_SUBUSER_ROLE_NAME, $user->roles)
+  && relation_get_related_entity('user', $user->uid);
+}

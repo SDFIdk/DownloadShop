@@ -22,6 +22,13 @@ projects[filefield_paths][version] = "1.x-dev"
 projects[hierarchical_select][subdir] = "contrib"
 projects[hierarchical_select][version] = "3.x-dev"
 
+;subuser
+projects[subuser][download][type] = "git"
+projects[subuser][download][url] = "git://git.drupal.org/project/subuser.git"
+projects[subuser][subdir] = "contrib"
+projects[subuser][revision] = "83c2058004d78ea4c58dabbf7a204975e759fae9"
+
+
 projects[adapt_module][type] = 'module'
 projects[adapt_module][download][type] = 'svn'
 projects[adapt_module][download][url] = 'svn+ssh://svnhost/data/subversion/drupal/global/tags/modules/adapt-7.x-0.5'
@@ -78,6 +85,11 @@ projects[kms_csv][download][type] = "svn"
 projects[kms_csv][download][url] = "https://svnhost.adapt.dk/subversion/drupal/kms/trunk/htdocs/sites/all/modules/custom/kms_csv"
 projects[kms_csv][type] = "module"
 projects[kms_csv][subdir] = "custom"
+
+projects[kms_subuser][download][type] = "svn"
+projects[kms_subuser][download][url] = "https://svnhost.adapt.dk/subversion/drupal/kms/trunk/htdocs/sites/all/modules/custom/kms_subuser"
+projects[kms_subuser][type] = "module"
+projects[kms_subuser][subdir] = "custom"
 
 
 ; Libraries

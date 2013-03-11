@@ -134,6 +134,10 @@ projects[migrate][version] = "2.4"
 projects[references][subdir] = "contrib"
 projects[references][version] = "2.0"
 
+;oracle
+projects[oracle][subdir] = "contrib"
+projects[oracle][version] = "1.12"
+
 ;panels
 projects[panels][subdir] = "contrib"
 projects[panels][version] = "3.3"
@@ -150,6 +154,10 @@ projects[pm_existing_pages][version] = "1.4"
 projects[querypath][subdir] = "contrib"
 projects[querypath][version] = "2.1"
 
+;relation
+projects[relation][subdir] = "contrib"
+projects[relation][version] = "1.0-rc4"
+
 ;rules
 projects[rules][subdir] = "contrib"
 projects[rules][version] = "2.2"
@@ -157,6 +165,10 @@ projects[rules][version] = "2.2"
 ;securepages
 projects[securepages][subdir] = "contrib"
 projects[securepages][version] = "1.x-dev"
+
+;sharedemail
+projects[sharedemail][subdir] = "contrib"
+projects[sharedemail][version] = "1.x-dev"
 
 ;simplehtmldom
 projects[simplehtmldom][subdir] = "contrib"

@@ -190,6 +190,9 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
 }
 
 function _kms_user_user_pass_validate($form, &$form_state) {
+  if (empty($form_state['values']['pass'])) {
+    return;
+  }
   $name = trim($form_state['values']['name']);
   _kms_user_user_pass_validate_chars($form_state['values']['pass']);
   // Try to load by email.
