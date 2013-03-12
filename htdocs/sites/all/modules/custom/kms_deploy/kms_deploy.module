@@ -1,0 +1,27 @@
+<?php
+
+function kms_deploy_flush_caches() {
+  $conf = install_profile_info('kms');
+  $module_enable = !empty($conf['dependencies']) ? $conf['dependencies'] : array();
+  $module_enable += variable_get('adapt_module_enable', array());
+  $module_disable = variable_get('adapt_module_disable', array());
+
+  foreach($module_enable as $module) {
+    if (module_exists($module)) {
+      module_enable(array($module));
+    }
+  }
+
+  foreach($module_disable as $module) {
+    if (module_exists($module)) {
+      module_disable(array($module));
+    }
+  }
+
+}
+
+function kms_deploy_update_7001(&$sandbox) {
+  $role = new stdClass();
+  $role->name = KMS_SUBUSER_ROLE_NAME;
+  user_role_save($role);
+}

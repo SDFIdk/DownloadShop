@@ -1,0 +1,4 @@
+name = Kms_deploy 
+description = Kms_deploy description
+core = 7.x
+dependencies[] = aktivws

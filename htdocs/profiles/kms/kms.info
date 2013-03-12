@@ -75,6 +75,10 @@ dependencies[] = securepages
 ; Custom
 dependencies[] = adapt
 dependencies[] = adapt_metatag
+dependencies[] = view_kms_subuser
+dependencies[] = panel_edit_user_profile
+dependencies[] = kms_subuser
+dependencies[] = kms_deploy
 
 
 ; Permissions
