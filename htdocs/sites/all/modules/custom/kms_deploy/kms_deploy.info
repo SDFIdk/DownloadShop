@@ -1,3 +1,4 @@
 name = Kms_deploy 
-description = Kms_deploy description
+description = Kms_deploy
 core = 7.x
+    

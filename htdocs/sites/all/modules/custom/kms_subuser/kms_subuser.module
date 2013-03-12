@@ -129,8 +129,8 @@ function kms_subuser_ajax_form_submit(&$form, &$form_state) {
   $values = $form_state['values'];
 
   $subuser = array(
-    'name' => $values['name'],
-    'pass' => $values['pass'],
+    'name' => trim($values['name']),
+    'pass' => trim($values['pass']),
     'mail' => KMS_SUBUSER_FAKE_MAIL,
     'init' => KMS_SUBUSER_FAKE_MAIL,
     'status' => 1,
@@ -150,7 +150,7 @@ function kms_subuser_ajax_form_submit(&$form, &$form_state) {
   // the way the oracle insert function likes it.
   $form_state['values'] += (array)$saved_subuser;
   // Insert user data into oracle.
-  _kms_user_submit_insert_user_oracle($form, $form_state);
+  _kms_user_submit_insert_user_oracle($form, $form_state, TRUE);
 }
 
 /**

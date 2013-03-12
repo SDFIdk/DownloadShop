@@ -545,14 +545,18 @@ function kms_user_render_username($user) {
 EOD;
 }
 
-function _kms_user_submit_insert_user_oracle($form, &$form_state) {
+function _kms_user_submit_insert_user_oracle($form, &$form_state, $store_pass = FALSE) {
   $account = (object)$form_state['values'];
   $user = $form['#user'];
   if (empty($user->uid)) {
     return;
   }
-  // Do not store Drupal tmp password.
-  $account->pass = '';
+
+  // Do not store Drupal tmp password unless specified.
+  if ($store_pass !== TRUE) {
+    $account->pass = '';
+  }
+
   // Get default data.
   $data = _kms_user_oracle_default_user_data($account);
 
