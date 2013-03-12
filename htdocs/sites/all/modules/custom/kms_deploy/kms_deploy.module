@@ -7,9 +7,10 @@ function kms_deploy_deploy() {
   $module_enable += variable_get('adapt_module_enable', array());
   $module_disable = variable_get('adapt_module_disable', array());
 
-  // var_dump($module_enable);
   foreach($module_enable as $module) {
-    module_enable(array($module));
+    if (!in_array($module, $module_disable)) {
+      module_enable(array($module));
+    }
   }
 
   foreach($module_disable as $module) {
