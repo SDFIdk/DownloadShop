@@ -17,7 +17,26 @@ function panel_edit_user_profile_default_page_manager_pages() {
   $page->admin_description = '';
   $page->path = 'edit/profile';
   $page->access = array(
-    'plugins' => array(),
+    'plugins' => array(
+      0 => array(
+        'name' => 'role',
+        'settings' => array(
+          'rids' => array(
+            0 => 2,
+          ),
+        ),
+        'context' => 'logged-in-user',
+        'not' => FALSE,
+      ),
+      1 => array(
+        'name' => 'perm',
+        'settings' => array(
+          'perm' => 'change own username',
+        ),
+        'context' => 'logged-in-user',
+        'not' => FALSE,
+      ),
+    ),
     'logic' => 'and',
   );
   $page->menu = array();
