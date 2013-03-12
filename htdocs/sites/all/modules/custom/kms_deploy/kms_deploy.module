@@ -20,7 +20,15 @@ function kms_deploy_flush_caches() {
 
 }
 
-function kms_deploy_update_7001(&$sandbox) {
+/**
+ * Adding subuser role for the subuser system.
+ *
+ * @author Mikkel Jakobsen <mikkel@adapt.dk>
+ *
+ */
+function kms_deploy_update_7003(&$sandbox) {
+  module_load_include('module', 'kms_subuser');
+
   $role = new stdClass();
   $role->name = KMS_SUBUSER_ROLE_NAME;
   user_role_save($role);
