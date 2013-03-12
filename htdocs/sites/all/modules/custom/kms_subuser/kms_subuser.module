@@ -9,6 +9,7 @@
  * Fake mail used for subusers.
  */
 define('KMS_SUBUSER_FAKE_MAIL', 'subuser@fake.mail');
+define('KMS_SUBUSER_ROLE_ID', 9);
 define('KMS_SUBUSER_ROLE_NAME', 'subuser');
 
 /**
@@ -65,7 +66,6 @@ function kms_subuser_add_form($form, &$form_state, $master_uid) {
   global $user;
   
   $form['#user'] = $user;
-  // adapt_debug('mikkel', kms_subuser_render_view(1));
   $form['#prefix'] = '<div id="kms-subuser-add-form-wrapper">';
   $form['#suffix'] = '</div>';
   $form['#submit'][] = '_kms_user_submit_insert_user_oracle';
@@ -125,28 +125,30 @@ function kms_subuser_add_form($form, &$form_state, $master_uid) {
  */
 function kms_subuser_ajax_form_submit(&$form, &$form_state) {
   global $user;
-  //You'll get an error about undefined index without this
   $form_state['rebuild'] = FALSE;
   $values = $form_state['values'];
-  $new_user = array(
-    // The below name field must be unique.
+
+  $subuser = array(
     'name' => $values['name'],
     'pass' => $values['pass'],
     'mail' => KMS_SUBUSER_FAKE_MAIL,
     'init' => KMS_SUBUSER_FAKE_MAIL,
     'status' => 1,
     'access' => REQUEST_TIME,
-    // 'roles' => $roles,
+    'roles' => array(
+      DRUPAL_AUTHENTICATED_RID => 'authenticated user',
+      KMS_SUBUSER_ROLE_ID => KMS_SUBUSER_ROLE_NAME,
+    ),
   );
 
-  // $account returns user object
-  $account = user_save(null, $new_user);
+  // $saved_subuser returns user object
+  $saved_subuser = user_save(null, $subuser);
   // Save subuser relation.
-  kms_subuser_save_relation($user->uid, $account->uid);
-  $form['#user'] = $account;
-  // Add account values to form_state
+  kms_subuser_save_relation($user->uid, $saved_subuser->uid);
+  $form['#user'] = $saved_subuser;
+  // Add saved_subuser values to form_state
   // the way the oracle insert function likes it.
-  $form_state['values'] += (array)$account;
+  $form_state['values'] += (array)$saved_subuser;
   // Insert user data into oracle.
   _kms_user_submit_insert_user_oracle($form, $form_state);
 }
