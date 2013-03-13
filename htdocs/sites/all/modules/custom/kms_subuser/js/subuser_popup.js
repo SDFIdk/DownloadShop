@@ -1,5 +1,5 @@
 (function ($) {
-
+  var result = 0, prevResult = 0;
   Drupal.behaviors.kmsSubuserPopup = {
     attach: function(context, settings) {
 
@@ -8,7 +8,6 @@
         type: 'GET',
         success: function(xhr) {
           $('#subuser-view-wrapper').html(xhr);
-          // console.log($('#subuser-view-wrapper table'));
           $('#subuser-view-wrapper table').dataTable({
             "bPaginate": false,
             "oLanguage": {
@@ -18,9 +17,17 @@
             }
           });
 
-          if (!$('#kms-subuser-add-form-wrapper .error').length > 0) {
+           
+          result = $('#subuser-view-wrapper table td.views-field-name').length;
+          // If number of view result is increasing then clear form.
+          if (prevResult != 0 && result > prevResult) {
             $('#kms-subuser-add-form input[type="text"]').val('');
+            $('#kms-subuser-add-form textarea').text('');
+            $('#kms-subuser-add-form input[name="add_subuser"]')
+             .trigger('click').removeAttr('checked');
           }
+
+          prevResult = result;
 
         }
       });

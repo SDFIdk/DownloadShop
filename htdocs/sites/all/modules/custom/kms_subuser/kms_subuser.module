@@ -82,7 +82,13 @@ function kms_subuser_add_form($form, &$form_state, $master_uid) {
       ':input[name="add_subuser"]' => array('checked' => TRUE),
     ),
   );
-  $form['name'] = array(
+  $form['user_pass'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('user-pass-wrapper'),
+    ),
+  );
+  $form['user_pass']['name'] = array(
     '#type' => 'textfield', 
     '#title' => t('Username'), 
     '#size' => 16, 
@@ -91,12 +97,18 @@ function kms_subuser_add_form($form, &$form_state, $master_uid) {
     '#states' => $states_add_subuser,
     '#element_validate' => array('_kms_user_validate_username'),
   );
-  $form['pass'] = array(
+  $form['user_pass']['pass'] = array(
     '#type' => 'textfield', 
     '#size' => 16, 
     '#maxlength' => 128, 
     '#title' => t('Password'), 
     '#required' => TRUE,
+    '#states' => $states_add_subuser,
+  );
+  $form['user_remark'] = array(
+    '#title' => t('User remark'),
+    '#type' => 'textarea',
+    '#description' => t('Optional remarks about the user.'),
     '#states' => $states_add_subuser,
   );
   $form['submit'] = array(
@@ -125,32 +137,40 @@ function kms_subuser_add_form($form, &$form_state, $master_uid) {
  */
 function kms_subuser_ajax_form_submit(&$form, &$form_state) {
   global $user;
+
   $form_state['rebuild'] = FALSE;
   $values = $form_state['values'];
+  $name = trim($values['name']);
+  $pass = trim($values['pass']);
 
   $subuser = array(
-    'name' => trim($values['name']),
-    'pass' => trim($values['pass']),
+    'name' => $name,
+    'pass' => $pass,
     'mail' => KMS_SUBUSER_FAKE_MAIL,
     'init' => KMS_SUBUSER_FAKE_MAIL,
     'status' => 1,
     'access' => REQUEST_TIME,
-    'roles' => array(
-      DRUPAL_AUTHENTICATED_RID => 'authenticated user',
-      KMS_SUBUSER_ROLE_ID => KMS_SUBUSER_ROLE_NAME,
-    ),
+    'roles' => kms_subuser_default_roles(),
   );
 
-  // $saved_subuser returns user object
-  $saved_subuser = user_save(null, $subuser);
+  $uwrapper = entity_metadata_wrapper('user', $user);
+  // adapt_debug('mikkel', $types = _kms_csv_user_types($uwrapper));
+  // $account returns user object
+  $account = user_save(null, $subuser);
+  $suwrapper = entity_metadata_wrapper('user', $account);
+  // Save user remark.
+  $suwrapper->field_user_remark->set($values['user_remark']);
+  // Save cleartext passwd.
+  $suwrapper->field_pass_clear->set($pass);
+  // Save user type (same as master).
+  $suwrapper->field_user_type->set(array_keys(_kms_csv_user_types($uwrapper)));
+  $suwrapper->save();
+
   // Save subuser relation.
-  kms_subuser_save_relation($user->uid, $saved_subuser->uid);
-  $form['#user'] = $saved_subuser;
-  // Add saved_subuser values to form_state
-  // the way the oracle insert function likes it.
-  $form_state['values'] += (array)$saved_subuser;
+  kms_subuser_save_relation($user->uid, $account->uid);
   // Insert user data into oracle.
-  _kms_user_submit_insert_user_oracle($form, $form_state, TRUE);
+  $account->pass = $pass;
+  kms_subuser_insert_account_oracle($user, $account);
 }
 
 /**
@@ -330,4 +350,109 @@ function kms_subuser_is_subuser($user) {
   // If user has 'subuser' role and has a related entity.
   return in_array(KMS_SUBUSER_ROLE_NAME, $user->roles)
   && relation_get_related_entity('user', $user->uid);
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function kms_subuser_form_user_profile_form_alter(&$form, &$form_state, $form_id) {
+  $account = $form['#user'];
+  if (!kms_subuser_is_subuser($account)) {
+    return;
+  }
+  // Prevent editing of user name.
+  $form['account']['name']['#disabled'] = TRUE;
+  // Manipulate form.
+  $form['#after_build'][] = 'kms_subuser_user_profile_after_build';
+  // Make sure that subuser role always is set.
+  array_unshift($form['#submit'], 'kms_subuser_profile_submit');
+}
+
+/**
+ * Form after build function.
+ */
+function kms_subuser_user_profile_after_build($form, &$form_state) {
+   $hide_elements = array(
+    'field_terms_and_conditions',
+    'field_billing_address',
+    'field_bundles',
+    'field_newsletter',
+    'field_updated',
+    'field_user_remark',
+    'field_expire_date',
+    'field_debtor_nr',
+    'field_webservices_extra',
+    'field_kms_user_id',
+    'field_address',
+    'field_contact_me',
+    'field_phone',
+    'field_user_type_info',
+    'field_user_type',
+    'masquerade',
+    'metatags'
+  );
+  foreach ($form as $k => &$v) {
+    if(in_array($k, $hide_elements)) {
+      $v['#access'] = FALSE;
+    }
+  }
+  // Hide account elements.
+  $form['account']['mail']['#access'] = FALSE;
+  $form['account']['roles']['#access'] = FALSE;
+  $form['account']['status']['#access'] = FALSE;
+  $form['account']['pass']['#access'] = FALSE;
+  $form['account']['current_pass']['#access'] = FALSE;
+  // Make sure that user remark is shown.
+  $form['field_user_remark']['#access'] = TRUE;
+
+  return $form;
+}
+
+/**
+ * Returns default roles set on a subuser.
+ *
+ * @return array
+ *   Subuser roles.
+ */
+function kms_subuser_default_roles() {
+  return array(
+    DRUPAL_AUTHENTICATED_RID => 'authenticated user',
+    KMS_SUBUSER_ROLE_ID => KMS_SUBUSER_ROLE_NAME,
+  );
+}
+
+/**
+ * Subuser profile submit handler.
+ * Makes sure that default subuser roles are always set.
+ */
+function kms_subuser_profile_submit($form, &$form_state) {
+  foreach (kms_subuser_default_roles() as $k => $v) {
+    $form_state['values']['roles'][$k] = TRUE;
+  }
+}
+
+/**
+ * Save inserted subuser data into Oracle.
+ *
+ * @param object $user
+ *   Drupal user object (master).
+ * @param object $account
+ *   Drupal user object (subuser).
+ *   
+ * @return void
+ */
+function kms_subuser_insert_account_oracle($user, $account) {
+  // Get default data.
+  $data = _kms_user_oracle_default_user_data($account);
+  // Set master user id.
+  $data['user_extra'][':master_userid'] = $user->uid;
+  // Update oracle user data.
+  if (module_exists('kms_oci')) {
+    if(!kms_oci_check_userid_exists($account->uid, 'smuser_extra')){
+      kms_oci_insert($data['user_extra'], 'smuser_extra');
+    }
+    if(!kms_oci_check_userid_exists($account->uid, 'smuser')){
+      kms_oci_insert($data['user'], 'smuser');
+    }
+  }
 }

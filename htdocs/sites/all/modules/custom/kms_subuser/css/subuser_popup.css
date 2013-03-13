@@ -8,11 +8,23 @@
 }
 #subuser-popup {
   display: block;
-  float: left;
+  margin-top: 10px;
+}
+#subuser-popup label{
+  padding: 4px;
 }
 #subuser-popup .form-item {
+  padding: 0px 8px 0px 0px;
+}
+#subuser-popup .form-submit {
+  margin: 0px 8px 0px 0px;
+}
+#subuser-popup .user-pass-wrapper .form-item {
   float: left;
-  padding: 0px 8px 0px 8px;
+}
+#subuser-popup .form-item-user-remark {
+  clear: both;
+  padding: 5px 8px 5px 0px;
 }
 #subuser-popup .password-strength {
   display: none;
@@ -20,3 +32,7 @@
 #subuser-popup div.password-confirm {
   display: none;
 }
+
+/*
+form-item form-type-textarea form-item-user-comment
+*/
