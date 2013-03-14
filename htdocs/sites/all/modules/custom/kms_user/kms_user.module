@@ -153,10 +153,13 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
           '#weight' => -100,
         );
 
-        // Add to js if user is super admin.
+        // Add user settings to js.
         drupal_add_js(
           array(
-            'kms_user' => array('isSuperAdmin' => kms_user_is_superadmin($user))
+            'kms_user' => array(
+              'isSuperAdmin' => kms_user_is_superadmin($user),
+              'uid' => $user->uid,
+              ),
           ),
           'setting'
         );

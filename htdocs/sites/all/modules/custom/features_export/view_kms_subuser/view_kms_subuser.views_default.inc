@@ -25,8 +25,10 @@ function view_kms_subuser_views_default_views() {
   $handler->display->display_options['title'] = 'Subusers';
   $handler->display->display_options['use_ajax'] = TRUE;
   $handler->display->display_options['use_more_always'] = FALSE;
-  $handler->display->display_options['access']['type'] = 'perm';
-  $handler->display->display_options['access']['perm'] = 'create subuser 2';
+  $handler->display->display_options['access']['type'] = 'role';
+  $handler->display->display_options['access']['role'] = array(
+    2 => '2',
+  );
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
   $handler->display->display_options['exposed_form']['type'] = 'basic';
@@ -69,6 +71,9 @@ function view_kms_subuser_views_default_views() {
   $handler->display->display_options['relationships']['relation_subuser_user']['table'] = 'users';
   $handler->display->display_options['relationships']['relation_subuser_user']['field'] = 'relation_subuser_user';
   $handler->display->display_options['relationships']['relation_subuser_user']['required'] = TRUE;
+  $handler->display->display_options['relationships']['relation_subuser_user']['r_index'] = '0';
+  $handler->display->display_options['relationships']['relation_subuser_user']['entity_deduplication_left'] = 0;
+  $handler->display->display_options['relationships']['relation_subuser_user']['entity_deduplication_right'] = 0;
   /* Field: User: Name */
   $handler->display->display_options['fields']['name']['id'] = 'name';
   $handler->display->display_options['fields']['name']['table'] = 'users';

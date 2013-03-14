@@ -1,6 +1,7 @@
 name = view_kms_subuser
 core = 7.x
 package = Features
+php = 5.2.4
 dependencies[] = ctools
 dependencies[] = views
 features[ctools][] = views:views_default:3.0

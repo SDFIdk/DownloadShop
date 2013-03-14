@@ -29,12 +29,14 @@ function panel_edit_user_profile_default_page_manager_pages() {
         'not' => FALSE,
       ),
       1 => array(
-        'name' => 'perm',
+        'name' => 'role',
         'settings' => array(
-          'perm' => 'change own username',
+          'rids' => array(
+            0 => 9,
+          ),
         ),
         'context' => 'logged-in-user',
-        'not' => FALSE,
+        'not' => TRUE,
       ),
     ),
     'logic' => 'and',

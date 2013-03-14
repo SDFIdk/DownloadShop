@@ -2,9 +2,9 @@
   var result = 0, prevResult = 0;
   Drupal.behaviors.kmsSubuserPopup = {
     attach: function(context, settings) {
-
+      // console.log(settings.kms_user);
       $.ajax({
-        url: '/kms-subuser/ajax/load-view/1',
+        url: '/kms-subuser/ajax/load-view/' + settings.kms_user.uid,
         type: 'GET',
         success: function(xhr) {
           $('#subuser-view-wrapper').html(xhr);
