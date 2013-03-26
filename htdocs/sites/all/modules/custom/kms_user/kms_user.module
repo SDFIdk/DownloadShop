@@ -581,8 +581,7 @@ function _kms_user_submit_insert_user_oracle($form, &$form_state) {
     $data['user_extra'][':contact_me']
     = $account->field_contact_me[LANGUAGE_NONE][0]['value'];
   }
-
-  // Update oracle user data.
+  // Insert oracle user data.
   if (module_exists('kms_oci')) {
     if(!kms_oci_check_userid_exists($account->uid, 'smuser_extra')){
       kms_oci_insert($data['user_extra'], 'smuser_extra');
@@ -600,6 +599,7 @@ function _kms_user_oracle_default_user_data($account) {
     ':userid' => $account->uid,
     ':name' =>  $account->name,
     ':emailaddress' => $account->mail,
+    ':disabled' => 0,
   );
 
   if (!empty($account->pass)) {
