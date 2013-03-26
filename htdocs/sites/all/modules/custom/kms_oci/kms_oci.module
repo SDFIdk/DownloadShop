@@ -67,7 +67,10 @@ function kms_oci_get_conn() {
  */
 function kms_oci_insert($data, $table) {
   // Only use variables with values.
-  $data = array_filter($data);
+  $data = array_filter($data, function($v){
+    return $v == 0 || !empty($v);
+  });
+
 
   $keys = array_keys($data);
   $pholders = implode(', ', $keys);
@@ -92,7 +95,9 @@ function kms_oci_insert($data, $table) {
  */
 function kms_oci_update($data, $table) {
   // Only use variables with values.
-  $data = array_filter($data);
+  $data = array_filter($data, function($v){
+    return $v == 0 || !empty($v);
+  });
 
   $values = array();
   array_walk($data, function($v, $k) use (&$values) {
