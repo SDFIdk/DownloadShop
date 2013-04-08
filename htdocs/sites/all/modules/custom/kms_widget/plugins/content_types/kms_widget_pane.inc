@@ -1,4 +1,4 @@
-  <?php
+<?php
 
 $plugin = array(
   'title' => t('KMS map widget'),
@@ -14,10 +14,14 @@ $plugin = array(
  */
 
 function kms_widget_pane_render($subtype, $conf, $panel_args, $context) {
-
+  
   if (empty($_COOKIE['downloadticket'])) {
-    preg_match("/^(.+):/", $_SERVER['HTTP_HOST'], $matches);
-    $domain = $matches[1];
+    
+    $domain = $_SERVER['HTTP_HOST'];
+    
+    if (preg_match("/^(.+):/", $_SERVER['HTTP_HOST'], $matches))
+      $domain = $matches[1];
+
     $ticket = file_get_contents("http://kortforsyningen.kms.dk/?request=GetTicket&login=nikam&password=KMS2012");
     setcookie("downloadticket", $ticket, time()+60*60*24, '/', $domain); 
   }
@@ -71,7 +75,10 @@ function kms_widget_pane_render($subtype, $conf, $panel_args, $context) {
       break;    
     case 3526: 
       drupal_add_js(drupal_get_path('module', 'kms_widget').'/js/kms-geojson.js');
-      break;    
+      break;
+    case 3582: 
+      drupal_add_js(drupal_get_path('module', 'kms_widget').'/js/kms-tomtest.js');
+      break;     
   }
 
  
