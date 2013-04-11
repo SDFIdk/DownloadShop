@@ -385,7 +385,7 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
   unset($data['user_extra'][':usertype_info']);
 
   // smuser.
-  $data['user']['disabled'] = (integer)!$account->status;
+  $data['user'][':disabled'] = (integer)!$account->status;
   if (!empty($account->field_address[LANGUAGE_NONE][0]['first_name'])) {
     $data['user'][':firstname'] =
     $account->field_address[LANGUAGE_NONE][0]['first_name'];
