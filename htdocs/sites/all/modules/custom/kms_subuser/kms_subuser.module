@@ -44,7 +44,12 @@ function kms_subuser_menu() {
  */
 function kms_subuser_theme($existing, $type, $theme, $path) {
   return array(
-    'subuser_add_user_popup' => array('variables' => array('master_uid' => NULL)),
+    'subuser_add_user_popup' => array(
+      'variables' => array('master_user' => NULL),
+    ),
+    'subuser_info' => array(
+      'variables' => array('master_user' => NULL),
+    ),
   );
 } 
 
@@ -56,13 +61,13 @@ function kms_subuser_theme($existing, $type, $theme, $path) {
  *   Drupal form array.
  * @param array $form_state
  *   Drupal form state array.
- * @param int $master_uid
- *   The uid of the creator (master).
+ * @param object $master_user
+ *   The user object of the creator (master).
  *
  * @return array
  *   Drupal form array.
  */
-function kms_subuser_add_form($form, &$form_state, $master_uid) {
+function kms_subuser_add_form($form, &$form_state, $master_user) {
   global $user;
   
   $form['#user'] = $user;
@@ -70,7 +75,7 @@ function kms_subuser_add_form($form, &$form_state, $master_uid) {
   $form['#suffix'] = '</div>';
   $form['#submit'][] = '_kms_user_submit_insert_user_oracle';
   
-  $form['master_uid'] = array('#type' => 'hidden', '#value' => $master_uid);
+  $form['master_uid'] = array('#type' => 'hidden', '#value' => $master_user->uid);
 
   $form['add_subuser'] = array(
     '#type' => 'checkbox', 
@@ -116,6 +121,7 @@ function kms_subuser_add_form($form, &$form_state, $master_uid) {
     '#value' => t('Save'),
     '#submit' => array('kms_subuser_ajax_form_submit'),
     '#ajax' => array(
+
       'wrapper' => 'kms-subuser-add-form-wrapper',
       'callback' => 'kms_subuser_ajax_callback',
     ),
@@ -154,7 +160,6 @@ function kms_subuser_ajax_form_submit(&$form, &$form_state) {
   );
 
   $uwrapper = entity_metadata_wrapper('user', $user);
-  // adapt_debug('mikkel', $types = _kms_csv_user_types($uwrapper));
   // $account returns user object
   $account = user_save(null, $subuser);
   $suwrapper = entity_metadata_wrapper('user', $account);
@@ -171,6 +176,10 @@ function kms_subuser_ajax_form_submit(&$form, &$form_state) {
   // Insert user data into oracle.
   $account->pass = $pass;
   kms_subuser_insert_account_oracle($user, $account);
+  
+  $subuser = $account;
+  $subuser->master = $user;
+  kms_subuser_send_mail('register_subuser', $subuser);
 }
 
 /**
@@ -246,8 +255,89 @@ function theme_subuser_add_user_popup($vars) {
         ),
       ),
     ),
-    'form' => drupal_get_form('kms_subuser_add_form', $vars['master_uid']),
+    'form' => drupal_get_form('kms_subuser_add_form', $vars['master_user']),
   );
+  return drupal_render($output);
+}
+
+/**
+ * Render certain user fields for a subuser.
+ *
+ * @param array $vars
+ *   Drupal theme vars.
+ *
+ * @return string
+ *   HTML.
+ */
+function theme_subuser_info($vars) {
+  $master_user = $vars['master_user'];
+
+  $uwrapper = entity_metadata_wrapper('user', $master_user);
+  $module_path = drupal_get_path('module', 'kms_subuser');
+  
+  $output = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'id' => array('subuser-info'),
+    ),
+    'firstname' => array(
+      'label' => array(
+        '#markup' => t('First name'),
+      ),
+      'value' => array(
+        '#markup' => $uwrapper->field_address->first_name->value(),
+      ),
+    ),
+    'lastname' => array(
+      'label' => array(
+        '#markup' => t('Last name'),
+      ),
+      'value' => array(
+        '#markup' => $uwrapper->field_address->last_name->value(),
+      ),
+    ),
+    'usertype' => array(
+      'label' => array(
+        '#markup' => t('Company'),
+      ),
+      'value' => array(
+        '#markup' => implode(', ', _kms_csv_user_types($uwrapper)),
+      ),
+    ),
+    'phone' => array(
+      'label' => array(
+        '#markup' => t('Phone'),
+      ),
+      'value' => array(
+        '#markup' => $uwrapper->field_phone->value(),
+      ),
+    ),
+    'mail' => array(
+      'label' => array(
+        '#markup' => t('Mail'),
+      ),
+      'value' => array(
+        '#markup' => $uwrapper->mail->value(),
+      ),
+    ),
+  );
+  
+  array_walk($output, function(&$el) {
+    if (!is_array($el)) {
+      return;
+    }
+    if (array_key_exists('label', $el)) {
+      $el['label']['#type'] = 'markup';
+      $el['label']['#prefix'] = '<label>';
+      $el['label']['#suffix'] = ':</label>';
+    }
+    if (array_key_exists('value', $el)) {
+      $el['value']['#type'] = 'markup';
+      $el['value']['#prefix'] = '<p>';
+      $el['value']['#suffix'] = '</p>';
+    }
+  });
+
   return drupal_render($output);
 }
 
@@ -356,16 +446,29 @@ function kms_subuser_is_subuser($user) {
  * Implements hook_form_FORM_ID_alter().
  */
 function kms_subuser_form_user_profile_form_alter(&$form, &$form_state, $form_id) {
+  global $user;
   $account = $form['#user'];
+  // If the user account being edited is not a subuser account
+  // we will not make any modifications.
   if (!kms_subuser_is_subuser($account)) {
     return;
   }
+  $master_user = relation_get_related_entity('user', $account->uid);
+  // Show subuser relation.
+  $form['#prefix'] = t(
+    '%subuser is a subuser of %master',
+    array('%subuser' => $account->name, '%master' => $master_user->name)
+  );
   // Prevent editing of user name.
   $form['account']['name']['#disabled'] = TRUE;
   // Manipulate form.
   $form['#after_build'][] = 'kms_subuser_user_profile_after_build';
   // Make sure that subuser role always is set.
   array_unshift($form['#submit'], 'kms_subuser_profile_submit');
+  // If the logged in user is a subuser strip down form.
+  if (kms_subuser_is_subuser($user)) {
+    unset($form['actions']);
+  }
 }
 
 /**
@@ -455,4 +558,159 @@ function kms_subuser_insert_account_oracle($user, $account) {
       kms_oci_insert($data['user'], 'smuser');
     }
   }
+}
+
+function kms_subuser_form_user_admin_settings_alter(&$form, &$form_state, $form_id) {
+  $mail_text = _kms_subuser_mail_text('register_subuser');
+
+  $form['email_register_subuser'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('New subuser created'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+    '#description' => t('Edit the e-mail messages sent to the creator of a subuser account.'),
+    '#group' => 'email',
+  );
+
+  $form['email_register_subuser']['user_mail_register_subuser_subject'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Subject'),
+    '#default_value' => $mail_text['subject'],
+    '#maxlength' => 180,
+  );
+  $form['email_register_subuser']['user_mail_register_subuser_body'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Body'),
+    '#default_value' => $mail_text['body'],
+    '#rows' => 15,
+  );
+}
+
+function kms_subuser_mail($key, &$message, $params) {
+  switch ($key) {
+    case 'register_subuser':
+      $mail_text = _kms_subuser_mail_text('register_subuser');
+      $message['subject'] = token_replace(
+        $mail_text['subject'],
+        array('subuser' => $params['subuser']),
+        array('language' => language_default(),
+        'callback' => 'user_mail_tokens',
+        'sanitize' => FALSE,
+        'clear' => TRUE
+        )
+      );
+      $message['body'][] = token_replace(
+        $mail_text['body'],
+        array('subuser' => $params['subuser']),
+        array('language' => language_default(),
+        'callback' => 'user_mail_tokens',
+        'sanitize' => FALSE,
+        'clear' => TRUE
+        )
+      );
+      break;
+  }
+}
+
+function _kms_subuser_mail_text($type){
+  switch ($type) {
+    case 'register_subuser':
+      return array(
+        'subject' => variable_get(
+          'user_mail_register_subuser_subject',
+          t('New subuser created: [subuser:name]')
+        ),
+        'body' => variable_get(
+          'user_mail_register_subuser_body',
+          t('Dear [subuser:master_name]. A new subuser was created with credentials:
+    Name: [subuser:name]
+    Password: [subuser:password]
+          ')
+        ),
+      );
+      break;
+  }
+}
+
+function kms_subuser_send_mail($type, $subuser) {
+  if (empty($subuser) || empty($subuser->master) || empty($subuser->master->mail)) {
+    drupal_set_message(t('Subuser data missing. Could not send mail.'), 'error');
+  }
+
+  $result = drupal_mail(
+    'kms_subuser',
+    $type,
+    $subuser->master->mail,
+    language_default(),
+    array('subuser' => $subuser)
+  );
+
+  if ($result['result'] == TRUE) {
+    drupal_set_message(
+      t(
+        'Subuser credentials sent to @master_mail.',
+        array('@master_mail' => $subuser->master->mail)
+      )
+    );
+  }
+  else {
+    drupal_set_message(
+      t('There was a problem sending your message and it was not sent.'),
+      'error'
+    );
+  }
+  
+}
+
+function kms_subuser_token_info() {
+  $info['types']['subuser'] = array(
+    'name' => t('Subuser'),
+    'description' => t('Tokens related to a subuser.'),
+    'needs-data' => 'subuser',
+  );
+
+  $info['tokens']['subuser']['name'] = array(
+    'name' => t('Name'),
+    'description' => t("The user name of the subuser."),
+  );
+  $info['tokens']['subuser']['pass'] = array(
+    'name' => t('Password'),
+    'description' => t("The password of the subuser."),
+  );
+  $info['tokens']['subuser']['master_name'] = array(
+    'name' => t('Master name'),
+    'description' => t("The user name of the master of the subuser."),
+  );
+
+  return $info;
+}
+
+/**
+ * Implements hook_tokens().
+ *
+ * @ingroup kms_subuser
+ */
+function kms_subuser_tokens($type, $tokens, array $data = array(), array $options = array()) {
+  $replacements = array();
+
+  if ($type == 'subuser' && !empty($data['subuser'])) {
+    $subuser = $data['subuser'];
+
+    foreach ($tokens as $name => $original) {
+      switch ($name) {
+        case 'name':
+          $replacements[$original] = $subuser->name;
+          break;
+        case 'pass':
+          $replacements[$original] = $subuser->pass;
+          break;
+        case 'master_name':
+          $replacements[$original] = $subuser->master->name;
+          break;
+      }
+    }
+  }
+
+
+  return $replacements;
 }

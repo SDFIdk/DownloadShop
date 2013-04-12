@@ -30,11 +30,26 @@ function add_subuser_plugin_edit_form_submit($form, &$form_state) {
 }
 
 function add_subuser_plugin_render($subtype, $conf, $panel_args, $context) {
+  global $user;
+  // $user = user_load($user->uid);
+  // 
+// die;
+
   $block = new stdClass();
-  $block->content = $block->subject = '';
-  $popup = theme('subuser_add_user_popup', array('master_uid' => 15));
-  // $view = kms_subuser_render_view(1, FALSE);
-  $block->content = $popup . '<div id="subuser-view-wrapper"></div>';
+  $block->subject = $block->subject = '';
+  if (!kms_subuser_is_subuser($user)) {
+    $block->content = theme(
+      'subuser_add_user_popup',
+      array('master_user' => $user)
+    );
+    $block->content .= '<div id="subuser-view-wrapper"></div>';
+  }
+  else {
+    $master_user = relation_get_related_entity('user', $user->uid);
+    if (!empty($master_user)) {
+      $block->content = theme('subuser_info', array('master_user' => $master_user));
+    }
+  }
   return $block;
 }
 
