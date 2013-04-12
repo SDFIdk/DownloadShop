@@ -602,7 +602,7 @@ function _kms_user_oracle_default_user_data($account) {
     ':disabled' => 0,
   );
 
-  if (!empty($account->pass)) {
+  if (!empty($account->pass) && !kms_user_password_is_encrypted($account->pass)) {
     $data['user'][':password'] = $account->pass;
   }
 
@@ -717,3 +717,6 @@ CREATE TABLE smuser_extra (
 );
 
  */
+function kms_user_password_is_encrypted($pass) {
+  return (bool)preg_match('/^\$S\$[0-9a-fA-Z.\/]{52}$/i', $pass);
+}
