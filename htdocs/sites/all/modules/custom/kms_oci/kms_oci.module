@@ -253,9 +253,11 @@ function kms_oci_send_mail($message, $module = 'kms_oci') {
   $mail_conf = array(
     'id' => $module . '_' . $token,
     'to' => $message['to'],
+    'from' => $message['from'],
     'subject' => $message['subject'],
     'body' => array($message['body']),
     'headers' => array(
+      'Content-Type' => 'text/plain; charset=UTF-8;',
       'From' => $message['from'], 
       'Sender' => $message['from'], 
       'Return-Path' => $message['from'],
