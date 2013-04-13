@@ -6,3 +6,4 @@ core = 7.x
 dependencies[] = relation
 dependencies[] = subuser
 dependencies[] = kms_csv
+dependencies[] = date_popup

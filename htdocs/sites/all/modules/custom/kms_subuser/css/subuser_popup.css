@@ -13,14 +13,16 @@
 #subuser-popup label{
   padding: 4px;
 }
-#subuser-popup .form-item {
+#subuser-popup .form-item, #subuser-popup .container-inline-date {
   padding: 0px 8px 0px 0px;
 }
 #subuser-popup .form-submit {
   margin: 0px 8px 0px 0px;
 }
 #subuser-popup .user-pass-wrapper .form-item {
+/*#subuser-popup .user-pass-wrapper .container-inline-date {*/
   float: left;
+  /*width: 140px;*/
 }
 #subuser-popup .form-item-user-remark {
   clear: both;
@@ -32,7 +34,27 @@
 #subuser-popup div.password-confirm {
   display: none;
 }
+#subuser-popup .container-inline-date {
+  display: block;
+  clear: none;
+}
+#subuser-popup .container-inline-date .date-padding {
+  padding: 0px;
+}
+#subuser-popup #edit-user-expire label{
+  display: none;
+}
+#subuser-popup .clear-both{
+  clear: both;
+}
 
+#subuser-popup #kms-subuser-add-form-wrapper{
+  /*width: 400px;*/
+/*  border: 1px dashed lightGrey;
+  background: #EAEBFF;
+*/  padding: 5px;
+  margin-bottom: 10px;
+}
 /*
 form-item form-type-textarea form-item-user-comment
-*/
+

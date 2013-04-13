@@ -72,7 +72,7 @@ function kms_subuser_add_form($form, &$form_state, $master_user) {
   
   $form['#user'] = $user;
   $form['#prefix'] = '<div id="kms-subuser-add-form-wrapper">';
-  $form['#suffix'] = '</div>';
+  $form['#suffix'] = '<div class="clear-both">&nbsp;</div></div>';
   $form['#submit'][] = '_kms_user_submit_insert_user_oracle';
   
   $form['master_uid'] = array('#type' => 'hidden', '#value' => $master_user->uid);
@@ -110,6 +110,15 @@ function kms_subuser_add_form($form, &$form_state, $master_user) {
     '#required' => TRUE,
     '#states' => $states_add_subuser,
   );
+  $form['user_expire'] = array(
+    '#title' => t('Expire date'),
+    '#type' => 'date_popup',
+    '#date_type' => DATE_UNIX,
+    '#size' => 16, 
+    '#description' => t('(optional) Select when user expires. Leave empty for never.'),
+    '#date_format' => 'd.m.Y',
+    '#states' => $states_add_subuser,
+  );
   $form['user_remark'] = array(
     '#title' => t('User remark'),
     '#type' => 'textarea',
@@ -121,7 +130,6 @@ function kms_subuser_add_form($form, &$form_state, $master_user) {
     '#value' => t('Save'),
     '#submit' => array('kms_subuser_ajax_form_submit'),
     '#ajax' => array(
-
       'wrapper' => 'kms-subuser-add-form-wrapper',
       'callback' => 'kms_subuser_ajax_callback',
     ),
@@ -165,6 +173,10 @@ function kms_subuser_ajax_form_submit(&$form, &$form_state) {
   $suwrapper = entity_metadata_wrapper('user', $account);
   // Save user remark.
   $suwrapper->field_user_remark->set($values['user_remark']);
+  // Save expire.
+  if(!empty($values['user_expire'])){
+    $suwrapper->field_expire_date->set(strtotime($values['user_expire']));
+  }
   // Save cleartext passwd.
   $suwrapper->field_pass_clear->set($pass);
   // Save user type (same as master).
@@ -177,9 +189,16 @@ function kms_subuser_ajax_form_submit(&$form, &$form_state) {
   $account->pass = $pass;
   kms_subuser_insert_account_oracle($user, $account);
   
-  $subuser = $account;
-  $subuser->master = $user;
-  kms_subuser_send_mail('register_subuser', $subuser);
+  // $subuser = $account;
+  // $subuser->master = $user;
+  // $subuser->expire_date = strtotime('+1 week');
+  $subuser = kms_subuser_load($account->uid);
+  if ($subuser) {
+    kms_subuser_send_mail('register_subuser', $subuser);
+  }
+  else{
+    drupal_set_message(t('There was a problem creating the subuser.'), 'error');
+  }
 }
 
 /**
@@ -449,8 +468,9 @@ function kms_subuser_form_user_profile_form_alter(&$form, &$form_state, $form_id
   global $user;
   $account = $form['#user'];
   // If the user account being edited is not a subuser account
+  // or the user has uid = 1
   // we will not make any modifications.
-  if (!kms_subuser_is_subuser($account)) {
+  if ($user->uid == 1 || !kms_subuser_is_subuser($account)) {
     return;
   }
   $master_user = relation_get_related_entity('user', $account->uid);
@@ -560,6 +580,9 @@ function kms_subuser_insert_account_oracle($user, $account) {
   }
 }
 
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
 function kms_subuser_form_user_admin_settings_alter(&$form, &$form_state, $form_id) {
   $mail_text = _kms_subuser_mail_text('register_subuser');
 
@@ -586,6 +609,9 @@ function kms_subuser_form_user_admin_settings_alter(&$form, &$form_state, $form_
   );
 }
 
+/**
+ * Implements hook_mail().
+ */
 function kms_subuser_mail($key, &$message, $params) {
   switch ($key) {
     case 'register_subuser':
@@ -612,6 +638,14 @@ function kms_subuser_mail($key, &$message, $params) {
   }
 }
 
+/**
+ * Subuser mail definitions (subject/body).
+ *
+ * @param string $type
+ *   Type of mail message. Ex.: 'register_subuser'.
+ *
+ * @return array
+ */
 function _kms_subuser_mail_text($type){
   switch ($type) {
     case 'register_subuser':
@@ -632,6 +666,16 @@ function _kms_subuser_mail_text($type){
   }
 }
 
+/**
+ * Send subuser related mail.
+ *
+ * @param string $type
+ *   Type of mail message. Ex.: 'register_subuser'.
+ * @param object $subuser
+ *   Subuser user object.
+ *
+ * @return void.
+ */
 function kms_subuser_send_mail($type, $subuser) {
   if (empty($subuser) || empty($subuser->master) || empty($subuser->master->mail)) {
     drupal_set_message(t('Subuser data missing. Could not send mail.'), 'error');
@@ -662,24 +706,25 @@ function kms_subuser_send_mail($type, $subuser) {
   
 }
 
+/**
+ * Implements hook_token_info().
+ */
 function kms_subuser_token_info() {
-  $info['types']['subuser'] = array(
-    'name' => t('Subuser'),
-    'description' => t('Tokens related to a subuser.'),
-    'needs-data' => 'subuser',
-  );
-
-  $info['tokens']['subuser']['name'] = array(
-    'name' => t('Name'),
+  $info['tokens']['user']['subuser:name'] = array(
+    'name' => t('Subuser: Name'),
     'description' => t("The user name of the subuser."),
   );
-  $info['tokens']['subuser']['pass'] = array(
-    'name' => t('Password'),
-    'description' => t("The password of the subuser."),
+  $info['tokens']['user']['subuser:pass_clear'] = array(
+    'name' => t('Subuser: Password (clear text)'),
+    'description' => t("The clear text password of the subuser."),
   );
-  $info['tokens']['subuser']['master_name'] = array(
-    'name' => t('Master name'),
+  $info['tokens']['user']['subuser:master_name'] = array(
+    'name' => t('Subuser: Master name'),
     'description' => t("The user name of the master of the subuser."),
+  );
+  $info['tokens']['user']['subuser:expire_date'] = array(
+    'name' => t('Subuser: Expire date'),
+    'description' => t("The date when the subuser expires."),
   );
 
   return $info;
@@ -687,30 +732,73 @@ function kms_subuser_token_info() {
 
 /**
  * Implements hook_tokens().
- *
- * @ingroup kms_subuser
  */
 function kms_subuser_tokens($type, $tokens, array $data = array(), array $options = array()) {
   $replacements = array();
 
-  if ($type == 'subuser' && !empty($data['subuser'])) {
+  if ($type == 'user' && !empty($data['subuser'])) {
     $subuser = $data['subuser'];
 
     foreach ($tokens as $name => $original) {
       switch ($name) {
-        case 'name':
+        case 'subuser:name':
           $replacements[$original] = $subuser->name;
           break;
-        case 'pass':
-          $replacements[$original] = $subuser->pass;
+        case 'subuser:pass_clear':
+          $replacements[$original] = $subuser->pass_clear;
           break;
-        case 'master_name':
+        case 'subuser:master_name':
           $replacements[$original] = $subuser->master->name;
+          break;
+        case 'subuser:expire_date':
+          if (!empty($subuser->expire_date)) {
+            $replacements[$original] = format_date(
+              $subuser->expire_date,
+              'subuser_date'
+            );
+          }
+          else {
+            $replacements[$original] = t('never');
+          }
           break;
       }
     }
   }
 
-
   return $replacements;
+}
+
+/**
+ * Load a subuser.
+ *
+ * @param integer $uid
+ *   Drupal user id.
+ *
+ * @return ḿixed
+ *   Object / FALSE
+ */
+function kms_subuser_load($uid) {
+  $subuser = user_load($uid);
+  if(!kms_subuser_is_subuser($subuser)) {
+    return FALSE;
+  }
+
+  $subuser->master = relation_get_related_entity('user', $uid);
+  $subuser->expire_date = $subuser->pass_clear = '';
+  
+  if (
+    !empty($subuser->field_expire_date)
+    && !empty($subuser->field_expire_date[LANGUAGE_NONE][0]['value'])
+  ) {
+    $subuser->expire_date = $subuser->field_expire_date[LANGUAGE_NONE][0]['value'];
+  }
+
+  if (
+    !empty($subuser->field_pass_clear)
+    && !empty($subuser->field_pass_clear[LANGUAGE_NONE][0]['value'])
+  ) {
+    $subuser->pass_clear = $subuser->field_pass_clear[LANGUAGE_NONE][0]['value'];
+  }
+
+  return $subuser;
 }
