@@ -28,16 +28,6 @@ function panel_edit_user_profile_default_page_manager_pages() {
         'context' => 'logged-in-user',
         'not' => FALSE,
       ),
-      1 => array(
-        'name' => 'role',
-        'settings' => array(
-          'rids' => array(
-            0 => 9,
-          ),
-        ),
-        'context' => 'logged-in-user',
-        'not' => TRUE,
-      ),
     ),
     'logic' => 'and',
   );
