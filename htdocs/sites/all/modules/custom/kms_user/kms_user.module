@@ -471,7 +471,7 @@ function _kms_user_insert_user_pass($form, &$form_state) {
   // The password has changed and we need to store the new password
   // But we first need to check if the user is already registered
   $new_pass = $form_state['user']->pass;
-  if ($new_pass) {
+  if ($new_pass && !kms_user_password_is_encrypted($new_pass)) {
     $pass_exists = db_select('field_data_field_pass_clear', 'fpc')
       ->fields('fpc', array('field_pass_clear_value'))
       ->condition('entity_id', $form['#user']->uid, '=')
