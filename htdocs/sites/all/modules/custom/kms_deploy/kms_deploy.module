@@ -29,8 +29,58 @@ function kms_deploy_deploy() {
  */
 function kms_deploy_update_7003(&$sandbox) {
   module_load_include('module', 'kms_subuser');
+  if(!user_role_load_by_name(KMS_SUBUSER_ROLE_NAME)) {
+    $role = new stdClass();
+    $role->name = KMS_SUBUSER_ROLE_NAME;
+    user_role_save($role);
+  }
+}
 
-  $role = new stdClass();
-  $role->name = KMS_SUBUSER_ROLE_NAME;
-  user_role_save($role);
+
+function kms_deploy_update_7005(&$sandbox) {
+  $format = 'd.m.Y';
+  db_insert('date_formats')
+  ->fields(array(
+    'format' => $format,  
+    'type' => 'custom',          
+    'locked' => 0,               
+  ))
+  ->execute();
+
+  db_insert('date_format_type')
+  ->fields(array(
+    'type' => 'subuser_date',  
+    'title' => 'Subuser date', 
+    'locked' => 0,        
+  ))
+  ->execute();
+
+  variable_set('date_format_subuser_date', $format);
+}
+
+/**
+ * Adding subuser mail text.
+ *
+ * @author Mikkel Jakobsen <mikkel@adapt.dk>
+ *
+ */
+function kms_deploy_update_7006(&$sandbox) {
+  $variables['user_mail_register_subuser_subject'] = 'Ny underbruger oprettet på [site:name]';
+  $variables['user_mail_register_subuser_body'] = 'Kære  [user:subuser:master_name]
+
+  Du har registreret en underbruger til din eksisterende brugerprofil (med tilknyttet emailadresse) hos Kortforsyningen.
+   
+  Brugernavn:        [user:subuser:name]
+  Adgangskode:     [user:subuser:pass_clear]
+   
+  Ovennævnte underbrugers adgang til Kortforsyningens webtjenester og download er tidsbegrænset og udløber [user:subuser:expire_date]
+   
+  Ønsker du at ændre underbrugers adgangsprofil eller få overblik over øvrige underbrugerprofiler gøres det via din egen brugerprofil. Log på her: [site:login-url]
+
+  -- Med venlig hilsen Kortforsyningen';
+  
+  foreach($variables as $k => $v) {
+    variable_set($k, $v);
+  }
+
 }

@@ -1,4 +1,4 @@
-<?php
+  <?php
 /**
  * File
  * Kms subuser module.
@@ -658,7 +658,8 @@ function _kms_subuser_mail_text($type){
           'user_mail_register_subuser_body',
           t('Dear [subuser:master_name]. A new subuser was created with credentials:
     Name: [subuser:name]
-    Password: [subuser:password]
+    Password: [subuser:pass_clear]
+    It expires: [subuser:expire_date]
           ')
         ),
       );
