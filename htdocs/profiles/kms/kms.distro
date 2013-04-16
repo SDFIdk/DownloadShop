@@ -91,6 +91,11 @@ projects[kms_subuser][download][url] = "https://svnhost.adapt.dk/subversion/drup
 projects[kms_subuser][type] = "module"
 projects[kms_subuser][subdir] = "custom"
 
+projects[kms_deploy][download][type] = "svn"
+projects[kms_deploy][download][url] = "https://svnhost.adapt.dk/subversion/drupal/kms/trunk/htdocs/sites/all/modules/custom/kms_deploy"
+projects[kms_deploy][type] = "module"
+projects[kms_deploy][subdir] = "custom"
+
 
 ; Libraries
 ;; Ckeditor

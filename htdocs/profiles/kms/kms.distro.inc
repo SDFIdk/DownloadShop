@@ -74,6 +74,10 @@ projects[filefield_paths][version] = "1.0-beta3+4-dev"
 projects[filefield_sources][subdir] = "contrib"
 projects[filefield_sources][version] = "1.7"
 
+;google_analytics
+projects[google_analytics][subdir] = "contrib"
+projects[google_analytics][version] = "1.2"
+
 ;hierarchical_select
 projects[hierarchical_select][subdir] = "contrib"
 projects[hierarchical_select][version] = "3.0-alpha5+9-dev"
@@ -166,6 +170,10 @@ projects[rules][version] = "2.2"
 projects[securepages][subdir] = "contrib"
 projects[securepages][version] = "1.x-dev"
 
+;security_review
+projects[security_review][subdir] = "contrib"
+projects[security_review][version] = "1.0"
+
 ;sharedemail
 projects[sharedemail][subdir] = "contrib"
 projects[sharedemail][version] = "1.x-dev"
@@ -182,6 +190,10 @@ projects[smtp][version] = "1.0-beta2"
 projects[taxonomy_csv][subdir] = "contrib"
 projects[taxonomy_csv][version] = "5.10"
 
+;themekey
+projects[themekey][subdir] = "contrib"
+projects[themekey][version] = "2.3"
+
 ;token
 projects[token][subdir] = "contrib"
 projects[token][version] = "1.4"
@@ -197,4 +209,8 @@ projects[views_bulk_operations][version] = "3.0"
 ;wysiwyg
 projects[wysiwyg][subdir] = "contrib"
 projects[wysiwyg][version] = "2.2"
+
+;xmlsitemap
+projects[xmlsitemap][subdir] = "contrib"
+projects[xmlsitemap][version] = "2.0-rc1"
 
