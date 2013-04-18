@@ -2,6 +2,7 @@ name = panel_product_display
 description = Feature for panel "product display"
 core = 7.x
 package = Features
+php = 5.2.4
 version = 7.x-1.0
 project = panel_product_display
 dependencies[] = ctools

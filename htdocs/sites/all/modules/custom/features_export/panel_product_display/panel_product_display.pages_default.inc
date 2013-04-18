@@ -326,6 +326,30 @@ function panel_product_display_default_page_manager_handlers() {
     $display->panels['right'][2] = 'new-11';
     $pane = new stdClass();
     $pane->pid = 'new-12';
+    $pane->panel = 'right';
+    $pane->type = 'custom';
+    $pane->subtype = 'how_to_order';
+    $pane->shown = TRUE;
+    $pane->access = array();
+    $pane->configuration = array(
+      'admin_title' => '',
+      'title' => '',
+      'body' => '',
+      'format' => 'filtered_html',
+      'substitute' => TRUE,
+    );
+    $pane->cache = array();
+    $pane->style = array(
+      'settings' => NULL,
+    );
+    $pane->css = array();
+    $pane->extras = array();
+    $pane->position = 3;
+    $pane->locks = array();
+    $display->content['new-12'] = $pane;
+    $display->panels['right'][3] = 'new-12';
+    $pane = new stdClass();
+    $pane->pid = 'new-13';
     $pane->panel = 'top';
     $pane->type = 'panels_mini';
     $pane->subtype = 'top';
@@ -343,8 +367,8 @@ function panel_product_display_default_page_manager_handlers() {
     $pane->extras = array();
     $pane->position = 0;
     $pane->locks = array();
-    $display->content['new-12'] = $pane;
-    $display->panels['top'][0] = 'new-12';
+    $display->content['new-13'] = $pane;
+    $display->panels['top'][0] = 'new-13';
   $display->hide_title = PANELS_TITLE_FIXED;
   $display->title_pane = '0';
   $handler->conf['display'] = $display;
