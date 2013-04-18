@@ -3,6 +3,7 @@
 define('KMS_OCI_MAIL_DEFAULT_TO', 'drift@kortforsyningen.dk');
 define('KMS_OCI_MAIL_DEFAULT_FROM', 'download@kortforsyningen.dk');
 define('KMS_OCI_WD_KEY', 'kms_oci');
+define('KMS_OCI_EXTENSION_NAME', 'oci8');
 
 /**
  * Implements hook_menu().
@@ -15,6 +16,7 @@ function kms_oci_menu() {
     'access arguments' => array('administer oci settings'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('_kms_oci_settings_form'),
+    'type' => MENU_CALLBACK,
 
   );
 
@@ -27,6 +29,10 @@ function kms_oci_menu() {
  * @return void.
  */
 function kms_oci_boot() {
+  if(!kms_oci_extension_is_loaded()) {
+    return;
+  }
+
   global $oci;
 
   $user = variable_get('kms_oci_conn_user');
@@ -34,6 +40,7 @@ function kms_oci_boot() {
   $host = variable_get('kms_oci_conn_host');
   $db = variable_get('kms_oci_conn_db');
 
+  // Check connection vars. Return if FALSE;
   foreach(array($user, $pass, $host, $db) as $var) {
     if(empty($var)) {
       $oci = FALSE;
@@ -41,7 +48,16 @@ function kms_oci_boot() {
     }
   }
 
-  $oci = oci_connect($user, $pass, "$host/$db", 'UTF8');
+  // Connect to db.
+  $oci = @oci_connect($user, $pass, "$host/$db", 'UTF8');
+  // Set if connection is up.
+  kms_oci_conection_is_up($oci);
+  // If connection is down set message in drupal static
+  // because the whole system has not been bootstrapped yet.
+  if (!$oci) {
+    $e = oci_error();
+    kms_oci_conection_error($e['message']);
+  }
 
 }
 
@@ -51,6 +67,9 @@ function kms_oci_boot() {
  * @return void.
  */
 function kms_oci_get_conn() {
+  if(!kms_oci_extension_is_loaded()) {
+    return FALSE;
+  }
   global $oci;
   return $oci;
 }
@@ -66,6 +85,9 @@ function kms_oci_get_conn() {
  * @return void.
  */
 function kms_oci_insert($data, $table) {
+  if(!kms_oci_extension_is_loaded()) {
+    return;
+  }
   // Only use variables with values.
   $data = array_filter($data, function($v){
     return $v == 0 || !empty($v);
@@ -94,6 +116,9 @@ function kms_oci_insert($data, $table) {
  * @return void.
  */
 function kms_oci_update($data, $table) {
+  if(!kms_oci_extension_is_loaded()) {
+    return;
+  }
   // Only use variables with values.
   $data = array_filter($data, function($v){
     return $v == 0 || !empty($v);
@@ -124,6 +149,9 @@ function kms_oci_update($data, $table) {
  * @return void.
  */
 function kms_oci_query($query, $data = array()) {
+  if(!kms_oci_extension_is_loaded()) {
+    return;
+  }
   global $base_url;
 
   $oci = kms_oci_get_conn();
@@ -161,15 +189,28 @@ function kms_oci_query($query, $data = array()) {
  * Implements hook_exit().
  */
 function kms_oci_exit($destination = NULL) {
+  if(!kms_oci_extension_is_loaded()) {
+    return;
+  }
   global $oci;
 
-  if ($oci !== FALSE) {
+  if (kms_oci_conection_is_up()) {
     oci_close($oci);
   }
-  
+  else{
+    $error = kms_oci_conection_error();
+    if (!empty($error)) {
+      watchdog(KMS_OCI_WD_KEY, $error, array(), WATCHDOG_ALERT);
+      kms_oci_send_mail_error($error);
+    }
+  }
+
 }
 
 function kms_oci_check_userid_exists($userid, $table) {
+  if(!kms_oci_extension_is_loaded()) {
+    return FALSE;
+  }
   $oci = kms_oci_get_conn();
   $stid = oci_parse($oci, sprintf("SELECT * FROM %s WHERE userid = '%s'", $table, $userid));
   oci_execute($stid);
@@ -249,28 +290,25 @@ function kms_oci_send_mail($message, $module = 'kms_oci') {
   );
 
   $token = microtime();
-  
-  $mail_conf = array(
-    'id' => $module . '_' . $token,
-    'to' => $message['to'],
-    'from' => $message['from'],
-    'subject' => $message['subject'],
-    'body' => array($message['body']),
-    'headers' => array(
-      'Content-Type' => 'text/plain; charset=UTF-8;',
-      'From' => $message['from'], 
-      'Sender' => $message['from'], 
-      'Return-Path' => $message['from'],
-    ),
-  );
 
-  $system = drupal_mail_system($module, $token);
-  $mail = $system->format($mail_conf);
-  if ($system->mail($mail)) {
-    return TRUE;
-  }
-  else {
-    return FALSE;
+  foreach (explode(',', $message['to']) as $to) {
+    $mail_conf = array(
+      'id' => $module . '_' . $token,
+      'to' => trim($to),
+      'from' => $message['from'],
+      'subject' => $message['subject'] . ' ' . time(),
+      'body' => array($message['body']),
+      'headers' => array(
+        'Content-Type' => 'text/plain; charset=UTF-8;',
+        'From' => $message['from'], 
+        'Sender' => $message['from'], 
+        'Return-Path' => $message['from'],
+      ),
+    );
+
+    $system = drupal_mail_system($module, $token);
+    $mail = $system->format($mail_conf);
+    $system->mail($mail);
   }
 }
 
@@ -327,7 +365,8 @@ function _kms_oci_settings_form() {
   );
   $form['oci_mails']['kms_oci_mail_default_to'] = array(
     '#type' => 'textfield', 
-    '#title' => t('To'), 
+    '#title' => t('To'),
+    '#description' => t('If more than one address use comma separated values.'),
     '#default_value' => variable_get(
       'kms_oci_mail_default_to',
       KMS_OCI_MAIL_DEFAULT_TO
@@ -338,3 +377,52 @@ function _kms_oci_settings_form() {
   return system_settings_form($form);
 }
 
+/**
+ * Check if oci extension has been loaded.
+ *
+ * @return boolean
+ */
+function kms_oci_extension_is_loaded(){
+  return extension_loaded(KMS_OCI_EXTENSION_NAME);
+}
+
+/**
+ * Set/get static flag if connection is up.
+ *
+ * @param boolean $conn_succes
+ *   Returns TRUE if connection is up.
+ *
+ * @return boolean $is_up
+ */
+function kms_oci_conection_is_up($conn_succes = NULL) {
+  $is_up = &drupal_static(__FUNCTION__);
+  if($conn_succes !== NULL && is_bool($conn_succes)) {
+    $is_up = $conn_succes;
+    return $conn_succes;
+  }
+  elseif(isset($is_up)) {
+    return $is_up;
+  }
+
+  return FALSE; 
+}
+
+/**
+ * Set/get static connection error if present.
+ *
+ * @param string $message
+ *
+ * @return string $error
+ */
+function kms_oci_conection_error($message = NULL) {
+  $error = &drupal_static(__FUNCTION__);
+  if($message !== NULL && is_string($message)) {
+    $error = $message;
+    return $message;
+  }
+  elseif(isset($error)){
+    return $error;
+  }
+
+  return '';
+}
