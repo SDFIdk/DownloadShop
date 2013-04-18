@@ -456,8 +456,9 @@ function kms_subuser_is_subuser($user) {
   if (is_int($user)) {
     $user = user_load($user);
   }
+  $user_roles = !empty($user->roles) ? $user->roles : array();
   // If user has 'subuser' role and has a related entity.
-  return in_array(KMS_SUBUSER_ROLE_NAME, $user->roles)
+  return in_array(KMS_SUBUSER_ROLE_NAME, $user_roles)
   && relation_get_related_entity('user', $user->uid);
 }
 

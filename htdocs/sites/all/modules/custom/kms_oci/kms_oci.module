@@ -212,6 +212,9 @@ function kms_oci_check_userid_exists($userid, $table) {
     return FALSE;
   }
   $oci = kms_oci_get_conn();
+  if (!$oci) {
+    return FALSE;
+  }
   $stid = oci_parse($oci, sprintf("SELECT * FROM %s WHERE userid = '%s'", $table, $userid));
   oci_execute($stid);
   $row = oci_fetch_array($stid);
