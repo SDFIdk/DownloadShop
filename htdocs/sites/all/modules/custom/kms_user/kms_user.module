@@ -608,6 +608,7 @@ function _kms_user_oracle_default_user_data($account) {
   }
 
   $data['user_extra'] = array(
+    ':duid' => $account->uid,
     ':userid' => $account->uid,
     ':usertype' => 0,
     ':usertype_info' => '',
