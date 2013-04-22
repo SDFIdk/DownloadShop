@@ -66,36 +66,41 @@ function kms_commerce_files_add_files( $li ) {
     // If files is new, then insert to file_managed and load again to get fid
     if (!$f) {
       $stat = stat(DRUPAL_ROOT."/sites/private/$folder/$file");
-      $values = array( 
-        1,
-        $file,
-        $uri,
-        finfo_file($finfo, DRUPAL_ROOT."/sites/private/$folder/$file"),
-        $stat['size'],
-        FILE_STATUS_PERMANENT,
-        $stat['mtime'],
-        $file
-      );
+      
+      if ($stat) {
+        $values = array( 
+          1,
+          $file,
+          $uri,
+          finfo_file($finfo, DRUPAL_ROOT."/sites/private/$folder/$file"),
+          $stat['size'],
+          FILE_STATUS_PERMANENT,
+          $stat['mtime'],
+          $file
+        );
 
-      $sql = 'INSERT INTO file_managed (uid,filename,uri,filemime,filesize,status,timestamp,origname)'
-         . 'VALUES (?,?,?,?,?,?,?,?)';
+        $sql = 'INSERT INTO file_managed (uid,filename,uri,filemime,filesize,status,timestamp,origname)'
+           . 'VALUES (?,?,?,?,?,?,?,?)';
 
-      $dbh = Database::getConnection();
-      $stmt = $dbh->prepare($sql);
-      $stmt->execute($values);
+        $dbh = Database::getConnection();
+        $stmt = $dbh->prepare($sql);
+        $stmt->execute($values);
 
-      $flist = file_load_multiple(array(), array('uri' => $uri));
-      $f = reset($flist);
+        $flist = file_load_multiple(array(), array('uri' => $uri));
+        $f = reset($flist);
 
-      file_usage_add($f,'kms_commerce_files','user', 1, 1);
+        file_usage_add($f,'kms_commerce_files','user', 1, 1);
+      }
     }
 
-    $downloads[] = array('fid' => $f->fid,
-          'data' => array("duration"       => 3600 * 24,
-                          "download_limit" => -1,
-                          "address_limit"  => -1,
-                         )
-    );
+    if ($f) {
+      $downloads[] = array('fid' => $f->fid,
+            'data' => array("duration"       => 3600 * 24,
+                            "download_limit" => -1,
+                            "address_limit"  => -1,
+                           )
+      );
+    }
   } 
 
   $product = commerce_product_new('file_collection');
@@ -169,18 +174,22 @@ function kms_commerce_files_update_file($file) {
   $finfo = finfo_open(FILEINFO_MIME_TYPE);
 
   $stat = stat($orig);
-      
-  $values = array( 
-    finfo_file($finfo, $orig), // filemime
-    $stat['size'],             // filesize
-    $file['uri']               // uri
-  );  
   
-  if ($file['filemime']  != $values[0] || $file['filesize']  != $values[1] ) {
-    $sql = 'UPDATE file_managed SET filemime=?,filesize=? WHERE uri=?';
-    $dbh = Database::getConnection();
-    $stmt = $dbh->prepare($sql);
-    $stmt->execute($values);
+  if ($stat) {
+
+    $values = array( 
+      finfo_file($finfo, $orig), // filemime
+      $stat['size'],             // filesize
+      $file['uri']               // uri
+    );  
+    
+    if ($file['filemime']  != $values[0] || $file['filesize']  != $values[1] ) {
+      $sql = 'UPDATE file_managed SET filemime=?,filesize=? WHERE uri=?';
+      $dbh = Database::getConnection();
+      $stmt = $dbh->prepare($sql);
+      $stmt->execute($values);
+    }
+
   }
 
 }
