@@ -15,7 +15,7 @@ function view_kms_subuser_views_default_views() {
   $view->description = '';
   $view->tag = 'default';
   $view->base_table = 'users';
-  $view->human_name = 'Subuser';
+  $view->human_name = 'KMS Subuser';
   $view->core = 7;
   $view->api_version = '3.0';
   $view->disabled = FALSE; /* Edit this to true to make a default view disabled initially */
@@ -106,6 +106,21 @@ function view_kms_subuser_views_default_views() {
   $handler->display->display_options['fields']['nothing_1']['alter']['text'] = 'edit';
   $handler->display->display_options['fields']['nothing_1']['alter']['make_link'] = TRUE;
   $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'user/[uid]/edit/?destination=edit/profile';
+  /* Field: User: Udløbsdato */
+  $handler->display->display_options['fields']['field_expire_date']['id'] = 'field_expire_date';
+  $handler->display->display_options['fields']['field_expire_date']['table'] = 'field_data_field_expire_date';
+  $handler->display->display_options['fields']['field_expire_date']['field'] = 'field_expire_date';
+  $handler->display->display_options['fields']['field_expire_date']['label'] = 'Expires';
+  $handler->display->display_options['fields']['field_expire_date']['alter']['text'] = 'yhgdygygydg';
+  $handler->display->display_options['fields']['field_expire_date']['empty'] = 'never';
+  $handler->display->display_options['fields']['field_expire_date']['empty_zero'] = TRUE;
+  $handler->display->display_options['fields']['field_expire_date']['settings'] = array(
+    'format_type' => 'subuser_date',
+    'fromto' => 'both',
+    'multiple_number' => '',
+    'multiple_from' => '',
+    'multiple_to' => '',
+  );
   /* Sort criterion: User: Created date */
   $handler->display->display_options['sorts']['created']['id'] = 'created';
   $handler->display->display_options['sorts']['created']['table'] = 'users';
@@ -163,6 +178,9 @@ function view_kms_subuser_views_default_views() {
     t('delete'),
     t('Edit'),
     t('edit'),
+    t('Expires'),
+    t('yhgdygygydg'),
+    t('never'),
     t('All'),
     t('Page'),
     t('Block'),
