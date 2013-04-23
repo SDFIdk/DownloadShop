@@ -111,9 +111,6 @@ function view_kms_subuser_views_default_views() {
   $handler->display->display_options['fields']['field_expire_date']['table'] = 'field_data_field_expire_date';
   $handler->display->display_options['fields']['field_expire_date']['field'] = 'field_expire_date';
   $handler->display->display_options['fields']['field_expire_date']['label'] = 'Expires';
-  $handler->display->display_options['fields']['field_expire_date']['alter']['text'] = 'yhgdygygydg';
-  $handler->display->display_options['fields']['field_expire_date']['empty'] = 'never';
-  $handler->display->display_options['fields']['field_expire_date']['empty_zero'] = TRUE;
   $handler->display->display_options['fields']['field_expire_date']['settings'] = array(
     'format_type' => 'subuser_date',
     'fromto' => 'both',
@@ -121,6 +118,13 @@ function view_kms_subuser_views_default_views() {
     'multiple_from' => '',
     'multiple_to' => '',
   );
+  /* Field: User: Aktiv */
+  $handler->display->display_options['fields']['status']['id'] = 'status';
+  $handler->display->display_options['fields']['status']['table'] = 'users';
+  $handler->display->display_options['fields']['status']['field'] = 'status';
+  $handler->display->display_options['fields']['status']['label'] = 'Status';
+  $handler->display->display_options['fields']['status']['type'] = 'unicode-yes-no';
+  $handler->display->display_options['fields']['status']['not'] = 0;
   /* Sort criterion: User: Created date */
   $handler->display->display_options['sorts']['created']['id'] = 'created';
   $handler->display->display_options['sorts']['created']['table'] = 'users';
@@ -136,13 +140,6 @@ function view_kms_subuser_views_default_views() {
   $handler->display->display_options['arguments']['uid']['summary']['number_of_records'] = '0';
   $handler->display->display_options['arguments']['uid']['summary']['format'] = 'default_summary';
   $handler->display->display_options['arguments']['uid']['summary_options']['items_per_page'] = '25';
-  /* Filter criterion: User: Aktiv */
-  $handler->display->display_options['filters']['status']['id'] = 'status';
-  $handler->display->display_options['filters']['status']['table'] = 'users';
-  $handler->display->display_options['filters']['status']['field'] = 'status';
-  $handler->display->display_options['filters']['status']['value'] = '1';
-  $handler->display->display_options['filters']['status']['group'] = 0;
-  $handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
@@ -179,8 +176,7 @@ function view_kms_subuser_views_default_views() {
     t('Edit'),
     t('edit'),
     t('Expires'),
-    t('yhgdygygydg'),
-    t('never'),
+    t('Status'),
     t('All'),
     t('Page'),
     t('Block'),
