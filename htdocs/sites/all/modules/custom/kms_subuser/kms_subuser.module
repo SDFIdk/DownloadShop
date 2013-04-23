@@ -807,5 +807,5 @@ function kms_subuser_load($uid) {
 
 function kms_subuser_form_user_cancel_confirm_form_alter(&$form, &$form_state) {
   $form['actions']['#prefix'] =
-  '<p class="error">' . t('WARNING: Connected subuser(s) will be deleted as well!!') . '</p>';
+  '<p class="error">' . t('WARNING: If user is deleted connected subuser(s) will be deleted as well!!') . '</p>';
 }
