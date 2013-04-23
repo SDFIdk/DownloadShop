@@ -606,5 +606,4 @@ $conf['kms_oci_conn_pass'] = 'cruyu8uf';
 $conf['kms_oci_conn_host'] = 'kmslds51.kms.adroot.dk';
 $conf['kms_oci_conn_db'] = 'ldsdb5.kms.adroot.dk';
 $conf['kms_oci_mail_default_from'] = 'download@kortforsyningen.dk';
-// $conf['kms_oci_mail_default_to'] = 'drift@kortforsyningen.dk';
-$conf['kms_oci_mail_default_to'] = 'mikkel@adapt.dk, tommy@adapt.dk';
+$conf['kms_oci_mail_default_to'] = 'drift@kortforsyningen.dk, mikkel@adapt.dk, tommy@adapt.dk';
