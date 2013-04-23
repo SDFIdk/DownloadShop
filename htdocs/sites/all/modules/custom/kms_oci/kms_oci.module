@@ -106,7 +106,7 @@ function kms_oci_insert($data, $table) {
 }
 
 /**
- * Perform an update query based on a key/value array.
+ * Perform an user update query based on a key/value array.
  *
  * @param array $data
  *   Ex.: array(':name' => 'miksan', ':userid' => "9999999999")
@@ -115,7 +115,7 @@ function kms_oci_insert($data, $table) {
  *
  * @return void.
  */
-function kms_oci_update($data, $table) {
+function kms_oci_update_user($data, $table) {
   if(!kms_oci_extension_is_loaded()) {
     return;
   }
@@ -136,6 +136,53 @@ function kms_oci_update($data, $table) {
     $data
   );
 
+}
+
+function kms_oci_select($query, $data = array()) {
+  $oci = kms_oci_get_conn();
+
+  $stid = oci_parse($oci, $query);
+
+  foreach ($data as $pholder => $arg) {
+    oci_bind_by_name($stid, $pholder, $data[$pholder]);
+  }
+
+  $r = oci_execute($stid);
+
+  $rows = array();
+  while($row = oci_fetch_assoc($stid)) {
+    $rows[] = $row;
+  }
+
+  oci_free_statement($stid);
+
+  return $rows;
+}
+
+function kms_oci_select_one($query, $data = array(), $type = 'assoc') {
+  $oci = kms_oci_get_conn();
+
+  $stid = oci_parse($oci, $query);
+
+  foreach ($data as $pholder => $arg) {
+    oci_bind_by_name($stid, $pholder, $data[$pholder]);
+  }
+
+  $r = oci_execute($stid);
+
+  switch ($type) {
+    case 'assoc':
+      $row = oci_fetch_assoc($stid);
+      break;
+    
+    case 'object':
+      $row = oci_fetch_object($stid);
+      break;
+  }
+  
+  oci_free_statement($stid);
+
+  return $row;
 }
 
 /**
@@ -428,4 +475,10 @@ function kms_oci_conection_error($message = NULL) {
   }
 
   return '';
+}
+
+function kms_oci_test_error() {
+  $query = "SELECT FROM smuser WHERE test = ";
+  $data = array(':foo' => 'bar');
+  kms_oci_query($query, $data);
 }

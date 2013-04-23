@@ -177,9 +177,7 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
         // We need to store the new password
         $form['#submit'][] = '_kms_user_insert_user_pass';
         // Store user data in Oracle.
-        if (!$user->uid) {
-          $form['#submit'][] = '_kms_user_submit_insert_user_oracle';
-        }
+        $form['#submit'][] = '_kms_user_submit_insert_user_oracle';
         break;
     }
 
@@ -576,14 +574,14 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
   // Update Oracle tables.
   if (module_exists('kms_oci')) {
     if(kms_oci_check_userid_exists($userid, 'smuser_extra')){
-      kms_oci_update($data['user_extra'], 'smuser_extra');
+      kms_oci_update_user($data['user_extra'], 'smuser_extra', 'userid');
     }
     else {
       kms_oci_insert($data['user_extra'], 'smuser_extra');
     }
 
     if(kms_oci_check_userid_exists($userid, 'smuser')){
-      kms_oci_update($data['user'], 'smuser');
+      kms_oci_update_user($data['user'], 'smuser');
     }
     else {
       kms_oci_insert($data['user'], 'smuser');
@@ -592,7 +590,15 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
 
 }
 
-
+/**
+ * Return default user data.
+ *
+ * @param object $account
+ *   Drupal user object.
+ *
+ * @return array $data
+ *   Default user data.
+ */
 function _kms_user_oracle_default_user_data($account) {
   $data = array();
 
@@ -620,6 +626,103 @@ function _kms_user_oracle_default_user_data($account) {
   return $data;
 }
 
+/**
+ * Detect if passwird has been encrypted.
+ *
+ * @param string $pass
+ *   Drupal password.
+ *
+ * @return boolean
+ */
 function kms_user_password_is_encrypted($pass) {
   return (bool)preg_match('/^\$S\$[0-9a-fA-Z.\/]{52}$/i', $pass);
+}
+
+/**
+ * Load a Oracle smuser object
+ *
+ * @param integer $uid
+ *   Drupal user id.
+ *
+ * @return object
+ */
+function kms_user_smuser_load($uid) {
+  $smusers = &drupal_static(__FUNCTION__);
+
+  if (empty($smusers)) {
+    $smusers = array();
+  }
+
+  if (empty($smusers[$uid])) {
+    $query = "
+    SELECT * FROM smuser_extra ue
+    LEFT JOIN smuser u on u.userid = ue.userid
+    WHERE ue.duid = :duid";
+    $result = kms_oci_select_one($query, array(':duid' => "$uid"));
+    $smusers[$uid] = new stdClass();
+    if ($result) {
+      array_walk($result, function($v, $k) use (&$smusers, $uid) {
+        $prop = strtolower($k);
+        $smusers[$uid]->$prop = $v;
+      });
+    }
+    
+  }
+
+  return $smusers[$uid];
+}
+
+/**
+ * Delete smuser from Oracle db.
+ *
+ * @param string $kms_userid
+ *   KMS user id.
+ *
+ * @return void
+ */
+function kms_user_oci_smuser_delete($kms_userid) {
+  $result = kms_oci_query(
+    'DELETE FROM smuser WHERE userid = :userid',
+    array(':userid' => $kms_userid)
+  );
+  $result = kms_oci_query(
+    'DELETE FROM smuser_extra WHERE userid = :userid',
+    array(':userid' => $kms_userid)
+  );
+}
+
+/**
+ * Implements hook_user_delete().
+ */
+function kms_user_user_delete($account) {
+  $subusers = subuser_load_all($account);
+  // Determine kms user id. Old users may have a specified kms user id
+  // that is different than Drupals user id.
+  // Oracle db uses that as an identifier.
+  $kms_userid = $account->uid;  
+  // If a kms user id is specified use that.
+  if (!empty($account->field_kms_user_id[LANGUAGE_NONE][0]['value'])) {
+    $kms_userid = $account->field_kms_user_id[LANGUAGE_NONE][0]['value'];
+  }
+  // If user does not exist in either smuser or smuser_extra then do nothing.
+  if(
+    !kms_oci_check_userid_exists($account->uid, 'smuser')
+    && !kms_oci_check_userid_exists($account->uid, 'smuser_extra')
+  ) {
+    return;
+  }
+  // Delete Oracle user data.
+  kms_user_oci_smuser_delete($kms_userid);
+  if (!empty($subusers)) {
+    drupal_set_message(
+      t(
+        '@count subusers were deleted.',
+        array('@count' => count($subusers))
+      ),
+      'status',
+      FALSE
+    );
+    // Delete eventually sub users of user.
+    user_delete_multiple($subusers);
+  }
 }

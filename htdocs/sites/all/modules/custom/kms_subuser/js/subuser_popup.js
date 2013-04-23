@@ -2,7 +2,6 @@
   var result = 0, prevResult = 0;
   Drupal.behaviors.kmsSubuserPopup = {
     attach: function(context, settings) {
-      // console.log(settings.kms_user);
       $.ajax({
         url: '/kms-subuser/ajax/load-view/' + settings.kms_user.uid,
         type: 'GET',
@@ -16,18 +15,18 @@
               "sInfoEmpty": Drupal.t('Showing 0 to 0 of 0 records'),
             }
           });
-
            
-          result = $('#subuser-view-wrapper table td.views-field-name').length;
           // If number of view result is increasing then clear form.
-          if (prevResult != 0 && result > prevResult) {
-            $('#kms-subuser-add-form input[type="text"]').val('');
-            $('#kms-subuser-add-form textarea').text('');
-            $('#kms-subuser-add-form input[name="add_subuser"]')
-             .trigger('click').removeAttr('checked');
-          }
-
-          prevResult = result;
+          $("body").bind("ajaxComplete", function(e, xhr, sett){
+              result = $('#subuser-view-wrapper table td.views-field-name').length;
+              if (prevResult != 0 && result > prevResult) {
+                $('#kms-subuser-add-form input[type="text"]').val('');
+                $('#kms-subuser-add-form textarea').text('');
+                $('#kms-subuser-add-form input[name="add_subuser"]')
+                 .trigger('click').removeAttr('checked');
+              }
+              prevResult = result;
+          });
 
         }
       });
