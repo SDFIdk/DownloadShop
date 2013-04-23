@@ -31,9 +31,10 @@ projects[subuser][revision] = "83c2058004d78ea4c58dabbf7a204975e759fae9"
 
 projects[adapt_module][type] = 'module'
 projects[adapt_module][download][type] = 'svn'
-projects[adapt_module][download][url] = 'svn+ssh://svnhost/data/subversion/drupal/global/tags/modules/adapt-7.x-0.5'
-projects[adapt_module][directory_name] = "adapt"
+projects[adapt_module][download][url] = 'svn+ssh://svnhost/data/subversion/drupal/global/tags/modules/_adapt-7.x-0.3'
+projects[adapt_module][directory_name] = "_adapt"
 projects[adapt_module][subdir] = "global"
+
 
 ;SSL
 ; projects[securepages][subdir] = "contrib"
