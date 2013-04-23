@@ -503,7 +503,7 @@ function kms_subuser_user_profile_after_build($form, &$form_state) {
     'field_newsletter',
     'field_updated',
     'field_user_remark',
-    'field_expire_date',
+    // 'field_expire_date',
     'field_debtor_nr',
     'field_webservices_extra',
     'field_kms_user_id',
