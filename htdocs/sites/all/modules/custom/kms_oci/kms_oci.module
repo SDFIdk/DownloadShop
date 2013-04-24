@@ -112,10 +112,12 @@ function kms_oci_insert($data, $table) {
  *   Ex.: array(':name' => 'miksan', ':userid' => "9999999999")
  * @param string $table
  *   Which table should be used.
+ * @param string $kms_userid
+ *   KMS user id.
  *
  * @return void.
  */
-function kms_oci_update_user($data, $table) {
+function kms_oci_update_user($data, $table, $kms_userid) {
   if(!kms_oci_extension_is_loaded()) {
     return;
   }
@@ -126,13 +128,20 @@ function kms_oci_update_user($data, $table) {
 
   $values = array();
   array_walk($data, function($v, $k) use (&$values) {
-    if ($k != ':userid') {
-      $values[] = str_replace(':', '', $k) . " = $k";
+    // If :userid is the same as $kms_userid then don't update :userid.
+    if ($k == ':userid' && $v == $kms_userid) {
+      continue;
     }
+    $values[] = str_replace(':', '', $k) . " = $k";
   });
   
   kms_oci_query(
-    sprintf("UPDATE %s SET %s WHERE userid = :userid", $table, implode(', ', $values)),
+    sprintf(
+      "UPDATE %s SET %s WHERE userid = '%s'",
+      $table,
+      implode(', ', $values),
+      $kms_userid
+    ),
     $data
   );
 
@@ -252,20 +261,6 @@ function kms_oci_exit($destination = NULL) {
     }
   }
 
-}
-
-function kms_oci_check_userid_exists($userid, $table) {
-  if(!kms_oci_extension_is_loaded()) {
-    return FALSE;
-  }
-  $oci = kms_oci_get_conn();
-  if (!$oci) {
-    return FALSE;
-  }
-  $stid = oci_parse($oci, sprintf("SELECT * FROM %s WHERE userid = '%s'", $table, $userid));
-  oci_execute($stid);
-  $row = oci_fetch_array($stid);
-  return !empty($row);
 }
 
 /**

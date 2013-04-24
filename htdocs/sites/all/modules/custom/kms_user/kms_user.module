@@ -350,6 +350,8 @@ function _kms_user_cron_expire_users() {
     $user_w = entity_metadata_wrapper('user', $user);
     $user_w->status = 0;
     $user_w->save();
+    // Deactivate Oracle user.
+    kms_user_smuser_deactivate($user);
     watchdog(
       'kms_user',
       t(
@@ -501,14 +503,11 @@ function _kms_user_submit_insert_user_oracle($form, &$form_state) {
     = $account->field_contact_me[LANGUAGE_NONE][0]['value'];
   }
   // Insert oracle user data.
-  if (module_exists('kms_oci')) {
-    if(!kms_oci_check_userid_exists($account->uid, 'smuser_extra')){
+  if (module_exists('kms_oci') && !kms_user_smuser_exists($account)) {
       kms_oci_insert($data['user_extra'], 'smuser_extra');
-    }
-    if(!kms_oci_check_userid_exists($account->uid, 'smuser')){
       kms_oci_insert($data['user'], 'smuser');
-    }
   }
+
 }
 
 function _kms_user_submit_update_user_oracle($form, &$form_state) {
@@ -559,33 +558,14 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
     $account->field_contact_me[LANGUAGE_NONE][0]['value'];
   }
   
-  // If users have an old kms id use that as Oracle userid.
-  // Otherwise use Drupals uid.
-  $userid = $user->uid;
-  if (!empty($account->field_kms_user_id_value[LANGUAGE_NONE][0]['value'])) {
-    $userid = $account->field_kms_user_id_value[LANGUAGE_NONE][0]['value'];
-  }
-  elseif(!empty($user->field_kms_user_id[LANGUAGE_NONE][0]['value'])) {
-    $userid = $user->field_kms_user_id[LANGUAGE_NONE][0]['value'];
-  }
-
-  $data['user'][':userid'] = $data['user_extra'][':userid'] = $userid;
+  $userid_old = kms_user_get_userid($user);
+  $userid_new = kms_user_get_userid($account);
+  $data['user'][':userid'] = $data['user_extra'][':userid'] = $userid_new;
 
   // Update Oracle tables.
-  if (module_exists('kms_oci')) {
-    if(kms_oci_check_userid_exists($userid, 'smuser_extra')){
-      kms_oci_update_user($data['user_extra'], 'smuser_extra', 'userid');
-    }
-    else {
-      kms_oci_insert($data['user_extra'], 'smuser_extra');
-    }
-
-    if(kms_oci_check_userid_exists($userid, 'smuser')){
-      kms_oci_update_user($data['user'], 'smuser');
-    }
-    else {
-      kms_oci_insert($data['user'], 'smuser');
-    }
+  if (module_exists('kms_oci') && kms_user_smuser_exists($user)) {
+    kms_oci_update_user($data['user_extra'], 'smuser_extra', $userid_old);
+    kms_oci_update_user($data['user'], 'smuser', $userid_old);
   }
 
 }
@@ -675,44 +655,36 @@ function kms_user_smuser_load($uid) {
 /**
  * Delete smuser from Oracle db.
  *
- * @param string $kms_userid
- *   KMS user id.
+ * @param mixed $user
+ *   object/integer. Either Drupal user object or Drupal user id.
  *
  * @return void
  */
-function kms_user_oci_smuser_delete($kms_userid) {
-  $result = kms_oci_query(
-    'DELETE FROM smuser WHERE userid = :userid',
-    array(':userid' => $kms_userid)
-  );
-  $result = kms_oci_query(
-    'DELETE FROM smuser_extra WHERE userid = :userid',
-    array(':userid' => $kms_userid)
-  );
+function kms_user_smuser_delete($user) {
+  if (is_int($user)) {
+    $user = user_load($user);
+  }
+  $kms_userid = kms_user_get_userid($user);
+
+  if (!empty($kms_userid)) {
+    $result = kms_oci_query(
+      'DELETE FROM smuser WHERE userid = :userid',
+      array(':userid' => $kms_userid)
+    );
+    $result = kms_oci_query(
+      'DELETE FROM smuser_extra WHERE userid = :userid',
+      array(':userid' => $kms_userid)
+    );
+  }
 }
 
 /**
  * Implements hook_user_delete().
  */
-function kms_user_user_delete($account) {
-  $subusers = subuser_load_all($account);
-  // Determine kms user id. Old users may have a specified kms user id
-  // that is different than Drupals user id.
-  // Oracle db uses that as an identifier.
-  $kms_userid = $account->uid;  
-  // If a kms user id is specified use that.
-  if (!empty($account->field_kms_user_id[LANGUAGE_NONE][0]['value'])) {
-    $kms_userid = $account->field_kms_user_id[LANGUAGE_NONE][0]['value'];
-  }
-  // If user does not exist in either smuser or smuser_extra then do nothing.
-  if(
-    !kms_oci_check_userid_exists($account->uid, 'smuser')
-    && !kms_oci_check_userid_exists($account->uid, 'smuser_extra')
-  ) {
-    return;
-  }
-  // Delete Oracle user data.
-  kms_user_oci_smuser_delete($kms_userid);
+function kms_user_user_delete($user) {
+  
+  // Delete subusers if present.
+  $subusers = subuser_load_all($user);
   if (!empty($subusers)) {
     drupal_set_message(
       t(
@@ -722,7 +694,76 @@ function kms_user_user_delete($account) {
       'status',
       FALSE
     );
-    // Delete eventually sub users of user.
+    // Delete subusers.
     user_delete_multiple($subusers);
   }
+  
+  // If smuser exist then delete it.
+  if(kms_user_smuser_exists($user)) {
+    // Delete Oracle user data.
+    kms_user_smuser_delete($user);
+  }
+
+}
+/**
+ * Get kms user id from user.
+ * If kms_user_id is specified use that otherwise user drupal user id.
+ *
+ * @param object $user
+ *   Drupal user object.
+ *
+ * @return string $userid.
+ */
+function kms_user_get_userid($user) {
+  $userid = $user->uid;
+  if (!empty($user->field_kms_user_id[LANGUAGE_NONE][0]['value'])) {
+    $userid = $user->field_kms_user_id[LANGUAGE_NONE][0]['value'];
+  }
+  return (string)$userid;
+}
+
+/**
+ * Deactivate Oracle smuser.
+ *
+ * @param mixed $user
+ *   object/integer. Either Drupal user object or Drupal user id.
+ *
+ * @return void
+ */
+function kms_user_smuser_deactivate($user) {
+  if (is_int($user)) {
+    $user = user_load($user);
+  }
+  kms_oci_update_user(
+    array(':userid' => kms_user_get_userid($user), ':disabled' => '1'),
+    'smuser'
+  );
+}
+
+/**
+ * Check if Oracle smuser exists
+ *
+ * @param mixed $user
+ *   object/integer. Either Drupal user object or Drupal user id.
+ *
+ * @return boolean
+ */
+function kms_user_smuser_exists($user) {
+  if (is_int($user)) {
+    $user = user_load($user);
+  }
+  if(!kms_oci_extension_is_loaded()) {
+    return FALSE;
+  }
+  $oci = kms_oci_get_conn();
+  if (!$oci) {
+    return FALSE;
+  }
+  $stid = oci_parse(
+    $oci,
+    sprintf("SELECT * FROM smuser_extra WHERE duid = '%s'", $user->uid)
+  );
+  oci_execute($stid);
+  $row = oci_fetch_array($stid);
+  return !empty($row);
 }
