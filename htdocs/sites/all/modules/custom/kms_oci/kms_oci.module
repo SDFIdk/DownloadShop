@@ -504,6 +504,8 @@ function kms_oci_create_smuser_sql(){
     "TRUNCATE TABLE smuser_extra;",
     // Do not bother about ampersand character.
     "SET DEFINE OFF;",
+    // Output queries. Default off.
+    // "SET ECHO ON;",
   );
 
   while($result = $results->fetchObject()) {
@@ -546,7 +548,7 @@ function kms_oci_create_smuser_sql(){
       });
       // Escape characters and pad value with single quotes.
       array_walk($data, function(&$v) {
-        $v = mysql_real_escape_string($v);
+        $v = str_replace("'", "''", $v);
         $v = "'$v'";
       });
       // Return query string.
