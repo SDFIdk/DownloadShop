@@ -94,10 +94,11 @@ function view_kms_subuser_views_default_views() {
   $handler->display->display_options['fields']['nothing']['id'] = 'nothing';
   $handler->display->display_options['fields']['nothing']['table'] = 'views';
   $handler->display->display_options['fields']['nothing']['field'] = 'nothing';
-  $handler->display->display_options['fields']['nothing']['label'] = 'Delete';
+  $handler->display->display_options['fields']['nothing']['label'] = 'Slet';
   $handler->display->display_options['fields']['nothing']['alter']['text'] = 'delete';
   $handler->display->display_options['fields']['nothing']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'user/[uid]/cancel/?destination=edit/profile';
+  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/kms-subuser/nojs/[uid]/cancel';
+  $handler->display->display_options['fields']['nothing']['alter']['link_class'] = 'ctools-use-modal';
   /* Field: Global: Custom text */
   $handler->display->display_options['fields']['nothing_1']['id'] = 'nothing_1';
   $handler->display->display_options['fields']['nothing_1']['table'] = 'views';
@@ -105,7 +106,9 @@ function view_kms_subuser_views_default_views() {
   $handler->display->display_options['fields']['nothing_1']['label'] = 'Edit';
   $handler->display->display_options['fields']['nothing_1']['alter']['text'] = 'edit';
   $handler->display->display_options['fields']['nothing_1']['alter']['make_link'] = TRUE;
-  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'user/[uid]/edit/?destination=edit/profile';
+  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/kms-subuser/nojs/[uid]/update';
+  $handler->display->display_options['fields']['nothing_1']['alter']['link_class'] = 'ctools-use-modal';
+  $handler->display->display_options['fields']['nothing_1']['alter']['strip_tags'] = TRUE;
   /* Field: User: Udløbsdato */
   $handler->display->display_options['fields']['field_expire_date']['id'] = 'field_expire_date';
   $handler->display->display_options['fields']['field_expire_date']['table'] = 'field_data_field_expire_date';
@@ -171,7 +174,7 @@ function view_kms_subuser_views_default_views() {
     t('User'),
     t('Roles'),
     t('Uid'),
-    t('Delete'),
+    t('Slet'),
     t('delete'),
     t('Edit'),
     t('edit'),
