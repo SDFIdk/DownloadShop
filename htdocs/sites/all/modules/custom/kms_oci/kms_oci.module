@@ -205,6 +205,8 @@ function kms_oci_select_one($query, $data = array(), $type = 'assoc') {
  * @return void.
  */
 function kms_oci_query($query, $data = array()) {
+  adapt_debug('mikkel', $query);
+  adapt_debug('mikkel', $data);
   if(!kms_oci_extension_is_loaded()) {
     return;
   }
@@ -472,8 +474,104 @@ function kms_oci_conection_error($message = NULL) {
   return '';
 }
 
+/**
+ * Oracle test function. we want to see it fail!!
+ *
+ * @return void
+ */
 function kms_oci_test_error() {
   $query = "SELECT FROM smuser WHERE test = ";
   $data = array(':foo' => 'bar');
   kms_oci_query($query, $data);
 }
+
+/**
+ * Creates sql file for creating smusers in oracle based on Drupal users.
+ *
+ * @return void
+ */
+function kms_oci_create_smuser_sql(){
+
+  $results = db_select('users', 'u')
+  ->fields('u', array('uid'))
+  ->condition('u.uid', 1, '>')
+  ->orderBy('uid', 'ASC')
+  ->execute();
+
+  $queries = array(
+    // Delete current users
+    "TRUNCATE TABLE smuser;",
+    "TRUNCATE TABLE smuser_extra;",
+    // Do not bother about ampersand character.
+    "SET DEFINE OFF;",
+  );
+
+  while($result = $results->fetchObject()) {
+    // Current user.
+    $user = user_load($result->uid);
+    // Eventual subuser master.
+    $master_user = relation_get_related_entity('user', $user->uid, 'subuser', 0);
+    // Use entity meta data wrapper on user object.
+    $uwrapper = entity_metadata_wrapper('user', $user);
+    // Load user type term tree.
+    $user_types = $uwrapper->field_user_type->value();
+    // Create smuser data.
+    $data_smuser = array(
+      'userid' => kms_user_get_userid($user),
+      'name' => $uwrapper->name->value(),
+      'password' => $uwrapper->field_pass_clear->value(),
+      'lastname' => $uwrapper->field_address->first_name->value(),
+      'firstname' => $uwrapper->field_address->last_name->value(),
+      'emailaddress' => $uwrapper->mail->value(),
+      'telephonenumber' => $uwrapper->field_phone->value(),
+      'disabled' => $uwrapper->status->value() ? 0 : 1,
+      'debitorno' => $uwrapper->field_debtor_nr->value(),
+    );
+    // Create smuser extra data.
+    $data_smuser_extra = array(
+      'duid' => $user->uid,
+      'userid' => kms_user_get_userid($user),
+      'usertype' => !empty($user_types[0]->tid) ? $user_types[0]->tid : '',
+      'usertype_info' => $uwrapper->field_user_type_info->value(),
+      'receive_newsletter' => intval($uwrapper->field_newsletter->value()),
+      'accept_terms' => intval($uwrapper->field_terms_and_conditions->value()),
+      'contact_me' => intval($uwrapper->field_contact_me->value()),
+      'master_userid' => intval($master_user->uid) ? $master_user->uid : FALSE,
+    );
+    // Create query function.
+    $create_query = function($data, $table) {
+      // Remove empty data.
+      $data = array_filter($data, function($v){
+        return strlen($v) || !empty($v);
+      });
+      // Escape characters and pad value with single quotes.
+      array_walk($data, function(&$v) {
+        $v = mysql_real_escape_string($v);
+        $v = "'$v'";
+      });
+      // Return query string.
+      return sprintf(
+        "INSERT INTO %s (%s) VALUES (%s);",
+        $table,
+        implode(', ', array_keys($data)),
+        implode(', ', array_values($data))
+      );
+    };
+    // Create smuser and smuser extra query array entries.
+    $queries[] = $create_query($data_smuser, 'smuser');
+    $queries[] = $create_query($data_smuser_extra, 'smuser_extra');
+  }
+  // Count total amount of rows.
+  // Substracted by three because of the leading queries.
+  // Divided by 2 because userdata is split between the tables.
+  $total = (count($queries) - 3) / 2;
+  // Save sql file.
+  file_save_data(
+    implode("\r\n", $queries),
+    'public://smuser.sql',
+    FILE_EXISTS_REPLACE
+  );
+  // Show how many rows that were created.
+  echo "$total rows created\r\n";
+}
+

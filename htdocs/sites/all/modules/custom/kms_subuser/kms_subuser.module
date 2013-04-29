@@ -35,6 +35,15 @@ function kms_subuser_menu() {
     'page arguments' => array(3),
     'type' => MENU_CALLBACK,
   );
+  $items['admin/kms-subuser/%ctools_js/%user/%'] = array(
+    'title' =>'Administer subuser',
+    'description' => 'Change values or cancel account',
+    'access callback' => 'kms_subuser_administer_access',
+    'access arguments' => array(3),
+    'page callback' => 'kms_subuser_administer_popup',
+    'page arguments' => array(2, 3, 4),
+    'type' => MENU_CALLBACK,
+  );
 
   return $items;
 }
@@ -67,13 +76,15 @@ function kms_subuser_theme($existing, $type, $theme, $path) {
  * @return array
  *   Drupal form array.
  */
-function kms_subuser_add_form($form, &$form_state, $master_user) {
+function kms_subuser_form($form, &$form_state, $master_user, $mode = 'insert') {
   global $user;
   
+  $ajax_wrapper = 'kms-subuser-' . $mode . '-form-wrapper';
+
   $form['#user'] = $user;
-  $form['#prefix'] = '<div id="kms-subuser-add-form-wrapper">';
+  $form['#prefix'] = '<div id="' . $ajax_wrapper . '">';
   $form['#suffix'] = '<div class="clear-both">&nbsp;</div></div>';
-  $form['#submit'][] = '_kms_user_submit_insert_user_oracle';
+  // $form['#submit'][] = '_kms_user_submit_insert_user_oracle';
   
   $form['master_uid'] = array('#type' => 'hidden', '#value' => $master_user->uid);
 
@@ -128,9 +139,9 @@ function kms_subuser_add_form($form, &$form_state, $master_user) {
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Save'),
-    '#submit' => array('kms_subuser_ajax_form_submit'),
+    '#submit' => array('kms_subuser_insert_form_submit'),
     '#ajax' => array(
-      'wrapper' => 'kms-subuser-add-form-wrapper',
+      'wrapper' => $ajax_wrapper,
       'callback' => 'kms_subuser_ajax_callback',
     ),
     '#states' => $states_add_subuser,
@@ -149,7 +160,7 @@ function kms_subuser_add_form($form, &$form_state, $master_user) {
  *
  * @return void.
  */
-function kms_subuser_ajax_form_submit(&$form, &$form_state) {
+function kms_subuser_insert_form_submit(&$form, &$form_state) {
   global $user;
 
   $form_state['rebuild'] = FALSE;
@@ -189,9 +200,6 @@ function kms_subuser_ajax_form_submit(&$form, &$form_state) {
   $account->pass = $pass;
   kms_subuser_insert_account_oracle($user, $account);
   
-  // $subuser = $account;
-  // $subuser->master = $user;
-  // $subuser->expire_date = strtotime('+1 week');
   $subuser = kms_subuser_load($account->uid);
   if ($subuser) {
     kms_subuser_send_mail('register_subuser', $subuser);
@@ -199,6 +207,57 @@ function kms_subuser_ajax_form_submit(&$form, &$form_state) {
   else{
     drupal_set_message(t('There was a problem creating the subuser.'), 'error');
   }
+}
+
+/**
+ * Add subuser ajax submit handler.
+ *
+ * @param array $form
+ *   Drupal form array.
+ * @param array $form_state
+ *   Drupal form array.
+ *
+ * @return void.
+ */
+function kms_subuser_update_form_submit(&$form, &$form_state) {
+
+  $form_state['rebuild'] = FALSE;
+  $values = $form_state['values'];
+
+  $subuser = user_load($values['subuser_uid']);
+  $master = user_load($values['master_uid']);
+  $data = _kms_user_oracle_default_user_data($subuser, 'update');
+
+  $suwrapper = entity_metadata_wrapper('user', $subuser);
+  // Set name.
+  if(!empty($values['name'])){
+    $suwrapper->name->set($values['name']);
+    $data['user'][':name'] = $values['name'];
+  }
+  // Set user remark.
+  if(!empty($values['user_remark'])){
+    $suwrapper->field_user_remark->set($values['user_remark']);
+    $data['user'][':password'] = $values['pass'];
+  }
+  // Set expire.
+  if(!empty($values['user_expire'])){
+    $suwrapper->field_expire_date->set(strtotime($values['user_expire']));
+  }
+  // Set password and cleartext passwd.
+  if(!empty($values['pass'])){
+    $suwrapper->field_pass_clear->set($values['pass']);
+    $data['user'][':password'] = $values['pass'];
+  }
+  // Save subuser entity.
+  $suwrapper->save();
+  // Save password.
+  if(!empty($values['pass'])){
+    $saved_subuser = user_load($subuser->uid);
+    $edit['pass'] = $values['pass'];
+    user_save($saved_subuser, $edit);
+  }
+  // Update Oracle.
+  kms_oci_update_user($data['user'], 'smuser', kms_user_get_userid($subuser));
 }
 
 /**
@@ -211,7 +270,7 @@ function kms_subuser_ajax_form_submit(&$form, &$form_state) {
  *
  * @return void.
  */
-function kms_subuser_add_form_validate($form, &$form_state) {
+function kms_subuser_form_validate($form, &$form_state) {
   $values = $form_state['values'];
   $user = user_load_by_name($values['name']);
   if ($user) {
@@ -249,6 +308,10 @@ function kms_subuser_ajax_callback(&$form, &$form_state) {
 function theme_subuser_add_user_popup($vars) {
   $module_path = drupal_get_path('module', 'kms_subuser');
   $lib_datatables =  "$module_path/library/datatables";
+
+  ctools_include('modal');
+  ctools_modal_add_js();
+
   $output = array(
     '#type' => 'container',
     '#attributes' => array(
@@ -274,8 +337,9 @@ function theme_subuser_add_user_popup($vars) {
         ),
       ),
     ),
-    'form' => drupal_get_form('kms_subuser_add_form', $vars['master_user']),
+    'form' => drupal_get_form('kms_subuser_form', $vars['master_user']),
   );
+
   return drupal_render($output);
 }
 
@@ -567,13 +631,36 @@ function kms_subuser_profile_submit($form, &$form_state) {
  */
 function kms_subuser_insert_account_oracle($user, $account) {
   // Get default data.
-  $data = _kms_user_oracle_default_user_data($account);
+  $data = _kms_user_oracle_default_user_data($account, 'insert');
   // Set master user id.
   $data['user_extra'][':master_userid'] = $user->uid;
   // Insert oracle user data.
   if (module_exists('kms_oci') && !kms_user_smuser_exists($account)) {
     kms_oci_insert($data['user_extra'], 'smuser_extra');
     kms_oci_insert($data['user'], 'smuser');
+  }
+}
+
+/**
+ * Save updated subuser data into Oracle.
+ *
+ * @param object $user
+ *   Drupal user object (master).
+ * @param object $account
+ *   Drupal user object (subuser).
+ *   
+ * @return void
+ */
+function kms_subuser_update_account_oracle($user, $account) {
+  // Get default data.
+  $data = _kms_user_oracle_default_user_data($account, 'update');
+  // Set master user id.
+  $data['user_extra'][':master_userid'] = $user->uid;
+  // Update oracle user data.
+  if (module_exists('kms_oci') && !kms_user_smuser_exists($account)) {
+    $kms_userid = kms_user_get_userid($account);
+    kms_oci_update_user($data['user_extra'], 'smuser_extra', $kms_userid);
+    kms_oci_update_user($data['user'], 'smuser', $kms_userid);
   }
 }
 
@@ -801,24 +888,187 @@ function kms_subuser_load($uid) {
   return $subuser;
 }
 
+/**
+ * Implements hook_form_FORMID_alter().
+ */
 function kms_subuser_form_user_cancel_confirm_form_alter(&$form, &$form_state) {
   $form['actions']['#prefix'] =
   '<p class="error">' . t('WARNING: If user is deleted connected subuser(s) will be deleted as well!!') . '</p>';
 }
 
 /**
- * Implement hook_menu_get_item_alter().
+ * Subuser admin access calback.
+ *
+ * @param object $user
+ *   Drupal user.
+ *
+ * @return boolean
  */
-// function kms_subuser_menu_get_item_alter(&$router_item, $path, $original_map) {
-//   global $user;
-//   adapt_debug('mikkel', $original_map)
-  // If we are at user/[userid] and the user is logged in.
-  // if(
-  //   $original_map[0] == 'user'
-  //   && count($original_map) == 2
-  //   && intval($original_map[1])
-  //   && !empty($user->uid)
-  // ) {
-  //   $router_item['access_callback'] = TRUE;
-  // } 
-// }
+function kms_subuser_administer_access($subuser) {
+  global $user;
+  // Is the subuser uid in the array of subusers
+  // that belongs to the inlogged user?
+  return in_array($subuser->uid, subuser_load_all($user));
+}
+
+/**
+ * Ajax render function.
+ * Renders relevant ctools modal json data.
+ *
+ * @param boolean $js
+ *   Is the client using javascript?
+ * @param object $user
+ *   Drupal user.
+ * @param string $op
+ *   What operation are we executing?
+ *
+ * @return string
+ *   JSON.
+ */
+function kms_subuser_administer_popup($js = FALSE, $user, $op) {
+  if (!$js) {
+    return drupal_get_form("kms_subuser_$op_form", $user);
+  }
+  // We do not want messages shown in our popup.
+  drupal_get_messages();
+  // Include relevant ctools code.
+  ctools_include('modal');
+  ctools_include('ajax');
+  // Add necessary form_state data.
+  $form_state = array(
+    'ajax' => TRUE,
+    'build_info' => array(
+      'args'  => array($user),
+    ),
+  );
+  // Create form output.
+  switch ($op) {
+    case 'update':
+      $form_state['title'] = t('Administer subuser');
+      $output = ctools_modal_form_wrapper('kms_subuser_update_form', $form_state);
+      break;
+    case 'cancel':
+      $form_state['title'] = t('Delete subuser');
+      $output = ctools_modal_form_wrapper('kms_subuser_cancel_form', $form_state);
+      break;
+  }
+  // If form is executed remove modal popup.
+  if (!empty($form_state['executed'])) {
+    $output = array();
+    $output[] = ajax_command_invoke('#modalContent', 'fadeOut', array('slow'));
+    $output[] = ajax_command_invoke('#modalBackdrop', 'fadeOut', array('slow'));
+    // $output[] = ctools_modal_command_dismiss();
+  }
+  // Render output.
+  print ajax_render($output);
+  exit;
+}
+
+/**
+ * Delete subuser form.
+ * 
+ * @param array $form
+ *   Drupal form array.
+ * @param array $form_state
+ *   Drupal form state array.
+ * @param object $subuser
+ *   Drupal user object.
+ *
+ * @return array
+ *   Drupal form array.
+ */
+function kms_subuser_cancel_form($form, &$form_state, $subuser) {
+  $form['info'] = array(
+    '#markup' => '<h1>' . t('Do you want to delete the subuser?') . '</h1>',
+  );
+  $form['subuser_uid'] = array('#type' => 'hidden', '#value' => $subuser->uid);
+  $form['actions'] = array(
+    '#description' => t('Do you want to delete subuser?'),
+    '#type' => 'actions'
+  );
+  $form['actions']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Delete'),
+    '#submit' => array('kms_subuser_cancel_form_delete')
+  );
+  $form['actions']['cancel'] = array(
+    '#type' => 'submit',
+    '#value' => t('No'),
+  );
+
+  return $form;
+}
+
+/**
+ * Submit handler
+ * Deletes subuser in Drupal and in Oracle.
+ *
+ * @param array $form
+ *   Drupal form array.
+ * @param array $form_state
+ *   Drupal form_state array.
+ *
+ * @return void
+ */
+function kms_subuser_cancel_form_delete(&$form, &$form_state) {
+  $values = $form_state['values'];
+  // Delete Oracle smuser.
+  kms_user_smuser_delete($values['subuser_uid']);
+  // Delete Drupal subuser.
+  user_delete($values['subuser_uid']);
+}
+
+/**
+ * Update subuser form
+ *
+ * @param array $form
+ *   Drupal form array.
+ * @param array $form_state
+ *   Drupal form state array.
+ * @param object $subuser
+ *   Drupal user object.
+ *
+ * @return array
+ *   Drupal form array.
+ */
+function kms_subuser_update_form($form, &$form_state, $subuser) {
+  global $user;
+  
+  drupal_get_messages();
+  $form = kms_subuser_form($form, $form_state, $user, 'update');
+  // Delete unwanted form data.
+  unset(
+    $form['add_subuser'],
+    $form['user_pass']['name']['#states'],
+    $form['user_pass']['pass']['#states'],
+    $form['user_expire']['#states'],
+    $form['user_remark']['#states'],
+    $form['submit']['#states'],
+    $form['submit']['#ajax'],
+    $form['submit']['#submit']
+  );
+  // Set subuser uid.
+  $form['subuser_uid'] = array('#type' => 'hidden', '#value' => $subuser->uid);
+  // Set values.
+  // Name / pass.
+  $form['user_pass']['name']['#default_value'] = $subuser->name;
+  if (!empty($subuser->field_pass_clear[LANGUAGE_NONE][0]['value'])) {
+    $form['user_pass']['pass']['#default_value'] =
+    $subuser->field_pass_clear[LANGUAGE_NONE][0]['value'];
+  }
+  // Expire date.
+  if (!empty($subuser->field_expire_date[LANGUAGE_NONE][0]['value'])) {
+    $form['user_expire']['#default_value'] = date(
+      'Y-m-d',
+      $subuser->field_expire_date[LANGUAGE_NONE][0]['value']
+    );
+  }
+  // User remark
+  if (!empty($subuser->field_user_remark[LANGUAGE_NONE][0]['value'])) {
+    $form['user_remark']['#default_value'] =
+    $subuser->field_user_remark[LANGUAGE_NONE][0]['value'];
+  }
+  // Change submit handler
+  $form['#submit'] = array('kms_subuser_update_form_submit');
+  return $form;
+}

@@ -100,7 +100,6 @@ function kms_user_ctools_plugin_directory($owner, $plugin_type) {
  */
 function kms_user_form_alter(&$form, &$form_state, $form_id) {
   global $user;
-
   if (in_array($form_id, array('user_register_form', 'user_profile_form'))) {
     $form['account']['name']['#element_validate'] = array('_kms_user_validate_username');
     $form['account']['name']['#description'] = t(
@@ -172,7 +171,7 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
           $form['field_address']['und'][0]['locality_block']['#access'] = FALSE;
           $form['field_address']['und'][0]['organisation_block']['#access'] = FALSE;
         }
-
+        break;
       case 'user_register_form':
         // We need to store the new password
         $form['#submit'][] = '_kms_user_insert_user_pass';
@@ -476,11 +475,8 @@ function _kms_user_submit_insert_user_oracle($form, &$form_state) {
     return;
   }
 
-  // Do not store Drupal tmp password.
-  $account->pass = '';
-
   // Get default data.
-  $data = _kms_user_oracle_default_user_data($account);
+  $data = _kms_user_oracle_default_user_data($account, 'insert');
 
   if (!empty($account->field_user_type[LANGUAGE_NONE][0]['tid'])) {
     $data['user_extra'][':usertype'] =
@@ -514,7 +510,7 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
   $account = (object)$form_state['values'];
   $user = $form['#user'];
 
-  $data = _kms_user_oracle_default_user_data($account);
+  $data = _kms_user_oracle_default_user_data($account, 'update');
   unset($data['user_extra'][':usertype']);
   unset($data['user_extra'][':usertype_info']);
 
@@ -579,14 +575,12 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
  * @return array $data
  *   Default user data.
  */
-function _kms_user_oracle_default_user_data($account) {
+function _kms_user_oracle_default_user_data($account, $mode) {
   $data = array();
-
   $data['user'] = array(
     ':userid' => $account->uid,
     ':name' =>  $account->name,
     ':emailaddress' => $account->mail,
-    ':disabled' => 0,
   );
 
   if (!empty($account->pass) && !kms_user_password_is_encrypted($account->pass)) {
@@ -596,12 +590,22 @@ function _kms_user_oracle_default_user_data($account) {
   $data['user_extra'] = array(
     ':duid' => $account->uid,
     ':userid' => $account->uid,
-    ':usertype' => 0,
-    ':usertype_info' => '',
-    ':receive_newsletter' => 0,
-    ':accept_terms' => 0,
-    ':contact_me' => 0,
   );
+
+  switch ($mode) {
+    case 'insert':
+      $data['user'][':disabled'] = 0;
+      $data['user_extra'] += array(
+        ':usertype' => 0,
+        ':usertype_info' => '',
+        ':receive_newsletter' => 0,
+        ':accept_terms' => 0,
+        ':contact_me' => 0,
+      );
+      break;
+    case 'update':
+      break;
+  }
 
   return $data;
 }
@@ -752,18 +756,25 @@ function kms_user_smuser_exists($user) {
   if (is_int($user)) {
     $user = user_load($user);
   }
+
   if(!kms_oci_extension_is_loaded()) {
     return FALSE;
   }
+
   $oci = kms_oci_get_conn();
   if (!$oci) {
     return FALSE;
   }
+
   $stid = oci_parse(
     $oci,
     sprintf("SELECT * FROM smuser_extra WHERE duid = '%s'", $user->uid)
   );
+
   oci_execute($stid);
+  
   $row = oci_fetch_array($stid);
+  
   return !empty($row);
+
 }

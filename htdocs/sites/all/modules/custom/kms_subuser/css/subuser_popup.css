@@ -1,4 +1,4 @@
-#kms-subuser-add-form {
+#kms-subuser-form {
   float: left;
 }
 #subuser-popup-link {
@@ -48,7 +48,7 @@
   clear: both;
 }
 
-#subuser-popup #kms-subuser-add-form-wrapper{
+#subuser-popup #kms-subuser-insert-form-wrapper{
   /*width: 400px;*/
 /*  border: 1px dashed lightGrey;
   background: #EAEBFF;

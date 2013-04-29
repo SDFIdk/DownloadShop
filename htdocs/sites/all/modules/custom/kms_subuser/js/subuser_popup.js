@@ -2,6 +2,7 @@
   var result = 0, prevResult = 0;
   Drupal.behaviors.kmsSubuserPopup = {
     attach: function(context, settings) {
+
       $.ajax({
         url: '/kms-subuser/ajax/load-view/' + settings.kms_user.uid,
         type: 'GET',
@@ -18,11 +19,12 @@
            
           // If number of view result is increasing then clear form.
           $("body").bind("ajaxComplete", function(e, xhr, sett){
+              Drupal.behaviors.ZZCToolsModal.attach(context);
               result = $('#subuser-view-wrapper table td.views-field-name').length;
               if (prevResult != 0 && result > prevResult) {
-                $('#kms-subuser-add-form input[type="text"]').val('');
-                $('#kms-subuser-add-form textarea').text('');
-                $('#kms-subuser-add-form input[name="add_subuser"]')
+                $('#kms-subuser-form input[type="text"]').val('');
+                $('#kms-subuser-form textarea').text('');
+                $('#kms-subuser-form input[name="add_subuser"]')
                  .trigger('click').removeAttr('checked');
               }
               prevResult = result;
