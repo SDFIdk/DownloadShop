@@ -205,8 +205,8 @@ function kms_oci_select_one($query, $data = array(), $type = 'assoc') {
  * @return void.
  */
 function kms_oci_query($query, $data = array()) {
-  adapt_debug('mikkel', $query);
-  adapt_debug('mikkel', $data);
+  // adapt_debug('mikkel', $query);
+  // adapt_debug('mikkel', $data);
   if(!kms_oci_extension_is_loaded()) {
     return;
   }
