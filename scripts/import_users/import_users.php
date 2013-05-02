@@ -34,7 +34,7 @@ $user = user_load(array('uid' => 1));
 // Absolute path to csv file.
 $settings = array(
   // 'filename' => "/home/drupal/kms.dev/scripts/import_users/SM_Oracle_export.csv",
-  'filename' => "/home/drupal/kms.dev/scripts/import_users/Siteminder_users_incl_TermID_abt.csv",
+  'filename' => "/home/drupal/kms.dev/scripts/import_users/Siteminder_users_incl_TermID_abt_13122012_latin_min1.csv",
   'roles' => array(6 => TRUE),
   'nonmail' => 'userneeds@tochange.this'
 );
@@ -167,9 +167,12 @@ function import_users($mapping, $limit = FALSE) {
       if ($limit === FALSE || $row_count <= $limit) {
         // Save user intially.
         $account = import_users_save_user($mapping, $row, $settings['roles']);
+        import_users_save_pass_cleartext($account);
+
         $users[$account->uid] = $account;
         // Save fields on user.
         $user_wrapper = import_users_save_fields($mapping, $row, $account);
+
         fwrite($stdout, "[$row_count] Imported: {$account->name}\n");
         $row_count++;
       }
@@ -227,7 +230,10 @@ function import_users_save_user($mapping, $row, $roles) {
     $col++;
   }
 
-  return import_users_save_user_init($user, $roles);
+  $pass_clear = $user->pass;
+  $account = import_users_save_user_init($user, $roles);
+  $account->pass_clear = $pass_clear;
+  return $account;
 }
 
 /**
@@ -339,6 +345,9 @@ function import_users_translate_country(&$value) {
     case 'USA':
       $value = 'US';
       break;
+    default:
+      $value = 'DK';
+      break;
   }
 }
 
@@ -382,6 +391,11 @@ function import_users_fuckedup_kms_time2unix($kms_time) {
   );
 }
 
+function import_users_save_pass_cleartext($user) {
+  $user_wrapper = entity_metadata_wrapper('user', $user);
+  $user_wrapper->field_pass_clear->set($user->pass_clear);
+  $user_wrapper->save();
+}
 
 /*
 USERID
