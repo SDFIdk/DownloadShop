@@ -1,0 +1,8 @@
+#!/bin/bash
+
+#rsync -avz -C --port=9024 /home/drupal/kms.dev/htdocs/ /home/drupal/kms.dev/htdocs/
+
+rsync -avz -C --port=9024 /home/drupal/kms.dev/htdocs/sites/all/modules/custom/kms_permissions kms_test:/home/drupal/kms.dev/htdocs/sites/all/modules/custom/
+rsync -avz -C --port=9024 /home/drupal/kms.dev/htdocs/sites/all/modules/custom/features_export/kms_access_bundles kms_test:/home/kfadm/kms.htdocs/sites/all/modules/custom/features_export/
+rsync -avz -C --port=9024 /home/drupal/kms.dev/htdocs/sites/all/modules/custom/features_export/user_fields kms_test:/home/kfadm/kms.htdocs/sites/all/modules/custom/features_export/
+rsync -avz -C --port=9024 /home/drupal/kms.dev/htdocs/sites/all/modules/custom/features_export/view_administration_users kms_test:/home/kfadm/kms.htdocs/sites/all/modules/custom/features_export/
