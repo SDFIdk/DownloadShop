@@ -338,6 +338,7 @@ function _kms_user_cron_expire_users() {
       u.status = 1
   ";
   $result = db_query($query, array(':time' => time()));
+
   foreach ($result as $row) {
     if (empty($row->uid)) {
       continue;
@@ -738,9 +739,11 @@ function kms_user_smuser_deactivate($user) {
   if (is_int($user)) {
     $user = user_load($user);
   }
+
   kms_oci_update_user(
-    array(':userid' => kms_user_get_userid($user), ':disabled' => '1'),
-    'smuser'
+    array(':disabled' => '1'),
+    'smuser',
+    kms_user_get_userid($user)
   );
 }
 
