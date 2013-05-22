@@ -328,14 +328,6 @@ function theme_subuser_add_user_popup($vars) {
           'type' => 'file'
         ),
       ),
-      'css' => array(
-        array(
-          'data' => "$module_path/css/subuser_popup.css",
-        ),
-        array(
-          'data' => "$lib_datatables/media/css/demo_table.css",
-        ),
-      ),
     ),
     'form' => drupal_get_form('kms_subuser_form', $vars['master_user']),
   );
@@ -929,6 +921,7 @@ function kms_subuser_administer_popup($js = FALSE, $user, $op) {
   if (!$js) {
     return drupal_get_form("kms_subuser_$op_form", $user);
   }
+  $uid = $user->uid;
   // We do not want messages shown in our popup.
   drupal_get_messages();
   // Include relevant ctools code.
@@ -941,6 +934,7 @@ function kms_subuser_administer_popup($js = FALSE, $user, $op) {
       'args'  => array($user),
     ),
   );
+
   // Create form output.
   switch ($op) {
     case 'update':
@@ -955,9 +949,9 @@ function kms_subuser_administer_popup($js = FALSE, $user, $op) {
   // If form is executed remove modal popup.
   if (!empty($form_state['executed'])) {
     $output = array();
-    $output[] = ajax_command_invoke('#modalContent', 'fadeOut', array('slow'));
-    $output[] = ajax_command_invoke('#modalBackdrop', 'fadeOut', array('slow'));
-    // $output[] = ctools_modal_command_dismiss();
+    // $output[] = ajax_command_invoke('#modalContent', 'fadeOut', array('slow'));
+    // $output[] = ajax_command_invoke('#modalBackdrop', 'fadeOut', array('slow'));
+    $output[] = ctools_modal_command_dismiss();
   }
   // Render output.
   print ajax_render($output);
