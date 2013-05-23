@@ -242,6 +242,10 @@ function kms_subuser_update_form_submit(&$form, &$form_state) {
   // Set expire.
   if(!empty($values['user_expire'])){
     $suwrapper->field_expire_date->set(strtotime($values['user_expire']));
+    if (strtotime($values['user_expire']) > time()) {
+      $suwrapper->status = 1;
+      $data['user'][':disabled'] = '0';
+    } 
   }
   // Set password and cleartext passwd.
   if(!empty($values['pass'])){
@@ -524,6 +528,10 @@ function kms_subuser_is_subuser($user) {
 function kms_subuser_form_user_profile_form_alter(&$form, &$form_state, $form_id) {
   global $user;
   $account = $form['#user'];
+  
+  // Bypass email dupes vaildation if the account is subuser.
+  kms_subuser_form_user_account_form_alter($form, $form_state, $form_id);
+  
   // If the user account being edited is not a subuser account
   // or the user has uid = 1
   // we will not make any modifications.
@@ -547,8 +555,6 @@ function kms_subuser_form_user_profile_form_alter(&$form, &$form_state, $form_id
     unset($form['actions']);
   }
 
-  // Bypass email dupes vaildation.
-  kms_subuser_form_user_account_form_alter($form, $form_state, $form_id);
   
 }
 
