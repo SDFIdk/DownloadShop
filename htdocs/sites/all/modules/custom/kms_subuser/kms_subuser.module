@@ -546,6 +546,50 @@ function kms_subuser_form_user_profile_form_alter(&$form, &$form_state, $form_id
   if (kms_subuser_is_subuser($user)) {
     unset($form['actions']);
   }
+
+  // Bypass email dupes vaildation.
+  kms_subuser_form_user_account_form_alter($form, $form_state, $form_id);
+  
+}
+
+/**
+ * Replace user_account_form_validate with _kms_subuser_account_form_validate.
+ * The idea comes from: http://drupal.org/project/sharedemail.
+ *
+ * Implements hook_form_FORM_ID_alter().
+ */
+function kms_subuser_form_user_account_form_alter(&$form, &$form_state, $form_id) {
+  if (is_array($form['#validate'])) {
+    $key = array_search('user_account_form_validate', $form['#validate'], TRUE);
+    if ( $key !== FALSE ) {
+      $form['#validate'][$key] = '_kms_subuser_account_form_validate';
+    }
+  }
+}
+
+/**
+ * Validate function used for bypassing email dupes.
+ *
+ * @param array $form
+ *   Drupal form array.
+ * @param array $form_state
+ *   Drupal form_state array.
+ *
+ * @return void
+ */
+function _kms_subuser_account_form_validate($form, &$form_state) {
+  $account = $form['#user'];
+  $mail = trim($form_state['values']['mail']);
+  
+  if (kms_subuser_is_subuser($account)) {
+    $form_state['values']['mail'] = uniqid() . "_$mail";
+  }
+
+  // Call the User module's validate function.
+  user_account_form_validate($form, $form_state);
+
+  // Restore the actual e-mail address.
+  $form_state['values']['mail'] = $mail;
 }
 
 /**
