@@ -22,6 +22,24 @@ function kms_subuser_ctools_plugin_directory($module, $plugin) {
   }
 }
 
+function kms_subuser_init() {
+  // Shitty way of getting around preprocess_css problem.
+  if (current_path() == 'edit/profile') {
+    $module_path = drupal_get_path('module', 'kms_subuser');
+    $lib_datatables =  "$module_path/library/datatables";
+    
+    drupal_add_css(
+      "$module_path/css/subuser_popup.css",
+      array('preprocess' => FALSE)
+    );
+    drupal_add_css(
+      "$module_path/library/datatables/media/css/demo_table.css",
+      array('preprocess' => FALSE)
+    );
+  }
+
+}
+
 /**
  * Implements hook_menu().
  */

@@ -8,5 +8,3 @@ dependencies[] = subuser
 dependencies[] = kms_csv
 dependencies[] = date_popup
 
-stylesheets[screen][] = css/subuser_popup.css
-stylesheets[screen][] = library/datatables/media/css/demo_table.css
