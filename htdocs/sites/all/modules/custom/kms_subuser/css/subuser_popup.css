@@ -1,6 +1,3 @@
-#kms-subuser-form {
-  float: left;
-}
 #subuser-popup-link {
   display: block;
   float: left;
@@ -8,25 +5,12 @@
 }
 #subuser-popup {
   display: block;
-  margin-top: 10px;
+  margin: 20px 0px 20px 0px;
+  padding-top: 5px;
+  border-top: 1px solid;
 }
-#subuser-popup label{
-  padding: 4px;
-}
-#subuser-popup .form-item, #subuser-popup .container-inline-date {
-  padding: 0px 8px 0px 0px;
-}
-#subuser-popup .form-submit {
-  margin: 0px 8px 0px 0px;
-}
-#subuser-popup .user-pass-wrapper .form-item {
-/*#subuser-popup .user-pass-wrapper .container-inline-date {*/
-  float: left;
-  /*width: 140px;*/
-}
-#subuser-popup .form-item-user-remark {
-  clear: both;
-  padding: 5px 8px 5px 0px;
+#subuser-popup h2{
+  margin: 10px 0px 10px 0px;
 }
 #subuser-popup .password-strength {
   display: none;
@@ -34,27 +18,25 @@
 #subuser-popup div.password-confirm {
   display: none;
 }
-#subuser-popup .container-inline-date {
-  display: block;
-  clear: none;
-}
-#subuser-popup .container-inline-date .date-padding {
-  padding: 0px;
-}
 #subuser-popup #edit-user-expire label{
   display: none;
 }
-#subuser-popup .clear-both{
-  clear: both;
-}
-
 #subuser-popup #kms-subuser-insert-form-wrapper{
-  /*width: 400px;*/
-/*  border: 1px dashed lightGrey;
-  background: #EAEBFF;
-*/  padding: 5px;
+  padding: 5px;
   margin-bottom: 10px;
 }
-/*
-form-item form-type-textarea form-item-user-comment
 
+/* Taming ctools modal window form style: */
+div.ctools-modal-content .form-item label {
+  float: none !important;
+  width: auto !important;
+}
+.container-inline-date .date-padding {
+  float: none !important;
+  padding: 0 !important;
+}
+div.ctools-modal-content .resizable-textarea {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  width: auto;
+}

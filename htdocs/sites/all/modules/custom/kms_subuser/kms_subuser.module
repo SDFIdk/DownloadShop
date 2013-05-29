@@ -26,14 +26,13 @@ function kms_subuser_init() {
   // Shitty way of getting around preprocess_css problem.
   if (current_path() == 'edit/profile') {
     $module_path = drupal_get_path('module', 'kms_subuser');
-    $lib_datatables =  "$module_path/library/datatables";
     
     drupal_add_css(
       "$module_path/css/subuser_popup.css",
       array('preprocess' => FALSE)
     );
     drupal_add_css(
-      "$module_path/library/datatables/media/css/demo_table.css",
+      "$module_path/css/subuser_datatables.css",
       array('preprocess' => FALSE)
     );
   }
@@ -106,16 +105,21 @@ function kms_subuser_form($form, &$form_state, $master_user, $mode = 'insert') {
   
   $form['master_uid'] = array('#type' => 'hidden', '#value' => $master_user->uid);
 
-  $form['add_subuser'] = array(
-    '#type' => 'checkbox', 
-    '#title' => t('Add subuser'),
-  );
+  // $add_subuser_btn = theme(
+  //   'image',
+  //   array('path' => drupal_get_path('module', 'kms_subuser') . '/images/checkbutton.jpg')
+  // );
 
-  $states_add_subuser = array(
-    'visible' => array(
-      ':input[name="add_subuser"]' => array('checked' => TRUE),
-    ),
-  );
+  // $form['add_subuser'] = array(
+  //   '#type' => 'radios',
+  //   '#options' => array(1 => $add_subuser_btn),
+  // );
+
+  // $states_add_subuser = array(
+  //   'visible' => array(
+  //     ':input[name="add_subuser"]' => array('checked' => TRUE),
+  //   ),
+  // );
   $form['user_pass'] = array(
     '#type' => 'container',
     '#attributes' => array(
@@ -128,7 +132,7 @@ function kms_subuser_form($form, &$form_state, $master_user, $mode = 'insert') {
     '#size' => 16, 
     '#maxlength' => 128, 
     '#required' => TRUE,
-    '#states' => $states_add_subuser,
+    // '#states' => $states_add_subuser,
     '#element_validate' => array('_kms_user_validate_username'),
   );
   $form['user_pass']['pass'] = array(
@@ -137,7 +141,7 @@ function kms_subuser_form($form, &$form_state, $master_user, $mode = 'insert') {
     '#maxlength' => 128, 
     '#title' => t('Password'), 
     '#required' => TRUE,
-    '#states' => $states_add_subuser,
+    // '#states' => $states_add_subuser,
   );
   $form['user_expire'] = array(
     '#title' => t('Expire date'),
@@ -146,13 +150,13 @@ function kms_subuser_form($form, &$form_state, $master_user, $mode = 'insert') {
     '#size' => 16, 
     '#description' => t('(optional) Select when user expires. Leave empty for never.'),
     '#date_format' => 'd.m.Y',
-    '#states' => $states_add_subuser,
+    // '#states' => $states_add_subuser,
   );
   $form['user_remark'] = array(
     '#title' => t('User remark'),
     '#type' => 'textarea',
     '#description' => t('Optional remarks about the user.'),
-    '#states' => $states_add_subuser,
+    // '#states' => $states_add_subuser,
   );
   $form['submit'] = array(
     '#type' => 'submit',
@@ -162,7 +166,7 @@ function kms_subuser_form($form, &$form_state, $master_user, $mode = 'insert') {
       'wrapper' => $ajax_wrapper,
       'callback' => 'kms_subuser_ajax_callback',
     ),
-    '#states' => $states_add_subuser,
+    // '#states' => $states_add_subuser,
   );
 
   return $form;
@@ -180,7 +184,6 @@ function kms_subuser_form($form, &$form_state, $master_user, $mode = 'insert') {
  */
 function kms_subuser_insert_form_submit(&$form, &$form_state) {
   global $user;
-
   $form_state['rebuild'] = FALSE;
   $values = $form_state['values'];
   $name = trim($values['name']);
@@ -351,7 +354,19 @@ function theme_subuser_add_user_popup($vars) {
         ),
       ),
     ),
-    'form' => drupal_get_form('kms_subuser_form', $vars['master_user']),
+    'title' => array(
+      '#type' => 'markup',
+      '#markup' => '<h2>' . t('Subuser administration') . '</h2>',
+    ),
+    'popup' => array(
+      '#theme' => 'link',
+      '#text' => '<button>' . t('Add subuser') . '</button>',
+      '#path' => 'admin/kms-subuser/nojs/0/insert',
+      '#options' => array(
+        'attributes' => array('class' => 'ctools-use-modal'),
+        'html' => TRUE,
+      ),
+    ),
   );
 
   return drupal_render($output);
@@ -966,6 +981,11 @@ function kms_subuser_form_user_cancel_confirm_form_alter(&$form, &$form_state) {
  */
 function kms_subuser_administer_access($subuser) {
   global $user;
+  // If user id is o then we probably are in insert mode
+  // and then we bypass access check.
+  if ($subuser->uid == 0) {
+    return TRUE;
+  }
   // Is the subuser uid in the array of subusers
   // that belongs to the inlogged user?
   return in_array($subuser->uid, subuser_load_all($user));
@@ -1002,10 +1022,13 @@ function kms_subuser_administer_popup($js = FALSE, $user, $op) {
       'args'  => array($user),
     ),
   );
-
   // Create form output.
   switch ($op) {
-    case 'update':
+    case 'insert':
+      $form_state['title'] = t('Insert subuser');
+      $output = ctools_modal_form_wrapper('kms_subuser_insert_form', $form_state);
+      break;
+      case 'update':
       $form_state['title'] = t('Administer subuser');
       $output = ctools_modal_form_wrapper('kms_subuser_update_form', $form_state);
       break;
@@ -1100,7 +1123,7 @@ function kms_subuser_update_form($form, &$form_state, $subuser) {
   $form = kms_subuser_form($form, $form_state, $user, 'update');
   // Delete unwanted form data.
   unset(
-    $form['add_subuser'],
+    // $form['add_subuser'],
     $form['user_pass']['name']['#states'],
     $form['user_pass']['pass']['#states'],
     $form['user_expire']['#states'],
@@ -1134,3 +1157,33 @@ function kms_subuser_update_form($form, &$form_state, $subuser) {
   $form['#submit'] = array('kms_subuser_update_form_submit');
   return $form;
 }
+
+
+function kms_subuser_insert_form($form, &$form_state) {
+  global $user;
+  drupal_get_messages();
+  $form = kms_subuser_form($form, $form_state, $user, 'insert');
+  // Delete unwanted form data.
+  unset(
+    // $form['add_subuser'],
+    $form['user_pass']['name']['#states'],
+    $form['user_pass']['pass']['#states'],
+    $form['user_expire']['#states'],
+    $form['user_remark']['#states'],
+    $form['submit']['#states'],
+    $form['submit']['#ajax'],
+    $form['submit']['#submit']
+  );
+  // 
+  // Change submit handler
+  $form['#submit'] = array('kms_subuser_insert_form_submit');
+  return $form;
+}
+
+
+/*
+div: overfLOW: HIDDEN
+input: position: absolute;
+margin-left: -1000px;
+visibility: hidden;
+ */
