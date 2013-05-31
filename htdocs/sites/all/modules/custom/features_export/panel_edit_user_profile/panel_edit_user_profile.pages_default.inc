@@ -40,11 +40,11 @@ function panel_edit_user_profile_default_page_manager_pages() {
   $handler = new stdClass();
   $handler->disabled = FALSE; /* Edit this to true to make a default handler disabled initially */
   $handler->api_version = 1;
-  $handler->name = 'page_edit_user_profile_panel_context_2';
+  $handler->name = 'page_edit_user_profile_panel_context';
   $handler->task = 'page';
   $handler->subtask = 'edit_user_profile';
   $handler->handler = 'panel_context';
-  $handler->weight = 1;
+  $handler->weight = 2;
   $handler->conf = array(
     'title' => 'Edit profile',
     'no_blocks' => 0,
@@ -225,6 +225,7 @@ function panel_edit_user_profile_default_page_manager_pages() {
 <p>Dit brugernavn er: <i><?php global $user; if ($user->uid) { print $user->name; } ?></i></p>',
       'format' => 'php_code',
       'substitute' => TRUE,
+      'name' => 'user_profile_info_box',
     );
     $pane->cache = array();
     $pane->style = array(
