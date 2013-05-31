@@ -78,13 +78,14 @@ function view_kms_subuser_views_default_views() {
   $handler->display->display_options['fields']['name']['id'] = 'name';
   $handler->display->display_options['fields']['name']['table'] = 'users';
   $handler->display->display_options['fields']['name']['field'] = 'name';
-  $handler->display->display_options['fields']['name']['label'] = 'User';
+  $handler->display->display_options['fields']['name']['label'] = 'Brugernavn';
   $handler->display->display_options['fields']['name']['alter']['word_boundary'] = FALSE;
   $handler->display->display_options['fields']['name']['alter']['ellipsis'] = FALSE;
   /* Field: User: Roles */
   $handler->display->display_options['fields']['rid']['id'] = 'rid';
   $handler->display->display_options['fields']['rid']['table'] = 'users_roles';
   $handler->display->display_options['fields']['rid']['field'] = 'rid';
+  $handler->display->display_options['fields']['rid']['label'] = 'Rolle';
   /* Field: User: Uid */
   $handler->display->display_options['fields']['uid']['id'] = 'uid';
   $handler->display->display_options['fields']['uid']['table'] = 'users';
@@ -94,7 +95,6 @@ function view_kms_subuser_views_default_views() {
   $handler->display->display_options['fields']['field_expire_date']['id'] = 'field_expire_date';
   $handler->display->display_options['fields']['field_expire_date']['table'] = 'field_data_field_expire_date';
   $handler->display->display_options['fields']['field_expire_date']['field'] = 'field_expire_date';
-  $handler->display->display_options['fields']['field_expire_date']['label'] = 'Expires';
   $handler->display->display_options['fields']['field_expire_date']['settings'] = array(
     'format_type' => 'subuser_date',
     'fromto' => 'both',
@@ -113,7 +113,7 @@ function view_kms_subuser_views_default_views() {
   $handler->display->display_options['fields']['nothing_1']['id'] = 'nothing_1';
   $handler->display->display_options['fields']['nothing_1']['table'] = 'views';
   $handler->display->display_options['fields']['nothing_1']['field'] = 'nothing';
-  $handler->display->display_options['fields']['nothing_1']['label'] = 'Edit';
+  $handler->display->display_options['fields']['nothing_1']['label'] = 'Rediger';
   $handler->display->display_options['fields']['nothing_1']['alter']['text'] = 'edit';
   $handler->display->display_options['fields']['nothing_1']['alter']['make_link'] = TRUE;
   $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/kms-subuser/nojs/[uid]/update';
@@ -171,12 +171,12 @@ function view_kms_subuser_views_default_views() {
     t('Empty'),
     t('No users were found.'),
     t('Subuser'),
-    t('User'),
-    t('Roles'),
+    t('Brugernavn'),
+    t('Rolle'),
     t('Uid'),
-    t('Expires'),
+    t('Udløbsdato'),
     t('Status'),
-    t('Edit'),
+    t('Rediger'),
     t('edit'),
     t('Slet'),
     t('delete'),

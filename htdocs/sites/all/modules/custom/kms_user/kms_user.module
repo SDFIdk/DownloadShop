@@ -173,6 +173,8 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
         }
         break;
       case 'user_register_form':
+        // They do not want a fieldset title on address.
+        $form['field_address'][LANGUAGE_NONE][0]['#title'] = '';
         // We need to store the new password
         $form['#submit'][] = '_kms_user_insert_user_pass';
         // Store user data in Oracle.

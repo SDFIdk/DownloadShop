@@ -367,6 +367,12 @@ function theme_subuser_add_user_popup($vars) {
         'html' => TRUE,
       ),
     ),
+    'popup_description' => array(
+      '#type' => 'markup',
+      '#markup' => t('A subuser will be created and connected to your user account. The subuser can be time-limited.'),
+      '#prefix' => '<p>',
+      '#suffix' => '</p>',
+    ),
   );
 
   return drupal_render($output);
@@ -1179,11 +1185,3 @@ function kms_subuser_insert_form($form, &$form_state) {
   $form['#submit'] = array('kms_subuser_insert_form_submit');
   return $form;
 }
-
-
-/*
-div: overfLOW: HIDDEN
-input: position: absolute;
-margin-left: -1000px;
-visibility: hidden;
- */
