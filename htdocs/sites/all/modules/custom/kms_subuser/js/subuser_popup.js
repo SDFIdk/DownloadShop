@@ -8,6 +8,11 @@
 
       // Load subuser view.
       $('#subuser-view-wrapper').subuserView(settings.kms_user.uid);
+
+      $("body").bind("ajaxComplete", function(e, xhr, sett){
+        Drupal.behaviors.ZZCToolsModal.attach(context);
+      });
+
     }
   }
 
