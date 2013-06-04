@@ -379,13 +379,13 @@ function _kms_user_update_timestamp($form, &$form_state) {
 }
 
 function _kms_user_submit_update_user_pass($form, &$form_state) {
-  if (empty($form_state['user']->current_pass)) {
-    return;
+  $old_pass = '';
+  if (!empty($form_state['user']->current_pass)) {
+    $old_pass = $form_state['user']->current_pass;
   }
-  $old_pass = $form_state['user']->current_pass;
   $new_pass = $form_state['user']->pass;
-  $etxt = '_kms_user_submit_update_user_pass'."\n";
-  if ($new_pass !== $old_pass) {
+
+  if (!empty($new_pass) && ($new_pass !== $old_pass)) {
     _kms_user_insert_user_pass($form, $form_state);
   }
 }
@@ -394,13 +394,13 @@ function _kms_user_insert_user_pass($form, &$form_state) {
   // The password has changed and we need to store the new password
   // But we first need to check if the user is already registered
   $new_pass = $form_state['user']->pass;
+
   if ($new_pass && !kms_user_password_is_encrypted($new_pass)) {
     $pass_exists = db_select('field_data_field_pass_clear', 'fpc')
       ->fields('fpc', array('field_pass_clear_value'))
       ->condition('entity_id', $form['#user']->uid, '=')
       ->execute()
       ->fetchAssoc();
-
     if (!empty($pass_exists)) {
       // The password does exist in the target-table and we update that password
       $pass_updated = db_update('field_data_field_pass_clear') 
