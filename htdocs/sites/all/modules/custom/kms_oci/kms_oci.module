@@ -276,8 +276,11 @@ function kms_oci_exit($destination = NULL) {
  * @return void.
  */
 function kms_oci_send_mail_error($error, $query = '', $data = array()) {
-  global $base_url;
-
+  // Get current path with host prefix.
+  $current_path = $_SERVER['HTTP_HOST'] . '/' . drupal_get_path_alias();
+  // Add environment data. $_SERVER etc.
+  $data += kms_oci_environment_data();
+  
   // Debug info.
   ob_start();
   if(!empty($query) || !empty($data)) {
@@ -292,16 +295,17 @@ function kms_oci_send_mail_error($error, $query = '', $data = array()) {
     var_dump($data);
   }
   $debug = ob_get_clean();
+
   // Send mail.
   kms_oci_send_mail(
     array(
       'subject' => t(
-        'Oracle error at !base_url',
-        array('!base_url' => $base_url)
+        'Oracle error at !current_path',
+        array('!current_path' => $current_path)
       ),
       'body' => t(
-        "Oracle error at !base_url.\nError: !error.\n!debug",
-        array('!base_url' => $base_url, '!error' => $error, '!debug' => $debug)
+        "Oracle error at !current_path.\nError: !error.\n!debug",
+        array('!current_path' => $current_path, '!error' => $error, '!debug' => $debug)
       ),
     )
   );
@@ -575,3 +579,32 @@ function kms_oci_create_smuser_sql(){
   echo "$total rows created\r\n";
 }
 
+/**
+ * Get environment data for current request.
+ *
+ * @return array $data
+ */
+function kms_oci_environment_data() {
+  $data = array(
+    'server_info' => $_SERVER,
+    'backtrace' => '',
+  );
+
+  $bt = &$data['backtrace'];
+
+  $bt = "##########################\n";
+  $bt .= "Backtrace:\n";
+  $bt .= "##########################\n";
+  array_walk(debug_backtrace(), function($k) use (&$bt) {
+    if ($k['function'] == '_adapt_debug') {
+      return;
+    }
+    $bt .= !empty($k['class']) ? "Class: " . $k['class'] . "\n" : '';
+    $bt .= !empty($k['function']) ? "Function: " . $k['function'] . "\n" : '';
+    $bt .= !empty($k['file']) ? "File: " . $k['file'] . "\n" : '';
+    $bt .= !empty($k['line']) ? "Line: " . $k['line'] . "\n" : '';
+    $bt .= "-------------------------\n";
+  });
+
+  return $data;
+}
