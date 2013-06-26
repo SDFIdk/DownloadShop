@@ -166,10 +166,6 @@ projects[relation][version] = "1.0-rc4"
 projects[rules][subdir] = "contrib"
 projects[rules][version] = "2.2"
 
-;securepages
-projects[securepages][subdir] = "contrib"
-projects[securepages][version] = "1.x-dev"
-
 ;security_review
 projects[security_review][subdir] = "contrib"
 projects[security_review][version] = "1.0"
