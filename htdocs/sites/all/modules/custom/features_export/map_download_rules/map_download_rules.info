@@ -1,0 +1,12 @@
+name = Map download rules
+core = 7.x
+package = Features
+php = 5.2.4
+dependencies[] = commerce_checkout
+dependencies[] = entity
+dependencies[] = kms_mapwidget
+dependencies[] = rules
+features[features_api][] = api:1
+features[rules_config][] = rules_checkout_complete
+features[rules_config][] = rules_create_fme_request
+features[rules_config][] = rules_fme_callback

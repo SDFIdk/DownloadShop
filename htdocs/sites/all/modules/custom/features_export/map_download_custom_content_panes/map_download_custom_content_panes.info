@@ -1,0 +1,12 @@
+name = map_download_custom_content_panes
+core = 7.x
+package = Features
+php = 5.2.4
+dependencies[] = ctools
+dependencies[] = ctools_custom_content
+features[ctools][] = ctools_custom_content:ctools_content:1
+features[ctools_custom_content][] = buffer_description
+features[ctools_custom_content][] = clipping_description
+features[ctools_custom_content][] = predefined_selections
+features[ctools_custom_content][] = userdefined_selections
+features[features_api][] = api:1

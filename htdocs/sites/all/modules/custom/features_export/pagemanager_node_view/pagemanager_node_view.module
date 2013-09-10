@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Pagemanager node view feature.
+ */
+
+include_once 'pagemanager_node_view.features.inc';

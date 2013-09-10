@@ -23,13 +23,8 @@ function view_product_list_views_default_views() {
   /* Display: Master */
   $handler = $view->new_display('default', 'Master', 'default');
   $handler->display->display_options['use_more_always'] = FALSE;
-  $handler->display->display_options['group_by'] = TRUE;
   $handler->display->display_options['access']['type'] = 'perm';
-  $handler->display->display_options['cache']['type'] = 'time';
-  $handler->display->display_options['cache']['results_lifespan'] = '3600';
-  $handler->display->display_options['cache']['results_lifespan_custom'] = '0';
-  $handler->display->display_options['cache']['output_lifespan'] = '3600';
-  $handler->display->display_options['cache']['output_lifespan_custom'] = '0';
+  $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
   $handler->display->display_options['query']['options']['query_tags'] = array(
     0 => 'querylist',
@@ -72,10 +67,6 @@ function view_product_list_views_default_views() {
   $handler->display->display_options['empty']['area']['empty'] = TRUE;
   $handler->display->display_options['empty']['area']['content'] = 'Der er ikke nogle resultater der matcher din søgning';
   $handler->display->display_options['empty']['area']['format'] = 'filtered_html';
-  /* Relationship: Content: Referenced product */
-  $handler->display->display_options['relationships']['field_product_product_id']['id'] = 'field_product_product_id';
-  $handler->display->display_options['relationships']['field_product_product_id']['table'] = 'field_data_field_product';
-  $handler->display->display_options['relationships']['field_product_product_id']['field'] = 'field_product_product_id';
   /* Field: Content: Path */
   $handler->display->display_options['fields']['path']['id'] = 'path';
   $handler->display->display_options['fields']['path']['table'] = 'node';
@@ -125,7 +116,7 @@ function view_product_list_views_default_views() {
     'trim_length' => '450',
   );
   $handler->display->display_options['fields']['body']['group_column'] = 'entity_id';
-  /* Field: Commerce Product: Korttype */
+  /* Field: Field: Korttype */
   $handler->display->display_options['fields']['field_korttype']['id'] = 'field_korttype';
   $handler->display->display_options['fields']['field_korttype']['table'] = 'field_data_field_korttype';
   $handler->display->display_options['fields']['field_korttype']['field'] = 'field_korttype';
@@ -133,7 +124,7 @@ function view_product_list_views_default_views() {
   $handler->display->display_options['fields']['field_korttype']['exclude'] = TRUE;
   $handler->display->display_options['fields']['field_korttype']['type'] = 'taxonomy_term_reference_plain';
   $handler->display->display_options['fields']['field_korttype']['group_column'] = 'entity_id';
-  /* Field: Commerce Product: Datastruktur */
+  /* Field: Field: Datastruktur */
   $handler->display->display_options['fields']['field_datastruktur']['id'] = 'field_datastruktur';
   $handler->display->display_options['fields']['field_datastruktur']['table'] = 'field_data_field_datastruktur';
   $handler->display->display_options['fields']['field_datastruktur']['field'] = 'field_datastruktur';
@@ -143,7 +134,7 @@ function view_product_list_views_default_views() {
   $handler->display->display_options['fields']['field_datastruktur']['element_label_colon'] = FALSE;
   $handler->display->display_options['fields']['field_datastruktur']['type'] = 'taxonomy_term_reference_plain';
   $handler->display->display_options['fields']['field_datastruktur']['group_column'] = 'entity_id';
-  /* Field: Commerce Product: Data skema */
+  /* Field: Field: Data skema */
   $handler->display->display_options['fields']['field_scheme']['id'] = 'field_scheme';
   $handler->display->display_options['fields']['field_scheme']['table'] = 'field_data_field_scheme';
   $handler->display->display_options['fields']['field_scheme']['field'] = 'field_scheme';
@@ -152,7 +143,7 @@ function view_product_list_views_default_views() {
   $handler->display->display_options['fields']['field_scheme']['exclude'] = TRUE;
   $handler->display->display_options['fields']['field_scheme']['element_label_colon'] = FALSE;
   $handler->display->display_options['fields']['field_scheme']['type'] = 'taxonomy_term_reference_plain';
-  /* Field: Commerce Product: Aktualitet */
+  /* Field: Field: Aktualitet */
   $handler->display->display_options['fields']['field_aktualitet']['id'] = 'field_aktualitet';
   $handler->display->display_options['fields']['field_aktualitet']['table'] = 'field_data_field_aktualitet';
   $handler->display->display_options['fields']['field_aktualitet']['field'] = 'field_aktualitet';
@@ -182,101 +173,91 @@ function view_product_list_views_default_views() {
     'product_display' => 'product_display',
   );
   $handler->display->display_options['filters']['type']['group'] = 1;
-  /* Filter criterion: Commerce Product: Korttype (field_korttype) */
-  $handler->display->display_options['filters']['field_korttype_tid']['id'] = 'field_korttype_tid';
-  $handler->display->display_options['filters']['field_korttype_tid']['table'] = 'field_data_field_korttype';
-  $handler->display->display_options['filters']['field_korttype_tid']['field'] = 'field_korttype_tid';
-  $handler->display->display_options['filters']['field_korttype_tid']['relationship'] = 'field_product_product_id';
-  $handler->display->display_options['filters']['field_korttype_tid']['group'] = 1;
-  $handler->display->display_options['filters']['field_korttype_tid']['exposed'] = TRUE;
-  $handler->display->display_options['filters']['field_korttype_tid']['expose']['operator_id'] = 'field_korttype_tid_op';
-  $handler->display->display_options['filters']['field_korttype_tid']['expose']['label'] = 'Korttype';
-  $handler->display->display_options['filters']['field_korttype_tid']['expose']['operator'] = 'field_korttype_tid_op';
-  $handler->display->display_options['filters']['field_korttype_tid']['expose']['identifier'] = 'korttype';
-  $handler->display->display_options['filters']['field_korttype_tid']['expose']['remember_roles'] = array(
+  /* Filter criterion: Field: Korttype (field_korttype) */
+  $handler->display->display_options['filters']['field_korttype_tid_1']['id'] = 'field_korttype_tid_1';
+  $handler->display->display_options['filters']['field_korttype_tid_1']['table'] = 'field_data_field_korttype';
+  $handler->display->display_options['filters']['field_korttype_tid_1']['field'] = 'field_korttype_tid';
+  $handler->display->display_options['filters']['field_korttype_tid_1']['group'] = 1;
+  $handler->display->display_options['filters']['field_korttype_tid_1']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['field_korttype_tid_1']['expose']['operator_id'] = 'field_korttype_tid_1_op';
+  $handler->display->display_options['filters']['field_korttype_tid_1']['expose']['label'] = 'Korttype';
+  $handler->display->display_options['filters']['field_korttype_tid_1']['expose']['operator'] = 'field_korttype_tid_1_op';
+  $handler->display->display_options['filters']['field_korttype_tid_1']['expose']['identifier'] = 'field_korttype_tid_1';
+  $handler->display->display_options['filters']['field_korttype_tid_1']['expose']['remember_roles'] = array(
     2 => '2',
-    1 => '1',
+    1 => 0,
     3 => 0,
     4 => 0,
     6 => 0,
     7 => 0,
     8 => 0,
+    9 => 0,
   );
-  $handler->display->display_options['filters']['field_korttype_tid']['reduce_duplicates'] = TRUE;
-  $handler->display->display_options['filters']['field_korttype_tid']['type'] = 'select';
-  $handler->display->display_options['filters']['field_korttype_tid']['vocabulary'] = 'korttype';
-  $handler->display->display_options['filters']['field_korttype_tid']['error_message'] = FALSE;
-  /* Filter criterion: Commerce Product: Aktualitet (field_aktualitet) */
+  $handler->display->display_options['filters']['field_korttype_tid_1']['type'] = 'select';
+  $handler->display->display_options['filters']['field_korttype_tid_1']['vocabulary'] = 'korttype';
+  /* Filter criterion: Field: Aktualitet (field_aktualitet) */
   $handler->display->display_options['filters']['field_aktualitet_tid']['id'] = 'field_aktualitet_tid';
   $handler->display->display_options['filters']['field_aktualitet_tid']['table'] = 'field_data_field_aktualitet';
   $handler->display->display_options['filters']['field_aktualitet_tid']['field'] = 'field_aktualitet_tid';
-  $handler->display->display_options['filters']['field_aktualitet_tid']['relationship'] = 'field_product_product_id';
-  $handler->display->display_options['filters']['field_aktualitet_tid']['group'] = 1;
   $handler->display->display_options['filters']['field_aktualitet_tid']['exposed'] = TRUE;
   $handler->display->display_options['filters']['field_aktualitet_tid']['expose']['operator_id'] = 'field_aktualitet_tid_op';
   $handler->display->display_options['filters']['field_aktualitet_tid']['expose']['label'] = 'Aktualitet';
   $handler->display->display_options['filters']['field_aktualitet_tid']['expose']['operator'] = 'field_aktualitet_tid_op';
-  $handler->display->display_options['filters']['field_aktualitet_tid']['expose']['identifier'] = 'aktualitet';
+  $handler->display->display_options['filters']['field_aktualitet_tid']['expose']['identifier'] = 'field_aktualitet_tid';
   $handler->display->display_options['filters']['field_aktualitet_tid']['expose']['remember_roles'] = array(
     2 => '2',
-    1 => '1',
+    1 => 0,
     3 => 0,
     4 => 0,
     6 => 0,
     7 => 0,
     8 => 0,
+    9 => 0,
   );
-  $handler->display->display_options['filters']['field_aktualitet_tid']['reduce_duplicates'] = TRUE;
   $handler->display->display_options['filters']['field_aktualitet_tid']['type'] = 'select';
   $handler->display->display_options['filters']['field_aktualitet_tid']['vocabulary'] = 'aktualitet';
-  $handler->display->display_options['filters']['field_aktualitet_tid']['error_message'] = FALSE;
-  /* Filter criterion: Commerce Product: Datastruktur (field_datastruktur) */
+  /* Filter criterion: Field: Datastruktur (field_datastruktur) */
   $handler->display->display_options['filters']['field_datastruktur_tid']['id'] = 'field_datastruktur_tid';
   $handler->display->display_options['filters']['field_datastruktur_tid']['table'] = 'field_data_field_datastruktur';
   $handler->display->display_options['filters']['field_datastruktur_tid']['field'] = 'field_datastruktur_tid';
-  $handler->display->display_options['filters']['field_datastruktur_tid']['relationship'] = 'field_product_product_id';
-  $handler->display->display_options['filters']['field_datastruktur_tid']['group'] = 1;
   $handler->display->display_options['filters']['field_datastruktur_tid']['exposed'] = TRUE;
   $handler->display->display_options['filters']['field_datastruktur_tid']['expose']['operator_id'] = 'field_datastruktur_tid_op';
   $handler->display->display_options['filters']['field_datastruktur_tid']['expose']['label'] = 'Datastruktur';
   $handler->display->display_options['filters']['field_datastruktur_tid']['expose']['operator'] = 'field_datastruktur_tid_op';
-  $handler->display->display_options['filters']['field_datastruktur_tid']['expose']['identifier'] = 'datastruktur';
+  $handler->display->display_options['filters']['field_datastruktur_tid']['expose']['identifier'] = 'field_datastruktur_tid';
   $handler->display->display_options['filters']['field_datastruktur_tid']['expose']['remember_roles'] = array(
     2 => '2',
-    1 => '1',
+    1 => 0,
     3 => 0,
     4 => 0,
     6 => 0,
     7 => 0,
     8 => 0,
+    9 => 0,
   );
-  $handler->display->display_options['filters']['field_datastruktur_tid']['reduce_duplicates'] = TRUE;
   $handler->display->display_options['filters']['field_datastruktur_tid']['type'] = 'select';
   $handler->display->display_options['filters']['field_datastruktur_tid']['vocabulary'] = 'datastruktur';
-  $handler->display->display_options['filters']['field_datastruktur_tid']['error_message'] = FALSE;
-  /* Filter criterion: Commerce Product: Data skema (field_scheme) */
+  /* Filter criterion: Field: Data skema (field_scheme) */
   $handler->display->display_options['filters']['field_scheme_tid']['id'] = 'field_scheme_tid';
   $handler->display->display_options['filters']['field_scheme_tid']['table'] = 'field_data_field_scheme';
   $handler->display->display_options['filters']['field_scheme_tid']['field'] = 'field_scheme_tid';
-  $handler->display->display_options['filters']['field_scheme_tid']['relationship'] = 'field_product_product_id';
   $handler->display->display_options['filters']['field_scheme_tid']['exposed'] = TRUE;
   $handler->display->display_options['filters']['field_scheme_tid']['expose']['operator_id'] = 'field_scheme_tid_op';
-  $handler->display->display_options['filters']['field_scheme_tid']['expose']['label'] = 'Dataskema';
+  $handler->display->display_options['filters']['field_scheme_tid']['expose']['label'] = 'Data skema';
   $handler->display->display_options['filters']['field_scheme_tid']['expose']['operator'] = 'field_scheme_tid_op';
-  $handler->display->display_options['filters']['field_scheme_tid']['expose']['identifier'] = 'dataskema';
+  $handler->display->display_options['filters']['field_scheme_tid']['expose']['identifier'] = 'field_scheme_tid';
   $handler->display->display_options['filters']['field_scheme_tid']['expose']['remember_roles'] = array(
     2 => '2',
-    1 => '1',
+    1 => 0,
     3 => 0,
     4 => 0,
     6 => 0,
     7 => 0,
     8 => 0,
+    9 => 0,
   );
-  $handler->display->display_options['filters']['field_scheme_tid']['reduce_duplicates'] = TRUE;
   $handler->display->display_options['filters']['field_scheme_tid']['type'] = 'select';
   $handler->display->display_options['filters']['field_scheme_tid']['vocabulary'] = 'data_schema';
-  $handler->display->display_options['filters']['field_scheme_tid']['error_message'] = FALSE;
 
   /* Display: Content pane */
   $handler = $view->new_display('panel_pane', 'Content pane', 'panel_pane_1');
@@ -313,7 +294,6 @@ function view_product_list_views_default_views() {
   }
 ?>'),
     t('Der er ikke nogle resultater der matcher din søgning'),
-    t('Produkt'),
     t('<a href="[path]">[field_product_image]</a>'),
     t('<div class="content">
 <div class="title">[title]</div>
@@ -323,7 +303,7 @@ function view_product_list_views_default_views() {
     t('<div class="info">Korttype: [field_korttype], Datastruktur: [field_datastruktur], Aktualitet: [field_aktualitet], Dataskema: [field_scheme]</div>'),
     t('Aktualitet'),
     t('Datastruktur'),
-    t('Dataskema'),
+    t('Data skema'),
     t('Content pane'),
     t('View panes'),
   );
