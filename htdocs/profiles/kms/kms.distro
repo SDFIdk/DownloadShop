@@ -72,6 +72,11 @@ projects[kms_mapwidget][download][url] = "svn+ssh://svnhost/data/subversion/drup
 projects[kms_mapwidget][type] = "module"
 projects[kms_mapwidget][subdir] = "custom"
 
+projects[kms_alter_ctype][download][type] = "svn"
+projects[kms_alter_ctype][download][url] = "svn+ssh://svnhost/data/subversion/drupal/kms/trunk/htdocs/sites/all/modules/custom/kms_alter_ctype"
+projects[kms_alter_ctype][type] = "module"
+projects[kms_alter_ctype][subdir] = "custom"
+
 projects[kms_oci][download][type] = "svn"
 projects[kms_oci][download][url] = "svn+ssh://svnhost/data/subversion/drupal/kms/trunk/htdocs/sites/all/modules/custom/kms_oci"
 projects[kms_oci][type] = "module"
