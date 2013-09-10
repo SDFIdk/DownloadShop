@@ -162,7 +162,7 @@ h1, .commerce-product-title {
 .panel-2col-stacked > .center-wrapper > .panel-col-last .panel-pane h2 {
   background: #cbd2c0;
   width: 260px;
-  font: bold 1.67em/1 "Trebuchet MS", Arial, Helvetica, sans-serif;
+  font: bold 1.67em/1 "Trebuchet MS",Arial,Helvetica,sans-serif;
   padding: 10px;
   position: absolute;
   left: 0px;
@@ -426,7 +426,7 @@ h1, .commerce-product-title {
   float: right;
   width: 320px;
   padding-left: 30px;
-  padding-top: 10px;
+  padding-top: 15px;
   color: #676767;
 }
 /* line 473, ../sass/screen.scss */
@@ -438,7 +438,7 @@ h1, .commerce-product-title {
   clear: both;
   float: left;
   width: 460px;
-  background: url(../images/linkicon.png) no-repeat left center;
+  background: url(../images/linkicon.png) no-repeat left 0px;
   padding-left: 25px;
 }
 /* line 483, ../sass/screen.scss */
@@ -450,12 +450,17 @@ h1, .commerce-product-title {
 .node-type-product-display .useful-links .views-field .views-label {
   font-size: 10px;
 }
-/* line 492, ../sass/screen.scss */
+/* line 490, ../sass/screen.scss */
+.node-type-product-display .useful-links span {
+  float: left;
+  margin-right: 20px;
+}
+/* line 496, ../sass/screen.scss */
 .node-type-product-display #selection_message {
   clear: both;
   padding-top: 10px;
 }
-/* line 496, ../sass/screen.scss */
+/* line 500, ../sass/screen.scss */
 .node-type-product-display #selection_message ul li {
   padding: 5px 0px;
   background: url(../images/arrow_grey.png) no-repeat left center;
@@ -463,11 +468,11 @@ h1, .commerce-product-title {
   font-size: 11px;
   color: #8e8e8e;
 }
-/* line 507, ../sass/screen.scss */
+/* line 511, ../sass/screen.scss */
 .node-type-product-display .commerce-product-title .commerce-product-title-label {
   display: none;
 }
-/* line 512, ../sass/screen.scss */
+/* line 516, ../sass/screen.scss */
 .node-type-product-display .product-link {
   display: inline-block;
   float: right;
@@ -475,26 +480,26 @@ h1, .commerce-product-title {
   padding-bottom: 10px;
   padding-top: 10px;
 }
-/* line 519, ../sass/screen.scss */
+/* line 523, ../sass/screen.scss */
 .node-type-product-display .attribute-widgets {
   padding-bottom: 10px;
 }
-/* line 523, ../sass/screen.scss */
+/* line 527, ../sass/screen.scss */
 .node-type-product-display .commerce-add-to-cart {
   float: right;
   clear: both;
 }
-/* line 526, ../sass/screen.scss */
+/* line 530, ../sass/screen.scss */
 .node-type-product-display .commerce-add-to-cart .form-wrapper {
   display: none;
 }
-/* line 529, ../sass/screen.scss */
+/* line 533, ../sass/screen.scss */
 .node-type-product-display .commerce-add-to-cart #edit-submit {
   margin-top: 10px;
 }
 
 /* Product view front */
-/* line 539, ../sass/screen.scss */
+/* line 543, ../sass/screen.scss */
 .node-type-front .products-front .views-row {
   background: white;
   /* Old browsers */
@@ -520,12 +525,12 @@ h1, .commerce-product-title {
   border: 1px solid #D5D5D5;
   min-height: 242px;
 }
-/* line 547, ../sass/screen.scss */
+/* line 551, ../sass/screen.scss */
 .node-type-front .products-front .views-row img {
   margin-left: 2px;
   margin-top: 2px;
 }
-/* line 552, ../sass/screen.scss */
+/* line 556, ../sass/screen.scss */
 .node-type-front .products-front .views-row .views-field-title {
   float: left;
   width: 233px;
@@ -537,53 +542,53 @@ h1, .commerce-product-title {
   font-weight: normal;
   margin-bottom: 10px;
 }
-/* line 562, ../sass/screen.scss */
+/* line 566, ../sass/screen.scss */
 .node-type-front .products-front .views-row .views-field-title a {
   color: #686868;
 }
-/* line 567, ../sass/screen.scss */
+/* line 571, ../sass/screen.scss */
 .node-type-front .products-front .views-row .views-field-body {
   padding: 0px 14px;
   font-size: 12px;
   padding-bottom: 10px;
 }
-/* line 571, ../sass/screen.scss */
+/* line 575, ../sass/screen.scss */
 .node-type-front .products-front .views-row .views-field-body a {
   color: #7A7A7A;
 }
-/* line 576, ../sass/screen.scss */
+/* line 580, ../sass/screen.scss */
 .node-type-front .products-front .views-row .views-field-field-product-image {
   float: left;
 }
-/* line 581, ../sass/screen.scss */
+/* line 585, ../sass/screen.scss */
 .node-type-front .products-front .view-footer {
   clear: both;
 }
-/* line 583, ../sass/screen.scss */
+/* line 587, ../sass/screen.scss */
 .node-type-front .products-front .view-footer a {
   float: right;
   font-size: 13px;
   margin-top: 15px;
   margin-right: 5px;
 }
-/* line 591, ../sass/screen.scss */
+/* line 595, ../sass/screen.scss */
 .node-type-front .products-front .views-row-last {
   margin-right: 0px;
 }
 
 /* My downloads */
-/* line 600, ../sass/screen.scss */
+/* line 604, ../sass/screen.scss */
 .view-grouping caption {
   text-align: left;
   font-size: 11px;
   padding-bottom: 10px;
 }
-/* line 608, ../sass/screen.scss */
+/* line 612, ../sass/screen.scss */
 .view-grouping table .downloads a {
   background: url(../images/download.png) no-repeat;
   padding-left: 23px;
 }
-/* line 614, ../sass/screen.scss */
+/* line 618, ../sass/screen.scss */
 .view-grouping .view-grouping-header {
   font-size: 14px;
   font-weight: bold;
@@ -595,26 +600,493 @@ h1, .commerce-product-title {
   margin-bottom: 5px;
 }
 
+/* Mapwidget */
+/* line 633, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .item-list {
+  background: #f4f4f3;
+  border: 1px solid #d7d7d7;
+  border-width: 1px 0 1px 0;
+  padding: 0px 10px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+/* line 641, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .item-list ul {
+  padding-left: 105px;
+}
+/* line 643, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .item-list li {
+  background: #ffffff;
+  color: #8a8a8a;
+  padding: 10px 15px;
+  margin-right: 17px;
+  position: relative;
+}
+/* line 650, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .item-list li:after {
+  border-top: 18px solid transparent;
+  border-bottom: 18px solid transparent;
+  border-left: 17px solid #ffffff;
+  position: absolute;
+  top: 0px;
+  right: -17px;
+  content: "";
+}
+/* line 660, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .item-list li:before {
+  border-top: 18px solid #ffffff;
+  border-bottom: 17px solid #ffffff;
+  border-left: 17px solid transparent;
+  position: absolute;
+  top: 0px;
+  left: -17px;
+  content: "";
+}
+/* line 671, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .item-list li.active {
+  background: #97bc00;
+  color: #ffffff;
+}
+/* line 675, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .item-list li.active:after {
+  border-left: 17px solid #97bc00;
+}
+/* line 676, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .item-list li.active:before {
+  border-top: 18px solid #97bc00;
+  border-bottom: 17px solid #97bc00;
+  border-left: 17px solid transparent;
+}
+/* line 684, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .item-list li:first-child:before {
+  border-left: 0px solid #97bc00;
+  left: 0px;
+}
+/* line 691, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form h2 {
+  font-size: 15px;
+  color: #727272;
+  font-weight: normal;
+  border-bottom: 1px solid #cccccc;
+  padding-bottom: 10px;
+  margin-bottom: 15px;
+}
+/* line 700, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .form-item {
+  margin-bottom: 20px;
+}
+/* line 704, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .selected-description {
+  color: #676767;
+  margin-bottom: 20px;
+}
+/* line 709, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .form-item-clipping {
+  display: inline-block;
+  margin-right: 5px;
+  margin-bottom: 25px !important;
+}
+/* line 715, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .form-item-buffer {
+  display: inline-block;
+  margin-right: 5px;
+  margin-bottom: 0px;
+}
+/* line 720, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .form-item-buffer label {
+  font-weight: normal;
+  display: inline-block;
+  margin-right: 15px;
+}
+/* line 727, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form label {
+  margin-bottom: 10px;
+}
+/* line 731, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .form-type-checkbox {
+  margin-top: 14px;
+  margin-bottom: 14px;
+}
+/* line 736, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .form-type-checkbox input {
+  margin-top: -2px;
+  margin-right: 5px;
+}
+/* line 741, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form #format-wrapper {
+  width: 340px;
+  margin-right: 75px;
+  float: left;
+}
+/* line 746, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form #format-wrapper .form-item-dataformat {
+  margin-bottom: 0px;
+}
+/* line 747, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form #format-wrapper select {
+  margin-right: 200px;
+  margin-bottom: 20px;
+}
+/* line 751, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form #koordinatsystem-wrapper .form-item-koordinatsystem {
+  margin-bottom: 0px;
+}
+/* line 752, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form #koordinatsystem-wrapper select {
+  margin-bottom: 20px;
+}
+/* line 754, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form #koordinatsystem-wrapper #ajax-progress {
+  display: none;
+}
+/* line 758, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .ajax-progress-throbber {
+  display: none;
+}
+/* line 762, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .select-desc-i {
+  background: url("../images/map-info.png") no-repeat center center #97bc00;
+  width: 18px;
+  height: 16px;
+  color: #ffffff;
+  font-weight: bold;
+  padding: 3px;
+  margin-bottom: -6px;
+  margin-left: 15px;
+  cursor: pointer;
+  display: inline-block;
+  border-radius: 5em;
+  -moz-border-radius: 5em;
+  -webkit-border-radius: 5em;
+  transition: 0.3s;
+  -moz-transition: 0.3s;
+  -webkit-transition: 0.3s;
+  -o-transition: 0.3s;
+}
+/* line 781, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .select-desc-i:hover {
+  background: url("../images/map-info.png") no-repeat center center #768e13;
+}
+/* line 786, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .form-wrapper {
+  clear: both;
+  height: 30px;
+  border-top: 1px solid #cccccc;
+  padding-top: 20px;
+  margin-top: 30px;
+  margin-bottom: 30px;
+}
+/* line 794, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .form-wrapper .button-back {
+  background: url("../images/arrow-white-left.gif") no-repeat 10% 10px #333333;
+  color: #ffffff;
+  padding-left: 20px;
+  padding-right: 10px;
+  border: none;
+  filter: none;
+  transition: 0.3s;
+  -moz-transition: 0.1s;
+  -webkit-transition: 0.1s;
+  -o-transition: 0.1s;
+}
+/* line 806, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .form-wrapper .button-back:hover {
+  background: url("../images/arrow-white-left-hover.gif") no-repeat 10% 10px #555555;
+}
+/* line 809, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .form-wrapper .button-next {
+  background: url("../images/arrow-white.gif") no-repeat 90% 10px #97bc00;
+  color: #ffffff;
+  padding-right: 20px;
+  border: none;
+  float: right;
+  filter: none;
+  transition: 0.1s;
+  -moz-transition: 0.1s;
+  -webkit-transition: 0.1s;
+  -o-transition: 0.1s;
+}
+/* line 821, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .form-wrapper .button-next:hover {
+  background: url("../images/arrow-white-hover.gif") no-repeat 90% 10px #768e13;
+}
+/* line 824, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .form-wrapper .button-submit {
+  background: #97bc00;
+  color: #ffffff;
+  border: none;
+  float: right;
+  filter: none;
+  transition: 0.3s;
+  -moz-transition: 0.1s;
+  -webkit-transition: 0.1s;
+  -o-transition: 0.1s;
+}
+/* line 835, ../sass/screen.scss */
+.pane-kms-mapwidget-pane #ajax_multistep_form .form-wrapper .button-submit:hover {
+  background: #768e13;
+}
+/* line 839, ../sass/screen.scss */
+.pane-kms-mapwidget-pane .map-info-wrapper {
+  background: #f4f4f3;
+  min-height: 430px;
+  margin-top: 30px;
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+}
+/* line 848, ../sass/screen.scss */
+.pane-kms-mapwidget-pane .map-wrapper {
+  background: #ffffff;
+  float: left;
+  position: relative;
+  border-radius: 3px;
+  -moz-border-radius: 3px;
+  -webkit-border-radius: 3px;
+}
+/* line 856, ../sass/screen.scss */
+.pane-kms-mapwidget-pane .map-wrapper .ui-widget {
+  background: #000;
+  height: 30px;
+  width: 18px;
+  padding: 7px 4px 9px 2px;
+  overflow: hidden;
+  opacity: 0.8;
+  position: absolute;
+  top: 50px;
+  right: 0px;
+  z-index: 9999;
+  border-radius: 3px 0px 0px 3px;
+  -moz-border-radius: 3px 0px 0px 3px;
+  -webkit-border-radius: 3px 0px 0px 3px;
+  transition: 0.3s;
+  -moz-transition: 0.3s;
+  -webkit-transition: 0.3s;
+  -o-transition: 0.3s;
+}
+/* line 875, ../sass/screen.scss */
+.pane-kms-mapwidget-pane .map-wrapper .ui-widget a.search {
+  width: 18px;
+  height: 18px;
+  background: url("../images/search.png") no-repeat;
+  display: inline-block;
+  cursor: pointer;
+  margin: 8px 0 0 2px;
+  float: left;
+}
+/* line 885, ../sass/screen.scss */
+.pane-kms-mapwidget-pane .map-wrapper .ui-widget #geosearch {
+  width: 165px;
+  margin-top: 0px;
+  position: absolute;
+  left: 30px;
+}
+/* line 893, ../sass/screen.scss */
+.pane-kms-mapwidget-pane .map-wrapper .ui-widget.show-search {
+  width: 210px;
+  background-color: #a1c73a;
+}
+/* line 898, ../sass/screen.scss */
+.pane-kms-mapwidget-pane .map-wrapper .baseLbl, .pane-kms-mapwidget-pane .map-wrapper .dataLbl {
+  font-size: 14px;
+  font-weight: normal;
+  color: #353535;
+  margin-bottom: 10px !important;
+}
+/* line 905, ../sass/screen.scss */
+.pane-kms-mapwidget-pane .map-wrapper .baseLayersDiv span, .pane-kms-mapwidget-pane .map-wrapper .dataLayersDiv span {
+  font-weight: normal;
+  font-size: 12px;
+  color: #353535;
+  margin-bottom: 10px;
+  display: inline-block;
+}
+/* line 913, ../sass/screen.scss */
+.pane-kms-mapwidget-pane .map-wrapper .baseLayersDiv input, .pane-kms-mapwidget-pane .map-wrapper .dataLayersDiv input {
+  vertical-align: top;
+  margin-top: 1px;
+}
+/* line 919, ../sass/screen.scss */
+.pane-kms-mapwidget-pane .map-info-wrapper .product-body {
+  width: 300px;
+  line-height: 20px;
+  padding-top: 25px;
+  padding-bottom: 10px;
+  float: none;
+  display: inline-block;
+}
+/* line 928, ../sass/screen.scss */
+.pane-kms-mapwidget-pane .map-info-wrapper #selection_message {
+  clear: none;
+  width: 300px;
+  color: #676767;
+  padding-top: 25px;
+  padding-left: 30px;
+  float: left;
+  display: inline-block;
+}
+/* line 937, ../sass/screen.scss */
+.pane-kms-mapwidget-pane .map-info-wrapper #selection_message h3 {
+  font-size: 13px;
+  font-weight: normal;
+  padding-bottom: 6px;
+  margin-top: 25px;
+  border-bottom: 1px solid #cccccc;
+}
+/* line 945, ../sass/screen.scss */
+.pane-kms-mapwidget-pane .map-info-wrapper #selection_message p {
+  margin-bottom: 5px;
+  clear: both;
+}
+/* line 947, ../sass/screen.scss */
+.pane-kms-mapwidget-pane .map-info-wrapper #selection_message ul {
+  color: #676767;
+  padding-top: 15px;
+  padding-bottom: 15px;
+}
+/* line 951, ../sass/screen.scss */
+.pane-kms-mapwidget-pane .map-info-wrapper #selection_message ul li {
+  color: #676767;
+}
+/* line 956, ../sass/screen.scss */
+.pane-kms-mapwidget-pane .map-info-wrapper #selection_message .value {
+  color: #818080;
+  width: 170px;
+  float: right;
+  margin-bottom: 5px;
+}
+/* line 964, ../sass/screen.scss */
+.pane-kms-mapwidget-pane .map-info-wrapper .useful-links {
+  clear: none;
+  width: 300px;
+  padding-bottom: 20px;
+  margin-left: 30px;
+  float: none;
+  display: inline-block;
+}
+
+/* line 974, ../sass/screen.scss */
+.page-cart .messages.status {
+  background: #eff2e8;
+  color: #6d7561;
+  font-size: 13px;
+  display: inline-block;
+  padding: 10px 15px;
+  margin-bottom: 35px;
+  -webkit-border-radius: 10px;
+  -moz-border-radius: 10px;
+  -ms-border-radius: 10px;
+  -o-border-radius: 10px;
+  border-radius: 10px;
+  -moz-animation-name: fademeessage;
+  -moz-animation-iteration-count: once;
+  -moz-animation-timing-function: ease-in;
+  -moz-animation-duration: 0.7s;
+  -webkit-animation-name: fademeessage;
+  -webkit-animation-iteration-count: 2;
+  -webkit-animation-timing-function: ease-in;
+  -webkit-animation-duration: 0.4s;
+}
+/* line 997, ../sass/screen.scss */
+.page-cart .messages.status em {
+  font-weight: bold;
+  color: #8c957f;
+}
+
+@-moz-keyframes fademeessage {
+  /* line 1001, ../sass/screen.scss */
+  0% {
+    background: #eff2e8;
+  }
+
+  /* line 1004, ../sass/screen.scss */
+  50% {
+    background: #cfd2c6;
+  }
+
+  /* line 1007, ../sass/screen.scss */
+  100% {
+    background: #eff2e8;
+  }
+}
+
+@-webkit-keyframes fademeessage {
+  /* line 1012, ../sass/screen.scss */
+  0% {
+    background: #eff2e8;
+  }
+
+  /* line 1015, ../sass/screen.scss */
+  50% {
+    background: #cfd2c6;
+  }
+
+  /* line 1018, ../sass/screen.scss */
+  100% {
+    background: #eff2e8;
+  }
+}
+
+/* line 1023, ../sass/screen.scss */
+.commerce-line-item-actions .form-submit {
+  background: #97bc00;
+  color: #ffffff !important;
+  border: none;
+  float: right;
+  filter: none;
+  transition: 0.3s;
+  -moz-transition: 0.1s;
+  -webkit-transition: 0.1s;
+  -o-transition: 0.1s;
+}
+/* line 1034, ../sass/screen.scss */
+.commerce-line-item-actions .form-submit:hover {
+  background: #768e13;
+}
+
+/* line 1037, ../sass/screen.scss */
+.file {
+  display: inline-block;
+  margin-bottom: 5px;
+}
+/* line 1041, ../sass/screen.scss */
+.file a {
+  vertical-align: top;
+}
+/* line 1043, ../sass/screen.scss */
+.file .file-icon {
+  background: url("../images/download.png") no-repeat;
+  width: 16px;
+  height: 16px;
+  margin-right: 5px;
+}
+
+/* line 1052, ../sass/screen.scss */
+span.file-size {
+  font-size: 11px;
+  vertical-align: top;
+}
+
 /* Forgot password */
-/* line 629, ../sass/screen.scss */
+/* line 1060, ../sass/screen.scss */
 #user-pass .form-text {
   margin-bottom: 10px;
   margin-top: 10px;
 }
-/* line 634, ../sass/screen.scss */
+/* line 1065, ../sass/screen.scss */
 #user-pass p {
   margin-bottom: 10px;
 }
 
 /*Admin tabs */
-/* line 641, ../sass/screen.scss */
+/* line 1072, ../sass/screen.scss */
 .admin-tabs {
   position: fixed;
   top: 50%;
   bottom: 50%;
   z-index: 100;
 }
-/* line 646, ../sass/screen.scss */
+/* line 1077, ../sass/screen.scss */
 .admin-tabs ul {
   background: #f5f5f5;
   padding-left: 15px;
@@ -627,90 +1099,94 @@ h1, .commerce-product-title {
   -webkit-border-bottom-right-radius: 4px;
   border-bottom-right-radius: 4px;
 }
-/* line 653, ../sass/screen.scss */
+/* line 1084, ../sass/screen.scss */
 .admin-tabs ul a:hover {
   padding-left: 5px;
 }
 
-/* line 659, ../sass/screen.scss */
+/* line 1090, ../sass/screen.scss */
 .not-logged-in .admin-tabs {
   display: none;
 }
 
 /* Forms */
-/* line 666, ../sass/screen.scss */
+/* line 1097, ../sass/screen.scss */
 #user-register-form fieldset legend, #user-profile-form fieldset legend {
   font-size: 14px;
   font-weight: bold;
   display: none;
 }
-/* line 672, ../sass/screen.scss */
+/* line 1103, ../sass/screen.scss */
 #user-register-form .form-item-field-terms-and-conditions-und, #user-profile-form .form-item-field-terms-and-conditions-und {
   position: relative;
 }
-/* line 674, ../sass/screen.scss */
+/* line 1105, ../sass/screen.scss */
 #user-register-form .form-item-field-terms-and-conditions-und .description, #user-profile-form .form-item-field-terms-and-conditions-und .description {
   display: inline-block;
 }
-/* line 679, ../sass/screen.scss */
+/* line 1110, ../sass/screen.scss */
 #user-register-form #edit-field-address-und-0-first-name, #user-register-form #edit-field-address-und-0-postal-code, #user-profile-form #edit-field-address-und-0-first-name, #user-profile-form #edit-field-address-und-0-postal-code {
   margin-right: 10px;
 }
-/* line 684, ../sass/screen.scss */
+/* line 1115, ../sass/screen.scss */
 #user-register-form #edit-account .form-item, #user-profile-form #edit-account .form-item {
   margin: 5px 0px;
 }
-/* line 689, ../sass/screen.scss */
+/* line 1120, ../sass/screen.scss */
 #user-register-form #edit-submit, #user-profile-form #edit-submit {
   margin-top: 10px;
 }
-/* line 693, ../sass/screen.scss */
+/* line 1124, ../sass/screen.scss */
 #user-register-form #field-user-type-info-add-more-wrapper, #user-profile-form #field-user-type-info-add-more-wrapper {
   display: none;
 }
-/* line 696, ../sass/screen.scss */
+/* line 1127, ../sass/screen.scss */
 #user-register-form #username, #user-profile-form #username {
   font-size: 20px;
   /* font-style: italic; */
 }
 
-/* line 703, ../sass/screen.scss */
+/* line 1134, ../sass/screen.scss */
 #user-profile-form .form-item {
   margin: 5px 0px;
 }
-/* line 708, ../sass/screen.scss */
+/* line 1139, ../sass/screen.scss */
 #user-profile-form #edit-field-contact-me .form-item, #user-profile-form #edit-field-newsletter .form-item {
   margin: 0px;
 }
-/* line 714, ../sass/screen.scss */
+/* line 1145, ../sass/screen.scss */
 #user-profile-form fieldset legend {
   display: none;
 }
-/* line 719, ../sass/screen.scss */
+/* line 1150, ../sass/screen.scss */
 #user-profile-form #edit-submit {
   margin-top: 10px;
 }
 
-/* line 725, ../sass/screen.scss */
+/* line 1156, ../sass/screen.scss */
 #commerce-checkout-form-login legend {
   padding-bottom: 10px;
 }
-/* line 727, ../sass/screen.scss */
+/* line 1158, ../sass/screen.scss */
 #commerce-checkout-form-login legend span {
   font-weight: bold;
   font-size: 13px;
   color: #333;
 }
-/* line 733, ../sass/screen.scss */
+/* line 1164, ../sass/screen.scss */
 #commerce-checkout-form-login .fieldset-content {
   margin-top: 10px;
 }
-/* line 736, ../sass/screen.scss */
+/* line 1167, ../sass/screen.scss */
 #commerce-checkout-form-login #edit-cancel {
-  margin-left: 30px;
+  margin-right: 10px;
+  float: left;
+  background: linear-gradient(to bottom, #f2f2f2 0%, #ffffff 12%, #ededed 91%, #f9f9f9 100%) repeat scroll 0 0 transparent;
+  border: 1px solid #CCCCCC;
+  padding: 4px 6px;
 }
 
-/* line 741, ../sass/screen.scss */
+/* line 1176, ../sass/screen.scss */
 input.form-text {
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
@@ -739,7 +1215,7 @@ input.form-text {
   padding: 0px 5px;
 }
 
-/* line 748, ../sass/screen.scss */
+/* line 1183, ../sass/screen.scss */
 textarea.form-textarea {
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
@@ -767,12 +1243,12 @@ textarea.form-textarea {
   padding: 5px;
 }
 
-/* line 754, ../sass/screen.scss */
+/* line 1189, ../sass/screen.scss */
 input.form-text:focus, textarea.form-textarea:focus {
   border: 1px solid #999;
 }
 
-/* line 758, ../sass/screen.scss */
+/* line 1193, ../sass/screen.scss */
 input.form-submit {
   background: #f2f2f2;
   /* Old browsers */
@@ -807,7 +1283,7 @@ input.form-submit {
   margin: 0px 3px;
 }
 
-/* line 771, ../sass/screen.scss */
+/* line 1206, ../sass/screen.scss */
 input.form-submit:hover {
   background: #f9f9f9;
   /* Old browsers */
@@ -831,7 +1307,7 @@ input.form-submit:hover {
 }
 
 /* Status messages */
-/* line 777, ../sass/screen.scss */
+/* line 1212, ../sass/screen.scss */
 div.error, tr.error {
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
@@ -844,7 +1320,7 @@ div.error, tr.error {
 }
 
 /* Overlay */
-/* line 786, ../sass/screen.scss */
+/* line 1221, ../sass/screen.scss */
 #terms_and_conditions {
   background: #fff;
   width: 700px;
@@ -880,7 +1356,7 @@ div.error, tr.error {
   position: relative;
   color: #333;
 }
-/* line 798, ../sass/screen.scss */
+/* line 1233, ../sass/screen.scss */
 #terms_and_conditions a.close {
   position: absolute;
   bottom: 0px;
@@ -911,7 +1387,7 @@ div.error, tr.error {
   /* IE6-8 */
 }
 
-/* line 810, ../sass/screen.scss */
+/* line 1245, ../sass/screen.scss */
 a#terms_conditions {
   overflow: hidden;
   text-indent: -100px;
@@ -924,22 +1400,22 @@ a#terms_conditions {
 }
 
 /* Ajax progress */
-/* line 822, ../sass/screen.scss */
+/* line 1257, ../sass/screen.scss */
 .view-filters {
   border-bottom: 1px dotted #999;
   padding-bottom: 10px;
   margin-bottom: 20px;
 }
-/* line 826, ../sass/screen.scss */
+/* line 1261, ../sass/screen.scss */
 .view-filters .views-submit-button {
   position: relative;
   float: left;
 }
-/* line 831, ../sass/screen.scss */
+/* line 1266, ../sass/screen.scss */
 .view-filters .views-submit-button .form-submit {
   margin-top: 10px;
 }
-/* line 835, ../sass/screen.scss */
+/* line 1270, ../sass/screen.scss */
 .view-filters .views-submit-button .ajax-progress-throbber {
   background: url(../images/loader.gif) no-repeat;
   width: 16px;
@@ -950,24 +1426,18 @@ a#terms_conditions {
 }
 
 /* Pager */
-/* line 849, ../sass/screen.scss */
+/* line 1284, ../sass/screen.scss */
 .pager li {
   margin-right: 10px;
 }
 
-/* Shopping cart */
-/* line 857, ../sass/screen.scss */
-.page-cart table, .page-checkout table, .node-type-downloads table {
+/* mydownloads */
+/* line 1291, ../sass/screen.scss */
+table.mydownloads {
   border: 1px solid #cecece;
 }
-/* line 860, ../sass/screen.scss */
-.page-cart thead th, .page-cart td, .page-checkout thead th, .page-checkout td, .node-type-downloads thead th, .node-type-downloads td {
-  border-bottom: 1px solid #cecece;
-  padding: 10px;
-  text-align: left;
-}
-/* line 866, ../sass/screen.scss */
-.page-cart thead th, .page-checkout thead th, .node-type-downloads thead th {
+/* line 1295, ../sass/screen.scss */
+table.mydownloads thead th {
   background: white;
   /* Old browsers */
   /* IE9 SVG, needs conditional override of 'filter' to 'none' */
@@ -987,26 +1457,112 @@ a#terms_conditions {
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#f4f4f4',GradientType=0 );
   /* IE6-8 */
 }
+/* line 1299, ../sass/screen.scss */
+table.mydownloads thead th, table.mydownloads td {
+  padding: 10px 5px;
+  text-align: left;
+  color: #565656;
+  vertical-align: top;
+}
+/* line 1306, ../sass/screen.scss */
+table.mydownloads .order-first-line, table.mydownloads .line-item-specific {
+  border-top: 1px solid #cecece;
+}
+/* line 1310, ../sass/screen.scss */
+table.mydownloads .order-first-line, table.mydownloads .order-nth-line {
+  background: #fafafa;
+}
+/* line 1314, ../sass/screen.scss */
+table.mydownloads .line-item-specific {
+  color: #565656;
+  line-height: 14px;
+}
+/* line 1319, ../sass/screen.scss */
+table.mydownloads div.time-remaining {
+  margin-bottom: 5px;
+}
+/* line 1321, ../sass/screen.scss */
+table.mydownloads div.product-details {
+  padding-top: 4px;
+  font-size: 11px;
+}
 
-/* line 874, ../sass/screen.scss */
+/* Shopping cart */
+/* line 1329, ../sass/screen.scss */
+.page-cart table, .page-checkout table {
+  border: 1px solid #cecece;
+}
+/* line 1333, ../sass/screen.scss */
+.page-cart thead th, .page-checkout thead th {
+  background: white;
+  /* Old browsers */
+  /* IE9 SVG, needs conditional override of 'filter' to 'none' */
+  background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2ZmZmZmZiIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9Ijk5JSIgc3RvcC1jb2xvcj0iI2Y0ZjRmNCIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgPC9saW5lYXJHcmFkaWVudD4KICA8cmVjdCB4PSIwIiB5PSIwIiB3aWR0aD0iMSIgaGVpZ2h0PSIxIiBmaWxsPSJ1cmwoI2dyYWQtdWNnZy1nZW5lcmF0ZWQpIiAvPgo8L3N2Zz4=);
+  background: -moz-linear-gradient(top, white 0%, #f4f4f4 99%);
+  /* FF3.6+ */
+  background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, white), color-stop(99%, #f4f4f4));
+  /* Chrome,Safari4+ */
+  background: -webkit-linear-gradient(top, white 0%, #f4f4f4 99%);
+  /* Chrome10+,Safari5.1+ */
+  background: -o-linear-gradient(top, white 0%, #f4f4f4 99%);
+  /* Opera 11.10+ */
+  background: -ms-linear-gradient(top, white 0%, #f4f4f4 99%);
+  /* IE10+ */
+  background: linear-gradient(to bottom, #ffffff 0%, #f4f4f4 99%);
+  /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#f4f4f4',GradientType=0 );
+  /* IE6-8 */
+}
+/* line 1337, ../sass/screen.scss */
+.page-cart thead th, .page-cart td, .page-checkout thead th, .page-checkout td {
+  padding: 10px;
+  text-align: left;
+}
+/* line 1342, ../sass/screen.scss */
+.page-cart a:hover, .page-checkout a:hover {
+  text-decoration: none;
+}
+/* line 1344, ../sass/screen.scss */
+.page-cart .cart-add-more, .page-checkout .cart-add-more {
+  -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
+  border-radius: 3px;
+  background-color: #333333;
+  padding: 7px 10px;
+  color: #FFFFFF;
+  position: absolute;
+  filter: none;
+  transition: 0.3s;
+  -moz-transition: 0.1s;
+  -webkit-transition: 0.1s;
+  -o-transition: 0.1s;
+}
+/* line 1355, ../sass/screen.scss */
+.page-cart .cart-add-more:hover, .page-checkout .cart-add-more:hover {
+  background-color: #555555;
+}
+
+/* line 1363, ../sass/screen.scss */
 .page-checkout #commerce-checkout-form-checkout #edit-cart-contents legend {
   margin-bottom: 10px;
 }
-/* line 879, ../sass/screen.scss */
+/* line 1368, ../sass/screen.scss */
 .page-checkout #commerce-checkout-form-checkout div.fieldset-content {
   margin-top: 15px;
 }
-/* line 884, ../sass/screen.scss */
+/* line 1373, ../sass/screen.scss */
 .page-checkout .checkout-buttons {
   margin-top: 15px;
   padding-top: 15px;
   border-top: 1px solid #CECECE;
 }
-/* line 890, ../sass/screen.scss */
+/* line 1379, ../sass/screen.scss */
 .page-checkout #edit-continue {
   margin-right: 30px;
 }
-/* line 894, ../sass/screen.scss */
+/* line 1383, ../sass/screen.scss */
 .page-checkout #edit-back {
   background: url(../images/back.png) no-repeat right center;
   padding: 0px 20px;
@@ -1014,7 +1570,7 @@ a#terms_conditions {
   border: none;
 }
 
-/* line 904, ../sass/screen.scss */
+/* line 1393, ../sass/screen.scss */
 #geosearch {
   margin-top: 15px;
   -webkit-border-radius: 3px;
@@ -1030,7 +1586,7 @@ a#terms_conditions {
   width: 447px;
 }
 
-/* line 915, ../sass/screen.scss */
+/* line 1404, ../sass/screen.scss */
 .ui-autocomplete.ui-menu {
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
@@ -1039,11 +1595,11 @@ a#terms_conditions {
   border-radius: 3px;
   border: 1px solid #cccccc;
 }
-/* line 919, ../sass/screen.scss */
+/* line 1408, ../sass/screen.scss */
 .ui-autocomplete.ui-menu .ui-menu-item a {
   font-size: 12px;
 }
-/* line 922, ../sass/screen.scss */
+/* line 1411, ../sass/screen.scss */
 .ui-autocomplete.ui-menu .ui-menu-item a.ui-state-hover {
   background: #f2f2f2;
   /* Old browsers */
@@ -1065,4 +1621,123 @@ a#terms_conditions {
   /* IE6-8 */
   border: 1px solid #CCCCCC;
   color: #333;
+}
+
+/* line 1422, ../sass/screen.scss */
+ul.controlToggle {
+  position: absolute;
+  z-index: 1000;
+  top: 180px;
+  right: 0px;
+}
+/* line 1427, ../sass/screen.scss */
+ul.controlToggle li a {
+  overflow: hidden;
+  display: block;
+  height: 24px;
+  width: 24px;
+  margin-bottom: 3px;
+}
+/* line 1434, ../sass/screen.scss */
+ul.controlToggle li a:hover {
+  transition: .2s;
+  -moz-transition: .2s;
+  /* Firefox 4 */
+  -webkit-transition: .2s;
+  /* Safari and Chrome */
+  -o-transition: .2s;
+  /* Opera */
+}
+/* line 1440, ../sass/screen.scss */
+ul.controlToggle li.drag a {
+  background: url(../images/move.png) no-repeat;
+}
+/* line 1442, ../sass/screen.scss */
+ul.controlToggle li.drag a:hover {
+  background: url(../images/move-hover.png) no-repeat;
+}
+/* line 1446, ../sass/screen.scss */
+ul.controlToggle li.drag a.active {
+  background: url(../images/move-hover.png) no-repeat;
+}
+/* line 1449, ../sass/screen.scss */
+ul.controlToggle li.select a {
+  background: url(../images/arrow.png) no-repeat;
+}
+/* line 1451, ../sass/screen.scss */
+ul.controlToggle li.select a:hover {
+  background: url(../images/arrow-hover.png) no-repeat;
+}
+/* line 1455, ../sass/screen.scss */
+ul.controlToggle li.select a.active {
+  background: url(../images/arrow-hover.png) no-repeat;
+}
+/* line 1458, ../sass/screen.scss */
+ul.controlToggle li.rect a {
+  background: url(../images/single-selection.png) no-repeat;
+}
+/* line 1460, ../sass/screen.scss */
+ul.controlToggle li.rect a:hover {
+  background: url(../images/ss-hover.png) no-repeat;
+}
+/* line 1464, ../sass/screen.scss */
+ul.controlToggle li.rect a.active {
+  background: url(../images/ss-hover.png) no-repeat;
+}
+/* line 1467, ../sass/screen.scss */
+ul.controlToggle li.reset a {
+  background: url(../images/clear.png) no-repeat;
+}
+
+/* line 1471, ../sass/screen.scss */
+.clear-fix {
+  clear: both;
+}
+
+/* line 1474, ../sass/screen.scss */
+.olControlLayerSwitcher {
+  color: #000;
+  width: auto;
+  max-width: 300px;
+  background-color: #a1c73a !important;
+  top: 96px !important;
+  border-radius: 3px 0px 0px 3px;
+  -moz-border-radius: 3px 0px 0px 3px;
+  -webkit-border-radius: 3px 0px 0px 3px;
+  opacity: 0.9;
+}
+/* line 1484, ../sass/screen.scss */
+.olControlLayerSwitcher .maximizeDiv {
+  top: 0px;
+}
+/* line 1486, ../sass/screen.scss */
+.olControlLayerSwitcher .maximizeDiv img:hover {
+  background: url(../images/layer-switcher-maximize-hover.png) no-repeat;
+  z-index: 99999;
+}
+/* line 1493, ../sass/screen.scss */
+.olControlLayerSwitcher span {
+  background-color: #a1c73a !important;
+}
+/* line 1495, ../sass/screen.scss */
+.olControlLayerSwitcher span .labelSpan {
+  margin-bottom: 10px;
+}
+/* line 1499, ../sass/screen.scss */
+.olControlLayerSwitcher .layersDiv {
+  background-color: #a1c73a !important;
+  opacity: 1 !important;
+}
+/* line 1502, ../sass/screen.scss */
+.olControlLayerSwitcher .layersDiv .baseLayersDiv {
+  cursor: pointer;
+  line-height: 1.9em !important;
+}
+/* line 1506, ../sass/screen.scss */
+.olControlLayerSwitcher .layersDiv .baseLbl {
+  margin-bottom: 5px;
+}
+/* line 1509, ../sass/screen.scss */
+.olControlLayerSwitcher .layersDiv input {
+  margin-right: 10px;
 }
