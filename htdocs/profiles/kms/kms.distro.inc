@@ -18,6 +18,10 @@ projects[boolean][version] = "1.0"
 projects[commerce][subdir] = "contrib"
 projects[commerce][version] = "1.4"
 
+;commerce_features
+projects[commerce_features][subdir] = "contrib"
+projects[commerce_features][version] = "1.0-rc1"
+
 ;commerce_autosku
 projects[commerce_autosku][subdir] = "contrib"
 projects[commerce_autosku][version] = "1.1"
