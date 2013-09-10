@@ -1,0 +1,4 @@
+name = KMS Alter Content type
+package = KMS
+description = "Handles migration from product content type to product_display content type"
+core = 7.x

@@ -1,0 +1,987 @@
+<?php
+
+module_load_include('inc','kms_mapwidget',"kms_mapwidget_fme");
+module_load_include('inc','kms_mapwidget',"kms_mapwidget_rules");
+
+function kms_mapwidget_ctools_plugin_directory($owner, $plugin_type) {
+  // we'll be nice and limit scandir() calls
+  if ($owner == 'ctools' && $plugin_type == 'content_types') {
+    return 'plugins/content_types';
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function kms_mapwidget_menu() {
+  $items = array();
+ 
+  $items['admin/config/kms/maxarea'] = array(
+    'title' => 'FME max area',
+    'description' => 'Configure FME maximum area.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('kms_mapwidget__max_area_form'),
+    'access arguments' => array('access administration pages'),
+    'file' => 'kms_mapwidget.admin.inc',
+  );
+
+  $items['fmecallback'] = array(
+    'title' => 'FME callback',
+    'page callback' => 'kms_mapwidget_fme_callback',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+ 
+  return $items;
+}
+
+function kms_mapwidget_fme_callback( ) {
+  
+  /* BODY example
+  string(621) "{
+   "subscriber_folder": "\\\\KMSDBDIST3.KMSEXT.DK\\GstFMESys\\DefaultResults\\FME_3A7D171A_1372750248255_4352_nw",
+   "id": "14006",
+   "StatusNumber": "0",
+   "timeFinished": "Tue-02-Jul-2013 09:30:48 AM",
+   "ResultZipFile": "\\\\kmsloadfs3.kmsext.dk\\data\\kfdownload\\14006.zip",
+   "LogFileName": "gst_kfdownload/FME_3A7D171A_1372750226373_4352.log",
+   "timeStarted": "Tue-02-Jul-2013 09:30:26 AM",
+   "requestKeyword": "GST_KFDOWNLOAD",
+   "NumFeaturesOutput": "303",
+   "jobsuccess_topic": "KFDOWNLOAD_TEST",
+   "StatusMessage": "Translation Successful",
+   "logHome": "//KMSDBDIST3.KMSEXT.DK/GstFMESys//Logs"
+  }"*/
+
+  $job   = json_decode(file_get_contents('php://input'));
+  $jobid = intval($job->id);
+
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'commerce_line_item', '=')
+    ->entityCondition('bundle', 'product', '=')
+    ->fieldCondition('field_jobid', 'value', $jobid, '=')
+    ->execute();
+
+  if (!empty($result)) {
+    $li = commerce_line_item_load(key($result['commerce_line_item']));
+    $li->field_finished[LANGUAGE_NONE][0]['value'] = time();
+    commerce_line_item_save($li);
+    $order = commerce_order_load($li->order_id);
+    $user  = user_load($order->uid);
+    if ($job->StatusNumber == 0) {
+      rules_invoke_event('kms_mapwidget_fme_callback_event',$user,$order);
+    } else {
+      rules_invoke_event('kms_mapwidget_fme_callback_event_failure',$user,$order,$job);
+    }
+    echo 'OK';
+    return;
+  }
+
+  echo 'ERROR';
+ 
+}
+
+/**
+ * Implementation of hook_rules_event_info()
+ */
+function kms_mapwidget_rules_event_info() {
+  return array(
+    'kms_mapwidget_fme_callback_event' => array(
+      'label' => t('FME callback rule event'),
+      'module' => 'kms_mapwidget',
+      'group' => 'KMS' ,
+      'variables' => array(
+        'user' => array('type' => 'user', 'label' => t('The order user')),
+        'order' => array('type' => 'commerce_order', 'label' => t('The order')),
+      ),
+    ),
+    'kms_mapwidget_fme_callback_event_failure' => array(
+      'label' => t('FME failure callback rule event'),
+      'module' => 'kms_mapwidget',
+      'group' => 'KMS' ,
+      'variables' => array(
+        'user' => array('type' => 'user', 'label' => t('The order user')),
+        'order' => array('type' => 'commerce_order', 'label' => t('The order')),
+        'statusmessage' => array('type' => 'struct', 'label' => t('The statusmessage from FME')),
+      ),
+    ),
+  );
+}
+
+/**
+ * [kms_mapwidget_form]
+ * @param  [array] $form       
+ * @param  [array] $form_state 
+ * @param  [object] $nw         [the product display node]
+ */
+function kms_mapwidget_form($form, &$form_state, $nw) {
+ 
+  // If $form_state['step'] is not set, we set it to 1
+  $form_state['step'] = isset($form_state['step']) ? $form_state['step'] : 1;
+
+  $form = kms_mapwidget_get_header($form, $form_state);
+ 
+  // Depending on which step of the form we are on, we output different form fields
+  switch($form_state['step'])
+  {
+    // Step 1
+    case 1:
+      kms_mapwidget_form_step_1($form, $form_state, $nw);
+      break;
+ 
+    // Step 2
+    case 2:
+      kms_mapwidget_form_step_2($form, $form_state, $nw);
+      break;
+ 
+    // Step 3
+    case 3:
+      kms_mapwidget_form_step_3($form, $form_state, $nw);
+      break;
+  }
+ 
+  kms_mapwidget_form_footer($form,$form_state,$nw);
+
+  return $form;
+}
+ 
+function kms_mapwidget_form_validate($form, &$form_state) {
+
+  switch($form_state['step']) {
+    case "1":
+      if (false) {
+        form_set_error('step_1', t('Error messages'));
+      }
+      break;
+ 
+    case "2":
+      if (false) {
+        form_set_error('step_2', t('Error messages'));
+      }
+      break;      
+ 
+    case "3":
+        if (false) {
+      //if($form_state['storage']['step_1']['type'] == 'predefined' && $form_state['values']['selection'] == '[]') {
+        form_set_error('step_3', t('No selection'));
+      }
+      break;
+  }
+}
+ 
+function kms_mapwidget_form_submit($form, &$form_state) {
+  // First we determine which step we are on, and save the submitted values to 
+  // $form_state['storage']. This will allow our submitted values to persist.
+  $step = $form_state['step'];
+
+  switch ($step) {
+    case 1 :
+      // Get the selected tid, only one selection allowed 
+      $predefined = false; 
+
+      if (isset($form_state['storage']['step_1']['selection_type']))
+        $old_selection_type = $form_state['storage']['step_1']['selection_type'];
+
+      if (isset($form_state['values']['predefined'])) {
+        $predefined = array_sum($form_state['values']['predefined']);
+        if ($predefined) {
+          $form_state['storage']['step_1']['type'] = 'predefined';
+          $form_state['storage']['step_1']['selection_type'] = array_sum($form_state['values']['predefined']);
+        }
+      }
+
+      if (!$predefined && isset($form_state['values']["userdefined"])) {
+        $form_state['storage']['step_1']['type'] = 'userdefined';
+        $form_state['storage']['step_1']['selection_type'] = array_sum($form_state['values']['userdefined']);
+      }
+      
+      // If the selection is changed then reset values from step 2
+      if (isset($old_selection_type) && $form_state['storage']['step_1']['selection_type'] != $old_selection_type)
+        unset($form_state['storage']['step_2']);
+
+      break;
+
+    case 2 :
+      $form_state['storage']['step_2']['dataformat'] = $form_state['values']['dataformat'];
+      $form_state['storage']['step_2']['koordinatsystem'] = $form_state['values']['koordinatsystem'];
+      break;
+
+    case 3 :
+      if (isset($form_state['values']['clipping']))
+        $form_state['storage']['step_3']['clipping']  = $form_state['values']['clipping'];
+      if (isset($form_state['values']['buffer']))
+        $form_state['storage']['step_3']['buffer']    = $form_state['values']['buffer'];
+      $form_state['storage']['step_3']['selection'] = $form_state['values']['selection'];
+      if (isset($form_state['values']['product_id']))
+        $form_state['storage']['step_3']['product_id'] = $form_state['values']['product_id'];
+      break;
+
+  }  
+
+  // Check to see if the next/forward button was clicked
+  if(isset($form_state['values']['forward']) && $form_state['values']['op'] == $form_state['values']['forward']) {
+    // Increase the step by one, to move on to the next step
+    $form_state['step']++;
+  }
+  // Check to see if the final step has been submitted
+  elseif(isset($form_state['values']['submit']) && $form_state['values']['op'] == $form_state['values']['submit']) {
+    // Submit the final result
+    $data = $form_state['storage']['step_1'] + $form_state['storage']['step_2'] + $form_state['storage']['step_3'];
+
+    kms_mapwidget_add_line_item($data);
+ 
+    // The form has been completed, so we want to return the user to step 1
+    // as well as clear any saved values.
+    //$form_state['step'] = 1;
+    //$form_state['storage'] = array();
+
+    drupal_goto('cart');
+   
+    // Redirect to the cart
+    //ctools_include('ajax');
+    //ctools_add_js('ajax-responder');
+    //$commands[] = ctools_ajax_command_redirect('cart');
+    //print ajax_render($commands);
+    //exit;
+
+  }
+ 
+  if(isset($form_state['values']['back']) && $form_state['values']['op'] == $form_state['values']['back']) {
+    // Decreate the step by one, to move on to the previous step
+    $form_state['step']--;
+  }
+
+  // Because this is a multi-step form, we always need to rebuild the form
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * [kms_mapwidget_add_line_item]
+ * @param  [array] $data 
+ */
+function kms_mapwidget_add_line_item ($data) {
+  
+  global $user;
+
+  $op = commerce_product_load($data['product_id']);
+  $opw = entity_metadata_wrapper('commerce_product', $op);
+  $pd = kms_mapwidget_load_product_display($data['product_id']);
+
+  $selection_type = taxonomy_term_load($data['selection_type']);
+  $dataformat = taxonomy_term_load($data['dataformat']);
+  $koordinatsystem = taxonomy_term_load($data['koordinatsystem']);
+
+  if ($data['type'] == 'predefined') {
+
+    $folder = $opw->field_folder->value();
+    $files = json_decode($data['selection']);
+
+    $downloads = kms_mapwidget_get_files($folder,$files);
+
+    if ($downloads) {
+      $line_item = commerce_product_line_item_new($op, 1);
+      $line_item->line_item_label = $pd->title;
+      $line_item->field_li_type[LANGUAGE_NONE][0]['value'] = 0;
+      $line_item->field_selection[LANGUAGE_NONE][0]['value'] = serialize($data);
+      $line_item->commerce_file_line_item_files[LANGUAGE_NONE] = $downloads;
+      
+      $line_item->field_selection_text[LANGUAGE_NONE][0]['value'] 
+        = t('Predefined selection') . ', ' 
+        . $selection_type->name  . ', ' 
+        . $dataformat->name      . ', ' 
+        . $koordinatsystem->name;
+
+      commerce_line_item_save($line_item);
+
+      $line_item = commerce_cart_product_add($user->uid, $line_item);
+    }
+  }
+
+  if ($data['type'] == 'userdefined') {
+    
+    $line_item = commerce_product_line_item_new($op, 1);
+    $line_item->line_item_label = $pd->title;
+    $line_item->field_li_type[LANGUAGE_NONE][0]['value'] = 1;
+    $line_item->field_selection[LANGUAGE_NONE][0]['value'] = serialize($data);
+  
+    $line_item->field_selection_text[LANGUAGE_NONE][0]['value'] 
+      = t('User-defined selection') . ', ' 
+      . $selection_type->name  . ', ' 
+      . $dataformat->name      . ', ' 
+      . $koordinatsystem->name;
+
+    commerce_line_item_save($line_item);
+    $line_item = commerce_cart_product_add($user->uid, $line_item);
+  }
+
+
+}
+
+function kms_mapwidget_get_files ($folder,$files) {
+  
+  $finfo = finfo_open(FILEINFO_MIME_TYPE);
+  $downloads = false;  
+
+  foreach ($files as $file) {
+    
+    $uri = 'private://' . $folder . '/' . $file;
+
+    // Try to load exsting file
+    $flist = file_load_multiple(array(), array('uri' => $uri));
+    // If empty, $file will be false, otherwise will contain the required file 
+    $f = reset($flist); 
+  
+    // If files is new, then insert to file_managed and load again to get fid
+    if (!$f) {
+      $stat = stat(DRUPAL_ROOT."/sites/private/$folder/$file");
+      if ($stat) {
+        $values = array( 
+          1,
+          $file,
+          $uri,
+          finfo_file($finfo, DRUPAL_ROOT."/sites/private/$folder/$file"),
+          $stat['size'],
+          FILE_STATUS_PERMANENT,
+          $stat['mtime'],
+          $file
+        );
+
+        $sql = 'INSERT INTO file_managed (uid,filename,uri,filemime,filesize,status,timestamp,origname)'
+           . 'VALUES (?,?,?,?,?,?,?,?)';
+
+        $dbh = Database::getConnection();
+        $stmt = $dbh->prepare($sql);
+        $stmt->execute($values);
+
+        $flist = file_load_multiple(array(), array('uri' => $uri));
+        $f = reset($flist);
+
+        file_usage_add($f,'kms_commerce_files','user', 1, 1);
+      }
+    }
+
+    if ($f) {
+      $downloads[] = array('fid' => $f->fid,
+            'data' => array("duration"       => 3600 * 24 * 7,
+                            "download_limit" => -1,
+                            "address_limit"  => -1,
+                           )
+      );
+    }
+  } 
+  
+  return $downloads;
+}
+
+
+/**
+ * [kms_mapwidget_form_ajax_callback]
+ * @param  [array] $form 
+ * @param  [array] $form_state 
+ * @return [array]             [the entire form]
+ */
+function kms_mapwidget_form_ajax_callback($form, &$form_state) {
+  
+  $commands = array();
+  $commands[] = ajax_command_html('#ajax_multistep_form', render($form));
+
+  if ($form_state['step'] == 3)
+    $commands[] = ajax_command_invoke(NULL, "initSelection", array() );
+  else
+  $commands[] = ajax_command_invoke(NULL, "resetSelection", array() );
+  
+  return array('#type' => 'ajax', '#commands' => $commands);
+}
+
+/**
+ * [kms_mapwidget__dataformat_ajax_callback]
+ * @param  [array] $form       
+ * @param  [array] $form_state 
+ * @return [array]           [single form element]          
+ */
+function kms_mapwidget__dataformat_ajax_callback($form, &$form_state) {
+  return $form['step_2']['koordinatsystem'];
+}
+
+/**
+ * [kms_mapwidget_get_header]
+ * @param  [array] $form 
+ * @param  [array] $form_state
+ * @return [array]               [the form array]
+ */
+function kms_mapwidget_get_header($form, &$form_state) {
+
+  // Add a wrapper div that will be used by the Form API to update the form using AJAX
+  $form['#prefix'] = '<div id="ajax_multistep_form">';
+    
+  $stages = array(
+    '1' => array('data' => t('1. Selection method')),
+    '2' => array('data' => t('2. Format and reference system')),
+    '3' => array('data' => t('3. Map selection')),
+  );
+  
+  // Set active class for current step
+  $stages[$form_state['step']]['class'] = array('active');
+  
+  $form['header'] = array(
+    '#type' => 'markup',
+    '#weight' => -2,
+    '#markup' => theme('item_list', array('items' => $stages, 'attributes' => array('class'=>'map-tab-header'))),
+  );
+
+  return $form;
+  
+}
+
+/**
+ * [kms_mapwidget_form_step_1]
+ * @param  [array] $form
+ * @param  [array] $form_state
+ * @param  [object] $nw         [the product node]
+ */
+function kms_mapwidget_form_step_1(&$form, $form_state, $nw) {
+
+  $values = isset($form_state['storage']['step_1']) ? $form_state['storage']['step_1'] : array();
+  
+  ctools_include('export');
+  $predefined_options = kms_mapwidget_get_predefined_options($nw);
+  $predefined_description = ctools_export_crud_load('ctools_custom_content', 'predefined_selections' );
+
+  $form['step_1']['predefined'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Predefined selections') . '<span class="select-desc-i" id="predefined_button"></span>',
+    '#options' => $predefined_options,
+    '#prefix' => '<div class="step-1-predefined">',
+    '#suffix' => '</div><div class="select-desc" id="predefined_description">' . $predefined_description->settings['body']. '</div>',
+  );
+
+  if (isset($values['type']) && $values['type'] == 'predefined') {
+    $form['step_1']['predefined']['#default_value'] = array($values['selection_type']);
+  }
+ 
+  $userdefined_options = kms_mapwidget_get_userdefined_options($nw);
+  if (!empty($userdefined_options)) {
+    $userdefined_description = ctools_export_crud_load('ctools_custom_content', 'userdefined_selections' );
+
+    $form['step_1']['userdefined'] = array(
+      '#type' => 'checkboxes',
+      '#prefix' => '<div class="step-1-userdefined">',
+      '#suffix' => '</div><div class="select-desc" id="userdefined_description">' . $userdefined_description->settings['body']. '</div>',
+      '#title' => t('User-defined selections') . '<span class="select-desc-i" id="userdefined_button"></span>',
+      '#options' => $userdefined_options,
+    );
+ 
+    if (isset($values['type']) && $values['type'] == 'userdefined')
+      $form['step_1']['userdefined']['#default_value'] = array($values['selection_type']);
+  }
+
+  // Set first predefined selection option as default
+  if (empty($values['type'])) {
+    reset($predefined_options);
+    $form['step_1']['predefined']['#default_value'] = array(key($predefined_options));
+  }
+
+  $form['#attached']['js'] = array(
+    drupal_get_path('module', 'kms_mapwidget') . '/js/mapform.js',
+    drupal_get_path('module', 'kms_mapwidget') . '/js/jquery.easyModal.js'
+  );
+
+  drupal_add_js(array('kms_mapwidget' => array('step' => 1 )),array('type' => 'setting'));
+    
+}
+
+/**
+ * [kms_mapwidget_form_step_2 ]
+ * @param  [array]  $form
+ * @param  [array]  $form_state
+ * @param  [object] $nw           [the product node]
+ */
+function kms_mapwidget_form_step_2(&$form, $form_state, $nw) {
+  
+  $values = isset($form_state['storage']['step_2']) ? $form_state['storage']['step_2'] : array();
+  $step_1 = $form_state['storage']['step_1'];
+
+  $selection_type = entity_metadata_wrapper('taxonomy_term', $step_1['selection_type']);
+
+  if ($step_1['type'] == 'predefined') {
+    $type_text =  t('Predefined selection');
+    $dataformat_options = kms_mapwidget_get_product_dataformat_options($nw,$selection_type);
+    $dataformat_descriptions = kms_mapwidget_get_product_dataformat_options($nw,$selection_type,true);
+  } else {
+    $type_text =  t('User-defined selection');
+    $product = kms_mapwidget_get_userdefined_product( $nw );
+    $dataformat_options = kms_mapwidget_get_userdefined_product_dataformat_options($product);
+    $dataformat_descriptions = kms_mapwidget_get_userdefined_product_dataformat_options($product,true);
+  }
+
+  drupal_add_js(
+      array('kms_mapwidget' => array(
+          'step' => 2,
+          'product_type_title'   => $type_text,
+          'selection_type_title' => $selection_type->name->value(),
+        ),
+      ),
+      array('type' => 'setting')
+  );
+
+  //$form['title'] = array(
+  //  '#type' => 'markup',
+  //  '#markup' => '<h2>' . $type_text . ' - ' . $selection_type->name->value() . '</h2>',
+  //);
+
+  reset($dataformat_options);
+  $dataformat = isset($values['dataformat']) ? $values['dataformat'] : key($dataformat_options);
+  
+  // If called in ajax callback the dataformat is present in form_state
+  if (isset($form_state['values']['dataformat']))
+    $dataformat = $form_state['values']['dataformat'];
+
+  $form['step_2']['dataformat'] = array(
+    '#type' => 'select',
+    '#title' => t('Dataformat'),
+    '#options' => $dataformat_options,
+    '#default_value' => $dataformat,
+    '#prefix' => '<div id="format-wrapper">',
+    '#suffix' => $dataformat_descriptions . '</div>',
+    '#ajax' => array(
+      'callback' => 'kms_mapwidget__dataformat_ajax_callback',
+      'wrapper'  => 'koordinatsystem-wrapper',
+      'method'   => 'replace',
+      'effect'   => 'none',
+    ),
+  );
+
+  if ($step_1['type'] == 'predefined') {
+    $koordinatsystem_options = kms_mapwidget_get_product_koordinatsystem_options($nw,$selection_type,$dataformat);
+    $koordinatsystem_descriptions = kms_mapwidget_get_product_koordinatsystem_options($nw,$selection_type,$dataformat,true);
+  } else {
+    $koordinatsystem_options = kms_mapwidget_get_userdefined_product_koordinatsystem_options($product);
+    $koordinatsystem_descriptions = kms_mapwidget_get_userdefined_product_koordinatsystem_options($product,true);
+  }
+
+  reset($koordinatsystem_options);
+  $koordinatsystem = isset($values['koordinatsystem']) ? $values['koordinatsystem'] : key($koordinatsystem_options);
+
+  $form['step_2']['koordinatsystem'] = array(
+    '#type' => 'select',
+    '#title' => t('Reference system'),
+    '#options' => $koordinatsystem_options,
+    '#default_value' => $koordinatsystem,
+    '#prefix' => '<div id="koordinatsystem-wrapper">',
+    '#suffix' => $koordinatsystem_descriptions . '</div>',
+  );
+    
+  $form['#attached']['js'] = array(
+      drupal_get_path('module', 'kms_mapwidget') . '/js/userdefined-step-2.js',
+  );  
+}
+
+/**
+ * Map widget form - step 3
+ */
+function kms_mapwidget_form_step_3(&$form, $form_state, $nw) {
+    
+  $values = isset($form_state['storage']['step_3']) ? $form_state['storage']['step_3'] : array();
+  $step_1 = $form_state['storage']['step_1'];
+  $step_2 = $form_state['storage']['step_2'];
+  
+  $product_type = $step_1['type'];
+  $selection_type = entity_metadata_wrapper('taxonomy_term', $step_1['selection_type']);
+  $dataformat = entity_metadata_wrapper('taxonomy_term', $step_2['dataformat']);
+  $koordinatsystem = entity_metadata_wrapper('taxonomy_term', $step_2['koordinatsystem']);
+
+  if ($product_type == 'predefined') {
+    $product = kms_mapwidget_get_predefined_product($nw,$selection_type,$dataformat,$koordinatsystem);
+    $selection_type = $product->field_selection_type;
+    $selection_details = $product->field_selection_details->value();
+    $type_text =  t('Predefined selection');
+    
+    $form['step_3']['product_id'] = array(
+      '#type' => 'hidden',
+      '#value' => $product->product_id->value()
+    );
+
+    drupal_add_js(
+      array('kms_mapwidget' => array(
+          'type'    => $selection_type->field_type->value(),
+          'details' => (empty($selection_details) ? false : $selection_details),
+          'product_type' => 'predefined',
+          'dataformat' => $dataformat->field_filename_part->value(),
+          'koordinatsystem' => $koordinatsystem->field_filename_part->value(),
+          'product_type_title'    => $type_text,
+          'selection_type_title' => $selection_type->name->value(),
+          'dataformat_title' => $dataformat->name->value(),
+          'koordinatsystem_title' => $koordinatsystem->name->value(),
+        ),
+      ),
+      array('type' => 'setting')
+    );
+
+  } else {
+    $product = kms_mapwidget_get_userdefined_product( $nw );
+    $selection_type = entity_metadata_wrapper('taxonomy_term', $selection_type);
+    $selection_details = $selection_type->field_selection_details->value();
+    $type_text =  t('User-defined selection');
+    ctools_include('export');
+
+    $form['step_3']['product_id'] = array(
+      '#type' => 'hidden',
+      '#value' => $product->product_id->value()
+    );
+
+    drupal_add_js(
+      array('kms_mapwidget' => array(
+          'type'    => $selection_type->field_type->value(),
+          'details' => (empty($selection_details) ? false : $selection_details),
+          'product_type' => 'userdefined',
+          'dataformat' => $dataformat->name->value(),
+          'koordinatsystem' => $koordinatsystem->name->value(),
+          'selection_type_title' => $selection_type->name->value(),
+          'dataformat_title' => $dataformat->name->value(),
+          'koordinatsystem_title' => $koordinatsystem->name->value(),
+          'max_area' => variable_get('kms_mapwidget_max_area', 0)
+        ),
+      ),
+      array('type' => 'setting')
+    );
+    
+    //$form['#attached']['js'][] = drupal_get_path('module', 'kms_mapwidget') . '/js/userdefined-step-3.js';
+  
+    $clipping_description = ctools_export_crud_load('ctools_custom_content', 'clipping_description' );
+
+    $form['step_3']['clipping'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Clip softly at geometry'),
+      '#weight' => 100,
+      '#prefix' => '<div class="clipping-wrapper">',
+      '#suffix' => '<span class="select-desc-i clipping-desc" id="clipping_button">'
+        . '</span><div class="select-desc" id="clipping_description">' 
+        . $clipping_description->settings['body'] . '</div></div>',
+      '#default_value' => isset($values['clipping']) ? $values['clipping'] : true,
+    );
+   
+   // Term with name '0' is default value for buffer size
+   $default_buffer = taxonomy_get_term_by_name('0','buffer');
+   $default_buffer =  key($default_buffer); 
+
+   $buffer_description = ctools_export_crud_load('ctools_custom_content', 'buffer_description' );
+
+   $form['step_3']['buffer'] = array(
+      '#type' => 'select',
+      '#title' => t('Buffer'),
+      '#options' => kms_mapwidget_get_buffer_sizes(),
+      '#prefix' => '<div class="buffer-wrapper">',
+      '#suffix' => '<span>meter</span><span class="select-desc-i buffer-desc" id="buffer_button">'
+        . '</span><div class="select-desc" id="buffer_description">' 
+        . $buffer_description->settings['body'] . '</div></div>',
+      '#weight' => 101,
+      '#default_value' => isset($values['buffer']) ? $values['buffer'] : $default_buffer,
+    );
+  }
+
+  $form['step_3']['selection'] = array(
+    '#type' => 'hidden',
+    '#default_value' => isset($values['selection']) ? $values['selection'] : '',
+  );
+
+}
+
+/**
+ * Map widget form footer
+ */
+
+function kms_mapwidget_form_footer(&$form,$form_state,$nw) {
+ 
+  // Create a container for the buttons
+  $form['buttons'] = array ( '#type' => 'container');
+
+  // If we are on step 1, we do not want a back button
+  if($form_state['step'] !== 1) {
+    $form['buttons']['back'] = array
+    (
+      '#type' => 'submit',
+      '#value' => t('Back',array(), array('context' => 'KMS')),
+      '#attributes' => array('class' => array('button-back')),
+      '#ajax' => array
+      (
+        'wrapper' => 'ajax_multistep_form',
+        'callback' => 'kms_mapwidget_form_ajax_callback',
+      ),
+    );
+  }
+  // We only want a forward button if we are not on the last step of the form
+  if($form_state['step'] !== 3) {
+    $form['buttons']['forward'] = array
+    (
+      '#type' => 'submit',
+      '#value' => t('Next',array(), array('context' => 'KMS')),
+      '#attributes' => array('class' => array('button-next')),
+      '#ajax' => array
+      (
+        'wrapper' => 'ajax_multistep_form',
+        'callback' => 'kms_mapwidget_form_ajax_callback',
+      ),
+    );
+  }
+  // We only want a submit button if we are on the last step of the form
+  else {
+    $form['buttons']['submit'] = array
+    (
+      '#type' => 'submit',
+      '#value' => t('Add to cart',array(), array('context' => 'KMS')),
+      '#attributes' => array('class' => array('button-submit')),
+      //'#ajax' => array
+      //(
+      //  'wrapper' => 'ajax_multistep_form',
+      //  'callback' => 'kms_mapwidget_form_ajax_callback',
+      //),
+    );
+  }
+
+  $form['#suffix'] = '</div>'; // place map outside wrapper so it's not replaced..
+
+}
+
+function kms_mapwidget_get_predefined_options( $nw ) {
+  $options = array();
+  foreach ($nw->field_product as $product) {
+    if ($product->type->value() == 'product' ) {
+      $tid = $product->field_selection_type->tid->value();
+      $options[$tid] = array(
+        'weight' => $product->field_selection_type->weight->value(),
+        'value' => $product->field_selection_type->name->value()
+      );
+    }
+  }
+  return kms_mapwidget__sort($options);
+}
+
+/*
+ * Options for buffer size
+ */
+function kms_mapwidget_get_buffer_sizes() {
+  $options = array();
+  
+  $vid  = taxonomy_vocabulary_machine_name_load('buffer')->vid;
+  $tree = taxonomy_get_tree($vid);
+
+  foreach ($tree as $i) {
+    $options[$i->tid] = $i->name;
+  }
+
+  return $options;
+}
+
+/*
+ * Options for user-defined datasets
+ */
+function kms_mapwidget_get_userdefined_options( $nw ) {
+  $options = array();
+
+  foreach ($nw->field_product as $product) {
+    if ($product->type->value() == 'fme_product' ) {
+      foreach ($product->field_selection_types as $selection_type) {
+        $options[$selection_type->tid->value()] = 
+          array('weight' => $selection_type->weight->value(),
+                'value' => $selection_type->name->value()
+          );
+      }
+    }
+  }
+
+  return kms_mapwidget__sort($options);
+}
+
+/*
+ * Dataformat options for pre-defined datasets
+ */
+function kms_mapwidget_get_product_dataformat_options( $nw, $selection_type, $description=false ) {
+  $options = array();
+  foreach ($nw->field_product as $product) {
+    if ($product->type->value() == 'product' && $product->field_selection_type->tid->value() == $selection_type->tid->value() ) {
+      $options[$product->field_dataformat->tid->value()] = 
+        array(
+          'weight' => $product->field_dataformat->weight->value(),
+          'value' => $product->field_dataformat->name->value(),
+          'description' => $product->field_dataformat->description->value()
+        );
+    }
+  }
+  
+  if ($description)
+    return kms_mapwidget__description($options);
+
+  return kms_mapwidget__sort($options);
+}
+
+/*
+ * Dataformat options for user-defined datasets
+ */
+function kms_mapwidget_get_userdefined_product_dataformat_options( $product,  $description = false ) {
+  $options = array();
+  foreach ($product->field_dataformats as $dataformat) {
+    $options[$dataformat->tid->value()] = 
+      array(
+        'weight' => $dataformat->weight->value(),
+        'value' => $dataformat->name->value(),
+        'description' => $dataformat->description->value(),
+      );
+  }
+
+  if ($description)
+    return kms_mapwidget__description($options);
+
+  return kms_mapwidget__sort($options);
+}
+
+/*
+ * Reference system options for pre-defined datasets
+ */
+function kms_mapwidget_get_product_koordinatsystem_options( $nw, $selection_type, $dataformat,  $description = false ) {
+
+  $options = array();
+  foreach ($nw->field_product as $product) {
+    if ($product->type->value() == 'product' 
+    && $product->field_selection_type->tid->value() == $selection_type->tid->value()
+    && $product->field_dataformat->tid->value() == $dataformat ) {
+      $options[$product->field_koordinatsystem->tid->value()] = 
+        array(
+          'weight' => $product->field_koordinatsystem->weight->value(),
+          'value' => $product->field_koordinatsystem->name->value(),
+          'description' => $product->field_koordinatsystem->description->value(),
+        );
+    }
+  }
+
+  if ($description)
+    return kms_mapwidget__description($options);
+
+  return kms_mapwidget__sort($options);
+}
+
+/*
+ * Reference system options for user-defined datasets
+ */
+function kms_mapwidget_get_userdefined_product_koordinatsystem_options( $product, $description = false ) {
+  $options = array();
+  foreach ($product->field_reference_systems as $reference_system) {
+    $options[$reference_system->tid->value()] = 
+      array(
+        'weight' => $reference_system->weight->value(),
+        'value' => $reference_system->name->value(),
+        'description' => $reference_system->description->value(),
+      );
+  }
+
+  if ($description)
+    return kms_mapwidget__description($options);
+
+  return kms_mapwidget__sort($options);
+}
+
+/*
+ * Get product for userdefined products
+ */
+function kms_mapwidget_get_userdefined_product( $nw ) {
+  foreach ($nw->field_product as $product) {
+    if ($product->type->value() == 'fme_product' ) {
+      return $product;
+    }
+  }
+}
+
+/*
+ * Get product for predefined products
+ */
+function kms_mapwidget_get_predefined_product($nw,$selection_type,$dataformat,$koordinatsystem) {
+   foreach ($nw->field_product as $product) {
+    if ($product->type->value() == 'product' 
+      && $product->field_selection_type->tid->value() == $selection_type->tid->value()
+      && $product->field_dataformat->tid->value() == $dataformat->tid->value()
+      && $product->field_koordinatsystem->tid->value() == $koordinatsystem->tid->value() ) {
+      return $product;
+    }
+  }
+}
+
+
+function kms_mapwidget__cmp($a, $b) {
+  return $a['weight'] > $b['weight'];
+}
+
+/**
+ * Custom sort function
+*/
+function kms_mapwidget__sort($data) {
+  
+  uasort($data,'kms_mapwidget__cmp');
+
+  foreach ($data as $key => $value) {
+    $data[$key] = $value['value'];
+  }
+
+  return $data;
+
+}
+
+/**
+ * Custom sort function
+*/
+function kms_mapwidget__description($data) {
+  $output = '';
+  foreach ($data as $key => $value) {
+    $output .= '<div class="selected-description" id="desc-' . $key . '">' . $value['description'] . '</div>';
+  }
+  return $output;
+}
+
+/**
+ * Implements hook_form_alter
+*/
+
+function kms_mapwidget_form_alter(&$form, &$form_state, $form_id) {
+
+  /**
+   *  Alter the commerce checkout form
+   */
+
+  if (strpos($form_id, 'commerce_checkout_form') !== false) {
+
+    /* Alter the buttons */
+
+    if (isset($form['buttons']['continue']['#value'])) {
+      $form['buttons']['continue']['#value'] = t('Continue');
+    }
+
+    if (isset($form['buttons']['cancel']['#prefix'])) {
+      unset($form['buttons']['cancel']['#prefix']);
+    }
+
+    if (isset($form['buttons']['cancel'])) {
+      $form['buttons']['cancel']['#weight'] = 20;
+    }
+
+  }
+
+}
+
+function kms_mapwidget_load_product_display( $product_id ) {
+
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', 'product_display')
+        ->fieldCondition('field_product', 'product_id', $product_id,'=');
+
+  $result = $query->execute();
+
+  if (isset($result['node'])) {
+    $nid = key($result['node']); // First Element's Key'
+    return node_load( $nid );
+  }
+
+  return false;
+
+}
+
+

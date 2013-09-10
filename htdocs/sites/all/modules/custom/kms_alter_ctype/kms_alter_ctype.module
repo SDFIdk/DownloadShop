@@ -1,0 +1,167 @@
+<?php
+// Feature diff:
+// +features[field][] = node-product_display-field_aktualitet DONE
+// +features[field][] = node-product_display-field_center_latitude DONE
+// +features[field][] = node-product_display-field_center_longitude DONE
+// +features[field][] = node-product_display-field_datastruktur DONE
+// +features[field][] = node-product_display-field_geodata_info_dk DONE
+// +features[field][] = node-product_display-field_kms_dk DONE
+// +features[field][] = node-product_display-field_korttype DONE
+// +features[field][] = node-product_display-field_legend DONE
+// +features[field][] = node-product_display-field_overlay DONE
+// +features[field][] = node-product_display-field_right_box N/A
+// +features[field][] = node-product_display-field_scheme DONE
+// +features[field][] = node-product_display-field_service_layer DONE
+// +features[field][] = node-product_display-field_service_name DONE
+// +features[field][] = node-product_display-field_zoom_level DONE
+// +features[taxonomy][] = aktualitet
+// +features[taxonomy][] = data_schema
+// +features[taxonomy][] = datastruktur
+// +features[taxonomy][] = korttype
+
+function kms_alter_ctype_migrate() {
+  global $user;
+  $query = new EntityFieldQuery;
+  $result = $query->entityCondition('entity_type', 'node')
+                  ->propertyCondition('type', 'product_display')
+                  ->execute();
+  if(isset($result['node'])) {
+    $nids = array_keys($result['node']);
+    $nodes = entity_load('node', $nids);
+    foreach ($nodes as $node) {
+      $wrapper = entity_metadata_wrapper('node', $node);
+
+      $lastProduct = NULL;
+      $lastProductID = NULL;
+      $diff = FALSE;
+      foreach($wrapper->field_product->getIterator() as $product) {
+        $compareData = array();
+        // var_dump($product->getPropertyInfo());
+        $productID = $product->product_id->value();
+        //Aktualitet
+        $actuality = $product->field_aktualitet->value(); //TAXONOMY
+        if($actuality) {
+          $compareData['actuality'] = $actuality->tid; //actuality tid
+        }
+        //Center latitude
+        $lat = $product->field_center_latitude->value(); //INTEGER
+        $compareData['lat'] = $lat;
+        //Center longitude
+        $lon = $product->field_center_longitude->value(); //INTEGER
+        $compareData['lon'] = $lon;
+        //Datastruktur
+        $datastructure = $product->field_datastruktur->value(); //TAXONOMY
+        if($datastructure) {
+          $compareData['datastructure'] = $datastructure->tid; //compareData structure tid
+        }
+        //Metadata
+        $metadata = $product->field_geodata_info_dk->value(); //LINK
+        if($metadata) {
+          $compareData['metadata'] = array('url'=>$metadata['url'], 'title'=>$metadata['title']);
+        }
+        //Læs mere
+        $readmore = $product->field_kms_dk->value(); //LINK
+        if($readmore) {
+          $compareData['readmore'] = array('url'=>$readmore['url'], 'title'=>$readmore['title']);
+        }
+        //Korttype
+        $cardtype = $product->field_korttype->value(); //TAXONOMY
+        if($cardtype) {
+          $compareData['cardtype'] = $cardtype->tid; //cardtype tid
+        }
+        //Signaturforklaring (legend)
+        $legend = $product->field_legend->value(); //LINK
+        if($legend) {
+          $compareData['legend'] = array('url'=>$legend['url'], 'title'=>$legend['title']);
+        }
+        //Overlay !?!? //TODO: SPØRG TOM! - sæt til FALSE
+        
+        //Scheme
+        $scheme = $product->field_scheme->value(); //TAXONOMY
+        if($scheme) {
+          $compareData['scheme'] = $scheme->tid; //cardtype tid
+        }
+        //Service layer
+        $servicelayer = $product->field_service_layer->value(); //TEXT
+        if($servicelayer) {
+          $compareData['servicelayer'] = $servicelayer;
+        }
+        //Service name
+        $servicename = $product->field_service_name->value(); //TAXONOMY
+        if($servicename) {
+          $compareData['servicename'] = $servicename->tid; //servicename tid
+        }
+        //Zoom level
+        $zoomlevel = $product->field_zoom_level->value(); //INTEGER
+        $compareData['zoom'] = $zoomlevel;
+
+        if($lastProduct!=NULL) { //If this is not first iteration
+          //TODO: compare
+          if($lastProduct!==$compareData) {
+            $diff = TRUE;
+            echo 'Diference between product ID: ' . $lastProductID . ' \n';
+            echo 'AND product ID: ' . $productID . ' \n';
+            echo $lastProductID . ':';
+            echo json_encode($lastProduct);
+            echo $productID . ':';
+            echo json_encode($compareData);
+          }
+        }
+        $lastProduct = $compareData;
+        $lastProductID = $productID;
+      }
+
+      //Write last product's data to $wrapper
+      // if($wrapper->nid->value()==9) { //DEBUG
+        if($lastProduct['actuality']) { //TESTED AND WORKING
+          $wrapper->field_aktualitet->set($lastProduct['actuality']);
+        }
+        
+        if($lastProduct['lat']) { //TESTED AND WORKING
+          $wrapper->field_center_latitude->set($lastProduct['lat']);
+        }
+        if($lastProduct['lon']) { //TESTED AND WORKING
+          $wrapper->field_center_longitude->set($lastProduct['lon']);
+        }
+        
+        if($lastProduct['datastructure']) { //TESTED AND WORKING
+          $wrapper->field_datastruktur->set($lastProduct['datastructure']);
+        }
+        
+        if($lastProduct['metadata']) { //TESTED AND WORKING
+          $wrapper->field_geodata_info_dk->set($lastProduct['metadata']);
+        }
+        if($lastProduct['readmore']) { //SHOULD WORK
+          $wrapper->field_kms_dk->set($lastProduct['readmore']);
+        }
+        
+        if($lastProduct['cardtype']) { //TESTED AND WORKING
+          $wrapper->field_korttype->set($lastProduct['cardtype']);
+        }
+        if($lastProduct['legend']) { //SHOULD WORK
+          $wrapper->field_legend->set($lastProduct['legend']);
+        }
+
+        //Set overlay to FALSE
+        $wrapper->field_overlay->set(0); //TESTED AND WORKING
+        
+        if($lastProduct['scheme']) { //TESTED AND WORKING
+          $wrapper->field_scheme->set($lastProduct['scheme']);
+        }
+
+        if($compareData['servicelayer']) { //TESTED AND WORKING
+          $wrapper->field_service_layer->set($compareData['servicelayer']);
+        }
+        
+        if($compareData['servicename']) { //TESTED AND WORKING
+          $wrapper->field_service_name->set($compareData['servicename']);
+        }
+        
+        if($compareData['zoom']) { //TESTED AND WORKING
+          $wrapper->field_zoom_level->set($compareData['zoom']);
+        }
+        $wrapper->save();
+      // }
+    }
+  }
+}
