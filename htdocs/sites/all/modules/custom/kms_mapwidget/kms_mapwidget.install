@@ -1,0 +1,56 @@
+<?php 
+
+/**
+ * Implements hook_schema().
+ */
+function kms_mapwidget_schema() {
+  $schema = array();
+
+  $schema['fme_log'] = array(
+    'description' => 'The base table for FME logging.',
+    'fields' => array(
+      'timestamp' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'username' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+      ),
+      'event' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'order_id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'job_id' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'data' => array(
+        'type' => 'blob',
+        'not null' => TRUE,
+      ),
+    ),
+  );
+
+  return $schema;
+}
+
+function kms_mapwidget_update_7103() {
+  $schema = kms_mapwidget_schema();
+  if (!db_table_exists('fme_log')) {
+    db_create_table('fme_log', $schema['fme_log']);
+  }
+}

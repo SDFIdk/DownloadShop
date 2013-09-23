@@ -1,5 +1,9 @@
 <?php
 
+define('FME_TYPE_REQUEST', 0);
+define('FME_TYPE_CALLBACK', 1);
+
+module_load_include('inc','kms_mapwidget',"kms_mapwidget_fme_logging");
 module_load_include('inc','kms_mapwidget',"kms_mapwidget_fme");
 module_load_include('inc','kms_mapwidget',"kms_mapwidget_rules");
 
@@ -31,8 +35,26 @@ function kms_mapwidget_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
   );
+
+  $items['fmelog'] = array(
+    'title' => 'FME callback',
+    'page callback' => 'kms_mapwidget_fme_log_view',
+    'access arguments' => array('access administration pages'),
+    'type' => MENU_CALLBACK,
+  );
  
   return $items;
+}
+
+function kms_mapwidget_fme_log_view( ) {
+
+  $result = db_query('SELECT * FROM fme_log');
+  echo '<pre>';
+  foreach ($result as $row) {
+    $row->data = json_decode($row->data);
+    print_r($row) . "\n";
+  }
+  echo '</pre>';
 }
 
 function kms_mapwidget_fme_callback( ) {
@@ -75,6 +97,15 @@ function kms_mapwidget_fme_callback( ) {
       rules_invoke_event('kms_mapwidget_fme_callback_event_failure',$user,$order,$job);
     }
     echo 'OK';
+
+    kms_mapwidget_fme_log(
+      FME_TYPE_CALLBACK,
+      $order->order_id,
+      $jobid,
+      array('job' => $job),
+      $user
+    );
+
     return;
   }
 
@@ -984,4 +1015,26 @@ function kms_mapwidget_load_product_display( $product_id ) {
 
 }
 
+function kms_mapwidget_fme_log($event,$order_id,$job_id, $data, $user = false) {
+   
+  if (!$user) {
+    global $user;
+  }
 
+  try{
+  $res = db_insert('fme_log')
+         ->fields(
+           array(
+             'timestamp' => time(),
+             'uid'       => $user->uid,
+             'username'  => $user->name,
+             'event'     => $event,
+             'order_id'  => $order_id,
+             'job_id'    => $job_id,
+             'data'      => json_encode($data),
+           ))
+         ->execute();
+  } catch(Exception $e) {
+    watchdog('kms_mapwidget', 'Could not write to log table');
+  }
+}

@@ -56,8 +56,18 @@ function kms_mapwidget__fme_api($action, $id = false, $data = array()) {
   
   curl_close($curl);
     
-  if ($response)
-    return json_decode($response);
+  if ($response) {
+    $response = json_decode($response);
+    if ( $action == 'run' ) { 
+      kms_mapwidget_fme_log(
+        FME_TYPE_REQUEST,
+        $data['OrdreNummer'],
+        $response->serviceResponse->jobID,
+        array('params' => $data, 'url' => $fmeurl . '/repositories/LDS/' . $id . '/run.json')
+      );
+    }
+    return $response;
+  }
   else
     return FALSE;
 }
