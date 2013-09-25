@@ -304,27 +304,6 @@ function kms_subuser_insert_form_validate($form, &$form_state) {
   user_validate_name($values['name']);
   _kms_user_user_pass_validate_chars($values['pass']);
 }
-  
-
-/**
- * Validate update-subuser-form.
- * 
- * @param array $form
- *   Drupal form array.
- * @param array $form_state
- *   Drupal form array.
- *
- * @return void.
- */
-function kms_subuser_update_form_validate($form, &$form_state) {
-  $values = $form_state['values'];
-  $user = user_load_by_name($values['name']);
-  if ($user) {
-    form_set_error("name", t('The username already exists.'));
-  }
-  user_validate_name($values['name']);
-  _kms_user_user_pass_validate_chars($values['pass']);
-}
 
 /**
  * Drupal ajax callback function.
@@ -1148,6 +1127,8 @@ function kms_subuser_update_form($form, &$form_state, $subuser) {
   
   drupal_get_messages();
   $form = kms_subuser_form($form, $form_state, $user, 'update');
+  // $form['user_pass']['name']['#disabled'] = TRUE;
+
   // Delete unwanted form data.
   unset(
     // $form['add_subuser'],
