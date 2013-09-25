@@ -295,7 +295,28 @@ function kms_subuser_update_form_submit(&$form, &$form_state) {
  *
  * @return void.
  */
-function kms_subuser_form_validate($form, &$form_state) {
+function kms_subuser_insert_form_validate($form, &$form_state) {
+  $values = $form_state['values'];
+  $user = user_load_by_name($values['name']);
+  if ($user) {
+    form_set_error("name", t('The username already exists.'));
+  }
+  user_validate_name($values['name']);
+  _kms_user_user_pass_validate_chars($values['pass']);
+}
+  
+
+/**
+ * Validate update-subuser-form.
+ * 
+ * @param array $form
+ *   Drupal form array.
+ * @param array $form_state
+ *   Drupal form array.
+ *
+ * @return void.
+ */
+function kms_subuser_update_form_validate($form, &$form_state) {
   $values = $form_state['values'];
   $user = user_load_by_name($values['name']);
   if ($user) {
