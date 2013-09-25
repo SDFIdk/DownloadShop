@@ -1,7 +1,6 @@
 <?php
   
   require_once("kms_mapwidget_fme.inc");
-  // TEST 
   //$job = kms_mapwidget__fme_api('status',3915);
   //$job = kms_mapwidget__fme_api('queued');
 
