@@ -34,15 +34,40 @@ function kms_oci_boot() {
   }
 
   global $oci;
+  $oci = kms_oci_set_conn();
 
-  $user = variable_get('kms_oci_conn_user');
-  $pass = variable_get('kms_oci_conn_pass');
-  $host = variable_get('kms_oci_conn_host');
-  $db = variable_get('kms_oci_conn_db');
+  // Set if connection is up.
+  kms_oci_conection_is_up($oci);
+
+}
+
+/**
+ * Set Oracle connection.
+ *
+ * @return void.
+ */
+function kms_oci_set_conn($settings = array()) {
+  if (!kms_oci_extension_is_loaded()) {
+    return FALSE;
+  }
+  
+  if (!empty($settings)) {
+    $user = $settings['kms_oci_conn_user'];
+    $pass = $settings['kms_oci_conn_pass'];
+    $host = $settings['kms_oci_conn_host'];
+    $db = $settings['kms_oci_conn_db'];
+  }
+  else {
+    // Default
+    $user = variable_get('kms_oci_conn_user');
+    $pass = variable_get('kms_oci_conn_pass');
+    $host = variable_get('kms_oci_conn_host');
+    $db = variable_get('kms_oci_conn_db');
+  }
 
   // Check connection vars. Return if FALSE;
-  foreach(array($user, $pass, $host, $db) as $var) {
-    if(empty($var)) {
+  foreach (array($user, $pass, $host, $db) as $var) {
+    if (empty($var)) {
       $oci = FALSE;
       return;
     }
@@ -50,8 +75,7 @@ function kms_oci_boot() {
 
   // Connect to db.
   $oci = @oci_connect($user, $pass, "$host/$db", 'UTF8');
-  // Set if connection is up.
-  kms_oci_conection_is_up($oci);
+
   // If connection is down set message in drupal static
   // because the whole system has not been bootstrapped yet.
   if (!$oci) {
@@ -59,19 +83,61 @@ function kms_oci_boot() {
     kms_oci_conection_error($e['message']);
   }
 
+  return $oci;
 }
 
 /**
  * Get Oracle connection.
- *
+ * @param int $cid - unique identifier for this transaction
  * @return void.
  */
-function kms_oci_get_conn() {
-  if(!kms_oci_extension_is_loaded()) {
+function kms_oci_get_conn($cid = FALSE, $settings = array()) {
+  if (!kms_oci_extension_is_loaded()) {
     return FALSE;
   }
-  global $oci;
-  return $oci;
+  if ($cid) {
+    static $oci_cid;
+    if ($oci_cid[$cid]) {
+      return $oci_cid[$cid];
+    }
+    else if ($settings) {
+      $oci_cid[$cid] = kms_oci_set_conn($settings);
+      return $oci_cid[$cid];
+    }
+  }
+  else {
+    global $oci;
+    return $oci;
+  }
+}
+
+/**
+ * Close Oracle connection.
+ * @param int $cid - unique identifier for the transaction to close
+ * @return void.
+ */
+function kms_oci_close_conn($cid = FALSE) {
+  if (!kms_oci_extension_is_loaded()) {
+    return;
+  }
+
+  if ($cid) {
+    $oci =  kms_oci_get_conn($cid);
+    oci_close($oci);
+  }
+  else {
+    global $oci;
+    if (kms_oci_conection_is_up()) {
+      oci_close($oci);
+    }
+    else{
+      $error = kms_oci_conection_error();
+      if (!empty($error)) {
+        watchdog(KMS_OCI_WD_KEY, $error, array(), WATCHDOG_ALERT);
+        kms_oci_send_mail_error($error);
+      }
+    }
+  }
 }
 
 /**
@@ -84,7 +150,7 @@ function kms_oci_get_conn() {
  *
  * @return void.
  */
-function kms_oci_insert($data, $table) {
+function kms_oci_insert($data, $table, $cid = FALSE) {
   if(!kms_oci_extension_is_loaded()) {
     return;
   }
@@ -100,7 +166,7 @@ function kms_oci_insert($data, $table) {
   
   kms_oci_query(
     "INSERT INTO $table ($cols) VALUES ($pholders)",
-    $data
+    $data, $cid
   );
 
 }
@@ -147,8 +213,8 @@ function kms_oci_update_user($data, $table, $kms_userid) {
 
 }
 
-function kms_oci_select($query, $data = array()) {
-  $oci = kms_oci_get_conn();
+function kms_oci_select($query, $data = array(), $cid = FALSE) {
+  $oci = kms_oci_get_conn($cid);
 
   $stid = oci_parse($oci, $query);
 
@@ -168,8 +234,8 @@ function kms_oci_select($query, $data = array()) {
   return $rows;
 }
 
-function kms_oci_select_one($query, $data = array(), $type = 'assoc') {
-  $oci = kms_oci_get_conn();
+function kms_oci_select_one($query, $data = array(), $type = 'assoc', $cid = FALSE) {
+  $oci = kms_oci_get_conn($cid);
 
   $stid = oci_parse($oci, $query);
 
@@ -204,13 +270,13 @@ function kms_oci_select_one($query, $data = array(), $type = 'assoc') {
  *
  * @return void.
  */
-function kms_oci_query($query, $data = array()) {
+function kms_oci_query($query, $data = array(), $cid = FALSE) {
   if(!kms_oci_extension_is_loaded()) {
     return;
   }
   global $base_url;
 
-  $oci = kms_oci_get_conn();
+  $oci = kms_oci_get_conn($cid);
 
   // Atodo: Proper error handling:
   if ($oci === FALSE) {

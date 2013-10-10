@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the kms site permissions feature.
+ */
+
+include_once 'kms_site_permissions.features.inc';

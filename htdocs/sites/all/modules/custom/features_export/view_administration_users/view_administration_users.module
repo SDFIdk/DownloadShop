@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the view_administration_users feature.
+ */
+
+include_once 'view_administration_users.features.inc';

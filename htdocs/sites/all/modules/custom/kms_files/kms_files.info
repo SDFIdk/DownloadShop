@@ -1,0 +1,3 @@
+name = kms_files
+description = Add files to file manager
+core = 7.x

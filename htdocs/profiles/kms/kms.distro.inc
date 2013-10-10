@@ -10,6 +10,14 @@ projects[admin_menu][version] = "3.0-rc3"
 projects[admin_views][subdir] = "contrib"
 projects[admin_views][version] = "1.0"
 
+;background_process
+projects[background_process][subdir] = "contrib"
+projects[background_process][version] = "1.14"
+
+;better_exposed_filters
+projects[better_exposed_filters][subdir] = "contrib"
+projects[better_exposed_filters][version] = "3.0-beta3"
+
 ;boolean
 projects[boolean][subdir] = "contrib"
 projects[boolean][version] = "1.0"
@@ -18,10 +26,17 @@ projects[boolean][version] = "1.0"
 projects[commerce][subdir] = "contrib"
 projects[commerce][version] = "1.4"
 
+<<<<<<< .working
 ;commerce_features
 projects[commerce_features][subdir] = "contrib"
 projects[commerce_features][version] = "1.0-rc1"
 
+=======
+;commerce
+projects[commerce_features][subdir] = "contrib"
+projects[commerce_features][version] = "1.0-rc1"
+
+>>>>>>> .merge-right.r259
 ;commerce_autosku
 projects[commerce_autosku][subdir] = "contrib"
 projects[commerce_autosku][version] = "1.1"
@@ -38,6 +53,10 @@ projects[commerce_file][version] = "1.0-beta4"
 projects[commerce_vbo_views][subdir] = "contrib"
 projects[commerce_vbo_views][version] = "1.2"
 
+;content_access
+projects[content_access][subdir] = "contrib"
+projects[content_access][version] = "1.2-beta2"
+
 ;ctools
 projects[ctools][subdir] = "contrib"
 projects[ctools][version] = "1.2"
@@ -50,6 +69,10 @@ projects[date][version] = "2.6"
 projects[devel][subdir] = "contrib"
 projects[devel][version] = "1.3"
 
+;diff
+projects[diff][subdir] = "contrib"
+projects[diff][version] = "3.2"
+
 ;email
 projects[email][subdir] = "contrib"
 projects[email][version] = "1.2"
@@ -57,6 +80,10 @@ projects[email][version] = "1.2"
 ;entity
 projects[entity][subdir] = "contrib"
 projects[entity][version] = "1.0-rc3"
+
+;entityreference
+projects[entityreference][subdir] = "contrib"
+projects[entityreference][version] = "1.0"
 
 ;features
 projects[features][subdir] = "contrib"
@@ -72,7 +99,7 @@ projects[field_permissions][version] = "1.0-beta2"
 
 ;filefield_paths
 projects[filefield_paths][subdir] = "contrib"
-projects[filefield_paths][version] = "1.0-beta3+4-dev"
+projects[filefield_paths][version] = "1.0-beta4+1-dev"
 
 ;filefield_sources
 projects[filefield_sources][subdir] = "contrib"
@@ -101,10 +128,6 @@ projects[imce_mkdir][version] = "1.0"
 ;imce_wysiwyg
 projects[imce_wysiwyg][subdir] = "contrib"
 projects[imce_wysiwyg][version] = "1.0"
-
-;jquery_update
-projects[jquery_update][subdir] = "contrib"
-projects[jquery_update][version] = "2.2"
 
 ;libraries
 projects[libraries][subdir] = "contrib"
@@ -158,6 +181,10 @@ projects[pathauto][version] = "1.2"
 projects[pm_existing_pages][subdir] = "contrib"
 projects[pm_existing_pages][version] = "1.4"
 
+;progress
+projects[progress][subdir] = "contrib"
+projects[progress][version] = "1.4"
+
 ;querypath
 projects[querypath][subdir] = "contrib"
 projects[querypath][version] = "2.1"
@@ -186,6 +213,14 @@ projects[simplehtmldom][version] = "1.12"
 projects[smtp][subdir] = "contrib"
 projects[smtp][version] = "1.0-beta2"
 
+;strongarm
+projects[strongarm][subdir] = "contrib"
+projects[strongarm][version] = "2.0"
+
+;subuser
+projects[subuser][subdir] = "contrib"
+projects[subuser][version] = "unknown"
+
 ;taxonomy_csv
 projects[taxonomy_csv][subdir] = "contrib"
 projects[taxonomy_csv][version] = "5.10"
@@ -198,6 +233,10 @@ projects[themekey][version] = "2.3"
 projects[token][subdir] = "contrib"
 projects[token][version] = "1.4"
 
+;ultimate_cron
+projects[ultimate_cron][subdir] = "contrib"
+projects[ultimate_cron][version] = "1.9"
+
 ;views
 projects[views][subdir] = "contrib"
 projects[views][version] = "3.5"
@@ -205,6 +244,10 @@ projects[views][version] = "3.5"
 ;views_bulk_operations
 projects[views_bulk_operations][subdir] = "contrib"
 projects[views_bulk_operations][version] = "3.0"
+
+;views_data_export
+projects[views_data_export][subdir] = "contrib"
+projects[views_data_export][version] = "3.0-beta6"
 
 ;wysiwyg
 projects[wysiwyg][subdir] = "contrib"

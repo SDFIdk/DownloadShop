@@ -783,3 +783,151 @@ function kms_user_smuser_exists($user) {
   return !empty($row);
 
 }
+
+/**
+ * Implementation of hook_action_info().
+ */
+function kms_user_action_info() {
+   return array(
+    'kms_user_vbo_add_access_bundles' => array(
+      'label' => t('Add Access Bundles'),
+      'type' => 'user',
+      'configurable' => TRUE,
+      'hooks' => array(),
+    ),
+    'kms_user_vbo_clear_access_bundles' => array(
+      'label' => t('Clear Access Bundles'),
+      'type' => 'user',
+      'configurable' => FALSE,
+      'hooks' => array(),
+    ),
+ );
+}
+
+/**
+ * VBO add access bundle form.
+ *
+ * @param array $context
+ *   VBO context.
+ *
+ * @return [type]
+ */
+function kms_user_vbo_add_access_bundles_form($context) {
+  $form['access_bundle'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Choose access bundles'),
+    '#description' => t('Select one or more access bundles that the users can access.'),
+    '#options' => kms_user_vbo_access_bundle_options(),
+  );
+
+  return $form;
+}
+
+/**
+ * VBO add access bundle form submit.
+ *
+ * @param array $form
+ *   Drupal form array.
+ * @param array $form_state
+ *   Drupal form state array.
+ *
+ * @return array
+ */
+function kms_user_vbo_add_access_bundles_submit($form, $form_state) {
+  return array(
+    'access_bundle' => array_filter($form_state['values']['access_bundle']),
+  );
+}
+
+/**
+ * VBO add access bundles operations.
+ *
+ * @param object $account
+ *   Drupal user object.
+ * @param array $context
+ *   VBO context.
+ *
+ * @return void
+ */
+function kms_user_vbo_add_access_bundles(&$account, $context = array()) {
+  kms_user_access_bundle_administer('update', $account, $context['access_bundle']);
+}
+
+/**
+ * Clear all access bundles from a user.
+ *
+ * @param object $account
+ *   Drupal user object.
+ * @param array $context
+ *   VBO context.
+ *
+ * @return void
+ */
+function kms_user_vbo_clear_access_bundles(&$account, $context = array()) {
+  kms_user_access_bundle_administer('clear', $account);
+}
+
+/**
+ * Get access bundle form options.
+ *
+ * @return array
+ *   nid/title.
+ */
+function kms_user_vbo_access_bundle_options() {
+  $query = new EntityFieldQuery();
+
+  $query->entityCondition('entity_type', 'node')
+  ->entityCondition('bundle', 'access_bundle')
+  ->propertyCondition('status', 1)
+  ->addMetaData('account', user_load(1));
+
+  $result = $query->execute();
+  $nids = array_keys($result['node']);
+  $nodes = node_load_multiple($nids);
+  $options = array();
+  $def_bundles = _kms_permissions_get_default_bundles();
+  array_walk($nodes, function($node, $nid) use(&$options, $def_bundles) {
+    // Ignore default bundles;
+    if (in_array($nid, $def_bundles)) {
+      return;
+    }
+    $options[$nid] = $node->title;
+  });
+  return $options;
+
+}
+
+/**
+ * Administer access bundles for an account.
+ *
+ * @param string $op
+ *   Which task should be performed?
+ * @param object $account
+ *   Drupal user object
+ * @param array $bundles
+ *   Bundles to be added (optional). If $op = clear then it is not needed.
+ *
+ * @return [type]
+ */
+function kms_user_access_bundle_administer($op, $account, $bundles = array()) {
+  if (empty($account)) {
+    return;
+  }
+  $w = entity_metadata_wrapper('user', $account);
+  $w_bundles = $w->field_access_bundles->value();
+  
+  $current_bundles = array();
+  
+  switch ($op) {
+    case 'update':
+      array_walk($w_bundles, function($node) use (&$current_bundles){
+        $current_bundles[] = $node->nid;
+      });
+    case 'clear':
+      $bundles = array_merge($current_bundles, $bundles);
+      $w->field_access_bundles->set($bundles);
+      break;
+  }
+  
+  $w->save();
+}

@@ -1,0 +1,96 @@
+<?php
+define("KMS_FILES_SOURCE_FILE_PATH", 'public://feeds_incoming');
+/**
+ * Implements hook_cron().
+ */
+function kms_files_cron() {
+  kms_files_write_to_db();
+}
+
+/**
+ * Get all files in a given directory
+ * @return array an array with the file(s) data
+ */
+function kms_files_get_files(){
+  if ($handle = opendir(KMS_FILES_SOURCE_FILE_PATH)) {
+    while (false !== ($entry = readdir($handle))) {
+      if ($entry != '.' && $entry != '..') {
+        $mtime = filemtime(KMS_FILES_SOURCE_FILE_PATH . '/' . $entry);
+              $files[] = array( 
+                'filename' => $entry,
+                'mtime' => $mtime
+                );
+      }
+    }
+    closedir($handle);
+  }
+  return $files;
+}
+
+/**
+ * Add files from a given directory to Drupal managed file system
+ */
+function kms_files_write_to_db(){
+  $files = kms_files_get_files();
+  $txn = db_transaction();
+
+  // Write to tmp table
+  try {
+    db_query('CREATE TEMPORARY TABLE tmp_files ( mtime int, filename text )');
+    if (!empty($files)) {
+      foreach ($files as $file) {
+      db_query('INSERT INTO tmp_files VALUES (:mtime,:filename)',
+        array(':mtime' => $file['mtime'],
+              ':filename' => $file['filename']));
+      }
+    }
+  } catch (Exception $e) {
+    $txn->rollback();
+    die('Could not create temp file table');
+  }
+
+  // Delete file if source is newer (so it can be updated)
+  $sql = <<< EOD
+  SELECT file_managed.fid 
+  FROM tmp_files 
+  JOIN file_managed ON file_managed.filename = tmp_files.filename 
+  WHERE file_managed.uri 
+  LIKE 'public://feeds%'
+  AND tmp_files.mtime > file_managed.timestamp;
+EOD;
+  $updatedfiles = db_query($sql);
+  foreach ($updatedfiles as $updatedfile) {
+    $file = file_load($updatedfile->fid);
+     if ( $file )
+      file_delete($file, TRUE);
+  }
+
+
+  // Delete removed files
+  $sql = <<< EOD
+    SELECT file_managed.fid 
+    FROM file_managed 
+    WHERE file_managed.filename 
+    NOT IN (SELECT filename FROM tmp_files) 
+    AND file_managed.uri LIKE 'public://feeds%';
+EOD;
+  
+  $deleted_files = db_query($sql);
+  foreach ($deleted_files as $deleted_file) {
+   $file = file_load($deleted_file->fid);
+     if ( $file )
+      file_delete($file, TRUE);
+  }
+
+  // Add new files
+  $sql = "SELECT tmp_files.filename from tmp_files " .
+  "WHERE tmp_files.filename NOT IN " .
+  "(select filename from file_managed " .
+    "WHERE file_managed.uri like 'public://feeds%')";
+  $newfiles = db_query($sql);
+  foreach ($newfiles as $newfile) {
+    $handle = fopen(KMS_FILES_SOURCE_FILE_PATH . '/' . $newfile->filename, 'r');
+    $file = file_save_data($handle, 'public://feeds/' . $newfile->filename, FILE_EXISTS_REPLACE);
+    fclose($handle);
+  }
+}

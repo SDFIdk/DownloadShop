@@ -13,6 +13,33 @@ function user_fields_field_group_info() {
   $field_group = new stdClass();
   $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
   $field_group->api_version = 1;
+  $field_group->identifier = 'group_access_bundles|user|user|form';
+  $field_group->group_name = 'group_access_bundles';
+  $field_group->entity_type = 'user';
+  $field_group->bundle = 'user';
+  $field_group->mode = 'form';
+  $field_group->parent_name = '';
+  $field_group->data = array(
+    'label' => 'Access bundles',
+    'weight' => '4',
+    'children' => array(
+      0 => 'field_access_bundles',
+    ),
+    'format_type' => 'fieldset',
+    'format_settings' => array(
+      'formatter' => 'collapsible',
+      'instance_settings' => array(
+        'description' => '',
+        'classes' => '',
+        'required_fields' => 1,
+      ),
+    ),
+  );
+  $export['group_access_bundles|user|user|form'] = $field_group;
+
+  $field_group = new stdClass();
+  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+  $field_group->api_version = 1;
   $field_group->identifier = 'group_bundles_n_services|user|user|form';
   $field_group->group_name = 'group_bundles_n_services';
   $field_group->entity_type = 'user';
@@ -50,7 +77,7 @@ function user_fields_field_group_info() {
   $field_group->parent_name = '';
   $field_group->data = array(
     'label' => 'Standard felter',
-    'weight' => '5',
+    'weight' => '6',
     'children' => array(
       0 => 'metatags',
       1 => 'timezone',
@@ -142,7 +169,7 @@ function user_fields_field_group_info() {
   $field_group->parent_name = '';
   $field_group->data = array(
     'label' => 'Valg',
-    'weight' => '6',
+    'weight' => '7',
     'children' => array(
       0 => 'field_newsletter',
       1 => 'field_contact_me',
@@ -172,7 +199,7 @@ function user_fields_field_group_info() {
   $field_group->parent_name = '';
   $field_group->data = array(
     'label' => 'Andet',
-    'weight' => '4',
+    'weight' => '5',
     'children' => array(
       0 => 'field_updated',
       1 => 'field_user_remark',

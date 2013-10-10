@@ -1,0 +1,822 @@
+<?php
+/**
+* Implements hook_field_widget_info().
+*/
+function kms_permissions_field_widget_info() {
+  return array(
+    'kms_applications' => array(
+      'label' => t('KMS applications'),
+      'field types' => array('list_text'),
+      'settings' => array(),
+      'behaviors' => array(
+        'multiple values' => FIELD_BEHAVIOR_CUSTOM,
+      ),
+    ),
+    'kms_services' => array(
+      'label' => t('KMS services'),
+      'field types' => array('list_text'),
+      'settings' => array('type' => 'foo'),
+      'behaviors' => array(
+        'multiple values' => FIELD_BEHAVIOR_CUSTOM,
+      ),
+    ),
+  );
+}
+
+/**
+* Implements hook_field_widget_settings_form().
+*/
+function kms_permissions_field_widget_settings_form($field, $instance) {
+  $settings = $instance['widget']['settings'];
+  if ($instance['widget']['type'] == 'kms_services') {
+    $options = kms_permissions_widget_type_options();
+
+    $form['type'] = array(
+      '#type' => 'select',
+      '#title' => t('Service type'),
+      '#default_value' => $settings['type'],
+      '#options' => $options,
+      '#required' => TRUE,
+    );
+
+    return $form;
+  }
+}
+
+/**
+* Implements hook_field_widget_form().
+*/
+function kms_permissions_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  $value_key = key($field['columns']);
+  $type = str_replace('options_', '', $instance['widget']['type']);
+  $multiple = $field['cardinality'] > 1 || $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED;
+  $required = $element['#required'];
+  $has_value = isset($items[0][$value_key]);
+  $properties = _options_properties($type, $multiple, $required, $has_value);
+  $instance_settings = $instance['widget']['settings'];
+
+  switch ($instance['widget']['type']) {
+    case 'kms_applications':
+    case 'kms_services':
+      $default_value = array();
+
+      if (is_array($items)) {
+        // Put current field values in
+        foreach ($items as $key => $item) {
+          $default_value[] = $item['value'];
+        }
+      }
+      
+      $options = kms_permissions_widget_options($instance['widget']['type'], $instance_settings);
+   
+      // If required and there is one single option, preselect it.
+      if ($required && count($options) == 1) {
+        reset($options);
+        $default_value = array(key($options));
+      }
+
+      // If this is a single-value field, take the first default value, or
+      // default to NULL so that the form element is properly recognized as
+      // not having a default value.
+      if (!$multiple) {
+        $default_value = $default_value ? reset($default_value) : NULL;
+      }
+
+      $element += array(
+        '#type' => $multiple ? 'checkboxes' : 'radios',
+        '#title' => ($instance['widget']['type'] == 'kms_applications' ? t('KMS applications') : t('KMS services')),
+        '#default_value' => $default_value,
+        '#options' => $options,
+      );
+  }
+
+  $element += array(
+    '#value_key' => $value_key,
+    '#element_validate' => array('options_field_widget_validate'),
+    '#properties' => $properties,
+  );
+
+  return $element;
+}
+
+/**
+* Implements hook_field_widget_error().
+*/
+function kms_permissions_field_widget_error($element, $error) {
+  form_error($element, $error['message']);
+}
+
+/**
+ * Connect to oracle db and get applications or services.
+ * @param string $type - type of option list to get
+ */
+function kms_permissions_widget_options($type = 'kms_services', $instance_settings) {
+  $settings = array(
+    'kms_oci_conn_user' => variable_get('kms_permissions_conn_user', ''),
+    'kms_oci_conn_pass' => variable_get('kms_permissions_conn_pass', ''),
+    'kms_oci_conn_host' => variable_get('kms_permissions_conn_host', ''),
+    'kms_oci_conn_db' => variable_get('kms_permissions_conn_db', ''),
+  );
+  
+  switch ($type) {
+    case 'kms_services':
+      $options = array();
+      $type = $instance_settings['type'];
+
+      static $options;
+
+      if (empty($options[$type])) {
+        if (kms_oci_get_conn('kms_permissions', $settings)) {
+          $query = "SELECT S2.SERVICEID, S2.SERVICENAME, ST.TYPEID, ST.TYPENAME FROM SERVICES2 S2, SERVICETYPES2 ST WHERE S2.TYPEID = ST.TYPEID ORDER BY S2.SERVICEID ASC";
+
+          $rows = kms_oci_select($query, array(':type' => $type), 'kms_permissions');
+          if (!empty($rows)) {
+            foreach ($rows as $row) {
+              $options[$row['TYPENAME']][$row['SERVICEID']] = $row['SERVICENAME'];
+            }
+          }
+          else {
+            watchdog('kms_permissons', 'Could not read from Oracle', array(), WATCHDOG_ERROR);
+          }
+
+          // Close connection
+          kms_oci_close_conn('kms_permissions');
+        }
+      }
+
+      return $options[$type];
+    case 'kms_applications';
+      $options = array();
+      
+      // Connect to default database
+      if (kms_oci_get_conn()) {
+        $query = "SELECT GROUPID, NAME FROM SMGROUP ORDER BY lower(NAME) ASC";
+
+        $rows = kms_oci_select($query, array());
+        if (!empty($rows)) {
+          foreach ($rows as $row) {
+            $options[$row['GROUPID']] = $row['NAME'];
+          }
+        }
+        else {
+          watchdog('kms_permissions', 'Could not read from Oracle', array(), WATCHDOG_ERROR);
+        }
+
+        // Close connection
+        kms_oci_close_conn();
+      }
+
+      return $options;
+  }
+}
+
+/**
+ * Return array of types in oracle.
+ */
+function kms_permissions_widget_type_options() {
+  // Todo: Make not hardcoded?
+  return array('GEO' => 'GEO' , 'WMS' => 'WMS' , 'PLOT' => 'PLOT', 'WFS' => 'WFS', 'WMTS' => 'WMTS', 'WCS' => 'WCS');
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function kms_permissions_field_formatter_info() {
+  // custom formatter for bundle reference field
+  return array(
+    'kms_permissions_bundles_reference' => array(
+      'label' => t('Bundle references'),
+      'field types' => array('node_reference'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function kms_permissions_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+  $settings = $display['settings'];
+
+  switch ($display['type']) {
+    case 'kms_permissions_bundles_reference':
+      $query = new EntityFieldQuery;
+      $result = $query
+        ->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', 'access_bundle')
+        ->propertyCondition('status', 1)
+        ->execute();
+
+      // Add all enabled bundles to element array
+      foreach ($result['node'] as $nid => $node) {
+        $element[$nid] = array(
+          '#markup' => '<span class="bundle-inactive">' . $nid . '</span>',
+        );
+      }
+
+      foreach ($items as $delta => $item) {
+        if ($item['access']) {
+          $element[$item['nid']] = array(
+            '#markup' => '<span class="bundle-active">' . $item['nid'] . '</span>',
+          );
+        }
+      }
+      break;
+  }
+
+  return $element;
+}
+
+/**
+ * Checks if given user has access to given product
+ * @param int $pid - the product id
+ * @param object $uid - the user id - defaults to currently logged in user
+ * @return boolean
+ */
+function kms_permissions_check_access_userdefined($pid, $uid = NULL) {
+  if (!$uid) {
+    global $user;
+    $uid = $user->uid;
+  }
+
+  $permissions = array();
+  _kms_permissions_get_permissions_by_uid($uid, $permissions);
+
+  // Check if given pid is the permissions array
+  if (isset($permissions['predefined_datacollections']) && isset($permissions['predefined_datacollections']['pd' . $pid])) {
+    if ($permissions['predefined_datacollections']['pd' . $pid]['access_userdefined_ranges']) {
+      return TRUE;
+    }
+  }
+  
+  return FALSE;
+}
+
+/**
+ * Checks the pixel width and height a given user has access to on a given product
+ * @param int $pid - the product id
+ * @param object $uid - the user id - defaults to currently logged in user
+ * @return integer
+ */
+function kms_permissions_check_max_pixels($pid, $uid = NULL) {
+  if (!$uid) {
+    global $user;
+    $uid = $user->uid;
+  }
+
+  $permissions = array();
+  _kms_permissions_get_permissions_by_uid($uid, $permissions);
+  
+  if (isset($permissions['predefined_datacollections']) && isset($permissions['predefined_datacollections']['pd' . $pid])) {
+    return $permissions['predefined_datacollections']['pd' . $pid]['max_download_size'];
+  }
+
+  return FALSE;
+}
+
+/**
+ * Implements hook_user_update().
+ */
+function kms_permissions_user_presave(&$edit, $account, $category) {
+  $lang = field_language('user', $edit, 'field_access_bundles');
+  $permissions = array();
+
+  // Get default bundles
+  $default = _kms_permissions_get_default_bundles();
+  foreach ($default as $dbid) {
+    _kms_permissions_get_permissions_by_bid($dbid, $permissions);
+  }  
+
+  // Since the user is potentially being updated, we need to build the permissions array from the $edit array
+  if (!empty($edit['field_access_bundles']) && !empty($edit['field_access_bundles'][$lang])) {
+    // Loop bundles and load permissions
+    foreach ($edit['field_access_bundles'][$lang] as $bid) {
+      _kms_permissions_get_permissions_by_bid($bid['nid'], $permissions);
+    }
+  }
+
+  kms_permissions_save_permissions($account->uid, $permissions);
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function kms_permissions_form_access_bundle_node_form_alter(&$form, &$form_state) {
+  $form['actions']['submit']['#submit'][] = 'kms_permissions_access_bundle_update';
+  $form['actions']['delete']['#submit'][] = 'kms_permissions_access_bundle_update';
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
+  // Filter out default bundles
+  $default = _kms_permissions_get_default_bundles();
+  foreach ($default as $val) {
+    unset($form['field_access_bundles'][$form['field_access_bundles']['#language']]['#options'][$val]);
+  }
+} 
+
+/**
+ * Implements hook_node_presave().
+ */
+function kms_permissions_node_presave($node) {
+  $node->update_default_bundle = FALSE;
+  $node->update_bundle = FALSE;
+
+  // Update default bundle when is set as default first time, default state is changed
+  $default_new = $default_org = field_get_items('node', $node, 'field_default_bundle');
+  if (isset($node->original)) {
+    $default_org = field_get_items('node', $node->original, 'field_default_bundle');
+  }
+  else if ($default_new[0]['value']) {
+    $node->update_default_bundle = TRUE;
+    return;
+  }
+
+  // Set flag to tell submit hook that bundle "default" status has changed
+  if ($default_new != $default_org) {
+    $node->update_default_bundle = TRUE;
+    return;
+  }
+
+  // Set flag to tell submit hook that permissions or other settings have changed
+  if (isset($node->original)) {
+    $fields = array(
+      'field_access_userdefined_ranges',
+      'field_bundle_maxpixelwidth',
+      'field_bundle_maxpixelheight',
+      'field_bundle_maxx',
+      'field_bundle_maxy',
+      'field_bundle_minx',
+      'field_bundle_miny',
+      'field_bundle_featureinfo',
+      'field_predefined_datacollections',
+      'field_applications'
+    );
+
+    $fields = array_merge($fields, _kms_permissions_webservice_fields());
+
+    foreach ($fields as $field) {
+      if (_kms_permissions_hash_field('node', $node, $field) != _kms_permissions_hash_field('node', $node->original, $field)) {
+        $node->update_bundle = TRUE;
+        // If bundle is set as default and changes are made update default bundle
+        if ($default_new[0]['value']) {
+           $node->update_default_bundle = TRUE;
+        }
+        return;
+      }
+    }
+  }
+}
+
+/**
+ * Submit callback for bundle update or delete
+ */
+function kms_permissions_access_bundle_update($form, $form_state) {
+  if ($form['#node']->update_default_bundle) {
+    // If a bundle is set as a default bundle or WAS set as a default bundle, update all users
+    $uids = _kms_permissions_get_all_users();
+  }
+  else if ($form['#node']->update_bundle) {
+    // When a bundle get updated, find all users related to that bundle, and queue them for updating in oracle.
+    $uids = _kms_permissions_get_users_by_bid($form_state['values']['nid']);
+  }
+
+  if (!empty($uids)) {
+    kms_permissions_batch($uids);
+  }
+}
+
+/**
+ * Save all permissions for a given user to oracle db
+ * @param object $uid - the user id
+ * @param array $permissions - the permissions
+ */
+function kms_permissions_save_permissions($uid, $permissions) {
+  return;
+  $user = user_load($uid);
+
+  //Check if Oracle smuser exists
+  if (kms_user_smuser_exists($user)) {
+    $kms_id = kms_user_get_userid($user);
+    $settings = array(
+      'kms_oci_conn_user' => variable_get('kms_permissions_conn_user', ''),
+      'kms_oci_conn_pass' => variable_get('kms_permissions_conn_pass', ''),
+      'kms_oci_conn_host' => variable_get('kms_permissions_conn_host', ''),
+      'kms_oci_conn_db' => variable_get('kms_permissions_conn_db', ''),
+    );
+
+    if (kms_oci_get_conn('kms_permissions', $settings)) {
+
+      //Delete existing permissions for user
+      $query = "DELETE FROM USERRESTRICTIONS2 WHERE USERID = :userid";
+    
+      $data = array(':userid' => $kms_id);
+      kms_oci_query($query, $data, 'kms_permissions');
+
+      //Write services permissions to db
+      if (!empty($permissions['services'])) {
+        foreach ($permissions['services'] as $serv_perms) {
+          $table = 'USERRESTRICTIONS2';
+          $data = array(
+            ':USERID' => $kms_id,
+            ':SERVICEID' => $serv_perms['id'],
+            ':MINX' => $serv_perms['MINX'],
+            ':MINY' => $serv_perms['MINY'],
+            ':MAXX' => $serv_perms['MAXX'],
+            ':MAXY' => $serv_perms['MAXY'],
+            ':MAXPIXELWIDTH' => $serv_perms['MAXPIXELWIDTH'],
+            ':MAXPIXELHEIGHT' => $serv_perms['MAXPIXELHEIGHT'],
+            ':FEATUREINFO' => $serv_perms['FEATUREINFO'],
+          );
+          kms_oci_insert($data, $table, 'kms_permissions');
+        }
+      }
+
+      // Close connection
+      kms_oci_close_conn('kms_permissions');
+    }
+
+    if (kms_oci_get_conn()) {
+
+      //Delete existing permissions for user
+      $query = "DELETE FROM SMUSERGROUP WHERE USERID = :userid";
+
+      $data = array(':userid' => $kms_id);
+      kms_oci_query($query, $data);
+
+      //Write application permissions to db
+      if (!empty($permissions['applications'])) {
+        foreach ($permissions['applications'] as $app_perms) {
+          $table = 'SMUSERGROUP';
+          $data = array(
+            ':USERID' => $kms_id,
+            ':GROUPID' => $app_perms['id']
+          );
+          kms_oci_insert($data, $table);
+        }
+      }
+
+      // Close connection
+      kms_oci_close_conn();
+    } 
+   
+    watchdog('kms_permissons', 'User uid: @uid permissions updated in Oracle', array('@uid' => $uid), WATCHDOG_INFO);
+  }
+  else {
+    watchdog('kms_permissons', 'User uid: @uid does not exist in Oracle', array('@uid' => $uid), WATCHDOG_ERROR);
+  }
+}
+
+
+/**
+ * Get all permissions for a given user
+ * @param object $uid - the user id
+ * @param array $permissions - a permissions array
+ */
+function _kms_permissions_get_permissions_by_uid($uid, &$permissions = array()) {
+  $user = user_load($uid);
+
+  // Get default bundles
+  $default = _kms_permissions_get_default_bundles();
+  // Get users bundles
+  $field_access_bundles = field_get_items('user', $user, 'field_access_bundles');
+
+  if (is_array($field_access_bundles)) {
+    $bundles = array_merge($field_access_bundles, $default);
+  }
+  else {
+    $bundles = $default;
+  }
+
+  if (!empty($bundles)) {
+    // Get permissions from all bundles
+    foreach ($bundles as $bid) {
+      if (is_array($bid)) {
+        // Bids from the user fields
+        _kms_permissions_get_permissions_by_bid($bid['nid'], $permissions);
+      }
+      else {
+        _kms_permissions_get_permissions_by_bid($bid, $permissions);
+      }
+    }
+  }
+}
+
+/**
+ * Internal function that returns nicely formatted array for oracle inserting
+ */
+function _kms_permissions_get_permissions_by_bid($bid, &$permissions = array()) {
+  $bundle = node_load($bid);
+
+  $field_access_userdefined_ranges = field_get_items('node', $bundle, 'field_access_userdefined_ranges');
+  if (!empty($field_access_userdefined_ranges)) {
+    $field_access_userdefined_ranges = reset($field_access_userdefined_ranges);
+  }
+
+  $field_max_download_size = field_get_items('node', $bundle, 'field_max_download_size');
+  if (!empty($field_max_download_size)) {
+    $field_max_download_size = reset($field_max_download_size);
+  }
+
+  // Get all bounding box info
+  $bounding_box = array();
+  foreach (array('field_bundle_minx', 'field_bundle_miny', 'field_bundle_maxx', 'field_bundle_maxy', 'field_bundle_maxpixelwidth', 'field_bundle_maxpixelheight') as $value) {
+    $box_field = field_get_items('node', $bundle, $value);
+    $bounding_box[$value] = $box_field[0]['value'];
+  }
+
+  // Predefined datacollections
+
+  $field_predefined_datacollections = field_get_items('node', $bundle, 'field_predefined_datacollections');
+  if (!empty($field_predefined_datacollections)) {
+    foreach ($field_predefined_datacollections as $predefined) {
+      // If a user has access to userdefined ranges on a product on one bundle, there is always access
+      if (isset($permissions['predefined_datacollections']['pd' . $predefined['target_id']])) {
+        $access_userdefined_ranges = ($permissions['predefined_datacollections']['pd' . $predefined['target_id']]['access_userdefined_ranges'] + $field_access_userdefined_ranges['value'] > 0 ? 1 : 0);
+      }
+      else {
+        $access_userdefined_ranges = $field_access_userdefined_ranges['value'];
+      }
+      
+      // Only select min/max value if key exists to avoid notices
+      if (isset($permissions['predefined_datacollections']) && isset($permissions['predefined_datacollections']['pd' . $predefined['target_id']])) {
+        $permissions['predefined_datacollections']['pd' . $predefined['target_id']] = array(
+          'access_userdefined_ranges' => $access_userdefined_ranges,
+          'max_download_size' => max($permissions['predefined_datacollections']['pd' . $predefined['target_id']]['max_download_size'], $field_max_download_size['value']),
+          'id' => $predefined['target_id'],
+          'MINX' => min($permissions['predefined_datacollections']['pd' . $predefined['target_id']]['MINX'], $bounding_box['field_bundle_minx']),
+          'MINY' => min($permissions['predefined_datacollections']['pd' . $predefined['target_id']]['MINY'], $bounding_box['field_bundle_miny']),
+          'MAXX' => max($permissions['predefined_datacollections']['pd' . $predefined['target_id']]['MAXX'], $bounding_box['field_bundle_maxx']),
+          'MAXY' => max($permissions['predefined_datacollections']['pd' . $predefined['target_id']]['MAXY'], $bounding_box['field_bundle_maxy']),
+          'MAXPIXELWIDTH' => max($permissions['predefined_datacollections']['pd' . $predefined['target_id']]['MAXPIXELWIDTH'], $bounding_box['field_bundle_maxpixelwidth']),
+          'MAXPIXELHEIGHT' => max($permissions['predefined_datacollections']['pd' . $predefined['target_id']]['MAXPIXELHEIGHT'], $bounding_box['field_bundle_maxpixelheight']),
+          'FEATUREINFO' => '1',
+        );
+      }
+      else {
+        $permissions['predefined_datacollections']['pd' . $predefined['target_id']] = array(
+          'access_userdefined_ranges' => $access_userdefined_ranges,
+          'max_download_size' => $field_max_download_size['value'],
+          'id' => $predefined['target_id'],
+          'MINX' => $bounding_box['field_bundle_minx'],
+          'MINY' => $bounding_box['field_bundle_miny'],
+          'MAXX' => $bounding_box['field_bundle_maxx'],
+          'MAXY' => $bounding_box['field_bundle_maxy'],
+          'MAXPIXELWIDTH' => $bounding_box['field_bundle_maxpixelwidth'],
+          'MAXPIXELHEIGHT' => $bounding_box['field_bundle_maxpixelheight'],
+          'FEATUREINFO' => '1',
+        );
+      }
+    }
+  }
+
+  // Webservices
+
+  $webservice_fields = _kms_permissions_webservice_fields();
+  foreach ($webservice_fields as $webservice_field) {
+    $field_services = field_get_items('node', $bundle,  $webservice_field);
+    if (!empty($field_services)) {
+      foreach ($field_services as $services) {
+        // If a user has access to userdefined ranges on a product on one bundle, there is always access
+        if (isset($permissions['services']['s' . $services['value']])) {
+          $access_userdefined_ranges = ($permissions['services']['s' . $services['value']]['access_userdefined_ranges'] + $field_access_userdefined_ranges['value'] > 0 ? 1 : 0);
+        }
+        else {
+          $access_userdefined_ranges = $field_access_userdefined_ranges['value'];
+        }
+
+        // Only select min/max value if key exists to avoid notices
+        if (isset($permissions['services']) && isset($permissions['services']['s' . $services['value']])) {
+          $permissions['services']['s' . $services['value']] = array(
+            'access_userdefined_ranges' => $access_userdefined_ranges,
+            'id' => $services['value'],
+            'MINX' => min($permissions['services']['s' . $services['value']]['MINX'], $bounding_box['field_bundle_minx']),
+            'MINY' => min($permissions['services']['s' . $services['value']]['MINY'], $bounding_box['field_bundle_miny']),
+            'MAXX' => max($permissions['services']['s' . $services['value']]['MAXX'], $bounding_box['field_bundle_maxx']),
+            'MAXY' => max($permissions['services']['s' . $services['value']]['MAXY'], $bounding_box['field_bundle_maxy']),
+            'MAXPIXELWIDTH' => max($permissions['services']['s' . $services['value']]['MAXPIXELWIDTH'], $bounding_box['field_bundle_maxpixelwidth']),
+            'MAXPIXELHEIGHT' => max($permissions['services']['s' . $services['value']]['MAXPIXELHEIGHT'], $bounding_box['field_bundle_maxpixelheight']),
+            'FEATUREINFO' => '1',
+          );
+        }
+        else {
+          $permissions['services']['s' . $services['value']] = array(
+            'access_userdefined_ranges' => $access_userdefined_ranges,
+            'id' => $services['value'],
+            'MINX' => $bounding_box['field_bundle_minx'],
+            'MINY' => $bounding_box['field_bundle_miny'],
+            'MAXX' => $bounding_box['field_bundle_maxx'],
+            'MAXY' => $bounding_box['field_bundle_maxy'],
+            'MAXPIXELWIDTH' => $bounding_box['field_bundle_maxpixelwidth'],
+            'MAXPIXELHEIGHT' => $bounding_box['field_bundle_maxpixelheight'],
+            'FEATUREINFO' => '1',
+          );
+        }
+      }
+    }
+  }
+
+  // Applications
+
+  $field_applications = field_get_items('node', $bundle, 'field_applications');
+  if (!empty($field_applications)) {
+    foreach ($field_applications as $applications) {
+      // If a user has access to userdefined ranges on a product on one bundle, there is always access
+      if (isset($permissions['applications']['a' . $applications['value']])) {
+        $access_userdefined_ranges = ($permissions['applications']['a' . $applications['value']]['access_userdefined_ranges'] + $field_access_userdefined_ranges['value'] > 0 ? 1 : 0);
+      }
+      else {
+        $access_userdefined_ranges = $field_access_userdefined_ranges['value'];
+      }
+
+      $permissions['applications']['a' . $applications['value']] = array(
+        'access_userdefined_ranges' => $access_userdefined_ranges,
+        'id' => $applications['value'],
+      );
+    }
+  }
+
+  return $permissions;
+}
+
+/**
+ * Internal function for finding all users that have a relation to a given bundle.
+ */
+function _kms_permissions_get_users_by_bid($bid) {
+  $query = new EntityFieldQuery();
+
+  $query->entityCondition('entity_type', 'user')
+    ->propertyCondition('status', 1)
+    ->fieldCondition('field_access_bundles', 'nid', $bid, '=');
+
+  $result = $query->execute();
+  $uids = array();
+
+  if ($result) {
+    foreach ($result['user'] as $user) {
+      $uids[] = $user->uid;
+    }
+  }
+  return $uids;
+}
+
+/**
+ * Internal function for finding all active users.
+ * Doing an entity load would be too heavy
+ */
+function _kms_permissions_get_all_users() {
+  $query = new EntityFieldQuery();
+
+  $query->entityCondition('entity_type', 'user')
+    ->propertyCondition('status', 1)
+    ->range(0, 10); // Range to be deleted, failsafe
+
+  $result = $query->execute();
+  $uids = array();
+
+  if ($result) {
+    foreach ($result['user'] as $user) {
+      $uids[] = $user->uid;
+    }
+  }
+  return $uids;
+}
+
+/**
+ * Internal function for finding all default and active bundles
+ */
+function _kms_permissions_get_default_bundles() {
+  $query = new EntityFieldQuery();
+
+  $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'access_bundle')
+    ->propertyCondition('status', 1)
+    ->fieldCondition('field_default_bundle', 'value', '1', '=')    
+    ->addMetaData('account', user_load(1)); // Run the query as user 1.
+
+    $result = $query->execute();
+    $bids = array();
+
+    if ($result) {
+      foreach ($result['node'] as $bundle) {
+        $bids[] = $bundle->nid;
+      }
+    }
+    
+  return $bids;
+}
+
+/**
+* Implementation of hook_node_access_records().
+*/
+function kms_permissions_node_access_records($node) {
+  // Should this code be here?
+  if ($node->type == 'access_bundle') {
+    $wnode = entity_metadata_wrapper('node', $node);
+    if ($wnode->field_predefined_datacollections->value()) {
+      foreach ($wnode->field_predefined_datacollections->value() as $prod) {
+        // Update node access for all related products
+        node_access_acquire_grants($prod, TRUE);
+      } 
+    }
+    return array();
+  }
+
+  if ($node->type == 'product_display') {
+    $grants[] = array(
+      'realm' => 'kms_permissions_access',
+      'gid' => $node->nid,
+      'grant_view' => $node->status,
+      'grant_update' => 0,
+      'grant_delete' => 0,
+      'priority' => 1,
+    );
+  }
+
+  return $grants;
+}
+
+/**
+* Implements hook_node_grants().
+*/
+function kms_permissions_node_grants($account, $op) {
+  // Find all products for a user
+  $permissions = array();
+  _kms_permissions_get_permissions_by_uid($account->uid, $permissions);
+
+  $grants = array();
+  if (isset($permissions['predefined_datacollections'])) {
+    $prods = array();
+    foreach ($permissions['predefined_datacollections'] as $perm) {
+      $prods[] = $perm['id'];
+    }
+
+    $grants['kms_permissions_access'] = $prods;
+  }
+  
+  if (count($grants)) {
+    return $grants;
+  }
+}
+
+
+/**
+ * Internal function use to compare fields
+ */
+function _kms_permissions_hash_field($entity_type, $entity, $field_name) {
+  $hash = '';
+  $field_values = field_get_items($entity_type, $entity, $field_name);
+
+  if ($field_values) {
+    foreach ($field_values as $field_value) {
+      if (isset($field_value['target_id'])) {
+        $hash .= $field_value['target_id'];  
+      }
+      else if (isset($field_value['value'])) {
+        $hash .= $field_value['value'];
+      }
+    }
+  }
+  
+  $hash = md5($hash);
+  return $hash;
+}
+
+/**
+ * Internal function to retrieve webservice fieldnames
+ * Todo: make smarter
+ */
+function _kms_permissions_webservice_fields() {
+  $fields = array();
+  $types = kms_permissions_widget_type_options();
+  foreach ($types as $type) {
+    $fields[] = 'field_bundle_webservices_' . strtolower($type);
+  }
+
+  return $fields;
+}
+
+/**
+ * Batch definition
+ */
+function kms_permissions_batch($uids) {
+  $batch = array(
+    'operations' => array(
+      array('kms_permissions_batch_update_permissions', array($uids)),
+      ),
+    'finished' => 'kms_permissions_batch_update_permissions_finished',
+    'title' => t('Processing Batch Update of Permissions'),
+    'init_message' => t('Batch Update of Permissions is starting.'),
+    'progress_message' => t('Processed @current out of @total.'),
+    'error_message' => t('Batch Update of Permissions has encountered an error.'),
+    'file' => drupal_get_path('module', 'kms_permissions') . '/kms_permissions.batch.inc',
+  );
+  batch_set($batch);
+
+  // Process batch job in background
+  //background_batch_process_batch();
+  watchdog('kms_permissons', 'Starting batchjob for updating permissions in Oracle', array(), WATCHDOG_INFO);
+}
+

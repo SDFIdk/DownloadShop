@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the kms_access_bundles feature.
+ */
+
+include_once 'kms_access_bundles.features.inc';

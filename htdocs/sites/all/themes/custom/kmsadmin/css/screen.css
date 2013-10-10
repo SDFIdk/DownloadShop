@@ -1,0 +1,65 @@
+.views-widget-filter-created {
+	position: relative;
+	width: 205px;
+}
+
+.views-widget-filter-created input {
+	width: 80px !important;
+}
+
+.form-item-created-max {
+	position: absolute;
+	top: -2px;
+	right: 25px;
+}
+
+.form-item-created-max label {
+	padding-bottom: 9px;
+}
+
+.views-field-field-access-bundles ul {
+  margin: 0px;
+}
+
+.views-field-field-access-bundles li {
+  list-style: none !important;
+  display: inline-block;
+}
+
+.page-admin .bundle-active, .page-admin .bundle-inactive, .page-admin .bundle-disabled {
+	width: 25px;
+	font-size: 13px;
+	padding: 7px 0px 7px 3px;
+	text-indent: -9999px;
+	display: inline-block;
+}
+
+.page-admin .bundle-active {
+  background: url(../images/bundle-active.png) no-repeat left center;
+  color: #447603;
+  cursor: default;
+	transition: background 0.3s;
+	-moz-transition: background 0.3s;
+	-webkit-transition: background 0.3s;
+	-o-transition: background 0.3s;
+}
+.page-admin .bundle-active:hover {
+  background: url(../images/bundle-activehover.png) no-repeat left center;
+}
+
+.page-admin .bundle-inactive {
+  background: url(../images/bundle-inactive.png) no-repeat left center;
+  color: #4f4f4f;
+  cursor: default;
+  transition: background 0.3s;
+	-moz-transition: background 0.3s;
+	-webkit-transition: background 0.3s;
+	-o-transition: background 0.3s;
+}
+.page-admin .bundle-inactive:hover {
+  background: url(../images/bundle-inactivehover.png) no-repeat left center;
+}
+
+.page-admin .bundle-active:hover, .page-admin .bundle-inactive:hover, .page-admin .bundle-disabled:hover {
+	text-indent: 0px;
+}

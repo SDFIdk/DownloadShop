@@ -75,6 +75,84 @@ function user_fields_field_default_fields() {
     ),
   );
 
+  // Exported field: 'user-user-field_access_bundles'.
+  $fields['user-user-field_access_bundles'] = array(
+    'field_config' => array(
+      'active' => '1',
+      'cardinality' => '-1',
+      'deleted' => '0',
+      'entity_types' => array(),
+      'field_name' => 'field_access_bundles',
+      'field_permissions' => array(
+        'type' => '2',
+      ),
+      'foreign keys' => array(
+        'nid' => array(
+          'columns' => array(
+            'nid' => 'nid',
+          ),
+          'table' => 'node',
+        ),
+      ),
+      'indexes' => array(
+        'nid' => array(
+          0 => 'nid',
+        ),
+      ),
+      'locked' => '0',
+      'module' => 'node_reference',
+      'settings' => array(
+        'referenceable_types' => array(
+          'access_bundle' => 'access_bundle',
+          'downloads' => 0,
+          'front' => 0,
+          'kort_test' => 0,
+          'page' => 0,
+          'panel' => 0,
+          'product_display' => 0,
+          'product_listing' => 0,
+          'user_registration_form' => 0,
+        ),
+        'view' => array(
+          'args' => array(),
+          'display_name' => '',
+          'view_name' => '',
+        ),
+      ),
+      'translatable' => '0',
+      'type' => 'node_reference',
+    ),
+    'field_instance' => array(
+      'bundle' => 'user',
+      'default_value' => NULL,
+      'deleted' => '0',
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'node_reference',
+          'settings' => array(),
+          'type' => 'node_reference_default',
+          'weight' => 25,
+        ),
+      ),
+      'entity_type' => 'user',
+      'field_name' => 'field_access_bundles',
+      'label' => 'Bundles',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => 0,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'options',
+        'settings' => array(),
+        'type' => 'options_buttons',
+        'weight' => '8',
+      ),
+    ),
+  );
+
   // Exported field: 'user-user-field_address'.
   $fields['user-user-field_address'] = array(
     'field_config' => array(

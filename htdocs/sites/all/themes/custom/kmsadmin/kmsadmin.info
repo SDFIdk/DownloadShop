@@ -1,0 +1,9 @@
+name        = kmsadmin
+description = Admin theme.
+screenshot  = screenshot.png
+
+core        = 7.x
+engine      = phptemplate
+base theme  = seven
+
+stylesheets[all][] = css/screen.css

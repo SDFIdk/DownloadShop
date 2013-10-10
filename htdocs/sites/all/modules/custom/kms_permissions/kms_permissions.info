@@ -1,0 +1,10 @@
+name = KMS permissions
+package = KMS
+description = "Handles writing of permissions to oracle and exposes widget"
+core = 7.x
+dependencies[] = kms_oci
+dependencies[] = kms_user
+;dependencies[] = background_batch
+dependencies[] = content_access
+
+files[] = kms_permissions.batch.inc
