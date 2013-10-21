@@ -774,20 +774,6 @@ function kms_mapwidget_form_footer(&$form,$form_state,$nw) {
 
 }
 
-function kms_mapwidget_get_predefined_options( $nw ) {
-  $options = array();
-  foreach ($nw->field_product as $product) {
-    if ($product->type->value() == 'product' ) {
-      $tid = $product->field_selection_type->tid->value();
-      $options[$tid] = array(
-        'weight' => $product->field_selection_type->weight->value(),
-        'value' => $product->field_selection_type->name->value()
-      );
-    }
-  }
-  return kms_mapwidget__sort($options);
-}
-
 /*
  * Options for buffer size
  */
@@ -805,13 +791,31 @@ function kms_mapwidget_get_buffer_sizes() {
 }
 
 /*
+ * Options for pre-defined datasets
+ */
+function kms_mapwidget_get_predefined_options( $nw ) {
+  $options = array();
+  foreach ($nw->field_product as $product) {
+    if ($product->type->value() == 'product' && $product->status->value() == 1) {
+      $tid = $product->field_selection_type->tid->value();
+      $options[$tid] = array(
+        'weight' => $product->field_selection_type->weight->value(),
+        'value' => $product->field_selection_type->name->value()
+      );
+    }
+  }
+  return kms_mapwidget__sort($options);
+}
+
+
+/*
  * Options for user-defined datasets
  */
 function kms_mapwidget_get_userdefined_options( $nw ) {
   $options = array();
 
   foreach ($nw->field_product as $product) {
-    if ($product->type->value() == 'fme_product' ) {
+    if ($product->type->value() == 'fme_product' && $product->status->value() == 1 ) {
       foreach ($product->field_selection_types as $selection_type) {
         $options[$selection_type->tid->value()] = 
           array('weight' => $selection_type->weight->value(),
