@@ -326,6 +326,11 @@ function initMap() {
   // Set center and zoom 
   map.setCenter(new OpenLayers.LonLat(conf.center_longitude, conf.center_latitude),conf.zoom_level);
  
+  // Set the layerswitcher baselayer / overlay labels
+  layerSwitcher = map.getControlsByClass("OpenLayers.Control.LayerSwitcher")[0];
+  layerSwitcher.baseLbl.innerText = "Basiskort";
+  layerSwitcher.dataLbl.innerText = "Kortlag";
+
   return map;
 
 }
@@ -717,7 +722,8 @@ function addDrawRect(map,conf) {
       handlerOptions: {
           sides: 4,
           irregular: true
-      }
+      },
+      displayClass: 'drawRectangle' 
     }
   );
 
