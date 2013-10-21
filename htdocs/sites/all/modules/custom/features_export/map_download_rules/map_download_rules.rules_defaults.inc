@@ -63,7 +63,7 @@ function map_download_rules_default_rules_configuration() {
   $items['rules_fme_failure_callback'] = entity_import('rules_config', '{ "rules_fme_failure_callback" : {
       "LABEL" : "FME failure callback",
       "PLUGIN" : "reaction rule",
-      "REQUIRES" : [ "rules", "php", "kms_mapwidget" ],
+      "REQUIRES" : [ "rules", "kms_mapwidget" ],
       "ON" : [ "kms_mapwidget_fme_callback_event_failure" ],
       "DO" : [
         { "mail" : {
@@ -93,11 +93,7 @@ function map_download_rules_default_rules_configuration() {
         { "kms_mapwidget_run_once_condition" : { "run_once_tag" : "CHECKOUT_LOGIN" } }
       ],
       "DO" : [
-        { "drupal_message" : {
-            "message" : "You were successfully logged in during checkout",
-            "repeat" : 0
-          }
-        }
+        { "drupal_message" : { "message" : "Du er nu logget p\\u00e5", "repeat" : 0 } }
       ]
     }
   }');
