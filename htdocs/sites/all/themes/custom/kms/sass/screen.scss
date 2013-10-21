@@ -748,6 +748,8 @@ h1, .commerce-product-title {
   }
   
   #ajax_multistep_form #koordinatsystem-wrapper {		
+                 width: 320px;
+                 float: left;
 		.form-item-koordinatsystem { margin-bottom: 0px; }
 		select { margin-bottom: 20px; }
 
@@ -896,7 +898,7 @@ h1, .commerce-product-title {
 		  }
 		  
 		  .baseLbl, .dataLbl {  	
-				font-size: 14px;
+				font-size: 12px;
 				font-weight: normal;
 				color: #353535;
 				margin-bottom: 10px !important;
@@ -971,7 +973,7 @@ h1, .commerce-product-title {
   }
 }
 
-.page-cart .messages.status {
+div.messages.status {
 	background: #eff2e8;
 	color: #6d7561;
 	font-size: 13px;
@@ -1502,9 +1504,6 @@ ul.controlToggle {
 		.baseLayersDiv {
 			cursor: pointer;
 			line-height: 1.9em!important;			
-		}
-		.baseLbl {
-			margin-bottom: 5px;
 		}
 		input {
 			margin-right: 10px;
