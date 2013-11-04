@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the file_listing feature.
+ */
+
+include_once 'file_listing.features.inc';
