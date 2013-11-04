@@ -100,6 +100,10 @@ projects[kms_deploy][download][url] = "svn+ssh://svnhost/data/subversion/drupal/
 projects[kms_deploy][type] = "module"
 projects[kms_deploy][subdir] = "custom"
 
+projects[kms_files][download][type] = "svn"
+projects[kms_files][download][url] = "svn+ssh://svnhost/data/subversion/drupal/kms/trunk/htdocs/sites/all/modules/custom/kms_files"
+projects[kms_files][type] = "module"
+projects[kms_files][subdir] = "custom"
 
 ; Libraries
 ;; Ckeditor
