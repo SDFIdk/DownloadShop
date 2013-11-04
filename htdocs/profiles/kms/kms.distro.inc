@@ -43,6 +43,11 @@ projects[commerce_extra][subdir] = "contrib"
 projects[commerce_extra][version] = "1.0-alpha1"
 projects[commerce_extra][type] = "module"
 
+;commerce_features
+projects[commerce_features][subdir] = "contrib"
+projects[commerce_features][version] = "1.0-rc1"
+projects[commerce_features][type] = "module"
+
 ;commerce_file
 projects[commerce_file][subdir] = "contrib"
 projects[commerce_file][version] = "1.0-beta4"
