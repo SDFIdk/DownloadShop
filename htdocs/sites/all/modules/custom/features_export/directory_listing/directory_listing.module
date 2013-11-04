@@ -1,7 +1,0 @@
-<?php
-/**
- * @file
- * Code for the Directory listing feature.
- */
-
-include_once 'directory_listing.features.inc';
