@@ -44,6 +44,58 @@ function kms_permissions_batch_update_permissions($uids, &$context) {
 }
 
 /**
+ * Save all permissions for a given user to a temporary table (in psql)
+ * @param object $uid - the user id
+ * @param array $permissions - the permissions
+ */
+function kms_permissions_batch_save_temp_permissions($uid, $permissions) {
+  _kms_permissions_get_permissions_by_uid($uid, $permissions);
+  $user = user_load($uid);
+  //Check if Oracle smuser exists
+  if (kms_user_smuser_exists($user)) {
+    $kms_id = kms_user_get_userid($user);
+    //Write services permissions to db
+    if (!empty($permissions['services'])) {
+      // Delete existing entries for user
+      db_delete('temp_service_perm_user')
+        ->condition('USERID', $kms_id, '=')
+        ->execute();
+      foreach ($permissions['services'] as $serv_perms) {
+        $fields = array(
+          'USERID' => $kms_id,
+          'SERVICEID' => $serv_perms['id'],
+          'MINX' => $serv_perms['MINX'],
+          'MINY' => $serv_perms['MINY'],
+          'MAXX' => $serv_perms['MAXX'],
+          'MAXY' => $serv_perms['MAXY'],
+          'MAXPIXELWIDTH' => $serv_perms['MAXPIXELWIDTH'],
+          'MAXPIXELHEIGHT' => $serv_perms['MAXPIXELHEIGHT'],
+          'FEATUREINFO' => $serv_perms['FEATUREINFO'],
+        );
+        //Write to DB
+        drupal_write_record('temp_service_perm_user', $fields);
+      }
+    }
+
+    //Write applications permissions to db
+    if (!empty($permissions['applications'])) {
+      // Delete existing entries for user
+      db_delete('temp_application_perm_user')
+        ->condition('USERID', $kms_id, '=')
+        ->execute();
+      foreach ($permissions['applications'] as $app_perms) {
+        $fields = array(
+          'USERID' => $kms_id,
+          'GROUPID' => $app_perms['id'],
+        );
+        //Write to DB
+        drupal_write_record('temp_application_perm_user', $fields);
+      }
+    }
+  }
+}
+
+/**
 * Batch 'finished' callback
 */
 function kms_permissions_batch_update_permissions_finished($success, $results, $operations) {

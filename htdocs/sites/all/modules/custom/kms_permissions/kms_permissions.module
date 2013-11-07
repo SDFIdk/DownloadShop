@@ -1,4 +1,37 @@
 <?php
+function kms_permissions_ctools_plugin_directory($owner, $plugin_type) {
+  // we'll be nice and limit scandir() calls
+  if ($owner == 'ctools' && $plugin_type == 'content_types') {
+    return 'plugins/content_types';
+  }
+}
+
+/* Implements HOOK_cronapi() */
+
+function kms_permissions_cronapi($op, $function = NULL) {
+  switch($op) {
+    case 'list':
+      return array(
+        'kms_permissions_save_permissions_callback' => 'Save permissions to Oracle',
+      );
+
+    case 'rule':
+      switch($function) {
+        case 'kms_permissions_save_permissions_callback': return '*/5 * * * *';
+      }
+      break;
+  }
+}
+
+/**
+ * Implements hook_cron().
+ */
+function kms_permissions_save_permissions_callback() {
+  kms_permissions_save_permissions_to_sql_file('temp_application_perm_user');
+  kms_permissions_save_permissions_to_sql_file('temp_service_perm_user');
+}
+
+
 /**
 * Implements hook_field_widget_info().
 */
@@ -294,8 +327,8 @@ function kms_permissions_user_presave(&$edit, $account, $category) {
       _kms_permissions_get_permissions_by_bid($bid['nid'], $permissions);
     }
   }
-
-  kms_permissions_save_permissions($account->uid, $permissions);
+  // Save to temp tables (in psql)
+  kms_permissions_save_temp_permissions($account->uid, $permissions);
 }
 
 /**
@@ -383,11 +416,157 @@ function kms_permissions_access_bundle_update($form, $form_state) {
     $uids = _kms_permissions_get_users_by_bid($form_state['values']['nid']);
   }
 
+  $user_perm = array();
   if (!empty($uids)) {
-    kms_permissions_batch($uids);
+    foreach ($uids as $uid) {
+      // $user_perm[] = _kms_permissions_get_permissions_by_uid($uid);
+      kms_permissions_save_temp_permissions($uid, $permissions);
+    }
   }
 }
 
+/**
+ * Save all permissions for a given user to a temporary table (in psql)
+ * @param object $uid - the user id
+ * @param array $permissions - the permissions
+ */
+function kms_permissions_save_temp_permissions($uid, $permissions) {
+  _kms_permissions_get_permissions_by_uid($uid, $permissions);
+  $user = user_load($uid);
+  //Check if Oracle smuser exists
+  if (kms_user_smuser_exists($user)) {
+    $kms_id = kms_user_get_userid($user);
+    //Write services permissions to db
+    if (!empty($permissions['services'])) {
+      // Delete existing entries for user
+      db_delete('temp_service_perm_user')
+        ->condition('USERID', $kms_id, '=')
+        ->execute();
+      foreach ($permissions['services'] as $serv_perms) {
+        $fields = array(
+          'USERID' => $kms_id,
+          'SERVICEID' => $serv_perms['id'],
+          'MINX' => $serv_perms['MINX'],
+          'MINY' => $serv_perms['MINY'],
+          'MAXX' => $serv_perms['MAXX'],
+          'MAXY' => $serv_perms['MAXY'],
+          'MAXPIXELWIDTH' => $serv_perms['MAXPIXELWIDTH'],
+          'MAXPIXELHEIGHT' => $serv_perms['MAXPIXELHEIGHT'],
+          'FEATUREINFO' => $serv_perms['FEATUREINFO'],
+        );
+        //Write to DB
+        drupal_write_record('temp_service_perm_user', $fields);
+      }
+    }
+
+    //Write applications permissions to db
+    if (!empty($permissions['applications'])) {
+      // Delete existing entries for user
+      db_delete('temp_application_perm_user')
+        ->condition('USERID', $kms_id, '=')
+        ->execute();
+      foreach ($permissions['applications'] as $app_perms) {
+        $fields = array(
+          'USERID' => $kms_id,
+          'GROUPID' => $app_perms['id'],
+        );
+        //Write to DB
+        drupal_write_record('temp_application_perm_user', $fields);
+      }
+    }
+  }
+}
+
+/**
+ * Save all temporary stored permissions to a SQL file
+ * @param  [string] $psql_table - the table to retrieve data from
+ */
+function kms_permissions_save_permissions_to_sql_file($psql_table) {
+  $result = db_query("SELECT * FROM $psql_table ORDER BY userid");
+  $count = $result->rowCount();
+  if ($count < 1) {
+    return;
+  }
+  // Set the current table
+  switch ($psql_table) {
+    case 'temp_application_perm_user':
+      $table = 'SMUSERGROUP';
+      break;
+    case 'temp_service_perm_user';
+      $table = 'USERRESTRICTIONS2';
+      break;
+    default:
+      break;
+  }
+
+  // Prepare data
+  $old_user_id = 0;
+  while ($row = $result->fetchAssoc()) {
+    // If new user entry
+    if ($row['userid'] != $old_user_id) {
+      // Add delete statement to SQL
+      $query .= sprintf("DELETE FROM $table WHERE USERID = %s;\n", $row['userid']);
+    }
+    $cols = implode(',', array_keys($row));
+    $cols = strtoupper($cols);
+    $values = implode("','", $row);
+    $query .= "INSERT INTO $table ($cols) VALUES ('$values');\n\n";
+    $old_user_id = $row['userid'];
+  }
+  // Write sql file
+  $path = 'sites/default/files/test.sql';
+  $write = file_put_contents($path, $query, FILE_APPEND);
+  if ($write) {
+    watchdog('kms_permissions', 
+      'Successfully updated user permission SQL file in @path (size: @size byte(s))', 
+      array('@size' => $write,
+            '@path' => $path), 
+      WATCHDOG_INFO, 
+      'link');
+  }else {
+    watchdog('kms_permissions', 
+      'Couldn\'t write SQL user permission file to @path', 
+      array('@path' => $path), 
+      WATCHDOG_ERROR, 
+      'link');
+  }
+  // TODO: Update oracle db with the SQL file
+  
+  // Reinitialize table and delete sql file
+  // kms_permissions_reinit_temp_permission($psql_table, $path);
+}
+
+/**
+ * Delete temporary permission table (psql) and delete temporary sql file
+ * @param  [string] $psql_table name of the table to truncate
+ * @param  [string] $path       path to the sql file to delete
+ */
+function kms_permissions_reinit_temp_permission($psql_table, $path) {
+ // Truncate psql temp table
+  $truncate = db_truncate($psql_table, array());
+  $truncate->execute();
+  watchdog('kms_permissions', 
+    'Successfully truncated @table)', 
+    array('@table' => $psql_table), 
+    WATCHDOG_INFO, 
+    'link');
+  
+  // Delete SQL file
+  $delete = unlink($path);
+  if ($delete) {
+    watchdog('kms_permissions', 
+      'Successfully deleted @path', 
+      array('@path' => $path), 
+      WATCHDOG_INFO, 
+      'link');
+  }else {
+    watchdog('kms_permissions', 
+      'Couldn\'t delete SQL user permission file at @path', 
+      array('@path' => $path), 
+      WATCHDOG_ERROR, 
+      'link');
+  }
+}
 /**
  * Save all permissions for a given user to oracle db
  * @param object $uid - the user id
@@ -477,7 +656,6 @@ function kms_permissions_save_permissions($uid, $permissions) {
  */
 function _kms_permissions_get_permissions_by_uid($uid, &$permissions = array()) {
   $user = user_load($uid);
-
   // Get default bundles
   $default = _kms_permissions_get_default_bundles();
   // Get users bundles
@@ -671,7 +849,7 @@ function _kms_permissions_get_all_users() {
 
   $query->entityCondition('entity_type', 'user')
     ->propertyCondition('status', 1)
-    ->range(0, 10); // Range to be deleted, failsafe
+    ->range(0, 100); // Range to be deleted, failsafe
 
   $result = $query->execute();
   $uids = array();
@@ -706,6 +884,88 @@ function _kms_permissions_get_default_bundles() {
     }
     
   return $bids;
+}
+
+/**
+ * Internal function for finding all custom and active bundles
+ */
+function _kms_permissions_get_custom_bundles() {
+  $query = new EntityFieldQuery();
+
+  $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'access_bundle')
+    ->propertyCondition('status', 1)
+    ->fieldCondition('field_default_bundle', 'value', '0', '=')    
+    ->addMetaData('account', user_load(1)); // Run the query as user 1.
+
+    $result = $query->execute();
+    $bids = array();
+
+    if ($result) {
+      foreach ($result['node'] as $bundle) {
+        $bids[] = $bundle->nid;
+      }
+    }
+    
+  return $bids;
+}
+
+
+
+/**
+ * Internal function to find what bundle(s) a service is included in
+ * @param  [int] $sid The service id (service id comes from Oracle)
+ * @return [array/FALSE] Array of bundles and their type (default/custom) or FASLE
+ */
+function _kms_permissions_get_bundle_by_sid($sid) {
+  // The returned array
+  $nid_sid_arr = array();
+
+
+  // Get all default bundles
+  $default_bundles_nids = _kms_permissions_get_default_bundles();
+  foreach ($default_bundles_nids as $nid) {
+    $bundle = node_load($nid);
+    foreach ($bundle as $field_name => $field_value) {
+      // Only use bundle fields
+      if (strpos($field_name, 'field_bundle_webservices') !== false) {
+        if (!empty($field_value)) {
+          // Search for a match
+          foreach ($field_value['und'] as $service_id) {
+            if ($service_id['value'] == $sid) {
+              $nid_sid_arr['default'][$nid] = $bundle->title;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Get all custom bundles
+  $default_bundles_nids = _kms_permissions_get_custom_bundles();
+  foreach ($default_bundles_nids as $nid) {
+    $bundle = node_load($nid);
+    foreach ($bundle as $field_name => $field_value) {
+      // Only use bundle fields
+      if (strpos($field_name, 'field_bundle_webservices') !== false) {
+        if (!empty($field_value)) {
+          // Search for a match
+          foreach ($field_value['und'] as $service_id) {
+            if ($service_id['value'] == $sid) {
+              $nid_sid_arr['custom'][$nid] = $bundle->title;
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // Return value
+  if (!empty($nid_sid_arr)) {
+    return $nid_sid_arr;
+  }else {
+    return FALSE;
+  }
 }
 
 /**
@@ -798,15 +1058,36 @@ function _kms_permissions_webservice_fields() {
   return $fields;
 }
 
+
 /**
  * Batch definition
  */
-function kms_permissions_batch($uids) {
+// function kms_permissions_batch($uids) {
+//   $batch = array(
+//     'operations' => array(
+//       array('kms_permissions_batch_update_permissions', array($uids)),
+//       ),
+//     'finished' => 'kms_permissions_batch_update_permissions_finished',
+//     'title' => t('Processing Batch Update of Permissions'),
+//     'init_message' => t('Batch Update of Permissions is starting.'),
+//     'progress_message' => t('Processed @current out of @total.'),
+//     'error_message' => t('Batch Update of Permissions has encountered an error.'),
+//     'file' => drupal_get_path('module', 'kms_permissions') . '/kms_permissions.batch.inc',
+//   );
+//   batch_set($batch);
+
+//   // Process batch job in background
+//   //background_batch_process_batch();
+//   watchdog('kms_permissons', 'Starting batchjob for updating permissions in Oracle', array(), WATCHDOG_INFO);
+// }
+
+
+function kms_permissions_batch($uid, $permissions) {
   $batch = array(
     'operations' => array(
-      array('kms_permissions_batch_update_permissions', array($uids)),
+      array('kms_permissions_batch_save_temp_permissions', array($uid, $permissions)),
       ),
-    'finished' => 'kms_permissions_batch_update_permissions_finished',
+    'finished' => 'kms_permissions_batch_finish',
     'title' => t('Processing Batch Update of Permissions'),
     'init_message' => t('Batch Update of Permissions is starting.'),
     'progress_message' => t('Processed @current out of @total.'),
@@ -819,4 +1100,3 @@ function kms_permissions_batch($uids) {
   //background_batch_process_batch();
   watchdog('kms_permissons', 'Starting batchjob for updating permissions in Oracle', array(), WATCHDOG_INFO);
 }
-

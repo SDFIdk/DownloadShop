@@ -1,0 +1,139 @@
+  <?php
+
+$plugin = array(
+  'title' => t('KMS bundle overview'),
+  'description' => t('Show an overview table of bundles and their services'),
+  'category' => t('KMS'),
+  'defaults' => array(),
+  'render callback' => 'kms_permissions_pane_render',
+);
+
+/**
+ * Render the custom content type.
+ */
+
+function kms_permissions_pane_render($subtype, $conf, $panel_args, $context) {
+  // Get all services types
+  $tmp_types = kms_permissions_widget_type_options();
+  $types = array();
+  // Format them so they can be used in kms_permissions_widget_options()
+  foreach ($tmp_types as $type) {
+    $types[]['type'] = $type;
+  }
+  // Get all services by type (from Oracle)
+  $services = array();
+  foreach ($types as $type) {
+    $services[$type['type']] = kms_permissions_widget_options('kms_services', $type);
+  }
+  // Get default bundles
+  $default_bundles_nids = _kms_permissions_get_default_bundles();
+  // Get custom bundles
+  $custom_bundles_nids = _kms_permissions_get_custom_bundles();
+  // Prepare the tables
+  $content = '';
+  $content .= _kms_permissions_create_bundle_table($default_bundles_nids, 
+                                                  $types, 
+                                                  $services, 
+                                                  'Default bundles');
+  $content .= _kms_permissions_create_bundle_table($custom_bundles_nids, 
+                                                  $types, 
+                                                  $services, 
+                                                  'Custom bundles');
+
+  $block = new stdClass();
+  $block->content = render($content);
+ 
+  return $block;
+}
+
+/**
+ * Create a table for each bundle with an overview of their services
+ * @param  [arr] $nids      Bundle nids
+ * @param  [arr] $types     Type of services
+ * @param  [arr] $services  All the services (from Oracle)
+ * @param  string $title    Headings for the bundle Type
+ * @return [mix]            Tables
+ */
+function _kms_permissions_create_bundle_table($nids, $types, $services, $title = 'Bundles') {
+  $bundle_services_arr = array();
+  // Bundle nid loop
+  foreach ($nids as $nid) {
+    $node = node_load($nid);
+    $wrapper = entity_metadata_wrapper('node', $node);
+    $bundle_services_arr[$nid]['bundle_name'] = $wrapper->title->value();
+    //Service type loop
+    foreach ($types as $type) {
+      $t = $type['type'];
+      $f = 'field_bundle_webservices_' . strtolower($t);
+      $service_ids = $wrapper->$f->value();
+      // Service ID loop
+      foreach ($service_ids as $sid) {
+        $bundle_services_arr[$nid]['services'][$t][] = 
+          _kms_permissions_get_service_name_by_service_id($sid, $services) . " ($sid)";
+      }
+      // Add a key with number of services (used to build table rows)
+      $bundle_services_arr[$nid]['services'][$t]['count'] = 
+        count($bundle_services_arr[$nid]['services'][$t]);
+    }
+  }
+
+  // Output bundle table
+  $content  = "<h2>$title</h2>";
+  foreach ($bundle_services_arr as $bundle_nid => $v_data) {
+    // Bundle name heading
+    $content .= '<h3>' . l($v_data['bundle_name'], 
+      "node/$bundle_nid/edit/",  
+      array('attributes' => array('target'=>'_blank'))) . '</h3>';
+    // Shorthand for services array
+    $services_arr = $v_data['services'];
+    // Headers
+    $header = array_keys($services_arr);
+    // Find the highest number of services
+    $max = 0;
+    foreach ($services_arr as $service) {
+      if ($service['count'] > $max) {
+        $max = $service['count'];
+      }
+    }
+    // Pad the services arrays using $max so they all have the same lenght 
+    foreach ($services_arr as $key => $service) {
+      // Remove count, we don't need it anymore
+      unset($service['count']);
+      // Pad it!
+      $bundle_services_arr[$bundle_nid]["services"][$key] = array_pad($service, $max, '-');
+    }
+
+    // Prepare rows
+    $rows = array();
+    // Loop all services ...
+    for ($i=0; $i < $max; $i++) {
+      $tmp = array();
+      // ... in all services category
+      foreach ($bundle_services_arr[$bundle_nid]["services"] as $service_cat => $service) {
+        // Add service row to temp array
+        $tmp[]['data'] = $bundle_services_arr[$bundle_nid]["services"][$service_cat][$i];
+      }
+      $rows[] = $tmp;
+    }
+
+    // Theme table variables
+    $variables = array('header' => $header, 'rows' => $rows, 'attributes' => array());
+    // Add table to content
+    $content .= theme('table', $variables);
+  }
+  return $content;
+}
+
+/**
+ * Return the title of a service based on its Oracle service id
+ * @param  [int] $sid The service ID as known in Oracle database
+ * @param  [array] $services All the services as returned by kms_permissions_widget_options().
+ * @return [string]      The name of the service
+ */
+function _kms_permissions_get_service_name_by_service_id($sid, $services) {
+  foreach ($services as $service) {
+    if(array_key_exists($sid, $service)) {
+      return $service[$sid];
+    }
+  }
+}

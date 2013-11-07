@@ -1,0 +1,99 @@
+<?php
+/**
+ * @file
+ * Install file for dismissable panel pane.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function kms_permissions_install() {
+  
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function kms_permissions_schema() {
+  $schema['temp_service_perm_user'] = array(
+    'description' => t('Used to temporary store user service permissions before sending them to Oracle'),
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique item ID.',
+      ),
+      'USERID' => array(
+        'type' => 'text',
+        'unsigned' => FALSE,
+        'description' => t('User id'),
+      ),
+      'SERVICEID' => array(
+        'type' => 'text',
+        'unsigned' => FALSE,
+        'description' => t('Service id'),
+      ),
+      'MINX' => array(
+        'type' => 'text',
+        'unsigned' => FALSE,
+        'description' => t('Minimum X'),
+      ),
+      'MINY' => array(
+        'type' => 'text',
+        'unsigned' => FALSE,
+        'description' => t('Minimum Y'),
+      ),
+      'MAXX' => array(
+        'type' => 'text',
+        'unsigned' => FALSE,
+        'description' => t('Maximum X'),
+      ),
+      'MAXY' => array(
+        'type' => 'text',
+        'unsigned' => FALSE,
+        'description' => t('Maximum Y'),
+      ),
+      'MAXPIXELWIDTH' => array(
+        'type' => 'text',
+        'unsigned' => FALSE,
+        'description' => t('Maximum pixel width'),
+      ),
+      'MAXPIXELHEIGHT' => array(
+        'type' => 'text',
+        'unsigned' => FALSE,
+        'description' => t('Maximum pixel height'),
+      ),
+      'FEATUREINFO' => array(
+        'type' => 'text',
+        'unsigned' => FALSE,
+        'description' => t('Date and time of the vote.'),
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+  $schema['temp_application_perm_user'] = array(
+    'description' => t('Used to temporary store user application permissions before sending them to Oracle'),
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique item ID.',
+      ),
+      'USERID' => array(
+        'type' => 'text',
+        'unsigned' => FALSE,
+        'description' => t('User id'),
+      ),
+      'GROUPID' => array(
+        'type' => 'text',
+        'unsigned' => FALSE,
+        'description' => t('Group id'),
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  return $schema;
+}
