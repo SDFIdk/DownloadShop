@@ -205,9 +205,9 @@ $databases = array (
   array (
     'default' => 
     array (
-      'database' => 'kms',
-      'username' => 'kms',
-      'password' => 'kms',
+      'database' => 'gst',
+      'username' => 'vagrant',
+      'password' => 'vagrant',
       'host' => 'localhost',
       'port' => '',
       'driver' => 'pgsql',
@@ -292,7 +292,7 @@ $drupal_hash_salt = 'FZ7cjE7VPpcUCIhLC7-Q0TMzv6WpbQV-9oakjFxFK_M';
  * It is not allowed to have a trailing slash; Drupal will add it
  * for you.
  */
-$base_url = 'http://kms.dev';  // NO trailing slash!
+$base_url = 'http://kms.dev:8181';  // NO trailing slash!
 
 /**
  * PHP settings:
@@ -550,9 +550,13 @@ $conf['404_fast_html'] = '<html xmlns="http://www.w3.org/1999/xhtml"><head><titl
 # $conf['allow_authorize_operations'] = FALSE;
 
 // Oracle db 
-$conf['kms_oci_conn_user'] = 'kms';
-$conf['kms_oci_conn_pass'] = 'kms';
-$conf['kms_oci_conn_host'] = '10.0.1.11:1521';
-$conf['kms_oci_conn_db'] = 'orcl';
+$conf['kms_oci_conn_user'] = 'kf_download_test';
+$conf['kms_oci_conn_pass'] = 'kf_download_test';
+$conf['kms_oci_conn_host'] = '192.168.50.5:1521';
+$conf['kms_oci_conn_db'] = 'XE';
 $conf['kms_oci_mail_default_from'] = 'download@kortforsyningen.dk';
 $conf['kms_oci_mail_default_to'] = 'mikkel@adapt.dk';
+$conf['kms_permissions_conn_user'] = 'weblog_test';
+$conf['kms_permissions_conn_pass'] = 'weblog_test';
+$conf['kms_permissions_conn_host'] = '192.168.50.5:1521';
+$conf['kms_permissions_conn_db'] = 'XE';
