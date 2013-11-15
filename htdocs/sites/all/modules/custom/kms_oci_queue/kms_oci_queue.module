@@ -1,0 +1,134 @@
+<?php
+
+define('KMS_OCI_QUEUE_PREFIX', 'kms_oci_queue');
+
+/**
+ * Implements hook_menu().
+ */
+function kms_oci_queue_menu() {
+  $items = array();
+  $items['admin/reports/kms-oci-queue'] = array(
+    'title' =>'Oci queue status',
+    'description' => 'Show oci queue status',
+    'page callback' => 'kms_oci_queue_admin_page',
+    'access arguments' => array('administer kms oci queue'),
+    'type' => MENU_NORMAL_ITEM,
+
+  );
+  return $items;
+}
+
+function kms_oci_queue_add_single_query($query) {
+  if(empty($query)) {
+    return;
+  }
+  $queue = DrupalQueue::get('kms_oci_queue_queries');
+  $queue->createQueue();  // There is no harm in trying to recreate existing.
+  $job = new stdClass();
+  $job->query = $query;
+  // Queue the string.
+  $queue->createItem($job);
+//  $count = $queue->numberOfItems();
+}
+
+function miktestSet($queue_name, $str) {
+  $queue = DrupalQueue::get($queue_name);
+  $queue->createQueue();  // There is no harm in trying to recreate existing.
+  $job = new stdClass();
+  $job->id = uniqid();
+  $job->str = $str;
+  // Queue the string.
+  $queue->createItem($job);
+//  $count = $queue->numberOfItems();
+}
+
+function miktestGet($queue_name) {
+  $queue = DrupalQueue::get($queue_name);
+  $item = $queue->claimItem();
+  var_dump($item);
+}
+
+function kms_oci_queue_get_items($queue_name) {
+  $items = array();
+  $result = db_query("SELECT item_id, data, expire, created FROM {queue} WHERE name = :name ORDER BY item_id",
+    array(':name' => $queue_name),
+    array('fetch' => PDO::FETCH_ASSOC));
+  foreach ($result as $item) {
+    $items[] = $item;
+  }
+  return $items;
+}
+
+function kms_oci_queue_fetch_queue_names() {
+  $query = db_select('queue', 'q');
+  $query->fields('q', array('name'));
+  $query->condition('q.name', "kms_oci_queue%", 'LIKE');
+  $query->groupBy('q.name');
+  $result = $query->execute()->fetchAllAssoc('name');
+  return $result ? array_keys($result) : array();
+}
+
+function kms_oci_queue_admin_page () {
+  $output['logs'] = kms_oci_queue_admin_page_logs();
+  $output['queues'] = kms_oci_queue_admin_page_queues();
+  return $output;
+}
+
+function kms_oci_queue_admin_page_logs() {
+
+}
+
+function kms_oci_queue_admin_page_queues () {
+  $output = array();
+  foreach(kms_oci_queue_fetch_queue_names() as $name) {
+    $output["queue_title_$name"] = array('#type' => 'html_tag', '#tag' => 'h2', '#value' => $name);
+    foreach(kms_oci_queue_get_items($name) as $item) {
+      $rows[] = array(
+        array('data' => $item['item_id']),
+        array('data' => $item['data']),
+        array('data' => $item['expire']),
+        array('data' => $item['created']),
+      );
+    }
+    $output["queue_table_$name"] = array(
+      '#theme' => 'table',
+      '#header' => array(t('Id'), t('Data'), t('Status'), t('Created')),
+      '#rows' => $rows,
+    );
+  }
+  return $output;
+}
+//
+//function kms_oci_queue_watchdog(array $log_entry) {
+//  if(strpos($log_entry['type'], 'kms_oci_queue') === FALSE) {
+//    return;
+//  }
+//}
+
+function kms_oci_queue_log($jid, $message, $variables = array(), $group = 'default', $severity = WATCHDOG_INFO) {
+  global $user;
+
+  $record = new stdClass();
+  $record->jid = $jid;
+  $record->uid = $user->uid;
+  $record->message = $message;
+  $record->variables = $variables;
+  $record->severity = $severity;
+  $record->timestamp = time();
+  drupal_write_record('kms_oci_queue_log', $record);
+
+  watchdog(implode(':', array(KMS_OCI_QUEUE_PREFIX, $group, $jid)), $message, $variables, $severity);
+}
+
+//function asdkjhasdkhasjkdhasjkasdhdasj() {
+//  global $user;
+//  $record = new stdClass();
+//  $record->jid = 2828;
+//  $record->uid = $user->uid;
+//  $record->message = 'Hello %name';
+//  $record->variables = $variables;
+//  $record->severity = $severity;
+//  $record->timestamp = time();
+//
+//  drupal_write_record('kms_oci_queue_log', $record);
+//}

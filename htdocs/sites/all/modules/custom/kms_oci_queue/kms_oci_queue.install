@@ -1,0 +1,86 @@
+<?php
+
+function kms_oci_queue_install() {
+  foreach(_kms_oci_queue_queues() as $queue) {
+    variable_set("queue_class_$queue", 'KmsOciQueue');
+    $queue = DrupalQueue::get($queue);
+    $queue->createQueue();
+  }
+}
+
+function kms_oci_queue_uninstall() {
+  foreach(_kms_oci_queue_queues() as $queue) {
+    $queue = DrupalQueue::get($queue);
+    $queue->deleteQueue();
+    variable_del("queue_class_$queue");
+  }
+}
+
+/**
+ * Implements hook_schema().
+ */
+function kms_oci_queue_schema() {
+  $schema['kms_oci_queue_log'] = array(
+    'description' => 'Table that contains logs of all oci queue events.',
+    'fields' => array(
+      'oqid' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => 'Primary Key: Unique oci queue event ID.',
+      ),
+      'jid' => array(
+        'type' => 'int',
+        'not null' => FALSE,
+        'description' => 'Kms queue job id.',
+      ),
+      'uid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {users}.uid of the user who triggered the event.',
+      ),
+      'message' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+        'size' => 'big',
+        'description' => 'Text of log message to be passed into the t() function.',
+      ),
+      'variables' => array(
+        'type' => 'blob',
+        'serialize' => TRUE,
+        'not null' => TRUE,
+        'size' => 'big',
+        'description' => 'Serialized array of variables that match the message string and that is passed into the t() function.',
+      ),
+      'severity' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => 'The severity level of the event; ranges from 0 (Emergency) to 7 (Debug)',
+      ),
+      'timestamp' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Unix timestamp of when event occurred.',
+      ),
+    ),
+    'primary key' => array('oqid'),
+    'indexes' => array(
+      'jid' => array('jid'),
+      'timestamp' => array('timestamp'),
+    ),
+  );
+
+  return $schema;
+}
+
+function _kms_oci_queue_queues() {
+  return array(
+    'kms_oci_queue_queries',
+    'kms_oci_queue_initiate_grouped_queries',
+    'kms_oci_queue_grouped_queries',
+  );
+}

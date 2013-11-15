@@ -1,0 +1,6 @@
+name = KMS OCI Queue
+package = KMS
+description = "Handles oracle query queue"
+core = 7.x
+
+files[] = includes/kms_oci_queue.inc
