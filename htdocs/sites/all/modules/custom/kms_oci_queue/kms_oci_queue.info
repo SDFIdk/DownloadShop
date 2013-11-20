@@ -3,4 +3,5 @@ package = KMS
 description = "Handles oracle query queue"
 core = 7.x
 
-files[] = includes/kms_oci_queue.inc
+files[] = includes/query_queue.inc
+files[] = includes/kms_oci_queue_job.inc

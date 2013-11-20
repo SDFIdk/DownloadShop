@@ -1,8 +1,8 @@
 <?php
 
 function kms_oci_queue_install() {
-  foreach(_kms_oci_queue_queues() as $queue) {
-    variable_set("queue_class_$queue", 'KmsOciQueue');
+  foreach(_kms_oci_queue_queues() as $queue => $class) {
+    variable_set("queue_class_$queue", $class);
     $queue = DrupalQueue::get($queue);
     $queue->createQueue();
   }
@@ -31,7 +31,7 @@ function kms_oci_queue_schema() {
       'jid' => array(
         'type' => 'int',
         'not null' => FALSE,
-        'description' => 'Kms queue job id.',
+        'description' => 'Job id.',
       ),
       'uid' => array(
         'type' => 'int',
@@ -74,13 +74,48 @@ function kms_oci_queue_schema() {
     ),
   );
 
+  $schema['kms_oci_queue_job_status'] = array(
+    'description' => 'Table that contains current job status.',
+    'fields' => array(
+      'jid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'Primary key: Job id.',
+      ),
+      'status' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'size' => 'tiny',
+        'description' => 'The current job status',
+      ),
+      'timestamp' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Unix timestamp of when event occurred.',
+      ),
+    ),
+    'foreign keys' => array(
+      'kms_oci_queue_log' => array(
+        'table' => 'kms_oci_queue_log',
+        'columns' => array('jid' => 'jid'),
+      ),
+    ),
+    'primary key' => array('jid'),
+    'indexes' => array(
+      'timestamp' => array('timestamp'),
+    ),
+  );
+
   return $schema;
 }
 
 function _kms_oci_queue_queues() {
   return array(
-    'kms_oci_queue_queries',
-    'kms_oci_queue_initiate_grouped_queries',
-    'kms_oci_queue_grouped_queries',
+    'kms_oci_queue_query' => 'QueryQueue',
+    'kms_oci_queue_multi_query_creator' => 'QueryQueue',
+    'kms_oci_queue_multi_query' => 'SystemQueue',
   );
 }

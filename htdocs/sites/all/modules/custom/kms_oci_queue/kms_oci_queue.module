@@ -69,8 +69,7 @@ function kms_oci_queue_fetch_queue_names() {
 }
 
 function kms_oci_queue_admin_page () {
-  $output['logs'] = kms_oci_queue_admin_page_logs();
-  $output['queues'] = kms_oci_queue_admin_page_queues();
+  $output['queues'] = kms_oci_queue_admin_page_jobs();
   return $output;
 }
 
@@ -78,57 +77,28 @@ function kms_oci_queue_admin_page_logs() {
 
 }
 
-function kms_oci_queue_admin_page_queues () {
+function kms_oci_queue_admin_page_jobs () {
   $output = array();
   foreach(kms_oci_queue_fetch_queue_names() as $name) {
-    $output["queue_title_$name"] = array('#type' => 'html_tag', '#tag' => 'h2', '#value' => $name);
+    $output["job_queue_title_$name"] = array(
+      '#type' => 'html_tag',
+      '#tag' => 'h2',
+      '#value' => 'Query jobs (' . KmsOciQueueJob::typeFromQueueName($name) . ')',
+    );
     foreach(kms_oci_queue_get_items($name) as $item) {
+      $job = KmsOciQueueJobFactory::get($item['item_id']);
       $rows[] = array(
-        array('data' => $item['item_id']),
-        array('data' => $item['data']),
-        array('data' => $item['expire']),
-        array('data' => $item['created']),
+        array('data' => $job->jid),
+        array('data' => $job->info),
+        array('data' => $job->status->message),
+        array('data' => format_date($job->created)),
       );
     }
-    $output["queue_table_$name"] = array(
+    $output["job_queue_table_$name"] = array(
       '#theme' => 'table',
-      '#header' => array(t('Id'), t('Data'), t('Status'), t('Created')),
+      '#header' => array(t('Job id'), t('Info'), t('Status'), t('Created')),
       '#rows' => $rows,
     );
   }
   return $output;
 }
-//
-//function kms_oci_queue_watchdog(array $log_entry) {
-//  if(strpos($log_entry['type'], 'kms_oci_queue') === FALSE) {
-//    return;
-//  }
-//}
-
-function kms_oci_queue_log($jid, $message, $variables = array(), $group = 'default', $severity = WATCHDOG_INFO) {
-  global $user;
-
-  $record = new stdClass();
-  $record->jid = $jid;
-  $record->uid = $user->uid;
-  $record->message = $message;
-  $record->variables = $variables;
-  $record->severity = $severity;
-  $record->timestamp = time();
-  drupal_write_record('kms_oci_queue_log', $record);
-
-  watchdog(implode(':', array(KMS_OCI_QUEUE_PREFIX, $group, $jid)), $message, $variables, $severity);
-}
-
-//function asdkjhasdkhasjkdhasjkasdhdasj() {
-//  global $user;
-//  $record = new stdClass();
-//  $record->jid = 2828;
-//  $record->uid = $user->uid;
-//  $record->message = 'Hello %name';
-//  $record->variables = $variables;
-//  $record->severity = $severity;
-//  $record->timestamp = time();
-//
-//  drupal_write_record('kms_oci_queue_log', $record);
-//}
