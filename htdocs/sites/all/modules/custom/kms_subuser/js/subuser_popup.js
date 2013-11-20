@@ -29,7 +29,7 @@
             "oLanguage": {
               "sSearch": Drupal.t('Search'),
               "sInfo": Drupal.t('Showing _START_ to _END_ of _TOTAL_ records'),
-              "sInfoEmpty": Drupal.t('Showing 0 to 0 of 0 records'),
+              "sInfoEmpty": Drupal.t('Showing 0 to 0 of 0 records')
             }
           });
            
