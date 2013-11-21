@@ -1,0 +1,36 @@
+.kms-oci-queue-jobs-overview {
+  .status-0 {
+    color: green;
+  }
+  .status-1 {
+    color: cornflowerblue;
+  }
+  .status-2 {
+    color: red;
+  }
+  tr.kms-oci-queue-job-log {
+    display: none;
+    border-style: none;
+    table {
+      border: 0;
+      tr {
+        background: transparent;
+        border: 0;
+        td {
+          border: 0;
+        }
+      }
+    }
+  }
+  td {
+    border-bottom: 1px solid #bebfb9;
+    &.job-log-trigger {
+      padding-left: 25px;
+      cursor: pointer;
+      background: url(/misc/arrow-desc.png) no-repeat 5px 10px;
+      &.active {
+        background: url(/misc/arrow-asc.png) no-repeat 5px 10px;
+      }
+    }
+  }
+}

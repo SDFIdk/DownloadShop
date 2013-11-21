@@ -13,7 +13,13 @@ function kms_oci_queue_menu() {
     'page callback' => 'kms_oci_queue_admin_page',
     'access arguments' => array('administer kms oci queue'),
     'type' => MENU_NORMAL_ITEM,
-
+  );
+  $items['kms-oci-queue/ajax/load-log/%'] = array(
+    'title' => 'Show job log',
+    'page callback' => 'kms_oci_queue_admin_page_job_log',
+    'access arguments' => array('access content'),
+    'page arguments' => array(3),
+    'type' => MENU_CALLBACK,
   );
   return $items;
 }
@@ -69,6 +75,9 @@ function kms_oci_queue_fetch_queue_names() {
 }
 
 function kms_oci_queue_admin_page () {
+  drupal_add_js(drupal_get_path('module', 'kms_oci_queue') .'/js/kms_oci_queue_reports.js');
+  drupal_add_css(drupal_get_path('module', 'kms_oci_queue') .'/css/kms_oci_queue_reports.css');
+
   $output['queues'] = kms_oci_queue_admin_page_jobs();
   return $output;
 }
@@ -78,9 +87,20 @@ function kms_oci_queue_admin_page_logs() {
 }
 
 function kms_oci_queue_admin_page_jobs () {
-  $output = array();
+  $output = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('kms-oci-queue-jobs-overview'),
+    ),
+  );
   foreach(kms_oci_queue_fetch_queue_names() as $name) {
-    $output["job_queue_title_$name"] = array(
+    $jobs_output = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array('kms-oci-queue-jobs'),
+      ),
+    );
+    $jobs_output["job_queue_title_$name"] = array(
       '#type' => 'html_tag',
       '#tag' => 'h2',
       '#value' => 'Query jobs (' . KmsOciQueueJob::typeFromQueueName($name) . ')',
@@ -88,17 +108,60 @@ function kms_oci_queue_admin_page_jobs () {
     foreach(kms_oci_queue_get_items($name) as $item) {
       $job = KmsOciQueueJobFactory::get($item['item_id']);
       $rows[] = array(
-        array('data' => $job->jid),
-        array('data' => $job->info),
-        array('data' => $job->status->message),
-        array('data' => format_date($job->created)),
+        'data' => array(
+          array('data' => $job->jid, 'data-jid' => $job->jid, 'class' => 'job-log-trigger'),
+          array('data' => $job->info),
+          array('data' => $job->status->message, 'class' => 'status-' . $job->status->status),
+          array('data' => format_date($job->created)),
+        )
+      );
+      $rows[] = array(
+        'class' => array('kms-oci-queue-job-log'),
+        'data-jid' => $job->jid,
+        'data' => array(
+          array('data' => '&nbsp;', 'colspan' => 4),
+        ),
       );
     }
-    $output["job_queue_table_$name"] = array(
+
+    $jobs_output["job_queue_$name"] = array(
       '#theme' => 'table',
       '#header' => array(t('Job id'), t('Info'), t('Status'), t('Created')),
       '#rows' => $rows,
     );
+
+
+    $output["kms_oci_queue_jobs_$name"] = $jobs_output;
   }
+
   return $output;
+}
+
+function kms_oci_queue_admin_page_job_log($jid){
+  $json['html'] = '';
+  $job = KmsOciQueueJobFactory::get($jid);
+  if(!empty($job)){
+    $log = $job->getLog();
+  }
+  $output = array();
+  if(!empty($log)){
+    foreach($log as $id => $entry) {
+      $rows[] = array(
+        array('data' => format_date($entry->timestamp), 'colspan' => 1),
+        array('data' => format_string($entry->message, unserialize($entry->variables)), 'colspan' => 2),
+      );
+    }
+    $output["log_$id"] = array(
+      '#theme' => 'table',
+      '#header' => array(
+//        array('data' => t('Log'), 'colspan' => 2),
+//        array('data' => t('Message'), 'colspan' => 2),
+      ),
+      '#rows' => $rows,
+    );
+    $json['html'] = render($output);
+  }
+
+  drupal_json_output($json);
+  exit;
 }

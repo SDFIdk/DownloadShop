@@ -12,7 +12,7 @@ class KmsOciQueueJob {
   public $status;
   public $info;
   private $queueItem;
-  private $log;
+//  private $log;
   private $type;
 
   static public $types = array(
@@ -27,7 +27,7 @@ class KmsOciQueueJob {
     $this->setCreated();
     $this->setInfo();
     $this->setStatus();
-    $this->setLog($this->loadLog());
+//    $this->setLog($this->loadLog());
   }
 
   private function setJid($jid){
@@ -42,9 +42,9 @@ class KmsOciQueueJob {
     $this->queueItem = $item;
   }
 
-  private function setLog($log){
-    $this->log = $log;
-  }
+//  private function setLog($log){
+//    $this->log = $log;
+//  }
 
   private function setType(){
     $this->type = self::typeFromQueueName($this->queueItem->name);
@@ -62,6 +62,10 @@ class KmsOciQueueJob {
         }
         break;
     }
+  }
+
+  public function getLog($mode = 'all') {
+    return $this->loadLog($mode);
   }
 
   private function setStatus() {
@@ -104,8 +108,19 @@ class KmsOciQueueJob {
     }
     $queue = DrupalQueue::get($queue_name);
     $jid = $queue->createItem($params);
-    KmsOciQueueJobStatus::save($jid, self::STATUS_READY);
-    self::log($jid, t('Job created'));
+    KmsOciQueueJobStatus::save($jid, KmsOciQueueJobStatus::STATUS_READY);
+    self::log($jid, t('Job %jid created'), array('%jid' => $jid));
+  }
+
+  public function delete($delete_log = FALSE) {
+    // Delete queue item;
+    $queue = DrupalQueue::get($this->queueItem->name);
+    $queue->deleteItem((object)array('item_id' => $this->jid));
+    // Delete log.
+    if($delete_log) {
+      KmsOciQueueJobStatus::delete($this->jid);
+    }
+    self::log($jid, t('Job %jid deleted'), array('%jid' => $this->jid));
   }
 
   public static function log($jid, $message, $variables = array(), $severity = WATCHDOG_INFO) {
@@ -138,7 +153,7 @@ class KmsOciQueueJob {
 class KmsOciQueueJobStatus {
   const STATUS_READY = 0;
   const STATUS_PROCESSING = 1;
-  const STATUS_FAILED = -1;
+  const STATUS_FAILED = 2;
 
   public static function save($jid, $status){
     $record = new stdClass();
@@ -159,6 +174,12 @@ class KmsOciQueueJobStatus {
     return $result;
   }
 
+  public static function delete($jid){
+    db_delete('kms_oci_queue_job_status')
+      ->condition('jid', $jid)
+      ->execute();
+  }
+
   private static function status2human($status) {
     $statuses = self::statuses();
     return $statuses[$status];
@@ -173,7 +194,6 @@ class KmsOciQueueJobStatus {
   }
 
 }
-
 
 
 class KmsOciQueueJobFactory {

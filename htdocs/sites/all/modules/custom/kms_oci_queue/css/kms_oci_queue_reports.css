@@ -1,0 +1,44 @@
+/* line 2, ../sass/kms_oci_queue_reports.scss */
+.kms-oci-queue-jobs-overview .status-0 {
+  color: green;
+}
+/* line 5, ../sass/kms_oci_queue_reports.scss */
+.kms-oci-queue-jobs-overview .status-1 {
+  color: cornflowerblue;
+}
+/* line 8, ../sass/kms_oci_queue_reports.scss */
+.kms-oci-queue-jobs-overview .status-2 {
+  color: red;
+}
+/* line 11, ../sass/kms_oci_queue_reports.scss */
+.kms-oci-queue-jobs-overview tr.kms-oci-queue-job-log {
+  display: none;
+  border-style: none;
+}
+/* line 14, ../sass/kms_oci_queue_reports.scss */
+.kms-oci-queue-jobs-overview tr.kms-oci-queue-job-log table {
+  border: 0;
+}
+/* line 16, ../sass/kms_oci_queue_reports.scss */
+.kms-oci-queue-jobs-overview tr.kms-oci-queue-job-log table tr {
+  background: transparent;
+  border: 0;
+}
+/* line 19, ../sass/kms_oci_queue_reports.scss */
+.kms-oci-queue-jobs-overview tr.kms-oci-queue-job-log table tr td {
+  border: 0;
+}
+/* line 25, ../sass/kms_oci_queue_reports.scss */
+.kms-oci-queue-jobs-overview td {
+  border-bottom: 1px solid #bebfb9;
+}
+/* line 27, ../sass/kms_oci_queue_reports.scss */
+.kms-oci-queue-jobs-overview td.job-log-trigger {
+  padding-left: 25px;
+  cursor: pointer;
+  background: url(/misc/arrow-desc.png) no-repeat 5px 10px;
+}
+/* line 31, ../sass/kms_oci_queue_reports.scss */
+.kms-oci-queue-jobs-overview td.job-log-trigger.active {
+  background: url(/misc/arrow-asc.png) no-repeat 5px 10px;
+}
