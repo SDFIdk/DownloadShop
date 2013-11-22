@@ -16,20 +16,24 @@ includes[kms_distro_inc] = "kms.distro.inc"
 projects[views][subdir] = "contrib"
 projects[views][version] = "3.5"
 projects[views][patch][] = "http://drupal.org/files/views_1055616_81_cache.patch"
+projects[views][type] = "module"
 
 ;filefield_paths - dev
 projects[filefield_paths][subdir] = "contrib"
 projects[filefield_paths][version] = "1.x-dev"
+projects[filefield_paths][type] = "module"
 
 ;hierarchical_select - dev
 projects[hierarchical_select][subdir] = "contrib"
 projects[hierarchical_select][version] = "3.x-dev"
+projects[hierarchical_select][type] = "module"
 
 ;subuser
 projects[subuser][download][type] = "git"
 projects[subuser][download][url] = "git://git.drupal.org/project/subuser.git"
 projects[subuser][subdir] = "contrib"
 projects[subuser][revision] = "83c2058004d78ea4c58dabbf7a204975e759fae9"
+projects[subuser][type] = "module"
 
 
 projects[adapt_module][type] = 'module'
@@ -37,7 +41,6 @@ projects[adapt_module][download][type] = 'svn'
 projects[adapt_module][download][url] = 'svn+ssh://svnhost/data/subversion/drupal/global/tags/modules/_adapt-7.x-0.3'
 projects[adapt_module][directory_name] = "_adapt"
 projects[adapt_module][subdir] = "global"
-
 
 ; Custom modules
 projects[features_export][download][type] = "svn"
