@@ -246,9 +246,9 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
         $result_nids = array_keys($result['node']);
         $result_node = entity_load('node', $result_nids);
       }
-
       // Add all enabled bundles to element array
       foreach ($result['node'] as $nid => $node) {
+
         $element[$nid] = array(
           '#markup' => '
             <span class="bundle-inactive">
@@ -260,7 +260,7 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
       foreach ($items as $delta => $item) {
         if ($item['access']) {
           $element[$item['nid']] = array(
-            '#markup' => '<span class="bundle-active">' . $item['nid'] . '</span>',
+            '#markup' => '<span class="bundle-active"><a href="node/' . $item['nid'] . '/edit/" title="' . $result_node[$item['nid']]->title .'">' . $item['nid']  . '</a></span>',
           );
         }
       }
@@ -349,16 +349,94 @@ function kms_permissions_form_access_bundle_node_form_alter(&$form, &$form_state
   $form['actions']['delete']['#submit'][] = 'kms_permissions_access_bundle_update';
 }
 
+function ajax_check_bundles_callback($form, $form_state) {
+  // _adapt_debug('julien', 'pouet');
+  // return $form['field_bundle_webservices_geo'];
+}
+
+
 /**
  * Implements hook_form_FORM_ID_alter().
  */
 function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
-  // Filter out default bundles
+  // Disable default bundles checkbox
   $default = _kms_permissions_get_default_bundles();
   foreach ($default as $val) {
-    unset($form['field_access_bundles'][$form['field_access_bundles']['#language']]['#options'][$val]);
+    $form['field_access_bundles'][$form['field_access_bundles']['#language']][$val] = array(
+    '#default_value' => $val,
+    '#disabled' => TRUE,
+    '#weight' => -1,
+    );
   }
+
+  //Set tick in permissions given by bundles
+  //Get all user's permissions
+
+  //Find out what bundle user has
+  //Todo: add default bundles
+  $permissions = array();
+  $bids = array();
+  
+  // _adapt_debug('julien', $form['field_bundle_webservices_geo']["und"]["#options"] = array(1 => 'pouet'));
+ // $form['field_bundle_webservices_geo']["und"]["#options"]['geoA']['#disabled'] = TRUE;
+
+
+  // Ajax form for bundles
+  // $form['field_access_bundles'][$form['field_access_bundles']['#language']]['#ajax'] = array(
+  //     // 'callback' => 'ajax_check_bundles_callback',
+  //     'wrapper' => 'checkboxes-div',
+  //     'method' => 'replace',
+  //   );
+
+  // $form['field_bundle_webservices_geo']['#prefix'] = '<div id="checkboxes-div">';
+  // $form['field_bundle_webservices_geo']['#suffix'] = '</div>';
+
+
+
+  // _adapt_debug('julien', array_keys($form_state['build_info']['args']));
+  // _adapt_debug('julien', $form_state['build_info']['args'][0]->field_access_bundles[LANGUAGE_NONE][0]['nid']);
+  foreach ($form as $field_name => $field_value) {
+    // Only use bundle fields
+    if (strpos($field_name, 'field_access_bundles') !== false) {
+      foreach ($field_value['und']['#options'] as $bid => $bundle_name) {
+        $bids[] = $bid;
+      }
+    }
+  }
+  // Get permissions from user's bundles
+  foreach ($bids as $bid) {
+    _kms_permissions_get_permissions_by_bid($bid, &$permissions);
+  }
+  $user_services_id = array();
+  foreach ($permissions["services"] as $service) {
+    $user_services_id[] = $service['id'];
+  }
+
+  // _adapt_debug('julien', $suser_services_id);
+
+  _kms_permissions_get_permissions_by_uid($form['#user']->uid, $permissions);
+  // _adapt_debug('julien', $permissions);
+  foreach ($form as $field_name => $field_value) {
+    if (strpos($field_name, 'field_bundle_webservices') !== false) {
+    // _adapt_debug('julien', $field_value['und']['#options']);
+      foreach (array_keys($field_value['und']['#options']) as $service_ids) {
+        if (in_array($service_ids, $user_services_id)) {
+          // _adapt_debug('julien', $service_ids);
+            // $form['checkboxes_element'][abc]['#disabled'] = TRUE; //disables option, called abc
+        }
+      }
+
+    }
+    // Only use bundle fields
+    // foreach ($field_value as $webservice_list) {
+      // }
+    // }
+  }
+
+
+
 } 
+
 
 /**
  * Implements hook_node_presave().
