@@ -47,6 +47,54 @@ projects[addressfield][type] = "module"
 projects[addressfield][download][type] = "git"
 projects[addressfield][revision] = "fc024d23ffe7791127c29654f75972cc6b63e643"
 
+;masquerade (1.0-rc5)
+projects[masquerade][subdir] = "contrib"
+projects[masquerade][type] = "module"
+projects[masquerade][download][type] = "git"
+projects[masquerade][revision] = "9b51e6dd2b6dfe4954109d343dca83f823312503"
+
+;menu_per_role (1.x-dev)
+projects[menu_per_role][subdir] = "contrib"
+projects[menu_per_role][type] = "module"
+projects[menu_per_role][download][type] = "git"
+projects[menu_per_role][revision] = "40668c3fdde61f4f7647703755ec8b8cadcf6248"
+
+;metatag (1.0-beta2)
+projects[metatag][subdir] = "contrib"
+projects[metatag][type] = "module"
+projects[metatag][download][type] = "git"
+projects[metatag][revision] = "a1717ee79bb05bd5c7e6051dfc63f20584df16c4"
+
+;relation (1.0-rc4)
+projects[relation][subdir] = "contrib"
+projects[relation][type] = "module"
+projects[relation][download][type] = "git"
+projects[relation][revision] = "70700d3c0f2df07a7c093725e8d6fc87e6842e19"
+
+;sharedemail (1.x-dev)
+projects[sharedemail][subdir] = "contrib"
+projects[sharedemail][type] = "module"
+projects[sharedemail][download][type] = "git"
+projects[sharedemail][revision] = "5321afb9ec8f9d697e7effeb162957689218cab2"
+
+;smtp (1.0-beta2)
+projects[smtp][subdir] = "contrib"
+projects[smtp][type] = "module"
+projects[smtp][download][type] = "git"
+projects[smtp][revision] = "80b6ced78dae407fd121a0e2663ccc4b4f297196"
+
+;views_data_export (3.0-beta6)
+projects[views_data_export][subdir] = "contrib"
+projects[views_data_export][type] = "module"
+projects[views_data_export][download][type] = "git"
+projects[views_data_export][revision] = "673387d35f58f1dea4c198ef7434423eab4132bf"
+
+;xmlsitemap (2.0-rc1)
+projects[xmlsitemap][subdir] = "contrib"
+projects[xmlsitemap][type] = "module"
+projects[xmlsitemap][download][type] = "git"
+projects[xmlsitemap][revision] = "e94c0ac5902ea6464d6f067d9a70527aa11784c4"
+
 ;admin_menu (3.0-rc3)
 projects[admin_menu][subdir] = "contrib"
 projects[admin_menu][type] = "module"
