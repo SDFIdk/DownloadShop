@@ -233,6 +233,7 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
 
   switch ($display['type']) {
     case 'kms_permissions_bundles_reference':
+      // Query all bundles
       $query = new EntityFieldQuery;
       $result = $query
         ->entityCondition('entity_type', 'node')
@@ -240,10 +241,19 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
         ->propertyCondition('status', 1)
         ->execute();
 
+      // We need to load the nodes to get bundle title
+      if (isset($result['node'])) {
+        $result_nids = array_keys($result['node']);
+        $result_node = entity_load('node', $result_nids);
+      }
+
       // Add all enabled bundles to element array
       foreach ($result['node'] as $nid => $node) {
         $element[$nid] = array(
-          '#markup' => '<span class="bundle-inactive">' . $nid . '</span>',
+          '#markup' => '
+            <span class="bundle-inactive">
+              <a href="node/' . $nid . '/edit/" title="' . $result_node[$nid]->title .'">' . $nid  . '</a>
+            </span>',
         );
       }
 
