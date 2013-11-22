@@ -35,12 +35,17 @@ projects[subuser][subdir] = "contrib"
 projects[subuser][revision] = "83c2058004d78ea4c58dabbf7a204975e759fae9"
 projects[subuser][type] = "module"
 
-
 projects[adapt_module][type] = 'module'
 projects[adapt_module][download][type] = 'svn'
 projects[adapt_module][download][url] = 'svn+ssh://svnhost/data/subversion/drupal/global/tags/modules/_adapt-7.x-0.3'
 projects[adapt_module][directory_name] = "_adapt"
 projects[adapt_module][subdir] = "global"
+
+;addressfield
+projects[addressfield][subdir] = "contrib"
+projects[addressfield][type] = "module"
+projects[addressfield][download][type] = "git"
+projects[addressfield][revision] = "fc024d23ffe7791127c29654f75972cc6b63e643"
 
 ; Custom modules
 projects[features_export][download][type] = "svn"
