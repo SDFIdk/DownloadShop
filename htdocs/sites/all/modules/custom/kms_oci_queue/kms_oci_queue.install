@@ -1,18 +1,18 @@
 <?php
 
 function kms_oci_queue_install() {
-  foreach(_kms_oci_queue_queues() as $queue => $class) {
-    variable_set("queue_class_$queue", $class);
-    $queue = DrupalQueue::get($queue);
-    $queue->createQueue();
+  foreach(KmsOciQueueJob::$queues as $queue) {
+    variable_set('queue_class_' . $queue['name'], $queue['class']);
+    $q = DrupalQueue::get($queue['name']);
+    $q->createQueue();
   }
 }
 
 function kms_oci_queue_uninstall() {
-  foreach(_kms_oci_queue_queues() as $queue) {
-    $queue = DrupalQueue::get($queue);
-    $queue->deleteQueue();
-    variable_del("queue_class_$queue");
+  foreach(KmsOciQueueJob::$queues as $queue) {
+    $q = DrupalQueue::get($queue['name']);
+    $q->deleteQueue();
+    variable_del('queue_class_' . $queue['name']);
   }
 }
 
@@ -23,10 +23,10 @@ function kms_oci_queue_schema() {
   $schema['kms_oci_queue_log'] = array(
     'description' => 'Table that contains logs of all oci queue events.',
     'fields' => array(
-      'oqid' => array(
+      'lid' => array(
         'type' => 'serial',
         'not null' => TRUE,
-        'description' => 'Primary Key: Unique oci queue event ID.',
+        'description' => 'Primary Key: log ID.',
       ),
       'jid' => array(
         'type' => 'int',
@@ -67,20 +67,39 @@ function kms_oci_queue_schema() {
         'description' => 'Unix timestamp of when event occurred.',
       ),
     ),
-    'primary key' => array('oqid'),
+    'primary key' => array('lid'),
     'indexes' => array(
       'jid' => array('jid'),
       'timestamp' => array('timestamp'),
     ),
+    'foreign keys' => array(
+      'kms_oci_queue_job' => array(
+        'table' => 'kms_oci_queue_job',
+        'columns' => array('jid' => 'jid'),
+      ),
+    ),
   );
 
-  $schema['kms_oci_queue_job_status'] = array(
+  $schema['kms_oci_queue_job'] = array(
     'description' => 'Table that contains current job status.',
     'fields' => array(
       'jid' => array(
         'type' => 'int',
         'not null' => TRUE,
         'description' => 'Primary key: Job id.',
+      ),
+      'type' => array(
+        'description' => 'The job type.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'query_num' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'Number of queries to process.',
       ),
       'status' => array(
         'type' => 'int',
@@ -90,32 +109,25 @@ function kms_oci_queue_schema() {
         'size' => 'tiny',
         'description' => 'The current job status',
       ),
-      'timestamp' => array(
+      'created' => array(
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
-        'description' => 'Unix timestamp of when event occurred.',
-      ),
-    ),
-    'foreign keys' => array(
-      'kms_oci_queue_log' => array(
-        'table' => 'kms_oci_queue_log',
-        'columns' => array('jid' => 'jid'),
+        'description' => 'When the job was created.',
       ),
     ),
     'primary key' => array('jid'),
     'indexes' => array(
-      'timestamp' => array('timestamp'),
+      'timestamp' => array('created'),
     ),
   );
 
   return $schema;
 }
 
-function _kms_oci_queue_queues() {
-  return array(
-    'kms_oci_queue_query' => 'QueryQueue',
-    'kms_oci_queue_multi_query_creator' => 'QueryQueue',
-    'kms_oci_queue_multi_query' => 'SystemQueue',
-  );
-}
+//function _kms_oci_queue_queues() {
+//  return array(
+//    'kms_oci_queue_query_creator' => 'QueryQueue',
+//    'kms_oci_queue_query' => 'SystemQueue',
+//  );
+//}

@@ -103,7 +103,7 @@ function kms_oci_queue_admin_page_jobs () {
     $jobs_output["job_queue_title_$name"] = array(
       '#type' => 'html_tag',
       '#tag' => 'h2',
-      '#value' => 'Query jobs (' . KmsOciQueueJob::typeFromQueueName($name) . ')',
+      '#value' => 'Query jobs (' . $name . ')',
     );
     foreach(kms_oci_queue_get_items($name) as $item) {
       $job = KmsOciQueueJobFactory::get($item['item_id']);
