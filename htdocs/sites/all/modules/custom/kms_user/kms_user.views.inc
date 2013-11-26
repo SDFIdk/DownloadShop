@@ -4,9 +4,7 @@
  */
 function kms_user_views_default_views_alter(&$views) {
   // Alter only the user list view
-  _adapt_debug('julien', 'we are the champions!!!');
   if (array_key_exists('admin_views_user', $views)) {
-  _adapt_debug('julien', 'we are still the champions!!!');
     $view = new view();
     $view->name = 'admin_views_user';
     $view->description = 'List, add, and edit users.';
