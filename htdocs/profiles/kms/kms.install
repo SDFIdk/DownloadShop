@@ -137,5 +137,15 @@ function kms_install_load_plugins($name){
  * @author: Julien <julien@adapt.dk>
  */
 function kms_update_7000(&$sandbox) {
-  module_enable(array('kms_user', 'kms_oci_queue', 'kms_permissions'), FALSE);
+  module_enable(array('entityreference', 'kms_user', 'kms_oci_queue', 'kms_permissions', 'kms_access_bundles'));
+}
+
+/**
+ * Implements hook_update().
+ * Reverting admin_views_user view
+ * @author: Julien <julien@adapt.dk>
+ */
+function kms_update_7001(&$sandbox) {
+  $view = views_get_view('admin_views_user');
+  views_revert_view($view);
 }
