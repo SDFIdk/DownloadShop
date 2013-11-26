@@ -973,17 +973,3 @@ function kms_user_access_bundle_administer($op, $account, $bundles = array()) {
   
   $w->save();
 }
-
-/**
- * Implements hook_views_api().
- */
-function kms_user_views_api() {
-  return array(
-    'api' => 3,
-  );
-}
-
-function kms_user_test_revert(){
-  $view = views_get_view('admin_views_user');
-  views_revert_view($view);
-}
