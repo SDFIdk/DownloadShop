@@ -15,11 +15,11 @@ class KmsOciQueueJob {
   public static $queues = array(
     'creator' => array(
       'name' => 'kms_oci_queue_query_creator',
-      'class' => 'QueryQueue',
+      'class' => 'QueryCreatorQueue',
     ),
     'executor' => array(
       'name' => 'kms_oci_queue_query',
-      'class' => 'SystemQueue',
+      'class' => 'QueryQueue',
     ),
   );
 
@@ -27,6 +27,7 @@ class KmsOciQueueJob {
   public $created;
   public $status;
   public $info;
+  public $infoDetails;
   public $queryNum;
   private $queueItem;
   private $job;
@@ -39,6 +40,7 @@ class KmsOciQueueJob {
     $this->setQueueItem($this->loadQueueItem());
     $this->setCreated();
     $this->setInfo();
+    $this->setInfoDetails();
     $this->setStatus();
     $this->setQueryNum();
   }
@@ -63,6 +65,13 @@ class KmsOciQueueJob {
     $this->info = '';
     if(property_exists($this->queueItem, 'data') && !empty($this->queueItem->data['action'])) {
       $this->info = $this->queueItem->data['action'];
+    }
+  }
+
+  private function setInfoDetails(){
+    $this->infoDetails = '';
+    if(property_exists($this->queueItem, 'data') && !empty($this->queueItem->data['params'])) {
+      $this->infoDetails = print_r($this->queueItem->data['params'], TRUE);
     }
   }
 
@@ -110,7 +119,7 @@ class KmsOciQueueJob {
   }
 
   public static function create($params) {
-    $queue = DrupalQueue::get(self::$queues['creator']['name']);
+    $queue = DrupalQueue::get(self::$queues['creator']['name'], TRUE);
     $job = new stdClass();
     $job->jid = $queue->createItem($params);
     $job->status = KmsOciQueueJob::STATUS_WAITING;

@@ -9,11 +9,13 @@ function kms_oci_queue_install() {
 }
 
 function kms_oci_queue_uninstall() {
-  foreach(KmsOciQueueJob::$queues as $queue) {
-    $q = DrupalQueue::get($queue['name']);
-    $q->deleteQueue();
-    variable_del('queue_class_' . $queue['name']);
-  }
+  // Atodo: find a solution to load KmsOciQueueJob.
+//  module_load_include('inc', 'kms_oci_queue', 'includes/kms_oci_queue_job');
+//  foreach(KmsOciQueueJob::$queues as $queue) {
+//    $q = DrupalQueue::get($queue['name']);
+//    $q->deleteQueue();
+//    variable_del('queue_class_' . $queue['name']);
+//  }
 }
 
 /**

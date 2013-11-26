@@ -24,34 +24,123 @@ function kms_oci_queue_menu() {
   return $items;
 }
 
-function kms_oci_queue_add_single_query($query) {
-  if(empty($query)) {
+//// Define custom cron functions
+//function kms_oci_queue_cronapi($op, $job = NULL) {
+//  switch($op) {
+//    case 'list':
+//      return array(
+//        'kms_oci_queue_query_creator_run' => 'Kms oci queue: Run query creator',
+//      );
+//
+//    case 'rule':
+//      switch($job) {
+//        case 'kms_oci_queue_query_creator_run': return '1 * * * *';
+//        break;
+//      }
+//      break;
+//
+//    case 'execute':
+//      switch($job) {
+//        case 'kms_oci_queue_query_creator_run':
+//          kms_oci_queue_query_creator_run();
+//          break;
+//      }
+//      break;
+//  }
+//
+//}
+
+function kms_oci_queue_cron() {
+  kms_oci_queue_query_creator_run();
+}
+
+/**
+ * Implements hook_cron_queue_info().
+ *
+ * Set up ten queues that all send items to the same callback function.
+ */
+function kms_oci_queue_cron_queue_info() {
+  $queues['kms_oci_queue_query_creator'] = array(
+    'worker callback' => 'kms_oci_queue_query_creator_run',
+    'time' => 120,
+  );
+  $queues['kms_oci_queue_query'] = array(
+    'worker callback' => 'kms_oci_queue_query_run',
+    'time' => 120,
+  );
+  return $queues;
+}
+
+function kms_oci_queue_query_creator_run() {
+//  _adapt_debug('mikkel', 'hello!');
+  $queue = DrupalQueue::get(KmsOciQueueJob::$queues['creator']['name'], TRUE);
+  $item = $queue->claimItem();
+  if(!$item) {
     return;
   }
-  $queue = DrupalQueue::get('kms_oci_queue_queries');
-  $queue->createQueue();  // There is no harm in trying to recreate existing.
-  $job = new stdClass();
-  $job->query = $query;
-  // Queue the string.
-  $queue->createItem($job);
-//  $count = $queue->numberOfItems();
+  $data = $item->data;
+//  _adapt_debug('mikkel', var_export($data, TRUE));
+  switch($data['action']) {
+    case 'insert user':
+      if(!empty($data['params'])) {
+        $query_count = count($data['params']);
+//        _adapt_debug('mikkel', '$query_count:');
+//        _adapt_debug('mikkel', $query_count);
+        $i = 1;
+        $is_last_item = TRUE;
+        foreach($data['params'] as $user_query) {
+          $queue = DrupalQueue::get(KmsOciQueueJob::$queues['executor']['name'], TRUE);
+          kms_oci_filter_query_data($user_query[0]);
+          $query = kms_oci_generate_query('insert', $user_query[0], array('table' => $user_query[1]));
+          // Queue the string.
+            $data = (object)array(
+              'jid' => $item->item_id,
+              'query' => $query,
+              'data' => $user_query[0],
+              'is_last_item' => $i == $query_count,
+            );
+            $queue->createItem($data);
+//          _adapt_debug('mikkel', 'createItem:');
+//          _adapt_debug('mikkel', $test);
+            $is_last_item = FALSE;
+          $i++;
+        }
+      }
+      break;
+  }
 }
 
-function miktestSet($queue_name, $str) {
-  $queue = DrupalQueue::get($queue_name);
-  $queue->createQueue();  // There is no harm in trying to recreate existing.
-  $job = new stdClass();
-  $job->id = uniqid();
-  $job->str = $str;
-  // Queue the string.
-  $queue->createItem($job);
-//  $count = $queue->numberOfItems();
-}
+function kms_oci_queue_query_run($item) {
+//  _adapt_debug('mikkel', $item);
+  $patterns = $replacements = array();
+  array_walk($item->data, function($v, $k) use(&$patterns, &$replacements){
+    $patterns[] = '#\\' . $k . '#';
+    $replacements[] = "'$v'";
+  });
+  $txt = preg_replace($patterns, $replacements, $item->query, 1) . ";\n";
+  $file_name = 'kms_oci_queue_query_run_' . $item->jid;
+  $temp_name = sprintf('temporary://%s.tmp', $file_name);
+  $dest_name = sprintf('public://%s.job', $file_name);
+  if (file_put_contents($temp_name, $txt, FILE_APPEND) === FALSE) {
+    KmsOciQueueJob::log($item->jid, 'File creation failed. Could not write to tmp dir.', WATCHDOG_ERROR);
+  }elseif($item->is_last_item) {
+    $move = file_unmanaged_move($temp_name, $dest_name, FILE_EXISTS_REPLACE);
+    if($move) {
+      KmsOciQueueJob::log(
+        $item->jid,
+        'File creation succeeded. Saved in %filepath',
+        array('%filepath' => $move),
+        WATCHDOG_INFO
+      );
+    }
+    else {
+      KmsOciQueueJob::log($item->jid, 'File creation failed. Cannot move file from tmp dir.', WATCHDOG_ERROR);
+    }
 
-function miktestGet($queue_name) {
-  $queue = DrupalQueue::get($queue_name);
-  $item = $queue->claimItem();
-  var_dump($item);
+  }
+
+  // Move the file to its final destination.
+//  $move = file_unmanaged_move($temp_name, $destination, FILE_EXISTS_REPLACE);
 }
 
 function kms_oci_queue_get_items($queue_name) {
@@ -68,7 +157,7 @@ function kms_oci_queue_get_items($queue_name) {
 function kms_oci_queue_fetch_queue_names() {
   $query = db_select('queue', 'q');
   $query->fields('q', array('name'));
-  $query->condition('q.name', "kms_oci_queue%", 'LIKE');
+  $query->condition('q.name', "kms_oci_queue_query_creator", '=');
   $query->groupBy('q.name');
   $result = $query->execute()->fetchAllAssoc('name');
   return $result ? array_keys($result) : array();
@@ -107,14 +196,24 @@ function kms_oci_queue_admin_page_jobs () {
     );
     foreach(kms_oci_queue_get_items($name) as $item) {
       $job = KmsOciQueueJobFactory::get($item['item_id']);
+      $job_info =  $job->info . ' [<a href="#" class="more">' . t('info') . '</a>]';
       $rows[] = array(
         'data' => array(
           array('data' => $job->jid, 'data-jid' => $job->jid, 'class' => 'job-log-trigger'),
-          array('data' => $job->info),
+          array('data' => $job_info, 'data-jid' => $job->jid, 'class' => array('job-info')),
           array('data' => $job->status->message, 'class' => 'status-' . $job->status->status),
           array('data' => format_date($job->created)),
         )
       );
+
+      $options['job_info_beautytip_' . $job->jid] = array(
+        'cssSelect' => 'td[data-jid="' . $job->jid .  '"].job-info .more',
+        'trigger' => array(0 => 'mouseover', 1 => 'click'),
+        'text' => $job->infoDetails,
+        'width' => 350,
+      );
+      beautytips_add_beautytips($options);
+
       $rows[] = array(
         'class' => array('kms-oci-queue-job-log'),
         'data-jid' => $job->jid,
@@ -146,9 +245,13 @@ function kms_oci_queue_admin_page_job_log($jid){
   $output = array();
   if(!empty($log)){
     foreach($log as $id => $entry) {
+      $message_vars = unserialize($entry->variables);
+      if(empty($message_vars) || !is_array($message_vars)) {
+        $message_vars = array();
+      }
       $rows[] = array(
         array('data' => format_date($entry->timestamp), 'colspan' => 1),
-        array('data' => format_string($entry->message, unserialize($entry->variables)), 'colspan' => 2),
+        array('data' => format_string($entry->message, $message_vars), 'colspan' => 2),
       );
     }
     $output["log_$id"] = array(
@@ -164,4 +267,33 @@ function kms_oci_queue_admin_page_job_log($jid){
 
   drupal_json_output($json);
   exit;
+}
+
+function asdjyasgdjdfsjdgjdasgjgdjas() {
+  $item = array (
+    'query' => 'INSERT INTO smuser_extra (duid, userid, usertype, usertype_info, receive_newsletter, accept_terms, contact_me) VALUES (:duid, :userid, :usertype, :usertype_info, :receive_newsletter, :accept_terms, :contact_me)',
+    'data' =>
+      array (
+        ':duid' => '17799',
+        ':userid' => '17799',
+        ':usertype' => '3522',
+        ':usertype_info' => '',
+        ':receive_newsletter' => 0,
+        ':accept_terms' => 1,
+        ':contact_me' => 1,
+      ),
+  );
+
+  $query = $item['query'];
+  $patterns = $replacements = array();
+  array_walk($item['data'], function($v, $k) use($item, &$patterns, &$replacements){
+    $patterns[] = '#\\' . $k . '#';
+    $replacements[] = "'$v'";
+  });
+  $test = preg_replace($patterns, $replacements, $query, 1);
+//  _adapt_debug('mikkel', $patterns);
+//  _adapt_debug('mikkel', $replacements);
+//  _adapt_debug('mikkel', $query);
+//  _adapt_debug('mikkel', $test);
+
 }

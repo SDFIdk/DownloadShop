@@ -1,11 +1,11 @@
 <?php
 /**
- * query_queue.inc.
+ * query_creator_queue.inc.
  * User: mikkel@adapt.dk
- * Date: 11/15/13 - 9:47 PM
+ * Date: 11/26/13 - 11:22 PM
  */
 
-class QueryQueue extends SystemQueue {
+class QueryCreatorQueue extends SystemQueue {
 
   public function __construct($name) {
     parent::__construct($name);
@@ -21,6 +21,7 @@ class QueryQueue extends SystemQueue {
         'created' => time(),
       ));
     $item_id = $query->execute();
+    KmsOciQueueJobFactory::get($item_id);
     return $item_id;
   }
 
