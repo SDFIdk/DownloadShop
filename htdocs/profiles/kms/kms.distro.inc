@@ -13,6 +13,11 @@ projects[admin_views][subdir] = "contrib"
 projects[admin_views][version] = "1.0"
 projects[admin_views][type] = "module"
 
+;background_process
+projects[background_process][subdir] = "contrib"
+projects[background_process][version] = "1.14"
+projects[background_process][type] = "module"
+
 ;beautytips
 projects[beautytips][subdir] = "contrib"
 projects[beautytips][version] = "2.0-beta2"
