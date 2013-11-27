@@ -545,8 +545,16 @@ function _kms_user_submit_insert_user_oracle($form, &$form_state) {
   }
   // Insert oracle user data.
   if (module_exists('kms_oci') && !kms_user_smuser_exists($account)) {
-      kms_oci_insert($data['user_extra'], 'smuser_extra');
-      kms_oci_insert($data['user'], 'smuser');
+//      kms_oci_insert($data['user_extra'], 'smuser_extra');
+//      kms_oci_insert($data['user'], 'smuser');
+    // Atodo: Needs testing:
+    KmsOciQueueJob::create(array(
+      'action' => 'insert user',
+      'params' => array(
+        array($data['user'], 'smuser'),
+        array($data['user_extra'], 'smuser_extra'),
+      )
+    ));
   }
 
 }
