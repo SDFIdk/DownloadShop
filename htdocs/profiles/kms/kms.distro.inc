@@ -13,10 +13,10 @@ projects[admin_views][subdir] = "contrib"
 projects[admin_views][version] = "1.0"
 projects[admin_views][type] = "module"
 
-;background_process
-projects[background_process][subdir] = "contrib"
-projects[background_process][version] = "1.14"
-projects[background_process][type] = "module"
+;beautytips
+projects[beautytips][subdir] = "contrib"
+projects[beautytips][version] = "2.0-beta2"
+projects[beautytips][type] = "module"
 
 ;better_exposed_filters
 projects[better_exposed_filters][subdir] = "contrib"
@@ -198,11 +198,6 @@ projects[references][subdir] = "contrib"
 projects[references][version] = "2.0"
 projects[references][type] = "module"
 
-;oracle
-projects[oracle][subdir] = "contrib"
-projects[oracle][version] = "1.12"
-projects[oracle][type] = "module"
-
 ;panels
 projects[panels][subdir] = "contrib"
 projects[panels][version] = "3.3"
@@ -237,11 +232,6 @@ projects[relation][type] = "module"
 projects[rules][subdir] = "contrib"
 projects[rules][version] = "2.2"
 projects[rules][type] = "module"
-
-;security_review
-projects[security_review][subdir] = "contrib"
-projects[security_review][version] = "1.0"
-projects[security_review][type] = "module"
 
 ;sharedemail
 projects[sharedemail][subdir] = "contrib"
