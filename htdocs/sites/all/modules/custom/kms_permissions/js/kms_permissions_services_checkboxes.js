@@ -1,1 +1,0 @@
-$("#foo").append("<div id='my_collapsible'>hello world</div>")
