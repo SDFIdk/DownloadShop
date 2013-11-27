@@ -12,10 +12,10 @@ projects[drupal][patch][] = "http://drupal.org/files/symlinks_within_files_direc
 ; Modules
 includes[kms_distro_inc] = "kms.distro.inc"
 
-;admin_views
+;admin_views -- patched
 projects[admin_views][subdir] = "contrib"
 projects[admin_views][version] = "1.0"
-projects[admin_views][patch][] = "https://drupal.org/files/issues/admin_views-enable-use-of-custom-views-2145183-1.patch"
+projects[admin_views][patch][] = "http://drupal.org/files/issues/admin_views-enable-use-of-custom-views-2145183-1.patch"
 projects[admin_views][type] = "module"
 
 ;views -- patched
