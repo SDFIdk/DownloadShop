@@ -21,7 +21,7 @@ class QueryCreatorQueue extends SystemQueue {
         'created' => time(),
       ));
     $item_id = $query->execute();
-    KmsOciQueueJobFactory::get($item_id);
+//    KmsOciQueueJobFactory::get($item_id);
     return $item_id;
   }
 

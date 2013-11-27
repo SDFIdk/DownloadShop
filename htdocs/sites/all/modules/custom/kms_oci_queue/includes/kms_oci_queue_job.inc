@@ -63,15 +63,15 @@ class KmsOciQueueJob {
 
   private function setInfo(){
     $this->info = '';
-    if(property_exists($this->queueItem, 'data') && !empty($this->queueItem->data['action'])) {
-      $this->info = $this->queueItem->data['action'];
+    if(property_exists($this->queueItem, 'data') && !empty($this->queueItem->data->action)) {
+      $this->info = $this->queueItem->data->action;
     }
   }
 
   private function setInfoDetails(){
     $this->infoDetails = '';
-    if(property_exists($this->queueItem, 'data') && !empty($this->queueItem->data['params'])) {
-      $this->infoDetails = print_r($this->queueItem->data['params'], TRUE);
+    if(property_exists($this->queueItem, 'data') && !empty($this->queueItem->data->params)) {
+      $this->infoDetails = print_r($this->queueItem->data->params, TRUE);
     }
   }
 
@@ -121,7 +121,7 @@ class KmsOciQueueJob {
   public static function create($params) {
     $queue = DrupalQueue::get(self::$queues['creator']['name'], TRUE);
     $job = new stdClass();
-    $job->jid = $queue->createItem($params);
+    $job->jid = $queue->createItem((object)$params);
     $job->status = KmsOciQueueJob::STATUS_WAITING;
     $job->created = time();
     $job_saved = KmsOciQueueJobDb::insertJob($job);
@@ -203,52 +203,6 @@ class KmsOciQueueJobDb {
   }
 
 }
-
-//class KmsOciQueueJobStatus {
-//  const STATUS_READY = 0;
-//  const STATUS_PROCESSING = 1;
-//  const STATUS_FAILED = 2;
-//
-//  public static function save($jid, $status){
-//    $record = new stdClass();
-//    $record->jid = $jid;
-//    $record->status = $status;
-//    $record->timestamp = time();
-//    drupal_write_record('kms_oci_queue_job', $record);
-//  }
-//
-//  public static function load($jid){
-//    $query = db_select('kms_oci_queue_job', 'j');
-//    $query->fields('js');
-//    $query->condition('js.jid', $jid, '=');
-//    $result = $query->execute()->fetchObject();
-//    if($result) {
-//      $result->message = self::status2human($result->status);
-//    }
-//    return $result;
-//  }
-//
-//  public static function delete($jid){
-//    db_delete('kms_oci_queue_job')
-//      ->condition('jid', $jid)
-//      ->execute();
-//  }
-//
-//  private static function status2human($status) {
-//    $statuses = self::statuses();
-//    return $statuses[$status];
-//  }
-//
-//  private static function statuses() {
-//    return array(
-//      self::STATUS_READY => t('Ready'),
-//      self::STATUS_PROCESSING => t('Processing'),
-//      self::STATUS_FAILED => t('Failed'),
-//    );
-//  }
-//
-//}
-
 
 class KmsOciQueueJobFactory {
   private static $jobs;

@@ -50,9 +50,9 @@ function kms_oci_queue_menu() {
 //
 //}
 
-function kms_oci_queue_cron() {
-  kms_oci_queue_query_creator_run();
-}
+//function kms_oci_queue_cron() {
+//  kms_oci_queue_query_creator_run();
+//}
 
 /**
  * Implements hook_cron_queue_info().
@@ -71,38 +71,24 @@ function kms_oci_queue_cron_queue_info() {
   return $queues;
 }
 
-function kms_oci_queue_query_creator_run() {
-//  _adapt_debug('mikkel', 'hello!');
-  $queue = DrupalQueue::get(KmsOciQueueJob::$queues['creator']['name'], TRUE);
-  $item = $queue->claimItem();
-  if(!$item) {
-    return;
-  }
-  $data = $item->data;
-//  _adapt_debug('mikkel', var_export($data, TRUE));
-  switch($data['action']) {
+function kms_oci_queue_query_creator_run($item) {
+  switch($item->action) {
     case 'insert user':
-      if(!empty($data['params'])) {
-        $query_count = count($data['params']);
-//        _adapt_debug('mikkel', '$query_count:');
-//        _adapt_debug('mikkel', $query_count);
+      if(!empty($item->params)) {
+        $query_count = count($item->params);
         $i = 1;
-        $is_last_item = TRUE;
-        foreach($data['params'] as $user_query) {
+        foreach($item->params as $user_query) {
           $queue = DrupalQueue::get(KmsOciQueueJob::$queues['executor']['name'], TRUE);
           kms_oci_filter_query_data($user_query[0]);
           $query = kms_oci_generate_query('insert', $user_query[0], array('table' => $user_query[1]));
           // Queue the string.
-            $data = (object)array(
-              'jid' => $item->item_id,
-              'query' => $query,
-              'data' => $user_query[0],
-              'is_last_item' => $i == $query_count,
-            );
-            $queue->createItem($data);
-//          _adapt_debug('mikkel', 'createItem:');
-//          _adapt_debug('mikkel', $test);
-            $is_last_item = FALSE;
+          $runner_item = (object)array(
+            'jid' => $item->item_id,
+            'query' => $query,
+            'data' => $user_query[0],
+            'is_last_item' => $i == $query_count,
+          );
+          $queue->createItem($runner_item);
           $i++;
         }
       }
@@ -111,7 +97,6 @@ function kms_oci_queue_query_creator_run() {
 }
 
 function kms_oci_queue_query_run($item) {
-//  _adapt_debug('mikkel', $item);
   $patterns = $replacements = array();
   array_walk($item->data, function($v, $k) use(&$patterns, &$replacements){
     $patterns[] = '#\\' . $k . '#';
@@ -138,9 +123,6 @@ function kms_oci_queue_query_run($item) {
     }
 
   }
-
-  // Move the file to its final destination.
-//  $move = file_unmanaged_move($temp_name, $destination, FILE_EXISTS_REPLACE);
 }
 
 function kms_oci_queue_get_items($queue_name) {
@@ -244,7 +226,7 @@ function kms_oci_queue_admin_page_job_log($jid){
   }
   $output = array();
   if(!empty($log)){
-    foreach($log as $id => $entry) {
+    foreach($log as $lid => $entry) {
       $message_vars = unserialize($entry->variables);
       if(empty($message_vars) || !is_array($message_vars)) {
         $message_vars = array();
@@ -254,7 +236,7 @@ function kms_oci_queue_admin_page_job_log($jid){
         array('data' => format_string($entry->message, $message_vars), 'colspan' => 2),
       );
     }
-    $output["log_$id"] = array(
+    $output["log_$lid"] = array(
       '#theme' => 'table',
       '#header' => array(
 //        array('data' => t('Log'), 'colspan' => 2),
@@ -267,33 +249,4 @@ function kms_oci_queue_admin_page_job_log($jid){
 
   drupal_json_output($json);
   exit;
-}
-
-function asdjyasgdjdfsjdgjdasgjgdjas() {
-  $item = array (
-    'query' => 'INSERT INTO smuser_extra (duid, userid, usertype, usertype_info, receive_newsletter, accept_terms, contact_me) VALUES (:duid, :userid, :usertype, :usertype_info, :receive_newsletter, :accept_terms, :contact_me)',
-    'data' =>
-      array (
-        ':duid' => '17799',
-        ':userid' => '17799',
-        ':usertype' => '3522',
-        ':usertype_info' => '',
-        ':receive_newsletter' => 0,
-        ':accept_terms' => 1,
-        ':contact_me' => 1,
-      ),
-  );
-
-  $query = $item['query'];
-  $patterns = $replacements = array();
-  array_walk($item['data'], function($v, $k) use($item, &$patterns, &$replacements){
-    $patterns[] = '#\\' . $k . '#';
-    $replacements[] = "'$v'";
-  });
-  $test = preg_replace($patterns, $replacements, $query, 1);
-//  _adapt_debug('mikkel', $patterns);
-//  _adapt_debug('mikkel', $replacements);
-//  _adapt_debug('mikkel', $query);
-//  _adapt_debug('mikkel', $test);
-
 }
