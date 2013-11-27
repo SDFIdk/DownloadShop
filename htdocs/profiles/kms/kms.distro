@@ -206,6 +206,11 @@ projects[kms_oci][download][url] = "svn+ssh://svnhost/data/subversion/drupal/kms
 projects[kms_oci][type] = "module"
 projects[kms_oci][subdir] = "custom"
 
+projects[kms_oci_queue][download][type] = "svn"
+projects[kms_oci_queue][download][url] = "svn+ssh://svnhost/data/subversion/drupal/kms/trunk/htdocs/sites/all/modules/custom/kms_oci_queue"
+projects[kms_oci_queue][type] = "module"
+projects[kms_oci_queue][subdir] = "custom"
+
 projects[kms_csv][download][type] = "svn"
 projects[kms_csv][download][url] = "svn+ssh://svnhost/data/subversion/drupal/kms/trunk/htdocs/sites/all/modules/custom/kms_csv"
 projects[kms_csv][type] = "module"
