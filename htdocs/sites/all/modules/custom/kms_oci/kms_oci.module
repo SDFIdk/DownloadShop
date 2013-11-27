@@ -147,6 +147,8 @@ function kms_oci_close_conn($cid = FALSE) {
  *   Ex.: array(':name' => 'miksan', ':userid' => "9999999999")
  * @param string $table
  *   Which table should be used.
+ * @param string $cid
+ *   The id of the oracle connection.
  *
  * @return void.
  */
@@ -154,21 +156,38 @@ function kms_oci_insert($data, $table, $cid = FALSE) {
   if(!kms_oci_extension_is_loaded()) {
     return;
   }
+
+  kms_oci_filter_query_data($data);
+
+  $query = kms_oci_generate_query('insert', $data, array('table' => $table));
+  
+  kms_oci_query($query, $data, $cid);
+
+}
+
+function kms_oci_filter_query_data(&$data) {
   // Only use variables with values.
   $data = array_filter($data, function($v){
     return $v == 0 || !empty($v);
   });
+}
 
-
-  $keys = array_keys($data);
-  $pholders = implode(', ', $keys);
-  $cols = str_replace(':', '', $pholders);
-  
-  kms_oci_query(
-    "INSERT INTO $table ($cols) VALUES ($pholders)",
-    $data, $cid
-  );
-
+function kms_oci_generate_query($type, $data, $conf = array()) {
+  if(empty($type) || empty($data)) {
+    return;
+  }
+  switch($type) {
+    case 'insert':
+      if(empty($conf['table'])) {
+        return;
+      }
+      $table = $conf['table'];
+      $keys = array_keys($data);
+      $pholders = implode(', ', $keys);
+      $cols = str_replace(':', '', $pholders);
+      return "INSERT INTO $table ($cols) VALUES ($pholders)";
+      break;
+  }
 }
 
 /**
@@ -342,6 +361,8 @@ function kms_oci_exit($destination = NULL) {
  * @return void.
  */
 function kms_oci_send_mail_error($error, $query = '', $data = array()) {
+  // Atodo: Warning: Mails are bypassed!
+  return;
   // Get current path with host prefix.
   $current_path = $_SERVER['HTTP_HOST'] . '/' . drupal_get_path_alias();
   // Add environment data. $_SERVER etc.
