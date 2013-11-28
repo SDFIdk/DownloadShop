@@ -50,9 +50,10 @@ function kms_oci_queue_menu() {
 //
 //}
 
-//function kms_oci_queue_cron() {
-//  kms_oci_queue_query_creator_run();
-//}
+function kms_oci_queue_cron() {
+  // Atodo: Do this as a cron queue instead.
+  kms_oci_queue_query_creator_run();
+}
 
 /**
  * Implements hook_cron_queue_info().
@@ -60,10 +61,10 @@ function kms_oci_queue_menu() {
  * Set up ten queues that all send items to the same callback function.
  */
 function kms_oci_queue_cron_queue_info() {
-  $queues['kms_oci_queue_query_creator'] = array(
-    'worker callback' => 'kms_oci_queue_query_creator_run',
-    'time' => 120,
-  );
+//  $queues['kms_oci_queue_query_creator'] = array(
+//    'worker callback' => 'kms_oci_queue_query_creator_run',
+//    'time' => 120,
+//  );
   $queues['kms_oci_queue_query'] = array(
     'worker callback' => 'kms_oci_queue_query_run',
     'time' => 120,
@@ -71,7 +72,11 @@ function kms_oci_queue_cron_queue_info() {
   return $queues;
 }
 
-function kms_oci_queue_query_creator_run($item) {
+function kms_oci_queue_query_creator_run() {
+  // Atodo: Do this as a cron queue instead.
+  $queue = DrupalQueue::get(KmsOciQueueJob::$queues['creator']['name'], TRUE);
+  $queue_item = $queue->claimItem();
+  $item = $queue_item->data;
   switch($item->action) {
     case 'insert user':
       if(!empty($item->params)) {
@@ -83,7 +88,7 @@ function kms_oci_queue_query_creator_run($item) {
           $query = kms_oci_generate_query('insert', $user_query[0], array('table' => $user_query[1]));
           // Queue the string.
           $runner_item = (object)array(
-            'jid' => $item->item_id,
+            'jid' => $queue_item->item_id,
             'query' => $query,
             'data' => $user_query[0],
             'is_last_item' => $i == $query_count,
