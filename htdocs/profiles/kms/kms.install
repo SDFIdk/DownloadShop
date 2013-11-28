@@ -137,7 +137,13 @@ function kms_install_load_plugins($name){
  * @author: Julien <julien@adapt.dk>
  */
 function kms_update_7000(&$sandbox) {
-  module_enable(array('entityreference', 'kms_user', 'kms_oci_queue', 'kms_permissions', 'kms_access_bundles'));
+  module_enable(array(
+    'entityreference',
+    'kms_oci_queue',
+    'kms_permissions',
+    'kms_access_bundles',
+    'better_exposed_filters'
+  ));
 }
 
 /**
