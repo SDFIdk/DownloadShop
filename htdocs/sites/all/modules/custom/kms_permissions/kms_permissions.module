@@ -953,8 +953,12 @@ function _kms_permissions_get_all_users() {
  * Internal function for finding all default and active bundles
  */
 function _kms_permissions_get_default_bundles() {
+  $field_info = field_info_instance('node', 'field_default_bundle', 'access_bundle');
+  // If field does not exist return empty array.
+  if (empty($field_info)) {
+    return array();
+  }
   $query = new EntityFieldQuery();
-
   $query->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'access_bundle')
     ->propertyCondition('status', 1)
