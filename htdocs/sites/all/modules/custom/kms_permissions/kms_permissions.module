@@ -245,16 +245,15 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
       if (isset($result['node'])) {
         $result_nids = array_keys($result['node']);
         $result_node = entity_load('node', $result_nids);
-      }
-      // Add all enabled bundles to element array
-      foreach ($result['node'] as $nid => $node) {
-
-        $element[$nid] = array(
-          '#markup' => '
+        // Add all enabled bundles to element array
+        foreach ($result['node'] as $nid => $node) {
+          $element[$nid] = array(
+            '#markup' => '
             <span class="bundle-inactive">
               <a href="node/' . $nid . '/edit/" title="' . $result_node[$nid]->title .'">' . $nid  . '</a>
             </span>',
-        );
+          );
+        }
       }
 
       foreach ($items as $delta => $item) {
