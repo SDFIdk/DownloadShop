@@ -7,7 +7,7 @@ api = 2
 ;projects[drupal][download][type] = get
 ;projects[drupal][download][url] = http://ftp.drupal.org/files/projects/drupal-7.17.tar.gz
 
-projects[drupal][version] = "7.24"
+projects[drupal][version] = "7.17"
 projects[drupal][patch][] = "http://drupal.org/files/symlinks_within_files_directory-1008402-72-D7.14-do-not-test.patch"
 
 ; Modules
