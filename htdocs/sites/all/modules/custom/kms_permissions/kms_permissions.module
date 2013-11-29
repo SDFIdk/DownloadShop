@@ -361,7 +361,6 @@ function ajax_check_bundles_callback($form, $form_state) {
 * @param Object $group The Field group info.
 */
 function kms_permissions_field_group_pre_render(&$element, $group, &$form) {
-  _adapt_debug('julien', $group);
 }
 
 /**
@@ -429,7 +428,6 @@ function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
 
   // $form["#groups"]['group_user_webservices']->append($pre_suffix);
 
-  _adapt_debug('julien', $form["#group_children"]);
   
 
   // $form["#groups"]['group_user_webservices'];
