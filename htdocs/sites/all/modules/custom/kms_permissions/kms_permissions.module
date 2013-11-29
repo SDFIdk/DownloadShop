@@ -349,79 +349,118 @@ function kms_permissions_form_access_bundle_node_form_alter(&$form, &$form_state
 }
 
 function ajax_check_bundles_callback($form, $form_state) {
-  // _adapt_debug('julien', 'pouet');
-  // return $form['field_bundle_webservices_geo'];
+
+
+  return 'test';
 }
 
+/**
+* Implements hook_field_group_pre_render().
+*
+* @param Array $elements by address.
+* @param Object $group The Field group info.
+*/
+function kms_permissions_field_group_pre_render(&$element, $group, &$form) {
+  _adapt_debug('julien', $group);
+}
 
 /**
  * Implements hook_form_FORM_ID_alter().
  */
 function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
+  drupal_add_js(drupal_get_path('module', 'kms_permissions') .'/js/kms_permissions_services_checkboxes.js');
+  $bids = array();
   // Disable default bundles checkbox
   $default = _kms_permissions_get_default_bundles();
-  foreach ($default as $val) {
-    $form['field_access_bundles'][$form['field_access_bundles']['#language']][$val] = array(
-    '#default_value' => $val,
-    '#disabled' => TRUE,
-    '#weight' => -1,
-    );
-  }
-
-  //Set tick in permissions given by bundles
-  //Get all user's permissions
-
-  //Find out what bundle user has
-  //Todo: add default bundles
-  $permissions = array();
-  $bids = array();
   
-  // _adapt_debug('julien', $form['field_bundle_webservices_geo']["und"]["#options"] = array(1 => 'pouet'));
- // $form['field_bundle_webservices_geo']["und"]["#options"]['geoA']['#disabled'] = TRUE;
-
-
-  // Ajax form for bundles
-  // $form['field_access_bundles'][$form['field_access_bundles']['#language']]['#ajax'] = array(
-  //     // 'callback' => 'ajax_check_bundles_callback',
-  //     'wrapper' => 'checkboxes-div',
-  //     'method' => 'replace',
-  //   );
-
-  // $form['field_bundle_webservices_geo']['#prefix'] = '<div id="checkboxes-div">';
-  // $form['field_bundle_webservices_geo']['#suffix'] = '</div>';
-
-
-
-  // _adapt_debug('julien', array_keys($form_state['build_info']['args']));
-  // _adapt_debug('julien', $form_state['build_info']['args'][0]->field_access_bundles[LANGUAGE_NONE][0]['nid']);
-  foreach ($form as $field_name => $field_value) {
-    // Only use bundle fields
-    if (strpos($field_name, 'field_access_bundles') !== false) {
-      foreach ($field_value['und']['#options'] as $bid => $bundle_name) {
-        $bids[] = $bid;
-      }
+  if ($defaut) {
+    foreach ($default as $val) {
+      $form['field_access_bundles'][$form['field_access_bundles']['#language']][$val] = array(
+      '#default_value' => $val,
+      '#disabled' => TRUE,
+      '#weight' => -1,
+      );
+      // While we're at it, add default bundles to the user's bundle array
+      $bids['default'][] = $val;
     }
   }
-  // Get permissions from user's bundles
-  foreach ($bids as $bid) {
-    _kms_permissions_get_permissions_by_bid($bid, &$permissions);
+
+  /*
+   Set tick in permissions given by bundles
+  */
+  //Find out what bundle user has
+  $permissions = array();
+  // User id
+  $uid = $form_state['build_info']['args'][0]->uid;
+  // User data
+  $user_data = user_load($uid);
+  if (!empty($user_data->field_access_bundles['und'])) {
+    // Get what bundles user has
+    // custom
+    foreach ($user_data->field_access_bundles['und'] as $v_users_bundle) {
+      $bids['custom'][] = $v_users_bundle['nid'];
+    }
+
+    // Get permissions from user's custom bundles
+    foreach ($bids['custom'] as $bid) {
+      _kms_permissions_get_permissions_by_bid($bid, &$permissions);
+    }
+    $custom_services_id = array();
+    foreach ($permissions["services"] as $service) {
+      $custom_services_id[] = $service['id'];
+    }
   }
-  $user_services_id = array();
-  foreach ($permissions["services"] as $service) {
-    $user_services_id[] = $service['id'];
+  // defaut
+  if (!empty($bids['default'])) { 
+    $permissions = array();
+    // Get permissions from user's custom bundles
+    foreach ($bids['default'] as $bid) {
+      _kms_permissions_get_permissions_by_bid($bid, &$permissions);
+    }
+    $default_services_id = array();
+    foreach ($permissions["services"] as $service) {
+      $default_services_id[] = $service['id'];
+    }
   }
 
-  // _adapt_debug('julien', $suser_services_id);
 
-  _kms_permissions_get_permissions_by_uid($form['#user']->uid, $permissions);
-  // _adapt_debug('julien', $permissions);
+
+
+
+  // $form["#groups"]['group_user_webservices']->append($pre_suffix);
+
+  _adapt_debug('julien', $form["#group_children"]);
+  
+
+  // $form["#groups"]['group_user_webservices'];
+
+  // _adapt_debug('julien', $form);
+  // _adapt_debug('julien', $form);
+
+  // Ajax form for bundles
+ $form['field_access_bundles'][LANGUAGE_NONE]['#ajax'] = array(
+      'event' => 'change',
+      'callback' => 'ajax_check_bundles_callback',
+      'wrapper' => 'checkboxes-div',
+      'method' => 'replace',
+  );
+
+
+
+
+  // $form['field_bundle_webservices_geo'][1] = array('#disabled' => TRUE);
+
+
+  // _adapt_debug('julien', $form['field_bundle_webservices_geo']);
+
+
   foreach ($form as $field_name => $field_value) {
     if (strpos($field_name, 'field_bundle_webservices') !== false) {
     // _adapt_debug('julien', $field_value['und']['#options']);
       foreach (array_keys($field_value['und']['#options']) as $service_ids) {
-        if (in_array($service_ids, $user_services_id)) {
+        if (in_array($service_ids, $custom_services_id)) {
           // _adapt_debug('julien', $service_ids);
-            // $form['checkboxes_element'][abc]['#disabled'] = TRUE; //disables option, called abc
+            $form['field_bundle_webservices_geo'][$custom_services_id]['#disabled'] = TRUE; //disables option, called abc
         }
       }
 
@@ -433,9 +472,19 @@ function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
   }
 
 
+  // $form["#groups"]['group_user_webservices']['#after_build'][] = 'kms_permissions_after_build';
 
 } 
 
+/**
+ * Custom after build function
+ **/
+// function kms_permissions_after_build($form, &$form_state) {
+//   _adapt_debug('julien', $form);
+  
+ 
+//   return $form;
+// }
 
 /**
  * Implements hook_node_presave().
