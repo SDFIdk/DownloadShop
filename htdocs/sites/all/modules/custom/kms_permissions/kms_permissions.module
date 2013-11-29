@@ -372,7 +372,7 @@ function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
   // Disable default bundles checkbox
   $default = _kms_permissions_get_default_bundles();
   
-  if ($defaut) {
+  if ($default) {
     foreach ($default as $val) {
       $form['field_access_bundles'][$form['field_access_bundles']['#language']][$val] = array(
       '#default_value' => $val,
