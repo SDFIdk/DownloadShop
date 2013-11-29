@@ -141,6 +141,11 @@ function kms_oci_queue_get_items($queue_name) {
   return $items;
 }
 
+function kms_oci_queue_get_job_ids() {
+  $result = db_select('kms_oci_queue_job', 'j')->fields('j', array('jid'))->execute()->fetchCol();
+  return $result ?: array();
+}
+
 function kms_oci_queue_fetch_queue_names() {
   $query = db_select('queue', 'q');
   $query->fields('q', array('name'));
@@ -169,56 +174,55 @@ function kms_oci_queue_admin_page_jobs () {
       'class' => array('kms-oci-queue-jobs-overview'),
     ),
   );
-  foreach(kms_oci_queue_fetch_queue_names() as $name) {
-    $jobs_output = array(
-      '#type' => 'container',
-      '#attributes' => array(
-        'class' => array('kms-oci-queue-jobs'),
+
+  $jobs_output = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array('kms-oci-queue-jobs'),
+    ),
+  );
+  $jobs_output["job_queue_title"] = array(
+    '#type' => 'html_tag',
+    '#tag' => 'h2',
+    '#value' => t('Jobs'),
+  );
+  foreach(kms_oci_queue_get_job_ids() as $jid) {
+    $job = KmsOciQueueJobFactory::get($jid);
+    $job_info =  $job->info . ' [<a href="#" class="more">' . t('info') . '</a>]';
+    $rows[] = array(
+      'data' => array(
+        array('data' => $job->jid, 'data-jid' => $job->jid, 'class' => 'job-log-trigger'),
+        array('data' => $job_info, 'data-jid' => $job->jid, 'class' => array('job-info')),
+        array('data' => $job->status->message, 'class' => 'status-' . $job->status->status),
+        array('data' => format_date($job->created)),
+      )
+    );
+
+    $options['job_info_beautytip_' . $job->jid] = array(
+      'cssSelect' => 'td[data-jid="' . $job->jid .  '"].job-info .more',
+      'trigger' => array(0 => 'mouseover', 1 => 'click'),
+      'text' => $job->infoDetails,
+      'width' => 350,
+    );
+    beautytips_add_beautytips($options);
+
+    $rows[] = array(
+      'class' => array('kms-oci-queue-job-log'),
+      'data-jid' => $job->jid,
+      'data' => array(
+        array('data' => '&nbsp;', 'colspan' => 4),
       ),
     );
-    $jobs_output["job_queue_title_$name"] = array(
-      '#type' => 'html_tag',
-      '#tag' => 'h2',
-      '#value' => 'Query jobs (' . $name . ')',
-    );
-    foreach(kms_oci_queue_get_items($name) as $item) {
-      $job = KmsOciQueueJobFactory::get($item['item_id']);
-      $job_info =  $job->info . ' [<a href="#" class="more">' . t('info') . '</a>]';
-      $rows[] = array(
-        'data' => array(
-          array('data' => $job->jid, 'data-jid' => $job->jid, 'class' => 'job-log-trigger'),
-          array('data' => $job_info, 'data-jid' => $job->jid, 'class' => array('job-info')),
-          array('data' => $job->status->message, 'class' => 'status-' . $job->status->status),
-          array('data' => format_date($job->created)),
-        )
-      );
-
-      $options['job_info_beautytip_' . $job->jid] = array(
-        'cssSelect' => 'td[data-jid="' . $job->jid .  '"].job-info .more',
-        'trigger' => array(0 => 'mouseover', 1 => 'click'),
-        'text' => $job->infoDetails,
-        'width' => 350,
-      );
-      beautytips_add_beautytips($options);
-
-      $rows[] = array(
-        'class' => array('kms-oci-queue-job-log'),
-        'data-jid' => $job->jid,
-        'data' => array(
-          array('data' => '&nbsp;', 'colspan' => 4),
-        ),
-      );
-    }
-
-    $jobs_output["job_queue_$name"] = array(
-      '#theme' => 'table',
-      '#header' => array(t('Job id'), t('Info'), t('Status'), t('Created')),
-      '#rows' => $rows,
-    );
-
-
-    $output["kms_oci_queue_jobs_$name"] = $jobs_output;
   }
+
+  $jobs_output["job_queue"] = array(
+    '#theme' => 'table',
+    '#header' => array(t('Job id'), t('Info'), t('Status'), t('Created')),
+    '#rows' => $rows,
+  );
+
+
+  $output["kms_oci_queue_jobs"] = $jobs_output;
 
   return $output;
 }
