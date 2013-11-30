@@ -15,7 +15,7 @@ class KmsOciQueueJob {
   public static $queues = array(
     'creator' => array(
       'name' => 'kms_oci_queue_query_creator',
-      'class' => 'QueryCreatorQueue',
+      'class' => 'QueryQueue',
     ),
     'executor' => array(
       'name' => 'kms_oci_queue_query',
