@@ -1,7 +1,0 @@
-#!/bin/bash
-
-#rsync -avz -C --port=9024 /home/drupal/kms.dev/htdocs/ /home/drupal/kms.dev/htdocs/
-
-rsync -avz -C -P 9024 /home/drupal/kms.dev/htdocs/profiles/kms/ kms_test:/home/drupal/kms.dev/htdocs/profiles/kms/
-rsync -avz -C -P 9024 /home/drupal/kms.dev/htdocs/sites/all/modules/ kms_test:/home/kfadm/kms.htdocs/sites/all/modules/
-
