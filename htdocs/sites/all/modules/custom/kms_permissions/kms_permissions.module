@@ -160,11 +160,9 @@ function kms_permissions_widget_options($type = 'kms_services', $instance_settin
 
       if (empty($options[$type])) {
         if (kms_oci_get_conn('kms_permissions', $settings)) {
-          // Atodo: Solved with an ugly as a bitch hack. Slap the guilty and fix it.
-          $type_col = intval($type) ? 'ST.TYPEID' : 'ST.TYPENAME';
-          $query = "SELECT S2.SERVICEID, S2.SERVICENAME, ST.TYPEID, ST.TYPENAME FROM SERVICES2 S2, SERVICETYPES2 ST WHERE $type_col = :type ORDER BY S2.SERVICEID ASC";
+          $query = "SELECT S2.SERVICEID, S2.SERVICENAME, ST.TYPEID, ST.TYPENAME FROM SERVICES2 S2, SERVICETYPES2 ST WHERE S2.TYPEID = ST.TYPEID ORDER BY S2.SERVICEID ASC";
 
-          $rows = kms_oci_select($query, array(':type' => $type), 'kms_permissions');
+          $rows = kms_oci_select($query, array(), 'kms_permissions');
           if (!empty($rows)) {
             foreach ($rows as $row) {
               $options[$row['TYPENAME']][$row['SERVICEID']] = $row['SERVICENAME'];
@@ -231,12 +229,14 @@ function kms_permissions_field_formatter_info() {
  */
 function kms_permissions_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
   $element = array();
-  $settings = $display['settings'];
 
   switch ($display['type']) {
     case 'kms_permissions_bundles_reference':
       $bundle_link = function($nid, $title, $status) {
         $status_class = $status ? 'bundle-active' : 'bundle-inactive';
+        if($status == 3) {
+          $status_class = 'bundle-default';
+        }
         return array(
           '#theme' => 'link',
           '#text' => $nid,
@@ -267,7 +267,7 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
           // Inactive bundle element.
           // Atodo: remove this demo-hack!! (restore: only use the line defined inside else).
           if($result_node[$nid]->field_default_bundle[LANGUAGE_NONE][0]['value']) {
-            $element[$nid] = $bundle_link($nid, $result_node[$nid]->title, 1);
+            $element[$nid] = $bundle_link($nid, $result_node[$nid]->title, 3);
           }
           else {
             $element[$nid] = $bundle_link($nid, $result_node[$nid]->title, 0);
@@ -385,7 +385,7 @@ function kms_permissions_field_group_pre_render(&$element, $group, &$form) {
  * Implements hook_form_FORM_ID_alter().
  */
 function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
-  drupal_add_js(drupal_get_path('module', 'kms_permissions') .'/js/kms_permissions_services_checkboxes.js');
+  drupal_add_js(drupal_get_path('module', 'kms_permissions') .'/js/kms_perms_user_checkboxes.js');
   $bids = array();
   // Disable default bundles checkbox
   $default = _kms_permissions_get_default_bundles();
@@ -397,8 +397,8 @@ function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
       '#disabled' => TRUE,
       '#weight' => -1,
       );
-      // While we're at it, add default bundles to the user's bundle array
-      $bids['default'][] = $val;
+//      // While we're at it, add default bundles to the user's bundle array
+//      $bids['default'][] = $val;
     }
   }
 
