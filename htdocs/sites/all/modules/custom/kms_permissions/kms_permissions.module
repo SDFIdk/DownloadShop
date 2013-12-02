@@ -1,4 +1,22 @@
 <?php
+
+/**
+ * Implements hook_menu().
+ */
+function kms_permissions_menu() {
+  $items = array();
+
+  $items['kms-permissions/ajax/load-sids/%'] = array(
+    'title' => 'Kms permissions load service ids by bundle id',
+    'page callback' => 'kms_permissions_ajax_get_services_by_bid',
+    'access arguments' => array('access content'),
+    'page arguments' => array(3),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
 function kms_permissions_ctools_plugin_directory($owner, $plugin_type) {
   // we'll be nice and limit scandir() calls
   if ($owner == 'ctools' && $plugin_type == 'content_types') {
@@ -1123,6 +1141,19 @@ function _kms_permissions_get_bundle_by_sid($sid) {
   }else {
     return FALSE;
   }
+}
+
+function kms_permissions_ajax_get_services_by_bid($bid) {
+  $permissions = array();
+  $json = array('sids' => array());
+   _kms_permissions_get_permissions_by_bid($bid, $permissions);
+  if(!empty($permissions['services']) && is_array($permissions['services'])) {
+    array_walk($permissions['services'], function($v) use(&$json) {
+      $json['sids'][] = $v['id'];
+    });
+  }
+  drupal_json_output($json);
+  exit;
 }
 
 /**
