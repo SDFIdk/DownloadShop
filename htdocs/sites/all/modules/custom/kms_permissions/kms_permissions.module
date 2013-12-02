@@ -233,12 +233,27 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
 
   switch ($display['type']) {
     case 'kms_permissions_bundles_reference':
+      $bundle_link = function($nid, $title, $status) {
+        $status_class = $status ? 'bundle-active' : 'bundle-inactive';
+        return array(
+          '#theme' => 'link',
+          '#text' => $nid,
+          '#path' => "node/$nid/edit/",
+          '#options' => array(
+            'attributes' => array('title' => $title),
+            'html' => FALSE,
+          ),
+          '#prefix' => "<span class='$status_class'>",
+          '#suffix' => '</span>'
+        );
+      };
       // Query all bundles
       $query = new EntityFieldQuery;
       $result = $query
         ->entityCondition('entity_type', 'node')
         ->entityCondition('bundle', 'access_bundle')
         ->propertyCondition('status', 1)
+        ->fieldOrderBy('field_default_bundle', 'value', 'DESC')
         ->execute();
 
       // We need to load the nodes to get bundle title
@@ -247,20 +262,21 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
         $result_node = entity_load('node', $result_nids);
         // Add all enabled bundles to element array
         foreach ($result['node'] as $nid => $node) {
-          $element[$nid] = array(
-            '#markup' => '
-            <span class="bundle-inactive">
-              <a href="node/' . $nid . '/edit/" title="' . $result_node[$nid]->title .'">' . $nid  . '</a>
-            </span>',
-          );
+          // Inactive bundle element.
+          // Atodo: remove this demo-hack!! (restore: only use the line defined inside else).
+          if($result_node[$nid]->field_default_bundle[LANGUAGE_NONE][0]['value']) {
+            $element[$nid] = $bundle_link($nid, $result_node[$nid]->title, 1);
+          }
+          else {
+            $element[$nid] = $bundle_link($nid, $result_node[$nid]->title, 0);
+          }
         }
       }
 
-      foreach ($items as $delta => $item) {
+      foreach ($items as $item) {
         if ($item['access']) {
-          $element[$item['nid']] = array(
-            '#markup' => '<span class="bundle-active"><a href="node/' . $item['nid'] . '/edit/" title="' . $result_node[$item['nid']]->title .'">' . $item['nid']  . '</a></span>',
-          );
+          // Active bundle element.
+          $element[$item['nid']] = $bundle_link($nid, $result_node[$item['nid']]->title, 1);
         }
       }
       break;
@@ -388,40 +404,40 @@ function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
    Set tick in permissions given by bundles
   */
   //Find out what bundle user has
-  $permissions = array();
-  // User id
-  $uid = $form_state['build_info']['args'][0]->uid;
-  // User data
-  $user_data = user_load($uid);
-  if (!empty($user_data->field_access_bundles['und'])) {
-    // Get what bundles user has
-    // custom
-    foreach ($user_data->field_access_bundles['und'] as $v_users_bundle) {
-      $bids['custom'][] = $v_users_bundle['nid'];
-    }
-
-    // Get permissions from user's custom bundles
-    foreach ($bids['custom'] as $bid) {
-      _kms_permissions_get_permissions_by_bid($bid, &$permissions);
-    }
-    $custom_services_id = array();
-    foreach ($permissions["services"] as $service) {
-      $custom_services_id[] = $service['id'];
-    }
-  }
-  // defaut
-  if (!empty($bids['default'])) { 
-    $permissions = array();
-    // Get permissions from user's custom bundles
-    foreach ($bids['default'] as $bid) {
-      _kms_permissions_get_permissions_by_bid($bid, &$permissions);
-    }
-    $default_services_id = array();
-    foreach ($permissions["services"] as $service) {
-      $default_services_id[] = $service['id'];
-    }
-  }
-
+//  $permissions = array();
+//  // User id
+//  $uid = $form_state['build_info']['args'][0]->uid;
+//  // User data
+//  $user_data = user_load($uid);
+//  if (!empty($user_data->field_access_bundles['und'])) {
+//    // Get what bundles user has
+//    // custom
+//    foreach ($user_data->field_access_bundles['und'] as $v_users_bundle) {
+//      $bids['custom'][] = $v_users_bundle['nid'];
+//    }
+//
+//    // Get permissions from user's custom bundles
+//    foreach ($bids['custom'] as $bid) {
+//      _kms_permissions_get_permissions_by_bid($bid, &$permissions);
+//    }
+//    $custom_services_id = array();
+//    foreach ($permissions["services"] as $service) {
+//      $custom_services_id[] = $service['id'];
+//    }
+//  }
+//  // defaut
+//  if (!empty($bids['default'])) {
+//    $permissions = array();
+//    // Get permissions from user's custom bundles
+//    foreach ($bids['default'] as $bid) {
+//      _kms_permissions_get_permissions_by_bid($bid, &$permissions);
+//    }
+//    $default_services_id = array();
+//    foreach ($permissions["services"] as $service) {
+//      $default_services_id[] = $service['id'];
+//    }
+//  }
+//
 
 
 
@@ -436,13 +452,13 @@ function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
   // _adapt_debug('julien', $form);
 
   // Ajax form for bundles
- $form['field_access_bundles'][LANGUAGE_NONE]['#ajax'] = array(
-      'event' => 'change',
-      'callback' => 'ajax_check_bundles_callback',
-      'wrapper' => 'checkboxes-div',
-      'method' => 'replace',
-  );
-
+// $form['field_access_bundles'][LANGUAGE_NONE]['#ajax'] = array(
+//      'event' => 'change',
+//      'callback' => 'ajax_check_bundles_callback',
+//      'wrapper' => 'checkboxes-div',
+//      'method' => 'replace',
+//  );
+//
 
 
 
@@ -452,22 +468,22 @@ function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
   // _adapt_debug('julien', $form['field_bundle_webservices_geo']);
 
 
-  foreach ($form as $field_name => $field_value) {
-    if (strpos($field_name, 'field_bundle_webservices') !== false) {
-    // _adapt_debug('julien', $field_value['und']['#options']);
-      foreach (array_keys($field_value['und']['#options']) as $service_ids) {
-        if (in_array($service_ids, $custom_services_id)) {
-          // _adapt_debug('julien', $service_ids);
-            $form['field_bundle_webservices_geo'][$custom_services_id]['#disabled'] = TRUE; //disables option, called abc
-        }
-      }
-
-    }
-    // Only use bundle fields
-    // foreach ($field_value as $webservice_list) {
-      // }
-    // }
-  }
+//  foreach ($form as $field_name => $field_value) {
+//    if (strpos($field_name, 'field_bundle_webservices') !== false) {
+//    // _adapt_debug('julien', $field_value['und']['#options']);
+//      foreach (array_keys($field_value['und']['#options']) as $service_ids) {
+//        if (in_array($service_ids, $custom_services_id)) {
+//          // _adapt_debug('julien', $service_ids);
+//            $form['field_bundle_webservices_geo'][$custom_services_id]['#disabled'] = TRUE; //disables option, called abc
+//        }
+//      }
+//
+//    }
+//    // Only use bundle fields
+//    // foreach ($field_value as $webservice_list) {
+//      // }
+//    // }
+//  }
 
 
   // $form["#groups"]['group_user_webservices']['#after_build'][] = 'kms_permissions_after_build';
@@ -554,7 +570,8 @@ function kms_permissions_access_bundle_update($form, $form_state) {
   if (!empty($uids)) {
     foreach ($uids as $uid) {
       // $user_perm[] = _kms_permissions_get_permissions_by_uid($uid);
-      kms_permissions_save_temp_permissions($uid, $permissions);
+      // Atodo: Integrate kms_oci_queue.
+//      kms_permissions_save_temp_permissions($uid, $permissions);
     }
   }
 }
