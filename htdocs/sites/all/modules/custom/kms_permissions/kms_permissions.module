@@ -160,7 +160,9 @@ function kms_permissions_widget_options($type = 'kms_services', $instance_settin
 
       if (empty($options[$type])) {
         if (kms_oci_get_conn('kms_permissions', $settings)) {
-          $query = "SELECT S2.SERVICEID, S2.SERVICENAME, ST.TYPEID, ST.TYPENAME FROM SERVICES2 S2, SERVICETYPES2 ST WHERE S2.TYPEID = ST.TYPEID ORDER BY S2.SERVICEID ASC";
+          // Atodo: Solved with an ugly as a bitch hack. Slap the guilty and fix it.
+          $type_col = intval($type) ? 'ST.TYPEID' : 'ST.TYPENAME';
+          $query = "SELECT S2.SERVICEID, S2.SERVICENAME, ST.TYPEID, ST.TYPENAME FROM SERVICES2 S2, SERVICETYPES2 ST WHERE $type_col = :type ORDER BY S2.SERVICEID ASC";
 
           $rows = kms_oci_select($query, array(':type' => $type), 'kms_permissions');
           if (!empty($rows)) {
