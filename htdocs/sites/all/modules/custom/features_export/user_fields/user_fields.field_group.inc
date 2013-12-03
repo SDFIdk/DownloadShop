@@ -113,8 +113,8 @@ function user_fields_field_group_info() {
     'children' => array(
       0 => 'field_phone',
       1 => 'field_pass_clear',
-      2 => 'field_address',
-      3 => 'field_billing_address',
+      2 => 'field_billing_address',
+      3 => 'field_address',
       4 => 'account',
     ),
     'format_type' => 'fieldset',
@@ -278,6 +278,141 @@ function user_fields_field_group_info() {
   $field_group = new stdClass();
   $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
   $field_group->api_version = 1;
+  $field_group->identifier = 'group_webservices_plot|user|user|form';
+  $field_group->group_name = 'group_webservices_plot';
+  $field_group->entity_type = 'user';
+  $field_group->bundle = 'user';
+  $field_group->mode = 'form';
+  $field_group->parent_name = 'group_webservices';
+  $field_group->data = array(
+    'label' => 'PLOT',
+    'weight' => '53',
+    'children' => array(
+      0 => 'field_bundle_webservices_plot',
+    ),
+    'format_type' => 'fieldset',
+    'format_settings' => array(
+      'formatter' => 'collapsible',
+      'instance_settings' => array(
+        'description' => '',
+        'classes' => '',
+        'required_fields' => 1,
+      ),
+    ),
+  );
+  $export['group_webservices_plot|user|user|form'] = $field_group;
+
+  $field_group = new stdClass();
+  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+  $field_group->api_version = 1;
+  $field_group->identifier = 'group_webservices_wcs|user|user|form';
+  $field_group->group_name = 'group_webservices_wcs';
+  $field_group->entity_type = 'user';
+  $field_group->bundle = 'user';
+  $field_group->mode = 'form';
+  $field_group->parent_name = 'group_webservices';
+  $field_group->data = array(
+    'label' => 'WCS',
+    'weight' => '51',
+    'children' => array(
+      0 => 'field_bundle_webservices_wcs',
+    ),
+    'format_type' => 'htab',
+    'format_settings' => array(
+      'formatter' => 'closed',
+      'instance_settings' => array(
+        'description' => '',
+        'classes' => '',
+        'required_fields' => 1,
+      ),
+    ),
+  );
+  $export['group_webservices_wcs|user|user|form'] = $field_group;
+
+  $field_group = new stdClass();
+  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+  $field_group->api_version = 1;
+  $field_group->identifier = 'group_webservices_wfs|user|user|form';
+  $field_group->group_name = 'group_webservices_wfs';
+  $field_group->entity_type = 'user';
+  $field_group->bundle = 'user';
+  $field_group->mode = 'form';
+  $field_group->parent_name = 'group_webservices';
+  $field_group->data = array(
+    'label' => 'WFS',
+    'weight' => '52',
+    'children' => array(
+      0 => 'field_bundle_webservices_wfs',
+    ),
+    'format_type' => 'htab',
+    'format_settings' => array(
+      'formatter' => 'closed',
+      'instance_settings' => array(
+        'description' => '',
+        'classes' => '',
+        'required_fields' => 1,
+      ),
+    ),
+  );
+  $export['group_webservices_wfs|user|user|form'] = $field_group;
+
+  $field_group = new stdClass();
+  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+  $field_group->api_version = 1;
+  $field_group->identifier = 'group_webservices_wms|user|user|form';
+  $field_group->group_name = 'group_webservices_wms';
+  $field_group->entity_type = 'user';
+  $field_group->bundle = 'user';
+  $field_group->mode = 'form';
+  $field_group->parent_name = 'group_webservices';
+  $field_group->data = array(
+    'label' => 'WMS',
+    'weight' => '49',
+    'children' => array(
+      0 => 'field_bundle_webservices_wms',
+    ),
+    'format_type' => 'htab',
+    'format_settings' => array(
+      'formatter' => 'closed',
+      'instance_settings' => array(
+        'description' => '',
+        'classes' => '',
+        'required_fields' => 1,
+      ),
+    ),
+  );
+  $export['group_webservices_wms|user|user|form'] = $field_group;
+
+  $field_group = new stdClass();
+  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+  $field_group->api_version = 1;
+  $field_group->identifier = 'group_webservices_wmts|user|user|form';
+  $field_group->group_name = 'group_webservices_wmts';
+  $field_group->entity_type = 'user';
+  $field_group->bundle = 'user';
+  $field_group->mode = 'form';
+  $field_group->parent_name = 'group_webservices';
+  $field_group->data = array(
+    'label' => 'WMTS',
+    'weight' => '50',
+    'children' => array(
+      0 => 'field_bundle_webservices_wmts',
+    ),
+    'format_type' => 'htab',
+    'format_settings' => array(
+      'formatter' => 'closed',
+      'instance_settings' => array(
+        'description' => '',
+        'classes' => '',
+        'required_fields' => 1,
+      ),
+    ),
+  );
+  $export['group_webservices_wmts|user|user|form'] = $field_group;
+
+  $field_group = new stdClass();
+  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+  $field_group->api_version = 1;
   $field_group->identifier = 'group_webservices|user|user|form';
   $field_group->group_name = 'group_webservices';
   $field_group->entity_type = 'user';
@@ -289,6 +424,11 @@ function user_fields_field_group_info() {
     'weight' => '9',
     'children' => array(
       0 => 'group_webservices_geo',
+      1 => 'group_webservices_wfs',
+      2 => 'group_webservices_plot',
+      3 => 'group_webservices_wms',
+      4 => 'group_webservices_wmts',
+      5 => 'group_webservices_wcs',
     ),
     'format_type' => 'htabs',
     'format_settings' => array(

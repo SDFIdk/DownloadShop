@@ -368,6 +368,301 @@ function user_fields_field_default_fields() {
     ),
   );
 
+  // Exported field: 'user-user-field_bundle_webservices_plot'.
+  $fields['user-user-field_bundle_webservices_plot'] = array(
+    'field_config' => array(
+      'active' => '1',
+      'cardinality' => '-1',
+      'deleted' => '0',
+      'entity_types' => array(),
+      'field_name' => 'field_bundle_webservices_plot',
+      'field_permissions' => array(
+        'type' => '0',
+      ),
+      'foreign keys' => array(),
+      'indexes' => array(
+        'value' => array(
+          0 => 'value',
+        ),
+      ),
+      'locked' => '0',
+      'module' => 'list',
+      'settings' => array(
+        'allowed_values' => array(),
+        'allowed_values_function' => '',
+      ),
+      'translatable' => '0',
+      'type' => 'list_text',
+    ),
+    'field_instance' => array(
+      'bundle' => 'user',
+      'default_value' => NULL,
+      'deleted' => '0',
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'list',
+          'settings' => array(),
+          'type' => 'list_default',
+          'weight' => 29,
+        ),
+      ),
+      'entity_type' => 'user',
+      'field_name' => 'field_bundle_webservices_plot',
+      'label' => 'Webservices (PLOT)',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => 0,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'kms_permissions',
+        'settings' => array(
+          'type' => 'PLOT',
+        ),
+        'type' => 'kms_services',
+        'weight' => '53',
+      ),
+    ),
+  );
+
+  // Exported field: 'user-user-field_bundle_webservices_wcs'.
+  $fields['user-user-field_bundle_webservices_wcs'] = array(
+    'field_config' => array(
+      'active' => '1',
+      'cardinality' => '-1',
+      'deleted' => '0',
+      'entity_types' => array(),
+      'field_name' => 'field_bundle_webservices_wcs',
+      'field_permissions' => array(
+        'type' => '0',
+      ),
+      'foreign keys' => array(),
+      'indexes' => array(
+        'value' => array(
+          0 => 'value',
+        ),
+      ),
+      'locked' => '0',
+      'module' => 'list',
+      'settings' => array(
+        'allowed_values' => array(),
+        'allowed_values_function' => '',
+      ),
+      'translatable' => '0',
+      'type' => 'list_text',
+    ),
+    'field_instance' => array(
+      'bundle' => 'user',
+      'default_value' => NULL,
+      'deleted' => '0',
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'list',
+          'settings' => array(),
+          'type' => 'list_default',
+          'weight' => 30,
+        ),
+      ),
+      'entity_type' => 'user',
+      'field_name' => 'field_bundle_webservices_wcs',
+      'label' => 'Webservices (WCS)',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => 0,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'kms_permissions',
+        'settings' => array(
+          'type' => 'WCS',
+        ),
+        'type' => 'kms_services',
+        'weight' => '55',
+      ),
+    ),
+  );
+
+  // Exported field: 'user-user-field_bundle_webservices_wfs'.
+  $fields['user-user-field_bundle_webservices_wfs'] = array(
+    'field_config' => array(
+      'active' => '1',
+      'cardinality' => '-1',
+      'deleted' => '0',
+      'entity_types' => array(),
+      'field_name' => 'field_bundle_webservices_wfs',
+      'field_permissions' => array(
+        'type' => '0',
+      ),
+      'foreign keys' => array(),
+      'indexes' => array(
+        'value' => array(
+          0 => 'value',
+        ),
+      ),
+      'locked' => '0',
+      'module' => 'list',
+      'settings' => array(
+        'allowed_values' => array(),
+        'allowed_values_function' => '',
+      ),
+      'translatable' => '0',
+      'type' => 'list_text',
+    ),
+    'field_instance' => array(
+      'bundle' => 'user',
+      'default_value' => NULL,
+      'deleted' => '0',
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'list',
+          'settings' => array(),
+          'type' => 'list_default',
+          'weight' => 31,
+        ),
+      ),
+      'entity_type' => 'user',
+      'field_name' => 'field_bundle_webservices_wfs',
+      'label' => 'Webservices (WFS)',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => 0,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'kms_permissions',
+        'settings' => array(
+          'type' => 'WFS',
+        ),
+        'type' => 'kms_services',
+        'weight' => '57',
+      ),
+    ),
+  );
+
+  // Exported field: 'user-user-field_bundle_webservices_wms'.
+  $fields['user-user-field_bundle_webservices_wms'] = array(
+    'field_config' => array(
+      'active' => '1',
+      'cardinality' => '-1',
+      'deleted' => '0',
+      'entity_types' => array(),
+      'field_name' => 'field_bundle_webservices_wms',
+      'field_permissions' => array(
+        'type' => '0',
+      ),
+      'foreign keys' => array(),
+      'indexes' => array(
+        'value' => array(
+          0 => 'value',
+        ),
+      ),
+      'locked' => '0',
+      'module' => 'list',
+      'settings' => array(
+        'allowed_values' => array(),
+        'allowed_values_function' => '',
+      ),
+      'translatable' => '0',
+      'type' => 'list_text',
+    ),
+    'field_instance' => array(
+      'bundle' => 'user',
+      'default_value' => NULL,
+      'deleted' => '0',
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'list',
+          'settings' => array(),
+          'type' => 'list_default',
+          'weight' => 27,
+        ),
+      ),
+      'entity_type' => 'user',
+      'field_name' => 'field_bundle_webservices_wms',
+      'label' => 'Webservices (WMS)',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => 0,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'kms_permissions',
+        'settings' => array(
+          'type' => 'WMS',
+        ),
+        'type' => 'kms_services',
+        'weight' => '49',
+      ),
+    ),
+  );
+
+  // Exported field: 'user-user-field_bundle_webservices_wmts'.
+  $fields['user-user-field_bundle_webservices_wmts'] = array(
+    'field_config' => array(
+      'active' => '1',
+      'cardinality' => '-1',
+      'deleted' => '0',
+      'entity_types' => array(),
+      'field_name' => 'field_bundle_webservices_wmts',
+      'field_permissions' => array(
+        'type' => '0',
+      ),
+      'foreign keys' => array(),
+      'indexes' => array(
+        'value' => array(
+          0 => 'value',
+        ),
+      ),
+      'locked' => '0',
+      'module' => 'list',
+      'settings' => array(
+        'allowed_values' => array(),
+        'allowed_values_function' => '',
+      ),
+      'translatable' => '0',
+      'type' => 'list_text',
+    ),
+    'field_instance' => array(
+      'bundle' => 'user',
+      'default_value' => NULL,
+      'deleted' => '0',
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'list',
+          'settings' => array(),
+          'type' => 'list_default',
+          'weight' => 28,
+        ),
+      ),
+      'entity_type' => 'user',
+      'field_name' => 'field_bundle_webservices_wmts',
+      'label' => 'Webservices (WMTS)',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => 0,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'kms_permissions',
+        'settings' => array(
+          'type' => 'WMTS',
+        ),
+        'type' => 'kms_services',
+        'weight' => '51',
+      ),
+    ),
+  );
+
   // Exported field: 'user-user-field_bundles'.
   $fields['user-user-field_bundles'] = array(
     'field_config' => array(
@@ -1335,6 +1630,11 @@ function user_fields_field_default_fields() {
   t('Updated');
   t('Webservices');
   t('Webservices (GEO)');
+  t('Webservices (PLOT)');
+  t('Webservices (WCS)');
+  t('Webservices (WFS)');
+  t('Webservices (WMS)');
+  t('Webservices (WMTS)');
 
   return $fields;
 }
