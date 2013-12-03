@@ -24,6 +24,7 @@ function user_fields_field_group_info() {
     'weight' => '4',
     'children' => array(
       0 => 'field_access_bundles',
+      1 => 'group_webservices',
     ),
     'format_type' => 'fieldset',
     'format_settings' => array(
@@ -110,9 +111,9 @@ function user_fields_field_group_info() {
     'label' => 'Stamdata',
     'weight' => '1',
     'children' => array(
-      0 => 'field_pass_clear',
-      1 => 'field_address',
-      2 => 'field_phone',
+      0 => 'field_phone',
+      1 => 'field_pass_clear',
+      2 => 'field_address',
       3 => 'field_billing_address',
       4 => 'account',
     ),
@@ -142,8 +143,8 @@ function user_fields_field_group_info() {
     'label' => 'Navision',
     'weight' => '2',
     'children' => array(
-      0 => 'field_debtor_nr',
-      1 => 'field_kms_user_id',
+      0 => 'field_kms_user_id',
+      1 => 'field_debtor_nr',
     ),
     'format_type' => 'fieldset',
     'format_settings' => array(
@@ -201,8 +202,8 @@ function user_fields_field_group_info() {
     'label' => 'Andet',
     'weight' => '5',
     'children' => array(
-      0 => 'field_updated',
-      1 => 'field_user_remark',
+      0 => 'field_user_remark',
+      1 => 'field_updated',
       2 => 'field_expire_date',
     ),
     'format_type' => 'fieldset',
@@ -246,6 +247,58 @@ function user_fields_field_group_info() {
     ),
   );
   $export['group_user_type|user|user|form'] = $field_group;
+
+  $field_group = new stdClass();
+  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+  $field_group->api_version = 1;
+  $field_group->identifier = 'group_webservices_geo|user|user|form';
+  $field_group->group_name = 'group_webservices_geo';
+  $field_group->entity_type = 'user';
+  $field_group->bundle = 'user';
+  $field_group->mode = 'form';
+  $field_group->parent_name = 'group_webservices';
+  $field_group->data = array(
+    'label' => 'GEO',
+    'weight' => '48',
+    'children' => array(
+      0 => 'field_bundle_webservices_geo',
+    ),
+    'format_type' => 'htab',
+    'format_settings' => array(
+      'formatter' => 'closed',
+      'instance_settings' => array(
+        'description' => '',
+        'classes' => '',
+        'required_fields' => 1,
+      ),
+    ),
+  );
+  $export['group_webservices_geo|user|user|form'] = $field_group;
+
+  $field_group = new stdClass();
+  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+  $field_group->api_version = 1;
+  $field_group->identifier = 'group_webservices|user|user|form';
+  $field_group->group_name = 'group_webservices';
+  $field_group->entity_type = 'user';
+  $field_group->bundle = 'user';
+  $field_group->mode = 'form';
+  $field_group->parent_name = 'group_access_bundles';
+  $field_group->data = array(
+    'label' => 'Webservices',
+    'weight' => '9',
+    'children' => array(
+      0 => 'group_webservices_geo',
+    ),
+    'format_type' => 'htabs',
+    'format_settings' => array(
+      'label' => 'Webservices',
+      'instance_settings' => array(
+        'classes' => '',
+      ),
+    ),
+  );
+  $export['group_webservices|user|user|form'] = $field_group;
 
   return $export;
 }

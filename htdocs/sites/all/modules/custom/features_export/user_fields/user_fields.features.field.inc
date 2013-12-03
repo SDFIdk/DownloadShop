@@ -309,6 +309,65 @@ function user_fields_field_default_fields() {
     ),
   );
 
+  // Exported field: 'user-user-field_bundle_webservices_geo'.
+  $fields['user-user-field_bundle_webservices_geo'] = array(
+    'field_config' => array(
+      'active' => '1',
+      'cardinality' => '-1',
+      'deleted' => '0',
+      'entity_types' => array(),
+      'field_name' => 'field_bundle_webservices_geo',
+      'field_permissions' => array(
+        'type' => '0',
+      ),
+      'foreign keys' => array(),
+      'indexes' => array(
+        'value' => array(
+          0 => 'value',
+        ),
+      ),
+      'locked' => '0',
+      'module' => 'list',
+      'settings' => array(
+        'allowed_values' => array(),
+        'allowed_values_function' => '',
+      ),
+      'translatable' => '0',
+      'type' => 'list_text',
+    ),
+    'field_instance' => array(
+      'bundle' => 'user',
+      'default_value' => NULL,
+      'deleted' => '0',
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'list',
+          'settings' => array(),
+          'type' => 'list_default',
+          'weight' => 26,
+        ),
+      ),
+      'entity_type' => 'user',
+      'field_name' => 'field_bundle_webservices_geo',
+      'label' => 'Webservices (GEO)',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => 0,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'kms_permissions',
+        'settings' => array(
+          'type' => 'GEO',
+        ),
+        'type' => 'kms_services',
+        'weight' => '47',
+      ),
+    ),
+  );
+
   // Exported field: 'user-user-field_bundles'.
   $fields['user-user-field_bundles'] = array(
     'field_config' => array(
@@ -1275,6 +1334,7 @@ function user_fields_field_default_fields() {
   t('Udløbsdato');
   t('Updated');
   t('Webservices');
+  t('Webservices (GEO)');
 
   return $fields;
 }
