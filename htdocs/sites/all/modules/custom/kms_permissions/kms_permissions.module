@@ -12,6 +12,12 @@ function kms_permissions_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
   );
+  $items['kms-permissions/ajax/user-autocomplete'] = array(
+    'title' => 'Kms permissions autocomplete to be used by form element',
+    'page callback' => 'kms_permissions_user_autocomplete_callback',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
 
   return $items;
 }
@@ -35,6 +41,20 @@ function kms_permissions_library() {
   );
 
   return $libraries;
+}
+
+/**
+ * Implementation of hook_action_info().
+ */
+function kms_permissions_action_info() {
+  return array(
+    'kms_permissions_vbo_copy_user_services' => array(
+      'label' => t('Copy user services'),
+      'type' => 'user',
+      'configurable' => TRUE,
+      'hooks' => array(),
+    ),
+  );
 }
 
 /* Implements HOOK_cronapi() */
@@ -1309,4 +1329,88 @@ function kms_permissions_batch($uid, $permissions) {
   // Process batch job in background
   //background_batch_process_batch();
   watchdog('kms_permissons', 'Starting batchjob for updating permissions in Oracle', array(), WATCHDOG_INFO);
+}
+
+/**
+ * VBO add access bundle form.
+ *
+ * @atodo comment this.
+ * @param array $context
+ *   VBO context.
+ *
+ * @return [type]
+*/
+function kms_permissions_vbo_copy_user_services_form($context) {
+  $form['source_username'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Choose a user.'),
+    // The autocomplete path is provided in hook_menu in ajax_example.module.
+    '#autocomplete_path' => 'kms-permissions/ajax/user-autocomplete',
+  );
+
+  return $form;
+}
+
+/**
+ * VBO add access bundle form submit.
+ *
+ * @atodo comment this.
+ * @param array $form
+ *   Drupal form array.
+ * @param array $form_state
+ *   Drupal form state array.
+ *
+ * @return array
+ */
+function kms_permissions_vbo_copy_user_services_submit($form, $form_state) {
+  return array(
+    'source_username' => $form_state['values']['source_username'],
+  );
+}
+
+/**
+ * VBO add access bundles operations.
+ *
+ * @atodo comment this.
+ * @param object $account
+ *   Drupal user object.
+ * @param array $context
+ *   VBO context.
+ *
+ * @return void
+ */
+function kms_permissions_vbo_copy_user_services(&$account, $context = array()) {
+  $source_account = user_load_by_name(check_plain($context['source_username']));
+  if(!$source_account) {
+    return;
+  }
+  $source = entity_metadata_wrapper('user', $source_account);
+  $target = entity_metadata_wrapper('user', $context['user']);
+  $target->field_access_bundles->set($source->field_access_bundles->value());
+  foreach(_kms_permissions_webservice_fields() as $field){
+    $target->$field->set($source->$field->value());
+  }
+  $target->save();
+}
+
+/**
+ * Form field autocomplete callback for selecting user.
+ *
+ * @param string $string
+ *   Search key.
+ */
+function kms_permissions_user_autocomplete_callback($string = "") {
+  $matches = array();
+  if ($string) {
+    $result = db_select('users')
+      ->fields('users', array('name', 'uid'))
+      ->condition('name', db_like($string) . '%', 'LIKE')
+      ->range(0, 10)
+      ->execute();
+    foreach ($result as $user) {
+      $matches[$user->name] = check_plain($user->name) . " (uid=$user->uid)";
+    }
+  }
+
+  drupal_json_output($matches);
 }
