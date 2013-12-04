@@ -22,8 +22,6 @@
 
             $('.group-webservices .form-type-checkbox input').each(function(){
               $(this).unbind('click.kmsPermissionJail');
-              console.log(sids.indexOf($(this).val()));
-              console.log($(this).val());
               if(sids.indexOf($(this).val()) != -1) {
                 $(this).attr("checked", false);
               }
@@ -41,7 +39,7 @@
                 return false;
               });
             }
-            
+
           },
           complete: function() {
             $('.group-webservices').foggy(false);
