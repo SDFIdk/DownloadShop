@@ -5,21 +5,33 @@
 (function ($) {
   Drupal.behaviors.kms_perms_user_checkboxes = {
     attach: function(context, settings) {
-      $('#edit-field-access-bundles-und .form-type-checkbox input').click(function () {
-        var bundleCheckBox = $(this);
+      $('#edit-field-access-bundles-und .form-type-checkbox input', context).click(function () {
+
+        var bids = [];
+        $('#edit-field-access-bundles-und .form-type-checkbox input:checked', context).each(function(){
+          bids.push($(this).val())
+        })
+
+        $('.group-webservices').foggy();
         $.ajax({
-          url: '/kms-permissions/ajax/load-sids/' + bundleCheckBox.val(),
-          type: 'GET',
+          url: '/kms-permissions/ajax/load-sids-by-bid',
+          type: 'POST',
+          'data': {bids: bids},
           success: function(xhr) {
-            var serviceIds = xhr.sids;
-            for (var i=0; i < serviceIds.length; i++){
-              var serviceId = serviceIds[i];
-              var selector = 'input[id^="edit-field-bundle-webservices-"][id$=-' + serviceId + ']';
-              $(selector, context).attr('checked', bundleCheckBox.attr('checked'));
-              $(selector, context).attr('disabled', bundleCheckBox.attr('checked'));
+            $('.group-webservices .form-type-checkbox input', context)
+              .attr('checked', false)
+              .attr('disabled', false);
+            for (var i=0; i < xhr.sids.length; i++){
+              var sid = xhr.sids[i];
+              var selector = '.group-webservices .form-type-checkbox input[id^="edit-field-bundle-webservices-"][id$=-' + sid + ']'
+              $(selector, context).attr("checked", "checked").attr("disabled", "disabled");
             }
+          },
+          complete: function() {
+            $('.group-webservices').foggy(false);
           }
         });
+
       })
 
     }

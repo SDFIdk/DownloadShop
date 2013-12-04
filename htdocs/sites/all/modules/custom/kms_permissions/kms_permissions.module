@@ -6,11 +6,10 @@
 function kms_permissions_menu() {
   $items = array();
 
-  $items['kms-permissions/ajax/load-sids/%'] = array(
+  $items['kms-permissions/ajax/load-sids-by-bid'] = array(
     'title' => 'Kms permissions load service ids by bundle id',
-    'page callback' => 'kms_permissions_ajax_get_services_by_bid',
+    'page callback' => 'kms_permissions_ajax_get_services_by_bids',
     'access arguments' => array('access content'),
-    'page arguments' => array(3),
     'type' => MENU_CALLBACK,
   );
 
@@ -24,8 +23,21 @@ function kms_permissions_ctools_plugin_directory($owner, $plugin_type) {
   }
 }
 
-/* Implements HOOK_cronapi() */
+function kms_permissions_library() {
+  // jQuery Foggy plugin.
+  $libraries['jquery.foggy'] = array(
+    'title' => 'jQuery Foggy',
+    'website' => 'http://nbartlomiej.github.io/foggy/',
+    'version' => '1.1',
+    'js' => array(
+      drupal_get_path('module', 'kms_permissions') . '/js/jquery.foggy.min.js' => array(),
+    ),
+  );
 
+  return $libraries;
+}
+
+/* Implements HOOK_cronapi() */
 function kms_permissions_cronapi($op, $function = NULL) {
   switch($op) {
     case 'list':
@@ -404,6 +416,8 @@ function kms_permissions_field_group_pre_render(&$element, $group, &$form) {
  */
 function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
   drupal_add_js(drupal_get_path('module', 'kms_permissions') .'/js/kms_perms_user_checkboxes.js');
+  drupal_add_library('kms_permissions', 'jquery.foggy');
+
   $bids = array();
   // Disable default bundles checkbox
   $default = _kms_permissions_get_default_bundles();
@@ -1144,14 +1158,22 @@ function _kms_permissions_get_bundle_by_sid($sid) {
 }
 
 function kms_permissions_ajax_get_services_by_bid($bid) {
-  $permissions = array();
-  $json = array('sids' => array());
+  $permissions = $sids = array();
    _kms_permissions_get_permissions_by_bid($bid, $permissions);
   if(!empty($permissions['services']) && is_array($permissions['services'])) {
-    array_walk($permissions['services'], function($v) use(&$json) {
-      $json['sids'][] = $v['id'];
+    array_walk($permissions['services'], function($v) use(&$sids) {
+      $sids[$v['id']] = $v['id'];
     });
   }
+  return $sids;
+}
+
+function kms_permissions_ajax_get_services_by_bids() {
+  $bids = !empty($_POST['bids']) ? $_POST['bids'] : array();
+  $json = array('sids' => array());
+  array_walk($bids, function($bid) use (&$json){
+    $json['sids'] = array_merge($json['sids'], kms_permissions_ajax_get_services_by_bid($bid));
+  });
   drupal_json_output($json);
   exit;
 }
