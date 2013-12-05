@@ -271,6 +271,10 @@ function kms_permissions_field_formatter_info() {
       'label' => t('Bundle references'),
       'field types' => array('node_reference'),
     ),
+//    'kms_permissions_separate_services' => array(
+//      'label' => t('Separate services'),
+//      'field types' => array('text'),
+//    ),
   );
 }
 
@@ -453,6 +457,25 @@ function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
 //      $bids['default'][] = $val;
     }
   }
+  $services_description = array(
+    'title' => array(
+      '#theme' => 'html_tag',
+      '#tag' => 'h3',
+      '#value' => t('Services'),
+      '#attributes' => array(
+        'class' => array('fieldset-title'),
+      ),
+    ),
+    'description' => array(
+      '#theme' => 'html_tag',
+      '#tag' => 'div',
+      '#value' => t('Services that are dependant on the bundles chosen.'),
+      '#attributes' => array(
+        'class' => array('description'),
+      ),
+    ),
+  );
+  $form['field_access_bundles'][LANGUAGE_NONE]['#suffix'] = render($services_description);
 
   /*
    Set tick in permissions given by bundles

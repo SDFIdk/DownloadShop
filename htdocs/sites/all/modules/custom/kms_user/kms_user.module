@@ -114,9 +114,7 @@ function _kms_user_format_user_service_list($service_id, $service_name) {
   
   foreach ($nid_sid_arr as $type => $nodes) {
     foreach ($nodes as $nid => $title) {
-      $html .= '<span class="bundle-' . $type . '">' . 
-      l(t( $title), "node/$nid/edit/", array('attributes' => array('target'=>'_blank'))) . 
-      '</span> '; 
+      $html .= '<span class="bundle-' . $type . '">' . t($title) . '</span> ';
     }
   }
   return $html;
@@ -613,8 +611,8 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
 
   // Update Oracle tables.
   if (module_exists('kms_oci') && kms_user_smuser_exists($user)) {
-    kms_oci_update_user($data['user_extra'], 'smuser_extra', $userid_old);
-    kms_oci_update_user($data['user'], 'smuser', $userid_old);
+//    kms_oci_update_user($data['user_extra'], 'smuser_extra', $userid_old);
+//    kms_oci_update_user($data['user'], 'smuser', $userid_old);
   }
 
 }
