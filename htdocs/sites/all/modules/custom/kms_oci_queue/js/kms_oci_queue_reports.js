@@ -9,6 +9,7 @@
           currentTd.removeClass('active');
         }
         else {
+          currentTd.addClass('loading');
           $.ajax({
             url: '/kms-oci-queue/ajax/load-log/' + jobId,
             type: 'GET',
@@ -18,6 +19,9 @@
               $('.kms-oci-queue-job-log[data-jid="' + jobId + '"] td', context).html(xhr.html);
               $('td.job-log-trigger', context).not(currentTd).removeClass('active');
               currentTd.addClass('active');
+            },
+            complete: function() {
+              currentTd.removeClass('loading');
             }
           });
         }
