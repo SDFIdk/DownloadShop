@@ -1,5 +1,8 @@
 <?php
 
+define('KP_QUEUE_ACTION_USER_UPDATE_PERMS', 'User: Update permissions');
+define('KP_QUEUE_ACTION_ALL_USERS_UPDATE_PERMS', 'User: Update permissions - all users');
+
 /**
  * Implements hook_menu().
  */
@@ -58,20 +61,21 @@ function kms_permissions_action_info() {
 }
 
 /* Implements HOOK_cronapi() */
-function kms_permissions_cronapi($op, $function = NULL) {
-  switch($op) {
-    case 'list':
-      return array(
-        'kms_permissions_save_permissions_callback' => 'Save permissions to Oracle',
-      );
+//function kms_permissions_cronapi($op, $function = NULL) {
+//  switch($op) {
+//    case 'list':
+//      return array(
+//        'kms_permissions_save_permissions_callback' => 'Save permissions to Oracle',
+//      );
+//
+//    case 'rule':
+//      switch($function) {
+//        case 'kms_permissions_save_permissions_callback': return '*/5 * * * *';
+//      }
+//      break;
+//  }
+//}
 
-    case 'rule':
-      switch($function) {
-        case 'kms_permissions_save_permissions_callback': return '*/5 * * * *';
-      }
-      break;
-  }
-}
 
 /**
  * Implements hook_cron().
@@ -415,25 +419,11 @@ function kms_permissions_user_presave(&$edit, $account, $category) {
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function kms_permissions_form_access_bundle_node_form_alter(&$form, &$form_state) {
-  $form['actions']['submit']['#submit'][] = 'kms_permissions_access_bundle_update';
-  $form['actions']['delete']['#submit'][] = 'kms_permissions_access_bundle_update';
-}
+  function kms_permissions_form_access_bundle_node_form_alter(&$form, &$form_state) {
+    $form['actions']['submit']['#submit'][] = 'kms_permissions_access_bundle_update';
+//    $form['actions']['delete']['#submit'][] = 'kms_permissions_access_bundle_update';
+  }
 
-function ajax_check_bundles_callback($form, $form_state) {
-
-
-  return 'test';
-}
-
-/**
-* Implements hook_field_group_pre_render().
-*
-* @param Array $elements by address.
-* @param Object $group The Field group info.
-*/
-function kms_permissions_field_group_pre_render(&$element, $group, &$form) {
-}
 
 /**
  * Implements hook_form_FORM_ID_alter().
@@ -441,22 +431,16 @@ function kms_permissions_field_group_pre_render(&$element, $group, &$form) {
 function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
   drupal_add_js(drupal_get_path('module', 'kms_permissions') .'/js/kms_perms_user_checkboxes.js');
   drupal_add_library('kms_permissions', 'jquery.foggy');
+  drupal_add_css(drupal_get_path('module', 'kms_permissions') .'/css/edit_bundles_and_services.css');
 
-  $bids = array();
-  // Disable default bundles checkbox
-  $default = _kms_permissions_get_default_bundles();
-  
-  if ($default) {
-    foreach ($default as $val) {
-      $form['field_access_bundles'][$form['field_access_bundles']['#language']][$val] = array(
-      '#default_value' => $val,
-      '#disabled' => TRUE,
-      '#weight' => -1,
-      );
-//      // While we're at it, add default bundles to the user's bundle array
-//      $bids['default'][] = $val;
-    }
+  foreach(_kms_permissions_get_default_bundles() as $bid) {
+
   }
+  // Atodo: I let this stay in case of change request. Remove if not needed!
+  // Hide default bundle checkboxes.
+  //  $access_bundle_options = &$form['field_access_bundles'][$form['field_access_bundles']['#language']]['#options'];
+  //  $access_bundle_options = array_diff_key($access_bundle_options, array_flip(_kms_permissions_get_default_bundles()));
+
   $services_description = array(
     'title' => array(
       '#theme' => 'html_tag',
@@ -475,112 +459,31 @@ function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
       ),
     ),
   );
+
   $form['field_access_bundles'][LANGUAGE_NONE]['#suffix'] = render($services_description);
+  $form['field_access_bundles'][LANGUAGE_NONE]['#pre_render'][] = 'kms_permissions_process_access_bundles_form_element';
+}
 
-  /*
-   Set tick in permissions given by bundles
-  */
-  //Find out what bundle user has
-//  $permissions = array();
-//  // User id
-//  $uid = $form_state['build_info']['args'][0]->uid;
-//  // User data
-//  $user_data = user_load($uid);
-//  if (!empty($user_data->field_access_bundles['und'])) {
-//    // Get what bundles user has
-//    // custom
-//    foreach ($user_data->field_access_bundles['und'] as $v_users_bundle) {
-//      $bids['custom'][] = $v_users_bundle['nid'];
-//    }
-//
-//    // Get permissions from user's custom bundles
-//    foreach ($bids['custom'] as $bid) {
-//      _kms_permissions_get_permissions_by_bid($bid, &$permissions);
-//    }
-//    $custom_services_id = array();
-//    foreach ($permissions["services"] as $service) {
-//      $custom_services_id[] = $service['id'];
-//    }
-//  }
-//  // defaut
-//  if (!empty($bids['default'])) {
-//    $permissions = array();
-//    // Get permissions from user's custom bundles
-//    foreach ($bids['default'] as $bid) {
-//      _kms_permissions_get_permissions_by_bid($bid, &$permissions);
-//    }
-//    $default_services_id = array();
-//    foreach ($permissions["services"] as $service) {
-//      $default_services_id[] = $service['id'];
-//    }
-//  }
-//
+function kms_permissions_process_access_bundles_form_element($element) {
+  $bids = _kms_permissions_get_default_bundles();
 
+  foreach (element_children($element) as $bid) {
+    if(in_array($bid, $bids)) {
+      $element[$bid]['#attributes']['class'][] = 'default-bundle';
+      $element[$bid]['#weight'] = $element[$bid]['#weight'] - 200;
+    }
+  }
 
-
-
-  // $form["#groups"]['group_user_webservices']->append($pre_suffix);
-
-  
-
-  // $form["#groups"]['group_user_webservices'];
-
-  // _adapt_debug('julien', $form);
-  // _adapt_debug('julien', $form);
-
-  // Ajax form for bundles
-// $form['field_access_bundles'][LANGUAGE_NONE]['#ajax'] = array(
-//      'event' => 'change',
-//      'callback' => 'ajax_check_bundles_callback',
-//      'wrapper' => 'checkboxes-div',
-//      'method' => 'replace',
-//  );
-//
-
-
-
-  // $form['field_bundle_webservices_geo'][1] = array('#disabled' => TRUE);
-
-
-  // _adapt_debug('julien', $form['field_bundle_webservices_geo']);
-
-
-//  foreach ($form as $field_name => $field_value) {
-//    if (strpos($field_name, 'field_bundle_webservices') !== false) {
-//    // _adapt_debug('julien', $field_value['und']['#options']);
-//      foreach (array_keys($field_value['und']['#options']) as $service_ids) {
-//        if (in_array($service_ids, $custom_services_id)) {
-//          // _adapt_debug('julien', $service_ids);
-//            $form['field_bundle_webservices_geo'][$custom_services_id]['#disabled'] = TRUE; //disables option, called abc
-//        }
-//      }
-//
-//    }
-//    // Only use bundle fields
-//    // foreach ($field_value as $webservice_list) {
-//      // }
-//    // }
-//  }
-
-
-  // $form["#groups"]['group_user_webservices']['#after_build'][] = 'kms_permissions_after_build';
-
-} 
-
-/**
- * Custom after build function
- **/
-// function kms_permissions_after_build($form, &$form_state) {
-//   _adapt_debug('julien', $form);
-  
- 
-//   return $form;
-// }
+  return $element;
+}
 
 /**
  * Implements hook_node_presave().
  */
 function kms_permissions_node_presave($node) {
+  if($node->type != 'access_bundle') {
+    return;
+  }
   $node->update_default_bundle = FALSE;
   $node->update_bundle = FALSE;
 
@@ -628,29 +531,45 @@ function kms_permissions_node_presave($node) {
       }
     }
   }
+
 }
 
 /**
  * Submit callback for bundle update or delete
  */
 function kms_permissions_access_bundle_update($form, $form_state) {
-  if ($form['#node']->update_default_bundle) {
-    // If a bundle is set as a default bundle or WAS set as a default bundle, update all users
-    $uids = _kms_permissions_get_all_users();
-  }
-  else if ($form['#node']->update_bundle) {
-    // When a bundle get updated, find all users related to that bundle, and queue them for updating in oracle.
-    $uids = _kms_permissions_get_users_by_bid($form_state['values']['nid']);
-  }
+  $default_bundle_is_updated = (bool)$form['#node']->update_default_bundle;
+  $bundle_is_updated = (bool)$form['#node']->update_bundle;
+  $bid = $form['#node']->nid;
 
-  $user_perm = array();
-  if (!empty($uids)) {
-    foreach ($uids as $uid) {
-      // $user_perm[] = _kms_permissions_get_permissions_by_uid($uid);
-      // Atodo: Integrate kms_oci_queue.
-//      kms_permissions_save_temp_permissions($uid, $permissions);
+  if ($default_bundle_is_updated) {
+    // If a bundle is set as a default bundle or WAS set as a default bundle, update all users.
+    $uids = _kms_permissions_get_all_users();
+    if(!empty($uids)) {
+      KmsOciQueueJob::create(array(
+        'action' => KP_QUEUE_ACTION_ALL_USERS_UPDATE_PERMS,
+        'params' => array(),
+      ));
+
+      kms_permissions_run_batch('default_bundle_update_users', $bid, $uids);
+
+    }
+
+  }
+  else if ($bundle_is_updated) {
+    // When a bundle get updated, find all users related to that bundle, and queue them for updating.
+    $uids = _kms_permissions_get_users_by_bid($bid);
+    if(!empty($uids)) {
+      KmsOciQueueJob::create(array(
+        'action' => KP_QUEUE_ACTION_USER_UPDATE_PERMS,
+        'params' => array(
+          'uids' => $uids,
+        ),
+      ));
     }
   }
+
+
 }
 
 /**
@@ -928,7 +847,15 @@ function _kms_permissions_get_permissions_by_bid($bid, &$permissions = array()) 
 
   // Get all bounding box info
   $bounding_box = array();
-  foreach (array('field_bundle_minx', 'field_bundle_miny', 'field_bundle_maxx', 'field_bundle_maxy', 'field_bundle_maxpixelwidth', 'field_bundle_maxpixelheight') as $value) {
+  $field_values = array(
+    'field_bundle_minx',
+    'field_bundle_miny',
+    'field_bundle_maxx',
+    'field_bundle_maxy',
+    'field_bundle_maxpixelwidth',
+    'field_bundle_maxpixelheight',
+  );
+  foreach ($field_values as $value) {
     $box_field = field_get_items('node', $bundle, $value);
     $bounding_box[$value] = $box_field[0]['value'];
   }
@@ -938,31 +865,41 @@ function _kms_permissions_get_permissions_by_bid($bid, &$permissions = array()) 
   $field_predefined_datacollections = field_get_items('node', $bundle, 'field_predefined_datacollections');
   if (!empty($field_predefined_datacollections)) {
     foreach ($field_predefined_datacollections as $predefined) {
+      $pd_key = 'pd' . $predefined['target_id'];
       // If a user has access to userdefined ranges on a product on one bundle, there is always access
-      if (isset($permissions['predefined_datacollections']['pd' . $predefined['target_id']])) {
-        $access_userdefined_ranges = ($permissions['predefined_datacollections']['pd' . $predefined['target_id']]['access_userdefined_ranges'] + $field_access_userdefined_ranges['value'] > 0 ? 1 : 0);
+      if (isset($permissions['predefined_datacollections'][$pd_key])) {
+        $access_userdefined_ranges = ($permissions['predefined_datacollections'][$pd_key]['access_userdefined_ranges'] + $field_access_userdefined_ranges['value'] > 0 ? 1 : 0);
       }
       else {
         $access_userdefined_ranges = $field_access_userdefined_ranges['value'];
       }
       
       // Only select min/max value if key exists to avoid notices
-      if (isset($permissions['predefined_datacollections']) && isset($permissions['predefined_datacollections']['pd' . $predefined['target_id']])) {
-        $permissions['predefined_datacollections']['pd' . $predefined['target_id']] = array(
+      if (isset($permissions['predefined_datacollections']) && isset($permissions['predefined_datacollections'][$pd_key])) {
+        $permissions['predefined_datacollections'][$pd_key] = array(
           'access_userdefined_ranges' => $access_userdefined_ranges,
-          'max_download_size' => max($permissions['predefined_datacollections']['pd' . $predefined['target_id']]['max_download_size'], $field_max_download_size['value']),
+          'max_download_size' => max(
+            $permissions['predefined_datacollections'][$pd_key]['max_download_size'],
+            $field_max_download_size['value']
+          ),
           'id' => $predefined['target_id'],
-          'MINX' => min($permissions['predefined_datacollections']['pd' . $predefined['target_id']]['MINX'], $bounding_box['field_bundle_minx']),
-          'MINY' => min($permissions['predefined_datacollections']['pd' . $predefined['target_id']]['MINY'], $bounding_box['field_bundle_miny']),
-          'MAXX' => max($permissions['predefined_datacollections']['pd' . $predefined['target_id']]['MAXX'], $bounding_box['field_bundle_maxx']),
-          'MAXY' => max($permissions['predefined_datacollections']['pd' . $predefined['target_id']]['MAXY'], $bounding_box['field_bundle_maxy']),
-          'MAXPIXELWIDTH' => max($permissions['predefined_datacollections']['pd' . $predefined['target_id']]['MAXPIXELWIDTH'], $bounding_box['field_bundle_maxpixelwidth']),
-          'MAXPIXELHEIGHT' => max($permissions['predefined_datacollections']['pd' . $predefined['target_id']]['MAXPIXELHEIGHT'], $bounding_box['field_bundle_maxpixelheight']),
+          'MINX' => min($permissions['predefined_datacollections'][$pd_key]['MINX'], $bounding_box['field_bundle_minx']),
+          'MINY' => min($permissions['predefined_datacollections'][$pd_key]['MINY'], $bounding_box['field_bundle_miny']),
+          'MAXX' => max($permissions['predefined_datacollections'][$pd_key]['MAXX'], $bounding_box['field_bundle_maxx']),
+          'MAXY' => max($permissions['predefined_datacollections'][$pd_key]['MAXY'], $bounding_box['field_bundle_maxy']),
+          'MAXPIXELWIDTH' => max(
+            $permissions['predefined_datacollections'][$pd_key]['MAXPIXELWIDTH'],
+            $bounding_box['field_bundle_maxpixelwidth']
+          ),
+          'MAXPIXELHEIGHT' => max(
+            $permissions['predefined_datacollections'][$pd_key]['MAXPIXELHEIGHT'],
+            $bounding_box['field_bundle_maxpixelheight']
+          ),
           'FEATUREINFO' => '1',
         );
       }
       else {
-        $permissions['predefined_datacollections']['pd' . $predefined['target_id']] = array(
+        $permissions['predefined_datacollections'][$pd_key] = array(
           'access_userdefined_ranges' => $access_userdefined_ranges,
           'max_download_size' => $field_max_download_size['value'],
           'id' => $predefined['target_id'],
@@ -985,30 +922,31 @@ function _kms_permissions_get_permissions_by_bid($bid, &$permissions = array()) 
     $field_services = field_get_items('node', $bundle,  $webservice_field);
     if (!empty($field_services)) {
       foreach ($field_services as $services) {
+        $service_key = 's' . $services['value'];
         // If a user has access to userdefined ranges on a product on one bundle, there is always access
-        if (isset($permissions['services']['s' . $services['value']])) {
-          $access_userdefined_ranges = ($permissions['services']['s' . $services['value']]['access_userdefined_ranges'] + $field_access_userdefined_ranges['value'] > 0 ? 1 : 0);
+        if (isset($permissions['services'][$service_key])) {
+          $access_userdefined_ranges = ($permissions['services'][$service_key]['access_userdefined_ranges'] + $field_access_userdefined_ranges['value'] > 0 ? 1 : 0);
         }
         else {
           $access_userdefined_ranges = $field_access_userdefined_ranges['value'];
         }
 
         // Only select min/max value if key exists to avoid notices
-        if (isset($permissions['services']) && isset($permissions['services']['s' . $services['value']])) {
-          $permissions['services']['s' . $services['value']] = array(
+        if (isset($permissions['services']) && isset($permissions['services'][$service_key])) {
+          $permissions['services'][$service_key] = array(
             'access_userdefined_ranges' => $access_userdefined_ranges,
             'id' => $services['value'],
-            'MINX' => min($permissions['services']['s' . $services['value']]['MINX'], $bounding_box['field_bundle_minx']),
-            'MINY' => min($permissions['services']['s' . $services['value']]['MINY'], $bounding_box['field_bundle_miny']),
-            'MAXX' => max($permissions['services']['s' . $services['value']]['MAXX'], $bounding_box['field_bundle_maxx']),
-            'MAXY' => max($permissions['services']['s' . $services['value']]['MAXY'], $bounding_box['field_bundle_maxy']),
-            'MAXPIXELWIDTH' => max($permissions['services']['s' . $services['value']]['MAXPIXELWIDTH'], $bounding_box['field_bundle_maxpixelwidth']),
-            'MAXPIXELHEIGHT' => max($permissions['services']['s' . $services['value']]['MAXPIXELHEIGHT'], $bounding_box['field_bundle_maxpixelheight']),
+            'MINX' => min($permissions['services'][$service_key]['MINX'], $bounding_box['field_bundle_minx']),
+            'MINY' => min($permissions['services'][$service_key]['MINY'], $bounding_box['field_bundle_miny']),
+            'MAXX' => max($permissions['services'][$service_key]['MAXX'], $bounding_box['field_bundle_maxx']),
+            'MAXY' => max($permissions['services'][$service_key]['MAXY'], $bounding_box['field_bundle_maxy']),
+            'MAXPIXELWIDTH' => max($permissions['services'][$service_key]['MAXPIXELWIDTH'], $bounding_box['field_bundle_maxpixelwidth']),
+            'MAXPIXELHEIGHT' => max($permissions['services'][$service_key]['MAXPIXELHEIGHT'], $bounding_box['field_bundle_maxpixelheight']),
             'FEATUREINFO' => '1',
           );
         }
         else {
-          $permissions['services']['s' . $services['value']] = array(
+          $permissions['services'][$service_key] = array(
             'access_userdefined_ranges' => $access_userdefined_ranges,
             'id' => $services['value'],
             'MINX' => $bounding_box['field_bundle_minx'],
@@ -1020,6 +958,8 @@ function _kms_permissions_get_permissions_by_bid($bid, &$permissions = array()) 
             'FEATUREINFO' => '1',
           );
         }
+        // We want to know which field the service belongs to in drupal.
+        $permissions['services'][$service_key]['field'] = $webservice_field;
       }
     }
   }
@@ -1072,22 +1012,13 @@ function _kms_permissions_get_users_by_bid($bid) {
  * Internal function for finding all active users.
  * Doing an entity load would be too heavy
  */
-function _kms_permissions_get_all_users() {
-  $query = new EntityFieldQuery();
-
-  $query->entityCondition('entity_type', 'user')
-    ->propertyCondition('status', 1)
-    ->range(0, 100); // Range to be deleted, failsafe
-
-  $result = $query->execute();
-  $uids = array();
-
-  if ($result) {
-    foreach ($result['user'] as $user) {
-      $uids[] = $user->uid;
-    }
-  }
-  return $uids;
+function  _kms_permissions_get_all_users() {
+  $query = db_select('users', 'u')
+    ->fields('u', array('uid'))
+    ->condition('status', 1, '=');
+  // For debugging purposes.
+//    ->range(0, 5);
+  return $query->execute()->fetchCol();
 }
 
 /**
@@ -1200,7 +1131,7 @@ function _kms_permissions_get_bundle_by_sid($sid) {
   }
 }
 
-function kms_permissions_ajax_get_services_by_bid($bid) {
+function _kms_permissions_get_services_by_bid($bid) {
   $permissions = $sids = array();
    _kms_permissions_get_permissions_by_bid($bid, $permissions);
   if(!empty($permissions['services']) && is_array($permissions['services'])) {
@@ -1211,12 +1142,18 @@ function kms_permissions_ajax_get_services_by_bid($bid) {
   return $sids;
 }
 
+function _kms_permissions_get_services_by_bids($bids) {
+  $sids = array();
+  array_walk($bids, function($bid) use (&$sids){
+    $sids += _kms_permissions_get_services_by_bid($bid);
+
+  });
+  return $sids;
+}
+
 function kms_permissions_ajax_get_services_by_bids() {
   $bids = !empty($_POST['bids']) ? $_POST['bids'] : array();
-  $json = array('sids' => array());
-  array_walk($bids, function($bid) use (&$json){
-    $json['sids'] = array_merge($json['sids'], kms_permissions_ajax_get_services_by_bid($bid));
-  });
+  $json = array('sids' => array_values(_kms_permissions_get_services_by_bids($bids)));
   drupal_json_output($json);
   exit;
 }
@@ -1335,24 +1272,24 @@ function _kms_permissions_webservice_fields() {
 // }
 
 
-function kms_permissions_batch($uid, $permissions) {
-  $batch = array(
-    'operations' => array(
-      array('kms_permissions_batch_save_temp_permissions', array($uid, $permissions)),
-      ),
-    'finished' => 'kms_permissions_batch_finish',
-    'title' => t('Processing Batch Update of Permissions'),
-    'init_message' => t('Batch Update of Permissions is starting.'),
-    'progress_message' => t('Processed @current out of @total.'),
-    'error_message' => t('Batch Update of Permissions has encountered an error.'),
-    'file' => drupal_get_path('module', 'kms_permissions') . '/kms_permissions.batch.inc',
-  );
-  batch_set($batch);
-
-  // Process batch job in background
-  //background_batch_process_batch();
-  watchdog('kms_permissons', 'Starting batchjob for updating permissions in Oracle', array(), WATCHDOG_INFO);
-}
+//function kms_permissions_batch($uid, $permissions) {
+//  $batch = array(
+//    'operations' => array(
+//      array('kms_permissions_batch_save_temp_permissions', array($uid, $permissions)),
+//      ),
+//    'finished' => 'kms_permissions_batch_finish',
+//    'title' => t('Processing Batch Update of Permissions'),
+//    'init_message' => t('Batch Update of Permissions is starting.'),
+//    'progress_message' => t('Processed @current out of @total.'),
+//    'error_message' => t('Batch Update of Permissions has encountered an error.'),
+//    'file' => drupal_get_path('module', 'kms_permissions') . '/kms_permissions.batch.inc',
+//  );
+//  batch_set($batch);
+//
+//  // Process batch job in background
+//  //background_batch_process_batch();
+//  watchdog('kms_permissons', 'Starting batchjob for updating permissions in Oracle', array(), WATCHDOG_INFO);
+//}
 
 /**
  * VBO add access bundle form.
@@ -1436,4 +1373,41 @@ function kms_permissions_user_autocomplete_callback($string = "") {
   }
 
   drupal_json_output($matches);
+}
+
+function kms_permissions_run_batch($type) {
+  $args = func_get_args();
+  unset($args[0]);
+
+  switch($type) {
+    case 'default_bundle_update_users':
+      list($bid, $uids) = $args;
+      $operations = array();
+      $user_count = count($uids);
+      $chunk_size = 10;
+      $chunks = array_chunk($uids, $chunk_size);
+
+      array_walk($chunks, function($uids) use (&$operations, $bid, $user_count){
+        $operations[] = array(
+          'kms_permissions_batch_default_bundle_update_users',
+          array($bid, $uids, $user_count)
+        );
+      });
+
+      $batch = array(
+        'title' => t('Processing users'),
+        'operations' => $operations,
+        'init_message' => t('Starting process...'),
+//      'progress_message' => t('Processed @current out of @total.'),
+        'error_message' => t('An error occurred during processing'),
+        'finished' => "kms_permissions_batch_default_bundle_update_users_finished",
+        'file' => drupal_get_path('module', 'kms_permissions') . '/bundle_update_user_perms.batch.inc',
+        // 'progressive' => FALSE
+      );
+      break;
+  }
+
+  batch_set($batch);
+  background_batch_process_batch();
+
 }

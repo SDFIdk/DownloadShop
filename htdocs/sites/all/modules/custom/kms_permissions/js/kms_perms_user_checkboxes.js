@@ -5,48 +5,62 @@
 (function ($) {
   Drupal.behaviors.kms_perms_user_checkboxes = {
     attach: function(context, settings) {
-      sids = [];
-      $('#edit-field-access-bundles-und .form-type-checkbox input', context).click(function () {
+      // Prevent click on default bundles.
+      $('#edit-field-access-bundles-und .default-bundle', context).bind('click', function(event){
+        event.stopPropagation();
+        event.preventDefault();
+        return false;
+      });
 
-        var bids = [];
-        $('#edit-field-access-bundles-und .form-type-checkbox input:checked', context).each(function(){
-          bids.push($(this).val())
-        })
+      // Manipulate service checkboxes from the bundle selections.
+      var bids = Drupal.behaviors.kms_perms_user_checkboxes.getBids(context);
+      Drupal.behaviors.kms_perms_user_checkboxes.servicesFromBundles(bids, context);
 
-        $('.group-webservices').foggy();
-        $.ajax({
-          url: '/kms-permissions/ajax/load-sids-by-bid',
-          type: 'POST',
-          'data': {bids: bids},
-          success: function(xhr) {
+      // // Manipulate service checkboxes from the bundle selections on bundle selection change.
+      $('#edit-field-access-bundles-und .form-type-checkbox input', context).not('.default-bundle').click(function () {
+        var bids = Drupal.behaviors.kms_perms_user_checkboxes.getBids(context);
+        Drupal.behaviors.kms_perms_user_checkboxes.servicesFromBundles(bids, context);
+      });
 
-            $('.group-webservices .form-type-checkbox input').each(function(){
-              $(this).unbind('click.kmsPermissionJail');
-              if(sids.indexOf($(this).val()) != -1) {
-                $(this).attr("checked", false);
-              }
-            });
+    },
+    servicesFromBundles: function(bids, context) {
+      // Blur service checkboxes while fetching service ids from ajax request.
+      $('.group-webservices').foggy();
+      // Load service ids by bundle ids.
+      $.ajax({
+        url: '/kms-permissions/ajax/load-sids-by-bid',
+        type: 'POST',
+        data: {bids: bids},
+        success: function(xhr) {
 
-            sids = xhr.sids;
-
-            for (var i=0; i < xhr.sids.length; i++){
-              var sid = xhr.sids[i];
-              var selector = '.group-webservices .form-type-checkbox input[id^="edit-field-bundle-webservices-"][id$=-' + sid + ']'
-              $(selector, context).attr("checked", "checked");
-              $(selector, context).bind('click.kmsPermissionJail', function(event){
-                event.stopPropagation();
-                event.preventDefault();
-                return false;
-              });
-            }
-
-          },
-          complete: function() {
-            $('.group-webservices').foggy(false);
+          // Remove 'click jail' and checkes status from all checkboxes.
+          $('.group-webservices .form-type-checkbox input').each(function(){
+            $(this).parent().removeClass('disabled');
+          });
+          // Populate sids with sids returned by request.
+          sids = xhr.sids;
+          // Iterate over returned sids. Check corresponding checkboxes and hijack click event.
+          for (var i=0; i < sids.length; i++){
+            var sid = xhr.sids[i];
+            var selector = '.group-webservices .form-type-checkbox input[id^="edit-field-bundle-webservices-"][id$=-' + sid + ']'
+            $(selector, context).parent().addClass('disabled');
           }
-        });
-      })
 
+          $('.group-webservices').foggy(false);
+        },
+        complete: function() {
+          // Unblur service checkboxes when request is done.
+          $('.group-webservices').foggy(false);
+        }
+      });
+    },
+    getBids: function(context) {
+      // Collect bundle ids.
+      var bids = [];
+      $('#edit-field-access-bundles-und .form-type-checkbox input:checked', context).each(function(){
+        bids.push($(this).val())
+      });
+      return bids;
     }
   };
 })(jQuery, Drupal);

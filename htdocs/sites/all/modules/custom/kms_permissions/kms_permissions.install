@@ -8,7 +8,8 @@
  * Implementation of hook_install().
  */
 function kms_permissions_install() {
-  
+  $q = DrupalQueue::get('kms_permissions');
+  $q->createQueue();
 }
 
 /**
