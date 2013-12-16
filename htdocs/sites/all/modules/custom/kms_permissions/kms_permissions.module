@@ -60,6 +60,17 @@ function kms_permissions_action_info() {
   );
 }
 
+/**
+ * Implements hook_views_api().
+ */
+function kms_permissions_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'kms_permissions') . '/views',
+  );
+}
+
+
 /* Implements HOOK_cronapi() */
 //function kms_permissions_cronapi($op, $function = NULL) {
 //  switch($op) {
