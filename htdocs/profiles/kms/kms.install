@@ -201,3 +201,29 @@ function kms_update_7002(&$sandbox) {
   // Create demo access bundles.
   kms_install_create_demo_bundles();
 }
+
+/**
+ * Create access denied page and set it as default
+ * @author Linas Balke <linas@adapt.dk>
+ */
+function kms_update_7003(&$sandbox) {
+  $user = user_load(1);
+  
+   $values = array(
+    'type' => 'page',
+    'uid' => $user->uid,
+    'status' => 1,
+    'comment' => 0,
+    'promote' => 0,
+  );
+  // Create Custom bundle
+  $entity = entity_create('node', $values);
+  $w = entity_metadata_wrapper('node', $entity);
+  $w->title->set('Access denied');
+  $body_content = 'You are not authorized to view this page, consider '.l('loging in','user');
+  $w->body->set(array('value' => $body_content, 'format' => 'filtered_html'));
+  $w->save();
+
+  variable_set('site_403', 'node/'.$w->getIdentifier());
+
+}
