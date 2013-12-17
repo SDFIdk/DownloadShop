@@ -1,0 +1,18 @@
+.field-name-field-predefined-datacollections .form-type-checkbox,
+.field-group-htabs-wrapper .form-type-checkboxes .form-type-checkbox,
+.field-name-field-applications .form-checkboxes .form-type-checkbox {
+  width: 33%;
+  float:left;
+}
+
+.field-group-htabs-wrapper, .vertical-tabs {
+	clear:both;
+}
+
+.bundle-default {
+  background-color: #C8D9E8;
+}
+
+.bundle-custom {
+  background-color: #C8E8C8;
+}
