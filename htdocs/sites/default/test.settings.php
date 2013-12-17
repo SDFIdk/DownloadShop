@@ -589,3 +589,10 @@ $conf['kms_permissions_conn_host'] = 'kmslds51.kms.adroot.dk';
 $conf['kms_permissions_conn_db'] = 'ldsdb5.kms.adroot.dk';
 $conf['kms_oci_mail_default_from'] = 'download@kortforsyningen.dk';
 
+// Weird kms server environment demands this:
+$conf['background_process_service_hosts'] = array(
+  'default' => array(
+    'base_url' => 'http://kms.fe.test.cd.adapt.dk',
+    'http_host' => 'kms.fe.test.cd.adapt.dk',
+  ),
+);

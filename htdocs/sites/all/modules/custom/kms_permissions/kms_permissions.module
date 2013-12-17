@@ -588,8 +588,7 @@ function kms_permissions_access_bundle_update($form, $form_state) {
 
   if ($default_bundle_is_updated) {
     // If a bundle is set as a default bundle or WAS set as a default bundle, update all users.
-//    $uids = _kms_permissions_get_all_users();
-    $uids = array(18204);
+    $uids = _kms_permissions_get_all_users();
     if(!empty($uids)) {
       KmsOciQueueJob::create(array(
         'action' => KP_QUEUE_ACTION_ALL_USERS_UPDATE_PERMS,
