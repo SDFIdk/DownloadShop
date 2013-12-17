@@ -96,31 +96,6 @@ function kms_user_ctools_plugin_directory($owner, $plugin_type) {
 }
 
 /**
- * Intern function to format bundle list in user service list
- * @param  [int] $service_id      The service ID (Oracle id)
- * @param  [string] $service_name The name of the service
- * @return [string] $html         Html ready to be appended to the form option
- */
-function _kms_user_format_user_service_list($service_id, $service_name) {
-  $html = '';
-  // Get the bundle attached to the service id
-  $nid_sid_arr = _kms_permissions_get_bundle_by_sid($service_id);
-  // If the service is not part of a bundle
-  if (!$nid_sid_arr) {
-    return '<span class="bundle-no-bundle">' . $service_name . '</span>';
-  }
-  // Start with the name of the service
-  $html .= $service_name . ' ';
-  
-  foreach ($nid_sid_arr as $type => $nodes) {
-    foreach ($nodes as $nid => $title) {
-      $html .= '<span class="bundle-' . $type . '">' . t($title) . '</span> ';
-    }
-  }
-  return $html;
-}
-
-/**
  * Implements hook_form_alter().
  */
 function kms_user_form_alter(&$form, &$form_state, $form_id) {
@@ -147,8 +122,7 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
           if (strpos($field_name, 'field_bundle_webservices') !== false) {
             if (!empty($field_value['und']['#options'])) {
               foreach ($field_value['und']['#options'] as $service_id => $service_name) {
-                $html = _kms_user_format_user_service_list($service_id, $service_name);
-                $form[$field_name]['und']['#options'][$service_id] = $html;
+                $form[$field_name]['und']['#options'][$service_id] = $service_name;
               }
             }
           }

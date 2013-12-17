@@ -145,6 +145,7 @@ function kms_permissions_field_widget_settings_form($field, $instance) {
 * Implements hook_field_widget_form().
 */
 function kms_permissions_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+
   $value_key = key($field['columns']);
   $type = str_replace('options_', '', $instance['widget']['type']);
   $multiple = $field['cardinality'] > 1 || $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED;
@@ -166,7 +167,7 @@ function kms_permissions_field_widget_form(&$form, &$form_state, $field, $instan
       }
       
       $options = kms_permissions_widget_options($instance['widget']['type'], $instance_settings);
-   
+
       // If required and there is one single option, preselect it.
       if ($required && count($options) == 1) {
         reset($options);
@@ -230,7 +231,8 @@ function kms_permissions_widget_options($type = 'kms_services', $instance_settin
           $rows = kms_oci_select($query, array(), 'kms_permissions');
           if (!empty($rows)) {
             foreach ($rows as $row) {
-              $options[$row['TYPENAME']][$row['SERVICEID']] = $row['SERVICENAME'];
+              $html = _kms_permissions_format_service_list($row['SERVICEID'], $row['SERVICENAME']);
+              $options[$row['TYPENAME']][$row['SERVICEID']] = $html;
             }
           }
           else {
@@ -266,6 +268,31 @@ function kms_permissions_widget_options($type = 'kms_services', $instance_settin
 
       return $options;
   }
+}
+
+/**
+ * Intern function to format bundle list in webservice list
+ * @param  [int] $service_id      The service ID (Oracle id)
+ * @param  [string] $service_name The name of the service
+ * @return [string] $html         Html ready to be appended to the form option
+ */
+function _kms_permissions_format_service_list($service_id, $service_name) {
+  $html = '';
+  // Get the bundle attached to the service id
+  $nid_sid_arr = _kms_permissions_get_bundle_by_sid($service_id);
+  // If the service is not part of a bundle
+  if (!$nid_sid_arr) {
+    return '<span class="bundle-no-bundle">' . $service_name . '</span>';
+  }
+  // Start with the name of the service
+  $html .= $service_name . ' ';
+  
+  foreach ($nid_sid_arr as $type => $nodes) {
+    foreach ($nodes as $nid => $title) {
+      $html .= '<span class="bundle-' . $type . '">' . t($title) . '</span> ';
+    }
+  }
+  return $html;
 }
 
 /**
@@ -306,6 +333,12 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
         if($status == 3) {
           $status_class = 'bundle-default';
         }
+
+//        $bundle_node = node_load($nid);
+
+//        $wrapper = entity_metadata_wrapper('node', $bundle_node);
+ //       $file_uri = $wrapper->field_colour->value()->field_default_image[LANGUAGE_NONE][0]['uri'];
+
         return array(
           '#theme' => 'link',
           '#text' => $nid,
@@ -314,7 +347,7 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
             'attributes' => array('title' => $title),
             'html' => FALSE,
           ),
-          '#prefix' => "<span class='$status_class'>",
+  //        '#prefix' => '<span style="background-image:url('.file_create_url($file_uri).');" class="'.$status_class.' '.$nid.'">',
           '#suffix' => '</span>'
         );
       };
