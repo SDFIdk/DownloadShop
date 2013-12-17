@@ -5,7 +5,7 @@ core = 7.x
 dependencies[] = views (>=3.4)
 dependencies[] = kms_oci
 dependencies[] = kms_user
-;dependencies[] = background_batch
+dependencies[] = background_batch
 dependencies[] = content_access
 
 files[] = includes/handlers/kms_permissions_handler_has_separate_services.inc

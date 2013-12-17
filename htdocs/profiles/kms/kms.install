@@ -163,7 +163,7 @@ function kms_install_create_demo_bundles() {
 
 /**
  * Enable kms_permissions, kms_users, kms_oci_queue (used for webservices permissions)
- * @author Julien <julien@adapt.dk>
+ * @author Mikkel Jakobsen <mikkel@adapt.dk>
  */
 function kms_update_7000(&$sandbox) {
   // Enable relevant kms permission modules.
@@ -173,6 +173,7 @@ function kms_update_7000(&$sandbox) {
     'kms_permissions',
     'kms_access_bundles',
     'better_exposed_filters',
+    'background_batch',
   ));
   // Activate new kms admin theme.
   variable_set('admin_theme', 'kmsadmin');
