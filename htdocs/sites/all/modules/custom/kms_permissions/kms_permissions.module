@@ -1422,6 +1422,7 @@ function kms_permissions_user_autocomplete_callback($string = "") {
 function kms_permissions_run_batch($type) {
   $args = func_get_args();
   unset($args[0]);
+  $args = array_values($args);
 
   switch($type) {
     case 'default_bundle_update_users':
