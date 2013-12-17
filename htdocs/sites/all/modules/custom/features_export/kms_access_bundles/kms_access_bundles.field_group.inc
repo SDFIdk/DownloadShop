@@ -25,11 +25,11 @@ function kms_access_bundles_field_group_info() {
     'children' => array(
       0 => 'field_bundle_maxpixelwidth',
       1 => 'field_bundle_maxx',
-      2 => 'field_bundle_miny',
-      3 => 'field_bundle_maxy',
-      4 => 'field_bundle_maxpixelheight',
-      5 => 'field_bundle_featureinfo',
-      6 => 'field_bundle_minx',
+      2 => 'field_bundle_maxy',
+      3 => 'field_bundle_minx',
+      4 => 'field_bundle_miny',
+      5 => 'field_bundle_maxpixelheight',
+      6 => 'field_bundle_featureinfo',
     ),
     'format_type' => 'fieldset',
     'format_settings' => array(
@@ -42,6 +42,60 @@ function kms_access_bundles_field_group_info() {
     ),
   );
   $export['group_range_size|node|access_bundle|form'] = $field_group;
+
+  $field_group = new stdClass();
+  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+  $field_group->api_version = 1;
+  $field_group->identifier = 'group_tab_applications|node|access_bundle|form';
+  $field_group->group_name = 'group_tab_applications';
+  $field_group->entity_type = 'node';
+  $field_group->bundle = 'access_bundle';
+  $field_group->mode = 'form';
+  $field_group->parent_name = 'group_webservices';
+  $field_group->data = array(
+    'label' => 'Applications',
+    'weight' => '27',
+    'children' => array(
+      0 => 'field_applications',
+    ),
+    'format_type' => 'htab',
+    'format_settings' => array(
+      'formatter' => 'closed',
+      'instance_settings' => array(
+        'description' => '',
+        'classes' => '',
+        'required_fields' => 1,
+      ),
+    ),
+  );
+  $export['group_tab_applications|node|access_bundle|form'] = $field_group;
+
+  $field_group = new stdClass();
+  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+  $field_group->api_version = 1;
+  $field_group->identifier = 'group_tab_predefined|node|access_bundle|form';
+  $field_group->group_name = 'group_tab_predefined';
+  $field_group->entity_type = 'node';
+  $field_group->bundle = 'access_bundle';
+  $field_group->mode = 'form';
+  $field_group->parent_name = 'group_webservices';
+  $field_group->data = array(
+    'label' => 'Predefined datacollections',
+    'weight' => '26',
+    'children' => array(
+      0 => 'field_predefined_datacollections',
+    ),
+    'format_type' => 'htab',
+    'format_settings' => array(
+      'formatter' => 'closed',
+      'instance_settings' => array(
+        'description' => '',
+        'classes' => '',
+        'required_fields' => 1,
+      ),
+    ),
+  );
+  $export['group_tab_predefined|node|access_bundle|form'] = $field_group;
 
   $field_group = new stdClass();
   $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
@@ -218,12 +272,14 @@ function kms_access_bundles_field_group_info() {
     'label' => 'Webservices',
     'weight' => '7',
     'children' => array(
-      0 => 'group_webservices_wfs',
-      1 => 'group_webservices_geo',
-      2 => 'group_webservices_wms',
-      3 => 'group_webservices_wcs',
-      4 => 'group_webservices_wmts',
-      5 => 'group_webservices_plot',
+      0 => 'group_tab_applications',
+      1 => 'group_tab_predefined',
+      2 => 'group_webservices_geo',
+      3 => 'group_webservices_plot',
+      4 => 'group_webservices_wcs',
+      5 => 'group_webservices_wfs',
+      6 => 'group_webservices_wms',
+      7 => 'group_webservices_wmts',
     ),
     'format_type' => 'htabs',
     'format_settings' => array(
