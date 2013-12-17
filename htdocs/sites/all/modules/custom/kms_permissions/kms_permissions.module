@@ -465,7 +465,7 @@ function kms_permissions_user_presave(&$edit, $account, $category) {
  */
   function kms_permissions_form_access_bundle_node_form_alter(&$form, &$form_state) {
     $form['actions']['submit']['#submit'][] = 'kms_permissions_access_bundle_update';
-//    $form['actions']['delete']['#submit'][] = 'kms_permissions_access_bundle_update';
+    $form['actions']['delete']['#submit'][] = 'kms_permissions_access_bundle_update';
   }
 
 
@@ -584,6 +584,7 @@ function kms_permissions_node_presave($node) {
 function kms_permissions_access_bundle_update($form, $form_state) {
   $default_bundle_is_updated = (bool)$form['#node']->update_default_bundle;
   $bundle_is_updated = (bool)$form['#node']->update_bundle;
+  $bundle_is_deleted = $form_state['clicked_button']['#id'] == 'edit-delete';
   $bid = $form['#node']->nid;
 
   if ($default_bundle_is_updated) {
@@ -611,6 +612,15 @@ function kms_permissions_access_bundle_update($form, $form_state) {
         ),
       ));
     }
+  }
+  elseif($bundle_is_deleted) {
+    // Atodo: Create delete perms job.
+//    KmsOciQueueJob::create(array(
+//      'action' => KP_QUEUE_ACTION_USER_UPDATE_PERMS,
+//      'params' => array(
+//        'uids' => $uids,
+//      ),
+//    ));
   }
 
 
