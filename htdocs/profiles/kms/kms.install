@@ -228,3 +228,38 @@ function kms_update_7003(&$sandbox) {
   variable_set('site_403', 'node/'.$w->getIdentifier());
 
 }
+
+/**
+ * Create predefined list of taxonomy terms for bundle colours
+ * @author Linas Balke <linas@adapt.dk>
+ */
+function kms_update_7004(&$sandbox) {
+  define('TAXONOMY_NAME', 'bundle_colours');
+  $predefined_colours = array('Brun','Graablaa','Grey','Gron','Gul','Hotpink','Koral','Orange','Rod','Sort');
+  $vocab = taxonomy_vocabulary_machine_name_load(TAXONOMY_NAME);
+  
+  $vid = $vocab->vid;
+
+  foreach ($predefined_colours as $colour) {
+
+    $filepath = drupal_realpath(drupal_get_path('module', 'kms_permissions').'/icons/'.strtolower($colour)."-ikon.png");
+
+    $file = (object) array(
+      'uid' => 1,
+      'uri' => $filepath,
+      'filemime' => file_get_mimetype($filepath),
+      'status' => 1,
+      'display' => 1,
+    );
+
+    $file = file_copy($file, file_build_uri(''), FILE_EXISTS_REPLACE);
+    
+    // Create term, assign it to Vocabulary
+    $term = new stdClass();
+    $term->name = $colour;
+    $term->vid = $vid; 
+    $term->field_default_image[LANGUAGE_NONE][0] = (array)$file; 
+    taxonomy_term_save($term);    
+  }
+}
+
