@@ -188,6 +188,19 @@ $handler->display->display_options['style_options']['info'] = array(
 );
 $handler->display->display_options['style_options']['sticky'] = TRUE;
 $handler->display->display_options['style_options']['empty_table'] = TRUE;
+/* Header: Global: Text area */
+$handler->display->display_options['header']['area']['id'] = 'area';
+$handler->display->display_options['header']['area']['table'] = 'views';
+$handler->display->display_options['header']['area']['field'] = 'area';
+$handler->display->display_options['header']['area']['label'] = 'Bunde legend label';
+$handler->display->display_options['header']['area']['content'] = 'Bundle legend';
+$handler->display->display_options['header']['area']['format'] = 'filtered_html';
+/* Header: Global: View area */
+$handler->display->display_options['header']['view']['id'] = 'view';
+$handler->display->display_options['header']['view']['table'] = 'views';
+$handler->display->display_options['header']['view']['field'] = 'view';
+$handler->display->display_options['header']['view']['label'] = 'Bundle legend';
+$handler->display->display_options['header']['view']['view_to_insert'] = 'bundle_legend_header:block';
 /* No results behavior: Global: Unfiltered text */
 $handler->display->display_options['empty']['area_text_custom']['id'] = 'area_text_custom';
 $handler->display->display_options['empty']['area_text_custom']['table'] = 'views';
@@ -517,141 +530,6 @@ $handler->display->display_options['filters']['field_access_bundles_nid']['expos
 $handler = $view->new_display('system', 'System', 'system_1');
 $handler->display->display_options['defaults']['hide_admin_links'] = FALSE;
 $handler->display->display_options['defaults']['access'] = FALSE;
-$handler->display->display_options['defaults']['pager'] = FALSE;
-$handler->display->display_options['pager']['type'] = 'full';
-$handler->display->display_options['pager']['options']['items_per_page'] = '25';
-$handler->display->display_options['pager']['options']['offset'] = '0';
-$handler->display->display_options['pager']['options']['id'] = '0';
-$handler->display->display_options['pager']['options']['quantity'] = '9';
-$handler->display->display_options['pager']['options']['expose']['items_per_page'] = TRUE;
-$handler->display->display_options['pager']['options']['expose']['items_per_page_label'] = 'Users per page';
-$handler->display->display_options['pager']['options']['expose']['items_per_page_options'] = '25, 50, 75, 100, 500';
-$handler->display->display_options['defaults']['style_plugin'] = FALSE;
-$handler->display->display_options['style_plugin'] = 'table';
-$handler->display->display_options['style_options']['columns'] = array(
-  'views_bulk_operations' => 'views_bulk_operations',
-  'name' => 'name',
-  'field_access_bundles' => 'field_access_bundles',
-  'fields_combine' => 'fields_combine',
-  'mail' => 'name',
-  'status' => 'status',
-  'rid' => 'rid',
-  'created' => 'created',
-  'access' => 'access',
-  'edit_node' => 'edit_node',
-  'cancel_node' => 'cancel_node',
-  'field_bundle_webservices_geo' => 'field_bundle_webservices_geo',
-  'field_bundle_webservices_plot' => 'field_bundle_webservices_plot',
-  'field_bundle_webservices_wcs' => 'field_bundle_webservices_wcs',
-  'field_bundle_webservices_wfs' => 'field_bundle_webservices_wfs',
-  'field_bundle_webservices_wms' => 'field_bundle_webservices_wms',
-  'field_bundle_webservices_wmts' => 'field_bundle_webservices_wmts',
-);
-$handler->display->display_options['style_options']['default'] = 'access';
-$handler->display->display_options['style_options']['info'] = array(
-  'views_bulk_operations' => array(
-    'align' => '',
-    'separator' => '',
-    'empty_column' => 0,
-  ),
-  'name' => array(
-    'sortable' => 1,
-    'default_sort_order' => 'asc',
-    'align' => '',
-    'separator' => '<br />',
-    'empty_column' => 0,
-  ),
-  'field_access_bundles' => array(
-    'align' => '',
-    'separator' => '',
-    'empty_column' => 0,
-  ),
-  'fields_combine' => array(
-    'sortable' => 0,
-    'default_sort_order' => 'asc',
-    'align' => '',
-    'separator' => '',
-    'empty_column' => 0,
-  ),
-  'mail' => array(
-    'sortable' => 0,
-    'default_sort_order' => 'asc',
-    'align' => '',
-    'separator' => '',
-    'empty_column' => 0,
-  ),
-  'status' => array(
-    'sortable' => 1,
-    'default_sort_order' => 'desc',
-    'align' => '',
-    'separator' => '',
-    'empty_column' => 0,
-  ),
-  'rid' => array(
-    'align' => '',
-    'separator' => '',
-    'empty_column' => 0,
-  ),
-  'created' => array(
-    'sortable' => 1,
-    'default_sort_order' => 'desc',
-    'align' => '',
-    'separator' => '',
-    'empty_column' => 0,
-  ),
-  'access' => array(
-    'sortable' => 1,
-    'default_sort_order' => 'desc',
-    'align' => '',
-    'separator' => '',
-    'empty_column' => 0,
-  ),
-  'edit_node' => array(
-    'align' => '',
-    'separator' => '',
-    'empty_column' => 0,
-  ),
-  'cancel_node' => array(
-    'align' => '',
-    'separator' => '',
-    'empty_column' => 0,
-  ),
-  'field_bundle_webservices_geo' => array(
-    'align' => '',
-    'separator' => '',
-    'empty_column' => 0,
-  ),
-  'field_bundle_webservices_plot' => array(
-    'align' => '',
-    'separator' => '',
-    'empty_column' => 0,
-  ),
-  'field_bundle_webservices_wcs' => array(
-    'align' => '',
-    'separator' => '',
-    'empty_column' => 0,
-  ),
-  'field_bundle_webservices_wfs' => array(
-    'align' => '',
-    'separator' => '',
-    'empty_column' => 0,
-  ),
-  'field_bundle_webservices_wms' => array(
-    'align' => '',
-    'separator' => '',
-    'empty_column' => 0,
-  ),
-  'field_bundle_webservices_wmts' => array(
-    'align' => '',
-    'separator' => '',
-    'empty_column' => 0,
-  ),
-);
-$handler->display->display_options['style_options']['sticky'] = TRUE;
-$handler->display->display_options['style_options']['empty_table'] = TRUE;
-$handler->display->display_options['defaults']['style_options'] = FALSE;
-$handler->display->display_options['defaults']['row_plugin'] = FALSE;
-$handler->display->display_options['defaults']['row_options'] = FALSE;
 $handler->display->display_options['defaults']['fields'] = FALSE;
 /* Field: Bulk operations: User */
 $handler->display->display_options['fields']['views_bulk_operations']['id'] = 'views_bulk_operations';
@@ -784,29 +662,6 @@ $handler->display->display_options['fields']['field_access_bundles']['field'] = 
 $handler->display->display_options['fields']['field_access_bundles']['type'] = 'kms_permissions_bundles_reference';
 $handler->display->display_options['fields']['field_access_bundles']['delta_offset'] = '0';
 $handler->display->display_options['fields']['field_access_bundles']['multi_type'] = 'ul';
-/* Field: Global: Separate services */
-$handler->display->display_options['fields']['has_separate_services']['id'] = 'has_separate_services';
-$handler->display->display_options['fields']['has_separate_services']['table'] = 'views';
-$handler->display->display_options['fields']['has_separate_services']['field'] = 'has_separate_services';
-$handler->display->display_options['fields']['has_separate_services']['hide_empty'] = 0;
-$handler->display->display_options['fields']['has_separate_services']['combined_fields'] = array(
-  'field_bundle_webservices_geo' => 'field_bundle_webservices_geo',
-  'field_bundle_webservices_plot' => 'field_bundle_webservices_plot',
-  'field_bundle_webservices_wcs' => 'field_bundle_webservices_wcs',
-  'field_bundle_webservices_wfs' => 'field_bundle_webservices_wfs',
-  'field_bundle_webservices_wms' => 'field_bundle_webservices_wms',
-  'field_bundle_webservices_wmts' => 'field_bundle_webservices_wmts',
-  'views_bulk_operations' => 0,
-  'name' => 0,
-  'field_access_bundles' => 0,
-  'mail' => 0,
-  'status' => 0,
-  'rid' => 0,
-  'created' => 0,
-  'access' => 0,
-  'edit_node' => 0,
-  'cancel_node' => 0,
-);
 /* Field: User: E-mail */
 $handler->display->display_options['fields']['mail']['id'] = 'mail';
 $handler->display->display_options['fields']['mail']['table'] = 'users';
@@ -847,42 +702,6 @@ $handler->display->display_options['fields']['cancel_node']['field'] = 'cancel_n
 $handler->display->display_options['fields']['cancel_node']['label'] = '';
 $handler->display->display_options['fields']['cancel_node']['element_label_colon'] = FALSE;
 $handler->display->display_options['fields']['cancel_node']['hide_alter_empty'] = FALSE;
-/* Field: Field: Webservices (GEO) */
-$handler->display->display_options['fields']['field_bundle_webservices_geo']['id'] = 'field_bundle_webservices_geo';
-$handler->display->display_options['fields']['field_bundle_webservices_geo']['table'] = 'field_data_field_bundle_webservices_geo';
-$handler->display->display_options['fields']['field_bundle_webservices_geo']['field'] = 'field_bundle_webservices_geo';
-$handler->display->display_options['fields']['field_bundle_webservices_geo']['exclude'] = TRUE;
-$handler->display->display_options['fields']['field_bundle_webservices_geo']['delta_offset'] = '0';
-/* Field: Field: Webservices (PLOT) */
-$handler->display->display_options['fields']['field_bundle_webservices_plot']['id'] = 'field_bundle_webservices_plot';
-$handler->display->display_options['fields']['field_bundle_webservices_plot']['table'] = 'field_data_field_bundle_webservices_plot';
-$handler->display->display_options['fields']['field_bundle_webservices_plot']['field'] = 'field_bundle_webservices_plot';
-$handler->display->display_options['fields']['field_bundle_webservices_plot']['exclude'] = TRUE;
-$handler->display->display_options['fields']['field_bundle_webservices_plot']['delta_offset'] = '0';
-/* Field: Field: Webservices (WCS) */
-$handler->display->display_options['fields']['field_bundle_webservices_wcs']['id'] = 'field_bundle_webservices_wcs';
-$handler->display->display_options['fields']['field_bundle_webservices_wcs']['table'] = 'field_data_field_bundle_webservices_wcs';
-$handler->display->display_options['fields']['field_bundle_webservices_wcs']['field'] = 'field_bundle_webservices_wcs';
-$handler->display->display_options['fields']['field_bundle_webservices_wcs']['exclude'] = TRUE;
-$handler->display->display_options['fields']['field_bundle_webservices_wcs']['delta_offset'] = '0';
-/* Field: Field: Webservices (WFS) */
-$handler->display->display_options['fields']['field_bundle_webservices_wfs']['id'] = 'field_bundle_webservices_wfs';
-$handler->display->display_options['fields']['field_bundle_webservices_wfs']['table'] = 'field_data_field_bundle_webservices_wfs';
-$handler->display->display_options['fields']['field_bundle_webservices_wfs']['field'] = 'field_bundle_webservices_wfs';
-$handler->display->display_options['fields']['field_bundle_webservices_wfs']['exclude'] = TRUE;
-$handler->display->display_options['fields']['field_bundle_webservices_wfs']['delta_offset'] = '0';
-/* Field: Field: Webservices (WMS) */
-$handler->display->display_options['fields']['field_bundle_webservices_wms']['id'] = 'field_bundle_webservices_wms';
-$handler->display->display_options['fields']['field_bundle_webservices_wms']['table'] = 'field_data_field_bundle_webservices_wms';
-$handler->display->display_options['fields']['field_bundle_webservices_wms']['field'] = 'field_bundle_webservices_wms';
-$handler->display->display_options['fields']['field_bundle_webservices_wms']['exclude'] = TRUE;
-$handler->display->display_options['fields']['field_bundle_webservices_wms']['delta_offset'] = '0';
-/* Field: Field: Webservices (WMTS) */
-$handler->display->display_options['fields']['field_bundle_webservices_wmts']['id'] = 'field_bundle_webservices_wmts';
-$handler->display->display_options['fields']['field_bundle_webservices_wmts']['table'] = 'field_data_field_bundle_webservices_wmts';
-$handler->display->display_options['fields']['field_bundle_webservices_wmts']['field'] = 'field_bundle_webservices_wmts';
-$handler->display->display_options['fields']['field_bundle_webservices_wmts']['exclude'] = TRUE;
-$handler->display->display_options['fields']['field_bundle_webservices_wmts']['delta_offset'] = '0';
 $handler->display->display_options['path'] = 'admin/people';
 
 /* Display: Data export */
@@ -903,6 +722,8 @@ $translatables['admin_views_user'] = array(
   t('‹ previous'),
   t('next ›'),
   t('last »'),
+  t('Bunde legend label'),
+  t('Bundle legend'),
   t('No users available.'),
   t('Name'),
   t('Bundles'),
@@ -918,12 +739,6 @@ $translatables['admin_views_user'] = array(
   t('Active'),
   t('Nyhedsbrev'),
   t('System'),
-  t('Separate services'),
-  t('Webservices (GEO)'),
-  t('Webservices (PLOT)'),
-  t('Webservices (WCS)'),
-  t('Webservices (WFS)'),
-  t('Webservices (WMS)'),
-  t('Webservices (WMTS)'),
   t('Data export'),
 );
+
