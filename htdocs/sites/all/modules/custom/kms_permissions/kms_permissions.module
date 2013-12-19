@@ -21,7 +21,7 @@ function kms_permissions_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
   );
-
+  
   return $items;
 }
 
@@ -225,24 +225,17 @@ function kms_permissions_widget_options($type = 'kms_services', $instance_settin
       static $options;
 
       if (empty($options[$type])) {
-        if (kms_oci_get_conn('kms_permissions', $settings)) {
-          $query = "SELECT S2.SERVICEID, S2.SERVICENAME, ST.TYPEID, ST.TYPENAME FROM SERVICES2 S2, SERVICETYPES2 ST WHERE S2.TYPEID = ST.TYPEID ORDER BY S2.SERVICEID ASC";
-
-          $rows = kms_oci_select($query, array(), 'kms_permissions');
-          if (!empty($rows)) {
+        
+        $rows = kms_permissions_get_service_list();
+        
+        if (!empty($rows)) {
             foreach ($rows as $row) {
               $html = _kms_permissions_format_service_list($row['SERVICEID'], $row['SERVICENAME']);
               $options[$row['TYPENAME']][$row['SERVICEID']] = $html;
             }
-          }
-          else {
-            watchdog('kms_permissons', 'Could not read from Oracle', array(), WATCHDOG_ERROR);
-          }
-
-          // Close connection
-          kms_oci_close_conn('kms_permissions');
         }
       }
+      
 
       return $options[$type];
     case 'kms_applications';
@@ -269,6 +262,38 @@ function kms_permissions_widget_options($type = 'kms_services', $instance_settin
       return $options;
   }
 }
+
+function kms_permissions_get_service_list() {
+  
+  $settings = array(
+    'kms_oci_conn_user' => variable_get('kms_permissions_conn_user', ''),
+    'kms_oci_conn_pass' => variable_get('kms_permissions_conn_pass', ''),
+    'kms_oci_conn_host' => variable_get('kms_permissions_conn_host', ''),
+    'kms_oci_conn_db' => variable_get('kms_permissions_conn_db', ''),
+  );
+
+  $service_data = &drupal_static(__FUNCTION__);
+
+  if (!isset($service_data)) {
+    if (kms_oci_get_conn('kms_permissions', $settings)) {
+          $query = "SELECT S2.SERVICEID, S2.SERVICENAME, ST.TYPEID, ST.TYPENAME FROM SERVICES2 S2, SERVICETYPES2 ST WHERE S2.TYPEID = ST.TYPEID ORDER BY S2.SERVICEID ASC";
+
+          $rows = kms_oci_select($query, array(), 'kms_permissions');
+
+          if (!empty($rows)) {
+            $service_data = $rows;
+          }
+          else {
+            watchdog('kms_permissons', 'Could not read from Oracle', array(), WATCHDOG_ERROR);
+          }
+
+          // Close connection
+          kms_oci_close_conn('kms_permissions');
+    }
+  }
+  return $service_data;
+}
+
 
 /**
  * Intern function to format bundle list in webservice list
@@ -313,10 +338,10 @@ function kms_permissions_field_formatter_info() {
       'label' => t('Bundle references'),
       'field types' => array('node_reference'),
     ),
-//    'kms_permissions_separate_services' => array(
-//      'label' => t('Separate services'),
-//      'field types' => array('text'),
-//    ),
+    'kms_permissions_service_bundles' => array(
+      'label' => t('Service list'),
+      'field types' => array('list_text'),
+    ),
   );
 }
 
@@ -327,17 +352,18 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
   $element = array();
 
   switch ($display['type']) {
-    case 'kms_permissions_bundles_reference':
+
+    case 'kms_permissions_bundles_reference': 
       $bundle_link = function($nid, $title, $status) {
         $status_class = $status ? 'bundle-active' : 'bundle-inactive';
         if($status == 3) {
           $status_class = 'bundle-default';
         }
+        //print('status - '.$status.' on '.$nid.' <br>');
+        $bundle_node = node_load($nid);
 
-//        $bundle_node = node_load($nid);
-
-//        $wrapper = entity_metadata_wrapper('node', $bundle_node);
- //       $file_uri = $wrapper->field_colour->value()->field_default_image[LANGUAGE_NONE][0]['uri'];
+        $wrapper = entity_metadata_wrapper('node', $bundle_node);
+        $file_uri = $wrapper->field_colour->value()->field_default_image[LANGUAGE_NONE][0]['uri'];
 
         return array(
           '#theme' => 'link',
@@ -347,7 +373,7 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
             'attributes' => array('title' => $title),
             'html' => FALSE,
           ),
-  //        '#prefix' => '<span style="background-image:url('.file_create_url($file_uri).');" class="'.$status_class.' '.$nid.'">',
+          '#prefix' => '<span style="background-image:url('.file_create_url($file_uri).');" class="'.$status_class.' '.$nid.'">',
           '#suffix' => '</span>'
         );
       };
@@ -361,28 +387,40 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
         ->execute();
 
       // We need to load the nodes to get bundle title
+      
       if (isset($result['node'])) {
         $result_nids = array_keys($result['node']);
         $result_node = entity_load('node', $result_nids);
         // Add all enabled bundles to element array
         foreach ($result['node'] as $nid => $node) {
-          // Inactive bundle element.
-          // Atodo: remove this demo-hack!! (restore: only use the line defined inside else).
-          if($result_node[$nid]->field_default_bundle[LANGUAGE_NONE][0]['value']) {
-            $element[$nid] = $bundle_link($nid, $result_node[$nid]->title, 3);
-          }
-          else {
-            $element[$nid] = $bundle_link($nid, $result_node[$nid]->title, 0);
-          }
-        }
-      }
+          // Default status = inactive; 0;
+          $status_access = 0;
 
-      foreach ($items as $item) {
-        if ($item['access']) {
-          // Active bundle element.
-          $element[$item['nid']] = $bundle_link($nid, $result_node[$item['nid']]->title, 1);
+          // Link access status with bundle on ID
+          foreach ($items as $item) {
+            if ($item['nid'] == $nid && $item['access']) {
+              $status_access = 1;
+            } 
+          }
+
+          $element[$nid] = $bundle_link($nid, $result_node[$nid]->title, $status_access);    
         }
       }
+      
+      break;
+
+      case 'kms_permissions_service_bundles': 
+
+          $service_data = kms_permissions_get_service_list();
+
+          foreach ($service_data as $service) {
+            foreach ($items as $item) {
+              if($item['value']==$service['SERVICEID']) {
+                $element[$item['value']]['#markup']  = $service['SERVICENAME'];
+              }
+            }
+          }
+
       break;
   }
 

@@ -16,3 +16,14 @@
 .bundle-custom {
   background-color: #C8E8C8;
 }
+
+.node-type-access-bundle .pane-entity-field .field-type-list-text .field-item, 
+#cboxLoadedContent .pane-entity-field .field-type-list-text .field-item{
+  float:left;
+  width: 33%;
+}
+
+.node-type-access-bundle .pane-entity-field,
+#cboxLoadedContent .pane-entity-field {
+  clear: both;
+}
