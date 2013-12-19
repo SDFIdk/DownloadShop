@@ -35,6 +35,14 @@ projects[hierarchical_select][subdir] = "contrib"
 projects[hierarchical_select][version] = "3.x-dev"
 projects[hierarchical_select][type] = "module"
 
+;colorbox_node - dev
+projects[colorbox_node][version] = "3.x-dev"
+projects[colorbox_node][download][type] = "git"
+projects[colorbox_node][download][url] = "git://git.drupal.org/project/colorbox_node.git"
+projects[colorbox_node][subdir] = "contrib"
+projects[colorbox_node][revision] = "1658ac0a624a97a637b8375b530ba15e8b720e61"
+projects[colorbox_node][type] = "module"
+
 ;subuser
 projects[subuser][download][type] = "git"
 projects[subuser][download][url] = "git://git.drupal.org/project/subuser.git"
@@ -128,6 +136,10 @@ projects[kms_files][subdir] = "custom"
 ;; Ckeditor
 libraries[ckeditor][download][type] = 'svn'
 libraries[ckeditor][download][url] = 'svn+ssh://svnhost/data/subversion/drupal/global/tags/libraries/ckeditor-3.6.4'
+
+;; Colorbox
+libraries[colorbox][download][type] = 'git'
+libraries[colorbox][download][url] = 'git://github.com/jackmoore/colorbox.git'
 
 ; Themes
 projects[adapt_theme][download][type] = "svn"

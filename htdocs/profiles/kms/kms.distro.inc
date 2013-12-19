@@ -33,6 +33,16 @@ projects[boolean][subdir] = "contrib"
 projects[boolean][version] = "1.0"
 projects[boolean][type] = "module"
 
+;colorbox
+projects[commerce][subdir] = "contrib"
+projects[commerce][version] = "2.5"
+projects[commerce][type] = "module"
+
+;colorbox_node
+projects[commerce][subdir] = "contrib"
+projects[commerce][version] = "3.x-dev"
+projects[commerce][type] = "module"
+
 ;commerce
 projects[commerce][subdir] = "contrib"
 projects[commerce][version] = "1.4"
