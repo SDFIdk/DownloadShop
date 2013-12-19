@@ -34,14 +34,14 @@ projects[boolean][version] = "1.0"
 projects[boolean][type] = "module"
 
 ;colorbox
-projects[commerce][subdir] = "contrib"
-projects[commerce][version] = "2.5"
-projects[commerce][type] = "module"
+projects[colorbox][subdir] = "contrib"
+projects[colorbox][version] = "2.5"
+projects[colorbox][type] = "module"
 
 ;colorbox_node
-projects[commerce][subdir] = "contrib"
-projects[commerce][version] = "3.x-dev"
-projects[commerce][type] = "module"
+projects[colorbox_node][subdir] = "contrib"
+projects[colorbox_node][version] = "3.x-dev"
+projects[colorbox_node][type] = "module"
 
 ;commerce
 projects[commerce][subdir] = "contrib"
