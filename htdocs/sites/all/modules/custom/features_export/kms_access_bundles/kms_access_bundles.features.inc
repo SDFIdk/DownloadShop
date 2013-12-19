@@ -19,6 +19,13 @@ function kms_access_bundles_ctools_plugin_api() {
 }
 
 /**
+ * Implements hook_views_api().
+ */
+function kms_access_bundles_views_api() {
+  return array("version" => "3.0");
+}
+
+/**
  * Implements hook_node_info().
  */
 function kms_access_bundles_node_info() {
