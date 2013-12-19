@@ -64,17 +64,14 @@ class kms_permissions_handler_has_separate_services extends views_handler_field 
 //  }
 
   function render($values) {
-    $output = array();
     $combined_fields = array_filter($this->options['combined_fields']);
-    $fields = $this->view->display_handler->get_handlers('field');
 
-    foreach (array_intersect_key($fields, $combined_fields) as $handler) {
-      // Get rendered output from field.
-//      $rendered = !empty($handler->last_render) ? $handler->last_rende;
-      if (empty($handler->last_render)) {
+    foreach ($combined_fields as $name) {
+      $value_key = 'field_' . $name;
+      if(!property_exists($values, $value_key)) {
         continue;
       }
-      else {
+      if(!empty($values->$value_key)) {
         return array(
           '#type' => 'markup',
           '#markup' => t('Separate services'),
@@ -84,7 +81,6 @@ class kms_permissions_handler_has_separate_services extends views_handler_field 
       }
     }
 
-//    return implode($this->options['separator'], $output);
   }
 
 }
