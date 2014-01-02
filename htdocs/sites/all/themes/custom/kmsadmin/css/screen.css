@@ -47,11 +47,8 @@
   -webkit-transition: background 0.3s;
   -o-transition: background 0.3s;
 }
-.page-admin .bundle-active {
-  background: url(../images/bundle-active.png) no-repeat left center;
-}
-.page-admin .bundle-default {
-  background: url(../images/bundle-default.png) no-repeat left center;
+.page-admin .bundle-active, .page-admin .bundle-default {
+  background: no-repeat left center;
 }
 .page-admin .bundle-active:hover,
 .page-admin .bundle-default:hover {
@@ -59,8 +56,7 @@
 }
 
 .page-admin .bundle-inactive {
-  background: url(../images/bundle-inactive.png) no-repeat left center;
-  color: #4f4f4f;
+  background: url(../images/bundle-inactive.png) no-repeat left center !important;
 }
 .page-admin .bundle-inactive:hover {
   background: url(../images/bundle-inactivehover.png) no-repeat left center;
