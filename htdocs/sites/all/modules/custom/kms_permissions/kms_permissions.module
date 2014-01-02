@@ -312,9 +312,16 @@ function _kms_permissions_format_service_list($service_id, $service_name) {
   // Start with the name of the service
   $html .= $service_name . ' ';
   
+  
+
   foreach ($nid_sid_arr as $type => $nodes) {
     foreach ($nodes as $nid => $title) {
-      $html .= '<span class="bundle-' . $type . '">' . t($title) . '</span> ';
+      $bundle_node = node_load($nid);
+
+      $wrapper = entity_metadata_wrapper('node', $bundle_node);
+      $file_uri = $wrapper->field_colour->value()->field_default_image[LANGUAGE_NONE][0]['uri'];
+
+      $html .= '<img src="' . file_create_url($file_uri) . '" alt="' . $type . '" title="'.$title.'">';
     }
   }
   return $html;
@@ -1466,6 +1473,28 @@ function kms_permissions_user_autocomplete_callback($string = "") {
 
   drupal_json_output($matches);
 }
+
+function kms_permissions_form_alter(&$form, &$form_state, $form_id) {
+
+  if($form['#id'] == 'views-exposed-form-admin-views-user-system-1') {
+
+    foreach ($form['field_user_type_tid']['#options'] as $term_key => $term) {
+
+      // Check if this isn't the 'ANY' option
+      if($term_key !== 'All') {
+        // Check if this is a child by looking for '--' as first char in string
+        $term_value = reset($term->option);
+        if($term_value[0] == '-' && $term_value[1] == '-') {
+          unset($form['field_user_type_tid']['#options'][$term_key]);
+        }
+      }
+
+    }
+
+  }
+
+}
+
 
 function kms_permissions_run_batch($type) {
   $args = func_get_args();
