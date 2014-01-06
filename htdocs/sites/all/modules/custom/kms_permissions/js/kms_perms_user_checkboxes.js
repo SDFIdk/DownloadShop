@@ -62,11 +62,9 @@
       });
       return bids;
     },
-
-    checkUncheckAll: function(theElement, scope){
-      // Mark them all function
-      $('.field-name-field-bundle-webservices-'+scope+' input').each(function(){
-          $(this).checked = theElement.checked;
+    checkUncheckAll: function(theElement, scope) {
+    $('.'+scope+' input.form-checkbox').each(function(){
+          $(this).attr("checked", theElement.checked);
       });
     }
   };

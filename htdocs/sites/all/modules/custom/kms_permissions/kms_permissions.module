@@ -1500,14 +1500,17 @@ function kms_permissions_form_alter(&$form, &$form_state, $form_id) {
 
   if($form['#id'] == 'access-bundle-node-form' || $form['#id'] == 'user-profile-form') {
     //Check all function, we need to include some js magic
-    drupal_add_js(drupal_get_path('module', 'kms_permissions') .'/js/kms_permissions_checkall.js');
-
-    //Add select all to all webservice lists
+    //drupal_add_js(drupal_get_path('module', 'kms_permissions') .'/js/kms_permissions_checkall.js');
+    drupal_add_js(drupal_get_path('module', 'kms_permissions') .'/js/kms_perms_user_checkboxes.js');
+    drupal_add_library('kms_permissions', 'jquery.foggy');
+    drupal_add_css(drupal_get_path('module', 'kms_permissions') .'/css/edit_bundles_and_services.css');
+    
+    //Add select all to all webservice tabs
     foreach (kms_permissions_widget_type_options() as $key => $value) {
       $form['select_all_field_'.strtolower($value)] = array(
         '#type' => 'checkbox',
         '#title' => t('Select / Unselect all'),
-        '#attributes' => array('onclick' => 'Drupal.behaviors.kms_permissions.checkUncheckAll(this, "field-name-field-bundle-webservices-'.strtolower($value).'");'),
+        '#attributes' => array('onclick' => 'Drupal.behaviors.kms_perms_user_checkboxes.checkUncheckAll(this, "field-name-field-bundle-webservices-'.strtolower($value).'");'),
       );
 
       $form['#group_children']['select_all_field_'.strtolower($value)] = 'group_webservices_'.strtolower($value);
@@ -1517,13 +1520,13 @@ function kms_permissions_form_alter(&$form, &$form_state, $form_id) {
     $form['select_all_field_predefined'] = array(
         '#type' => 'checkbox',
         '#title' => t('Select / Unselect all'),
-        '#attributes' => array('onclick' => 'Drupal.behaviors.kms_permissions.checkUncheckAll(this, "field-name-field-predefined-datacollections");'),
+        '#attributes' => array('onclick' => 'Drupal.behaviors.kms_perms_user_checkboxes.checkUncheckAll(this, "field-name-field-predefined-datacollections");'),
     ); 
 
     $form['select_all_field_applications'] = array(
         '#type' => 'checkbox',
         '#title' => t('Select / Unselect all'),
-        '#attributes' => array('onclick' => 'Drupal.behaviors.kms_permissions.checkUncheckAll(this, "field-name-field-applications");'),
+        '#attributes' => array('onclick' => 'Drupal.behaviors.kms_perms_user_checkboxes.checkUncheckAll(this, "field-name-field-applications");'),
     ); 
     
     $form['#group_children']['select_all_field_predefined'] = 'group_tab_predefined';
