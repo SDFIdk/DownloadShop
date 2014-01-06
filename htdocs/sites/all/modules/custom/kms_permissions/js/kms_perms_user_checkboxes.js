@@ -61,6 +61,13 @@
         bids.push($(this).val())
       });
       return bids;
+    },
+
+    checkUncheckAll: function(theElement, scope){
+      // Mark them all function
+      $('.field-name-field-bundle-webservices-'+scope+' input').each(function(){
+          $(this).checked = theElement.checked;
+      });
     }
   };
 })(jQuery, Drupal);

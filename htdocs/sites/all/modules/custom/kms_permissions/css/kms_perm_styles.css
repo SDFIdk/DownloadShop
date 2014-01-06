@@ -3,6 +3,7 @@
 .field-name-field-applications .form-checkboxes .form-type-checkbox {
   width: 33%;
   float:left;
+  line-height: 35px;
 }
 
 .field-group-htabs-wrapper, .vertical-tabs {
@@ -21,9 +22,24 @@
 #cboxLoadedContent .pane-entity-field .field-type-list-text .field-item{
   float:left;
   width: 33%;
+  line-height: 35px;
 }
 
 .node-type-access-bundle .pane-entity-field,
 #cboxLoadedContent .pane-entity-field {
+  clear: both;
+}
+
+.view-bundle-legend-header .views-row {
+  float:left;
+  padding-right: 20px;
+}
+
+.view-bundle-legend-header .views-row img {
+  float: left;
+  padding-right: 5px;
+}
+
+.view-filters {
   clear: both;
 }

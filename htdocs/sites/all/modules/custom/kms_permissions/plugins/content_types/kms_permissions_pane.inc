@@ -27,6 +27,7 @@ function kms_permissions_pane_render($subtype, $conf, $panel_args, $context) {
   }
   // Get default bundles
   $default_bundles_nids = _kms_permissions_get_default_bundles();
+
   // Get custom bundles
   $custom_bundles_nids = _kms_permissions_get_custom_bundles();
   // Prepare the tables

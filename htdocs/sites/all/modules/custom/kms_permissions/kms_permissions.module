@@ -146,13 +146,15 @@ function kms_permissions_field_widget_settings_form($field, $instance) {
 */
 function kms_permissions_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
 
+
+
   $value_key = key($field['columns']);
   $type = str_replace('options_', '', $instance['widget']['type']);
   $multiple = $field['cardinality'] > 1 || $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED;
   $required = $element['#required'];
   $has_value = isset($items[0][$value_key]);
   $properties = _options_properties($type, $multiple, $required, $has_value);
-  $instance_settings = $instance['widget']['settings'];
+  $instance_settings = $instance['widget']['settings'];  
 
   switch ($instance['widget']['type']) {
     case 'kms_applications':
@@ -185,15 +187,18 @@ function kms_permissions_field_widget_form(&$form, &$form_state, $field, $instan
         '#type' => $multiple ? 'checkboxes' : 'radios',
         '#title' => ($instance['widget']['type'] == 'kms_applications' ? t('KMS applications') : t('KMS services')),
         '#default_value' => $default_value,
-        '#options' => $options,
+        '#options' => $options
       );
   }
+
 
   $element += array(
     '#value_key' => $value_key,
     '#element_validate' => array('options_field_widget_validate'),
     '#properties' => $properties,
   );
+   //dsm($element);
+  
 
   return $element;
 }
@@ -1492,6 +1497,41 @@ function kms_permissions_form_alter(&$form, &$form_state, $form_id) {
     }
 
   }
+
+  if($form['#id'] == 'access-bundle-node-form' || $form['#id'] == 'user-profile-form') {
+    //Check all function, we need to include some js magic
+    drupal_add_js(drupal_get_path('module', 'kms_permissions') .'/js/kms_permissions_checkall.js');
+
+    //Add select all to all webservice lists
+    foreach (kms_permissions_widget_type_options() as $key => $value) {
+      $form['select_all_field_'.strtolower($value)] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Select / Unselect all'),
+        '#attributes' => array('onclick' => 'Drupal.behaviors.kms_permissions.checkUncheckAll(this, "field-name-field-bundle-webservices-'.strtolower($value).'");'),
+      );
+
+      $form['#group_children']['select_all_field_'.strtolower($value)] = 'group_webservices_'.strtolower($value);
+    }
+
+    //Add manually select all checkboxed for predefined and application tabs
+    $form['select_all_field_predefined'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Select / Unselect all'),
+        '#attributes' => array('onclick' => 'Drupal.behaviors.kms_permissions.checkUncheckAll(this, "field-name-field-predefined-datacollections");'),
+    ); 
+
+    $form['select_all_field_applications'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Select / Unselect all'),
+        '#attributes' => array('onclick' => 'Drupal.behaviors.kms_permissions.checkUncheckAll(this, "field-name-field-applications");'),
+    ); 
+    
+    $form['#group_children']['select_all_field_predefined'] = 'group_tab_predefined';
+
+    $form['#group_children']['select_all_field_applications'] = 'group_tab_applications';
+    
+  }
+
 
 }
 
