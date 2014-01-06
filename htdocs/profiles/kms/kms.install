@@ -267,7 +267,7 @@ function kms_update_7004(&$sandbox) {
  * Enable colorbox, colorbox_node (used for webservices overview on legend icons)
  * @author Linas Balke <linas@adapt.dk>
  */
-function kms_update_7015(&$sandbox) {
+function kms_update_7005(&$sandbox) {
   // Enable relevant kms permission modules.
   module_enable(array(
     'colorbox',
