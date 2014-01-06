@@ -3,6 +3,18 @@
 define('KMS_USER_ROLES_SYSTEM_ACCOUNT_ID', 7);
 define('KMS_USER_ROLES_SUPERUSER_ID', 4);
 define('KMS_USER_PAGE_CONTACT', 'node/7');
+define('KMS_USER_VIEW_NAME_ADMIN_VIEWS_USER', 'admin_views_user');
+define('KMS_USER_VIEW_DISPLAY_ADMIN_VIEWS_USER', 'system_1');
+
+/**
+ * Implements hook_init().
+ */
+function kms_user_init() {
+    if(current_path() == 'admin/people') {
+      drupal_add_js(drupal_get_path('module', 'kms_user') .'/js/admin_views_people.js');
+      drupal_add_library('kms_permissions', 'jquery.foggy');
+    }
+}
 
 /**
  * Implements hook_watchdog().
@@ -34,6 +46,29 @@ function kms_user_permission() {
       'description' => t('Access kms user pages.'),
     ),
   );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function kms_user_menu() {
+  $items = array();
+
+  $items['kms-user/ajax/refresh-admin-views-people'] = array(
+    'title' => 'Kms user refresh loaded admin views people view',
+    'page callback' => 'kms_user_ajax_refresh_admin_views_people',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['admin/kms-user/%ctools_js/filter-admin-views-people-perms'] = array(
+    'title' =>'Filter users by permissions',
+    'description' => 'Select permissions to filter by',
+    'access arguments' => array('access content'),
+    'page callback' => 'kms_user_filter_admin_views_people_perms',
+    'page arguments' => array(2),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
 }
 
 /**
@@ -952,4 +987,219 @@ function kms_user_access_bundle_administer($op, $account, $bundles = array()) {
   }
   
   $w->save();
+}
+
+/**
+ * Load people admin views and return it as JSON.
+ */
+function kms_user_ajax_refresh_admin_views_people () {
+  $view = views_get_view(KMS_USER_VIEW_NAME_ADMIN_VIEWS_USER);
+  $view->set_display(KMS_USER_VIEW_DISPLAY_ADMIN_VIEWS_USER);
+  $view->is_cacheable = FALSE;
+  $view->execute();
+  drupal_json_output(array('view' => $view->render()));
+  exit;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function kms_user_form_views_exposed_form_alter(&$form, &$form_state, $form_id) {
+  $view = $form_state['view'];
+  // Due to a reset bug that concerns the Drupal 7.17 core this is needed.
+  // Atodo: Remove when Drupal has been upgraded.
+  if (
+    $view->name == KMS_USER_VIEW_NAME_ADMIN_VIEWS_USER
+    && $view->current_display == KMS_USER_VIEW_DISPLAY_ADMIN_VIEWS_USER
+  ) {
+    $form_state['redirect'] = 'admin/people';
+  }
+
+}
+
+
+/**
+ * Ajax render function.
+ * Renders relevant ctools modal json data.
+ *
+ * @param boolean $js
+ *   Is the client using javascript?
+ *
+ * @return string
+ *   JSON.
+ */
+function kms_user_filter_admin_views_people_perms($js = FALSE) {
+  if (!$js) {
+    return drupal_get_form('kms_user_filter_admin_views_people_perms_form');
+  }
+  // We do not want messages shown in our popup.
+  drupal_get_messages();
+  // Include relevant ctools code.
+  ctools_include('modal');
+  ctools_include('ajax');
+  // Add necessary form_state data.
+  $form_state = array(
+    'ajax' => TRUE,
+    'build_info' => array(
+      'args'  => array(
+        'query' => drupal_get_query_parameters(),
+      ),
+    ),
+  );
+  // Create form output.
+    $form_state['title'] = t('Select permissions');
+    $output = ctools_modal_form_wrapper('kms_user_filter_admin_views_people_perms_form', $form_state);
+  // If form is executed remove modal popup.
+
+  if (!empty($form_state['executed'])) {
+    $output = array();
+    // Get all user ids from chosen services.
+    $uids = _kms_user_get_users_from_services($form_state['filter']);
+    // Maybe use session in the future?
+//    $_SESSION['views']['admin_views_user']['kms_user_filter']['uids'] = $uids;
+
+    // Load view filtered by uids.
+    if(!empty($uids)) {
+      $view = views_get_view(KMS_USER_VIEW_NAME_ADMIN_VIEWS_USER);
+      $view->set_display(KMS_USER_VIEW_DISPLAY_ADMIN_VIEWS_USER);
+      $view->is_cacheable = FALSE;
+      $views_arg_str = implode('+', $uids);
+      $view->set_arguments(array($views_arg_str));
+      $output[] = ajax_command_html('.view-admin-views-user', $view->render());
+    }
+
+    // Get all available services.
+    $service_list = kms_permissions_get_service_list();
+    // Create services array from chosen services.
+    $services = array();
+    foreach($form_state['filter'] as $field_sids) {
+      $field_sids = $field_sids[LANGUAGE_NONE];
+      array_walk($field_sids, function($sid) use ($service_list, &$services){
+        $entry = $service_list[$sid];
+        $services[$entry['SERVICEID']] = sprintf("%s (%s)", $entry['SERVICENAME'], $entry['TYPENAME']);
+      });
+    }
+    // Render array that shows what is filtering the user list.
+    $filter_status = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array(),
+      ),
+      'span-services' => array(
+        '#theme' => 'html_tag',
+        '#tag' => 'span',
+        '#value' => t(
+          'Users filtered by services: %services',
+          array('%services' => implode(', ', $services))
+        ),
+      ),
+    );
+    // Js commands.
+    $output[] = ajax_command_replace('a.ctools-use-modal-processed', render($filter_status));
+    $output[] = ctools_modal_command_dismiss();
+  }
+  // Render output.
+  print ajax_render($output);
+  exit;
+}
+
+/**
+ * Drupal form function.
+ * Used for popup filtering of permissions in people admin view.
+ */
+function kms_user_filter_admin_views_people_perms_form ($form, &$form_state) {
+  $form = &drupal_static(__FUNCTION__);
+  if (!isset($form)) {
+    $cache_id = 'kms_user_filter_admin_views_people_perms_form';
+    if ($cache = cache_get($cache_id)) {
+      $form = $cache->data;
+    }
+  else {
+      module_load_include('inc', 'user', 'user.pages');
+      $user = user_load(1);
+      $user_form = drupal_get_form('user_profile_form', $user);
+      $ws_fields = _kms_permissions_webservice_fields();
+
+
+      $form = array();
+      array_walk($ws_fields, function($ws_name) use($user_form, &$form) {
+        $form[$ws_name] = $user_form[$ws_name];
+      });
+
+
+      $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Filter', array(), array('context' => 'kms_user')),
+        '#weight' => 500
+      );
+
+      cache_set($cache_id, $form, 'cache');
+    }
+  }
+
+  return $form;
+}
+
+function kms_user_filter_admin_views_people_perms_form_submit($form, &$form_state) {
+  $form_state['filter'] = array_intersect_key($_REQUEST, array_flip(_kms_permissions_webservice_fields()));
+}
+
+//function kms_user_filter_admin_views_people_perms_filter_fields() {
+//  return array_merge(
+//    _kms_permissions_webservice_fields()
+//  );
+//}
+
+/**
+ * Implements hook_views_pre_render().
+ */
+function kms_user_views_pre_render(&$view) {
+  ctools_include('modal');
+  ctools_modal_add_js();
+
+  $popup_link = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array(),
+    ),
+    'popup_link' => array(
+      '#theme' => 'link',
+      '#text' => '<button id="kms-user-trigger-permission-filter">' . t('Filter current list by permissions') . '</button>',
+      '#path' => 'admin/kms-user/nojs/filter-admin-views-people-perms',
+      '#options' => array(
+        'attributes' => array('class' => 'ctools-use-modal'),
+        'html' => TRUE,
+        'query' => drupal_get_query_parameters(),
+      ),
+    ),
+  );
+
+  $view->attachment_before = render($popup_link);
+}
+
+/**
+ * @param array $services
+ *  Ex.: array('field_bundle_webservices_geo' => array(1, 4218, 4458), 'field_bundle_webservices_wms' => array(1614))
+ * @return array
+ */
+function _kms_user_get_users_from_services($services) {
+  // Users with separate services.
+  $uids_services = _kms_permissions_get_uids_by_separate_services($services);
+
+  // Bundles with services.
+  $sids = array();
+  array_walk($services, function($children) use (&$sids) {
+    $children = $children[LANGUAGE_NONE];
+    $sids = array_merge($sids, $children);
+  });
+  $bids = _kms_permissions_get_bundles_by_sids($sids);
+
+  // Users with bundles.
+  $uids_bundles = array();
+  if(!empty($bids)) {
+    $uids_bundles = _kms_permissions_get_uids_by_bids($bids);
+  }
+
+  // Merge all user ids.
+  return array_merge($uids_services, $uids_bundles);
 }
