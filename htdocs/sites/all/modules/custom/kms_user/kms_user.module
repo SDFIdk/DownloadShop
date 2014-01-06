@@ -1154,27 +1154,32 @@ function kms_user_filter_admin_views_people_perms_form_submit($form, &$form_stat
  * Implements hook_views_pre_render().
  */
 function kms_user_views_pre_render(&$view) {
-  ctools_include('modal');
-  ctools_modal_add_js();
+  if (
+    $view->name == KMS_USER_VIEW_NAME_ADMIN_VIEWS_USER
+    && $view->current_display == KMS_USER_VIEW_DISPLAY_ADMIN_VIEWS_USER
+  ) {
+    ctools_include('modal');
+    ctools_modal_add_js();
 
-  $popup_link = array(
-    '#type' => 'container',
-    '#attributes' => array(
-      'class' => array(),
-    ),
-    'popup_link' => array(
-      '#theme' => 'link',
-      '#text' => '<button id="kms-user-trigger-permission-filter">' . t('Filter current list by permissions') . '</button>',
-      '#path' => 'admin/kms-user/nojs/filter-admin-views-people-perms',
-      '#options' => array(
-        'attributes' => array('class' => 'ctools-use-modal'),
-        'html' => TRUE,
-        'query' => drupal_get_query_parameters(),
+    $popup_link = array(
+      '#type' => 'container',
+      '#attributes' => array(
+        'class' => array(),
       ),
-    ),
-  );
+      'popup_link' => array(
+        '#theme' => 'link',
+        '#text' => '<button id="kms-user-trigger-permission-filter">' . t('Filter current list by permissions') . '</button>',
+        '#path' => 'admin/kms-user/nojs/filter-admin-views-people-perms',
+        '#options' => array(
+          'attributes' => array('class' => 'ctools-use-modal'),
+          'html' => TRUE,
+          'query' => drupal_get_query_parameters(),
+        ),
+      ),
+    );
 
-  $view->attachment_before = render($popup_link);
+    $view->attachment_before = render($popup_link);
+  }
 }
 
 /**
