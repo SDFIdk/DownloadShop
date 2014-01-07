@@ -215,12 +215,7 @@ function kms_permissions_field_widget_error($element, $error) {
  * @param string $type - type of option list to get
  */
 function kms_permissions_widget_options($type = 'kms_services', $instance_settings) {
-  $settings = array(
-    'kms_oci_conn_user' => variable_get('kms_permissions_conn_user', ''),
-    'kms_oci_conn_pass' => variable_get('kms_permissions_conn_pass', ''),
-    'kms_oci_conn_host' => variable_get('kms_permissions_conn_host', ''),
-    'kms_oci_conn_db' => variable_get('kms_permissions_conn_db', ''),
-  );
+
   
   switch ($type) {
     case 'kms_services':
@@ -240,28 +235,20 @@ function kms_permissions_widget_options($type = 'kms_services', $instance_settin
             }
         }
       }
-      
-
+    
       return $options[$type];
+
     case 'kms_applications';
       $options = array();
       
       // Connect to default database
-      if (kms_oci_get_conn()) {
-        $query = "SELECT GROUPID, NAME FROM SMGROUP ORDER BY lower(NAME) ASC";
-
-        $rows = kms_oci_select($query, array());
+      
+        $rows = kms_permissions_get_application_list();
         if (!empty($rows)) {
           foreach ($rows as $row) {
             $options[$row['GROUPID']] = $row['NAME'];
           }
-        }
-        else {
-          watchdog('kms_permissions', 'Could not read from Oracle', array(), WATCHDOG_ERROR);
-        }
-
-        // Close connection
-        kms_oci_close_conn();
+        
       }
 
       return $options;
@@ -280,6 +267,8 @@ function kms_permissions_get_service_list() {
   $service_data = &drupal_static(__FUNCTION__);
 
   if (!isset($service_data)) {
+    
+
     if (kms_oci_get_conn('kms_permissions', $settings)) {
       $query = "SELECT S2.SERVICEID, S2.SERVICENAME, ST.TYPEID, ST.TYPENAME FROM SERVICES2 S2, SERVICETYPES2 ST WHERE S2.TYPEID = ST.TYPEID ORDER BY S2.SERVICEID ASC";
 
@@ -297,8 +286,45 @@ function kms_permissions_get_service_list() {
       // Close connection
       kms_oci_close_conn('kms_permissions');
     }
+
+
   }
   return $service_data;
+}
+
+function kms_permissions_get_application_list() {
+  
+  $settings = array(
+    'kms_oci_conn_user' => variable_get('kms_permissions_conn_user', ''),
+    'kms_oci_conn_pass' => variable_get('kms_permissions_conn_pass', ''),
+    'kms_oci_conn_host' => variable_get('kms_permissions_conn_host', ''),
+    'kms_oci_conn_db' => variable_get('kms_permissions_conn_db', ''),
+  );
+
+  $application_data = &drupal_static(__FUNCTION__);
+
+  if (!isset($service_data)) {
+    
+
+    if (kms_oci_get_conn()) {
+          $query = "SELECT GROUPID, NAME FROM SMGROUP ORDER BY lower(NAME) ASC";
+
+          $rows = kms_oci_select($query, array());
+
+          if (!empty($rows)) {
+            $application_data = $rows;
+          }
+          else {
+            watchdog('kms_permissons', 'Could not read from Oracle', array(), WATCHDOG_ERROR);
+          }
+
+          // Close connection
+          kms_oci_close_conn();
+    }
+
+
+  }
+  return $application_data;
 }
 
 
@@ -326,7 +352,11 @@ function _kms_permissions_format_service_list($service_id, $service_name) {
       $bundle_node = node_load($nid);
 
       $wrapper = entity_metadata_wrapper('node', $bundle_node);
-      $file_uri = $wrapper->field_colour->value()->field_default_image[LANGUAGE_NONE][0]['uri'];
+      if(isset($wrapper->field_colour->value()->field_default_image)){
+        $file_uri = $wrapper->field_colour->value()->field_default_image[LANGUAGE_NONE][0]['uri'];
+      } else {
+        $file_uri = "";
+      }
 
       $html .= '<img src="' . file_create_url($file_uri) . '" alt="' . $type . '" title="'.$title.'">';
     }
@@ -356,6 +386,10 @@ function kms_permissions_field_formatter_info() {
       'label' => t('Service list'),
       'field types' => array('list_text'),
     ),
+    'kms_permissions_applications' => array(
+      'label' => t('Application list'),
+      'field types' => array('list_text'),
+    ),
   );
 }
 
@@ -375,9 +409,13 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
         }
         //print('status - '.$status.' on '.$nid.' <br>');
         $bundle_node = node_load($nid);
-
         $wrapper = entity_metadata_wrapper('node', $bundle_node);
-        $file_uri = $wrapper->field_colour->value()->field_default_image[LANGUAGE_NONE][0]['uri'];
+        
+        if(isset($wrapper->field_colour->value()->field_default_image)){
+          $file_uri = $wrapper->field_colour->value()->field_default_image[LANGUAGE_NONE][0]['uri'];
+        } else {
+          $file_uri = "";
+        }
 
         return array(
           '#theme' => 'link',
@@ -431,6 +469,22 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
             foreach ($items as $item) {
               if($item['value']==$service['SERVICEID']) {
                 $element[$item['value']]['#markup']  = $service['SERVICENAME'];
+              }
+            }
+          }
+
+      break;
+
+
+      case 'kms_permissions_applications': 
+
+          $application_data = kms_permissions_get_application_list();
+
+          foreach ($application_data as $application) {
+            foreach ($items as $item) {
+              
+              if($item['value']==$application['GROUPID']) {
+                $element[]['#markup']  = $application['NAME'];
               }
             }
           }
@@ -1483,7 +1537,7 @@ function kms_permissions_user_autocomplete_callback($string = "") {
 
 function kms_permissions_form_alter(&$form, &$form_state, $form_id) {
 
-  if($form['#id'] == 'views-exposed-form-admin-views-user-system-1') {
+  if($form['#id'] == 'views-exposed-form-admin-views-user-system-1'){
 
     foreach ($form['field_user_type_tid']['#options'] as $term_key => $term) {
 
@@ -1506,7 +1560,7 @@ function kms_permissions_form_alter(&$form, &$form_state, $form_id) {
     drupal_add_js(drupal_get_path('module', 'kms_permissions') .'/js/kms_perms_user_checkboxes.js');
     drupal_add_library('kms_permissions', 'jquery.foggy');
     drupal_add_css(drupal_get_path('module', 'kms_permissions') .'/css/edit_bundles_and_services.css');
-    
+
     //Add select all to all webservice tabs
     foreach (kms_permissions_widget_type_options() as $key => $value) {
       $form['select_all_field_'.strtolower($value)] = array(
@@ -1532,9 +1586,17 @@ function kms_permissions_form_alter(&$form, &$form_state, $form_id) {
     ); 
     
     $form['#group_children']['select_all_field_predefined'] = 'group_tab_predefined';
-
     $form['#group_children']['select_all_field_applications'] = 'group_tab_applications';
-    
+
+  }
+
+  if($form['#id'] == 'access-bundle-node-form') {
+    // Embed view before webservice tabs
+    $form['Legend element'] = array(
+        '#title' => t('Bundle Legend'),
+        '#markup' => views_embed_view('bundle_legend_header', 'default'),
+        '#weight' => 6
+    );
   }
 
 

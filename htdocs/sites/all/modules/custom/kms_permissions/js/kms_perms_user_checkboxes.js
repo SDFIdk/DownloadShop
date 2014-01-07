@@ -64,7 +64,7 @@
     },
     checkUncheckAll: function(theElement, scope) {
     $('.'+scope+' input.form-checkbox').each(function(){
-          $(this).attr("checked", theElement.checked);
+        if(!$(this).parent().hasClass('disabled')) $(this).attr("checked", theElement.checked);
       });
     }
   };
