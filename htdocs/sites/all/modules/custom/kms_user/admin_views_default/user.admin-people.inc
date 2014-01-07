@@ -722,11 +722,12 @@ $handler->display->display_options['fields']['access']['id'] = 'access';
 $handler->display->display_options['fields']['access']['table'] = 'users';
 $handler->display->display_options['fields']['access']['field'] = 'access';
 $handler->display->display_options['fields']['access']['date_format'] = 'time ago';
-/* Field: User: Edit link */
-$handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
-$handler->display->display_options['fields']['edit_node']['table'] = 'users';
-$handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
-$handler->display->display_options['fields']['edit_node']['label'] = '';
+/* Field: User: Edit link (kms_user) */
+$handler->display->display_options['fields']['kms_edit_node']['id'] = 'kms_edit_node';
+$handler->display->display_options['fields']['kms_edit_node']['table'] = 'users';
+$handler->display->display_options['fields']['kms_edit_node']['field'] = 'kms_edit_node';
+$handler->display->display_options['fields']['kms_edit_node']['label'] = '';
+$handler->display->display_options['fields']['kms_edit_node']['element_label_colon'] = FALSE;
 /* Field: User: Cancel link */
 $handler->display->display_options['fields']['cancel_node']['id'] = 'cancel_node';
 $handler->display->display_options['fields']['cancel_node']['table'] = 'users';
