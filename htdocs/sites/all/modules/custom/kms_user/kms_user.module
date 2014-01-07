@@ -99,6 +99,17 @@ function kms_user_menu_alter(&$items) {
   }
 }
 
+function kms_user_views_data() {
+  $data['users']['kms_edit_node'] = array(
+    'field' => array(
+      'title' => t('Edit link (kms_user)'),
+      'help' => t('Provide a simple link to edit the user (kms_user).'),
+      'handler' => 'views_handler_field_kms_user_link_edit',
+    ),
+  );
+  return $data;
+}
+
 function _kms_user_access_callback_deny_system_account() {
   global $user;
   $args = func_get_args();
@@ -1055,18 +1066,18 @@ function kms_user_filter_admin_views_people_perms($js = FALSE) {
     $output = array();
     // Get all user ids from chosen services.
     $uids = _kms_user_get_users_from_services($form_state['filter']);
+    // If no users are presnet create an array with a very high uid so that the views get no matches.
+    $uids = !empty($uids) ? $uids : array(99999999999);
     // Maybe use session in the future?
 //    $_SESSION['views']['admin_views_user']['kms_user_filter']['uids'] = $uids;
 
     // Load view filtered by uids.
-    if(!empty($uids)) {
-      $view = views_get_view(KMS_USER_VIEW_NAME_ADMIN_VIEWS_USER);
-      $view->set_display(KMS_USER_VIEW_DISPLAY_ADMIN_VIEWS_USER);
-      $view->is_cacheable = FALSE;
-      $views_arg_str = implode('+', $uids);
-      $view->set_arguments(array($views_arg_str));
-      $output[] = ajax_command_html('.view-admin-views-user', $view->render());
-    }
+    $view = views_get_view(KMS_USER_VIEW_NAME_ADMIN_VIEWS_USER);
+    $view->set_display(KMS_USER_VIEW_DISPLAY_ADMIN_VIEWS_USER);
+    $view->is_cacheable = FALSE;
+    $views_arg_str = implode('+', $uids);
+    $view->set_arguments(array($views_arg_str));
+    $output[] = ajax_command_html('.view-admin-views-user', $view->render());
 
     // Get all available services.
     $service_list = kms_permissions_get_service_list();
