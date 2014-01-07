@@ -1380,56 +1380,57 @@ function pagemanager_node_view_default_page_manager_handlers() {
   $export['node_view_panel_context_7'] = $handler;
 
   $handler = new stdClass();
-  $handler->disabled = FALSE; /* Edit this to true to make a default handler disabled initially */
-  $handler->api_version = 1;
-  $handler->name = 'node_view_panel_context_8';
-  $handler->task = 'node_view';
-  $handler->subtask = '';
-  $handler->handler = 'panel_context';
-  $handler->weight = -24;
-  $handler->conf = array(
-    'title' => 'Bundle display',
-    'no_blocks' => 0,
-    'pipeline' => 'standard',
-    'body_classes_to_remove' => '',
-    'body_classes_to_add' => '',
-    'css_id' => '',
-    'css' => '',
-    'contexts' => array(),
-    'relationships' => array(),
-    'access' => array(
-      'plugins' => array(
-        0 => array(
-          'name' => 'node_type',
-          'settings' => array(
-            'type' => array(
-              'access_bundle' => 'access_bundle',
-            ),
+$handler->disabled = FALSE; /* Edit this to true to make a default handler disabled initially */
+$handler->api_version = 1;
+$handler->name = 'node_view_panel_context_8';
+$handler->task = 'node_view';
+$handler->subtask = '';
+$handler->handler = 'panel_context';
+$handler->weight = -24;
+$handler->conf = array(
+  'title' => 'Bundle display',
+  'no_blocks' => 0,
+  'pipeline' => 'standard',
+  'body_classes_to_remove' => '',
+  'body_classes_to_add' => '',
+  'css_id' => '',
+  'css' => '',
+  'contexts' => array(),
+  'relationships' => array(),
+  'access' => array(
+    'plugins' => array(
+      0 => array(
+        'name' => 'node_type',
+        'settings' => array(
+          'type' => array(
+            'access_bundle' => 'access_bundle',
           ),
-          'context' => 'argument_entity_id:node_1',
-          'not' => FALSE,
         ),
+        'context' => 'argument_entity_id:node_1',
+        'not' => FALSE,
       ),
-      'logic' => 'and',
     ),
-  );
-  $display = new panels_display();
-  $display->layout = 'onecol';
-  $display->layout_settings = array();
-  $display->panel_settings = array(
-    'style_settings' => array(
-      'default' => NULL,
-      'center' => NULL,
-      'top' => NULL,
-      'left' => NULL,
-      'right' => NULL,
-      'bottom' => NULL,
-    ),
-  );
-  $display->cache = array();
-  $display->title = 'Bundle display';
-  $display->content = array();
-  $display->panels = array();
+    'logic' => 'and',
+  ),
+);
+$display = new panels_display();
+$display->layout = 'onecol';
+$display->layout_settings = array();
+$display->panel_settings = array(
+  'style_settings' => array(
+    'default' => NULL,
+    'center' => NULL,
+    'top' => NULL,
+    'left' => NULL,
+    'right' => NULL,
+    'bottom' => NULL,
+    'middle' => NULL,
+  ),
+);
+$display->cache = array();
+$display->title = 'Bundle display';
+$display->content = array();
+$display->panels = array();
   $pane = new stdClass();
   $pane->pid = 'new-1';
   $pane->panel = 'middle';
@@ -1681,6 +1682,66 @@ function pagemanager_node_view_default_page_manager_handlers() {
   $pane = new stdClass();
   $pane->pid = 'new-10';
   $pane->panel = 'middle';
+  $pane->type = 'entity_field';
+  $pane->subtype = 'node:field_applications';
+  $pane->shown = TRUE;
+  $pane->access = array();
+  $pane->configuration = array(
+    'label' => 'title',
+    'formatter' => 'kms_permissions_applications',
+    'delta_limit' => '0',
+    'delta_offset' => '0',
+    'delta_reversed' => 0,
+    'formatter_settings' => array(),
+    'context' => 'argument_entity_id:node_1',
+    'override_title' => 0,
+    'override_title_text' => '',
+  );
+  $pane->cache = array();
+  $pane->style = array(
+    'settings' => NULL,
+  );
+  $pane->css = array();
+  $pane->extras = array();
+  $pane->position = 9;
+  $pane->locks = array();
+  $display->content['new-10'] = $pane;
+  $display->panels['middle'][9] = 'new-10';
+  $pane = new stdClass();
+  $pane->pid = 'new-11';
+  $pane->panel = 'middle';
+  $pane->type = 'entity_field';
+  $pane->subtype = 'node:field_predefined_datacollections';
+  $pane->shown = TRUE;
+  $pane->access = array();
+  $pane->configuration = array(
+    'label' => 'title',
+    'formatter' => 'entityreference_label',
+    'delta_limit' => '0',
+    'delta_offset' => '0',
+    'delta_reversed' => 0,
+    'formatter_settings' => array(
+      'link' => 0,
+      'view_mode' => 'full',
+      'links' => 1,
+    ),
+    'context' => 'argument_entity_id:node_1',
+    'override_title' => 0,
+    'override_title_text' => '',
+  );
+  $pane->cache = array();
+  $pane->style = array(
+    'settings' => NULL,
+  );
+  $pane->css = array();
+  $pane->extras = array();
+  $pane->position = 10;
+  $pane->locks = array();
+  $display->content['new-11'] = $pane;
+  $display->panels['middle'][10] = 'new-11';
+  $pane = new stdClass();
+  $pane->pid = 'new-12';
+  $pane->panel = 'middle';
   $pane->type = 'panels_mini';
   $pane->subtype = 'bottom';
   $pane->shown = TRUE;
@@ -1703,10 +1764,10 @@ function pagemanager_node_view_default_page_manager_handlers() {
   );
   $pane->css = array();
   $pane->extras = array();
-  $pane->position = 9;
+  $pane->position = 11;
   $pane->locks = array();
-  $display->content['new-10'] = $pane;
-  $display->panels['middle'][9] = 'new-10';
+  $display->content['new-12'] = $pane;
+  $display->panels['middle'][11] = 'new-12';
   $display->hide_title = PANELS_TITLE_FIXED;
   $display->title_pane = '0';
   $handler->conf['display'] = $display;
