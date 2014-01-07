@@ -238,7 +238,7 @@ function kms_update_7004(&$sandbox) {
   $predefined_colours = array('Brun','Graablaa','Grey','Gron','Gul','Hotpink','Koral','Orange','Rod','Sort');
   $vocab = taxonomy_vocabulary_machine_name_load(TAXONOMY_NAME);
   
-  $vid = $vocab->vid;
+  $vid = $vocab->vid;y
 
   foreach ($predefined_colours as $colour) {
 
@@ -275,4 +275,12 @@ function kms_update_7005(&$sandbox) {
   ));
   // Activate new kms admin theme.
   variable_set('colorbox_inline', '1');
+  variable_set('colorbox_pages', 'imagebrowser*
+                img_assist*
+                imce*
+                node/add/*
+                print/*
+                printpdf/*
+                system/ajax
+                system/ajax/*');
 }
