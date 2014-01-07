@@ -201,10 +201,6 @@ $handler->display->display_options['header']['view']['table'] = 'views';
 $handler->display->display_options['header']['view']['field'] = 'view';
 $handler->display->display_options['header']['view']['label'] = 'Bundle legend';
 $handler->display->display_options['header']['view']['view_to_insert'] = 'bundle_legend_header:block';
-/* Header: Global: Permission filter */
-$handler->display->display_options['header']['kms_user_filter_users_by_perms']['id'] = 'kms_user_filter_users_by_perms';
-$handler->display->display_options['header']['kms_user_filter_users_by_perms']['table'] = 'views';
-$handler->display->display_options['header']['kms_user_filter_users_by_perms']['field'] = 'kms_user_filter_users_by_perms';
 /* No results behavior: Global: Unfiltered text */
 $handler->display->display_options['empty']['area_text_custom']['id'] = 'area_text_custom';
 $handler->display->display_options['empty']['area_text_custom']['table'] = 'views';
@@ -359,6 +355,15 @@ $handler->display->display_options['sorts']['created']['id'] = 'created';
 $handler->display->display_options['sorts']['created']['table'] = 'users';
 $handler->display->display_options['sorts']['created']['field'] = 'created';
 $handler->display->display_options['sorts']['created']['order'] = 'DESC';
+/* Contextual filter: User: Uid */
+$handler->display->display_options['arguments']['uid']['id'] = 'uid';
+$handler->display->display_options['arguments']['uid']['table'] = 'users';
+$handler->display->display_options['arguments']['uid']['field'] = 'uid';
+$handler->display->display_options['arguments']['uid']['default_argument_type'] = 'fixed';
+$handler->display->display_options['arguments']['uid']['summary']['number_of_records'] = '0';
+$handler->display->display_options['arguments']['uid']['summary']['format'] = 'default_summary';
+$handler->display->display_options['arguments']['uid']['summary_options']['items_per_page'] = '25';
+$handler->display->display_options['arguments']['uid']['break_phrase'] = TRUE;
 /* Filter criterion: User: Name */
 $handler->display->display_options['filters']['uid']['id'] = 'uid';
 $handler->display->display_options['filters']['uid']['table'] = 'users';
@@ -794,6 +799,7 @@ $translatables['admin_views_user'] = array(
   t('Roles'),
   t('Member since'),
   t('Last access'),
+  t('All'),
   t('Username'),
   t('E-mail'),
   t('Role'),
@@ -811,4 +817,3 @@ $translatables['admin_views_user'] = array(
   t('Webservices (WMTS)'),
   t('Data export'),
 );
-
