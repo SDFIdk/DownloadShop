@@ -238,7 +238,7 @@ function kms_update_7004(&$sandbox) {
   $predefined_colours = array('Brun','Graablaa','Grey','Gron','Gul','Hotpink','Koral','Orange','Rod','Sort');
   $vocab = taxonomy_vocabulary_machine_name_load(TAXONOMY_NAME);
   
-  $vid = $vocab->vid;y
+  $vid = $vocab->vid;
 
   foreach ($predefined_colours as $colour) {
 
