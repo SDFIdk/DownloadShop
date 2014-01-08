@@ -1513,6 +1513,16 @@ function kms_permissions_vbo_copy_user_services(&$account, $context = array()) {
   $target->save();
 }
 
+function kms_permissions_clone_perms($source_account, $target_account) {
+  $source = entity_metadata_wrapper('user', $source_account);
+  $target = entity_metadata_wrapper('user', $target_account);
+  $target->field_access_bundles->set($source->field_access_bundles->value());
+  foreach(_kms_permissions_webservice_fields() as $field){
+    $target->$field->set($source->$field->value());
+  }
+  $target->save();
+}
+
 /**
  * Form field autocomplete callback for selecting user.
  *

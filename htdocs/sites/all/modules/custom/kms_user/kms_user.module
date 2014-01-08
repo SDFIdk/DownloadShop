@@ -10,10 +10,11 @@ define('KMS_USER_VIEW_DISPLAY_ADMIN_VIEWS_USER', 'system_1');
  * Implements hook_init().
  */
 function kms_user_init() {
-    if(current_path() == 'admin/people') {
-      drupal_add_js(drupal_get_path('module', 'kms_user') .'/js/admin_views_people.js');
-      drupal_add_library('kms_permissions', 'jquery.foggy');
-    }
+  if(current_path() == 'admin/people') {
+    drupal_add_js(drupal_get_path('module', 'kms_user') .'/js/admin_views_people.js');
+    drupal_add_css(drupal_get_path('module', 'kms_user') .'/css/admin_views_people.css');
+    drupal_add_library('kms_permissions', 'jquery.foggy');
+  }
 }
 
 /**
@@ -140,6 +141,24 @@ function kms_user_ctools_plugin_directory($owner, $plugin_type) {
     return "plugins/$plugin_type";
   }
 }
+
+//function kms_user_user_insert(&$edit, $account, $category) {
+//  global $user;
+//  _adapt_debug('mikkel', $user);
+////  $user = user_load($account->uid);
+////  _adapt_debug('mikkel', kms_subuser_is_subuser($user));
+//  $user_roles = !empty($account->roles) ? $account->roles : array();
+//  // Atodo: Create oci job as well.
+//  if($account->is_new && in_array(KMS_SUBUSER_ROLE_NAME, $user_roles)) {
+//    kms_permissions_clone_perms($user, $account);
+//  }
+////  _adapt_debug('mikkel', in_array(KMS_SUBUSER_ROLE_NAME, $user_roles));
+////  _adapt_debug('mikkel', relation_get_related_entity('user', $account->uid));
+//  // If user has 'subuser' role and has a related entity.
+////  var_dump(relation_get_related_entity('user', $account->uid));
+////  return in_array(KMS_SUBUSER_ROLE_NAME, $user_roles)
+////  && relation_get_related_entity('user', $account->uid);
+//}
 
 /**
  * Implements hook_form_alter().

@@ -1,0 +1,8 @@
+.field-widget-kms-services  .form-checkboxes .form-type-checkbox {
+  width: 33%;
+  float:left;
+  line-height: 35px;
+}
+.form-type-checkboxes {
+  clear: both;
+}
