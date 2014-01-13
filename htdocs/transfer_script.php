@@ -21,7 +21,7 @@ if (kms_oci_get_conn('kms_permissions', $settings)) {
     LEFT JOIN SERVICETYPES2 ST
     ON S2.TYPEID = ST.TYPEID
     ) 
-where ROWNUM <=150000";  
+where ROWNUM <=200000";  
 
 $rows = kms_oci_select($query, array(), 'kms_permissions');
 
@@ -30,7 +30,7 @@ if (!empty($rows)) {
     $userid = get_drupal_uid($row['USERID']);
     $type = strtolower($row['TYPENAME']);
 
-    if(!is_null($userid)){
+    if(!is_null($userid) && $type != "tms"){
 
         // Remove all associated service records with this user in this type of table, we gonna rewrite them with Oracle
       remove_duplicate($userid,$type,$row['SERVICEID']);
