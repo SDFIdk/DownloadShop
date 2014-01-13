@@ -21,7 +21,7 @@ if (kms_oci_get_conn('kms_permissions', $settings)) {
     LEFT JOIN SERVICETYPES2 ST
     ON S2.TYPEID = ST.TYPEID
     ) 
-where ROWNUM <=100000";  
+where ROWNUM <=150000";  
 
 $rows = kms_oci_select($query, array(), 'kms_permissions');
 
@@ -69,19 +69,25 @@ print('Script successfully inserted/updated '.$counter.' rows ');
 
 
 function get_drupal_uid($kms_user_id){
-  $query = db_select('field_data_field_kms_user_id', 'kms')
-  ->condition('field_kms_user_id_value', $kms_user_id, '=')
-  ->fields('kms', array('entity_id'));
-  
-  $result = $query->execute();
-  
-  while($record = $result->fetchAssoc()) {
-    if(!empty($record['entity_id'])) {
-     return $record['entity_id'];
-    } else {
-     return null;
-    }
- }
+
+  if(is_numeric($kms_user_id) && strlen($kms_user_id) < 7) {
+    return $kms_user_id;
+  } else {
+
+    $query = db_select('field_data_field_kms_user_id', 'kms')
+    ->condition('field_kms_user_id_value', $kms_user_id, '=')
+    ->fields('kms', array('entity_id'));
+    
+    $result = $query->execute();
+    
+    while($record = $result->fetchAssoc()) {
+      if(!empty($record['entity_id'])) {
+       return $record['entity_id'];
+      } else {
+       return null;
+      }
+   }
+  }
 }
 
 function get_next_delta($userid, $type){
