@@ -21,7 +21,7 @@ if (kms_oci_get_conn('kms_permissions', $settings)) {
     LEFT JOIN SERVICETYPES2 ST
     ON S2.TYPEID = ST.TYPEID
     ) 
-where ROWNUM <=10";  
+where ROWNUM <=100000";  
 
 $rows = kms_oci_select($query, array(), 'kms_permissions');
 
