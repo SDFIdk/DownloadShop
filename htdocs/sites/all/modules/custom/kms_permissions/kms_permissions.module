@@ -270,8 +270,8 @@ function kms_permissions_get_service_list() {
     
 
     if (kms_oci_get_conn('kms_permissions', $settings)) {
-      $query = "SELECT S2.SERVICEID, S2.SERVICENAME, ST.TYPEID, ST.TYPENAME FROM SERVICES2 S2, SERVICETYPES2 ST WHERE S2.TYPEID = ST.TYPEID ORDER BY S2.SERVICEID ASC";
-
+      $query = "SELECT S2.SERVICEID, S2.SERVICENAME, ST.TYPEID, ST.TYPENAME FROM SERVICES2 S2, SERVICETYPES2 ST WHERE S2.TYPEID = ST.TYPEID ORDER BY lower(S2.SERVICENAME) ASC";
+      
       $rows = kms_oci_select($query, array(), 'kms_permissions');
 
       if (!empty($rows)) {
@@ -390,6 +390,7 @@ function kms_permissions_field_formatter_info() {
       'label' => t('Application list'),
       'field types' => array('list_text'),
     ),
+
   );
 }
 
@@ -1565,11 +1566,19 @@ function kms_permissions_form_alter(&$form, &$form_state, $form_id) {
   }
 
   if($form['#id'] == 'access-bundle-node-form' || $form['#id'] == 'user-profile-form') {
+
     //Check all function, we need to include some js magic
     //drupal_add_js(drupal_get_path('module', 'kms_permissions') .'/js/kms_permissions_checkall.js');
     drupal_add_js(drupal_get_path('module', 'kms_permissions') .'/js/kms_perms_user_checkboxes.js');
     drupal_add_library('kms_permissions', 'jquery.foggy');
     drupal_add_css(drupal_get_path('module', 'kms_permissions') .'/css/edit_bundles_and_services.css');
+
+    // Sort prefedined datacollections alphabetically
+    if(isset($form['field_predefined_datacollections'])) {
+      $sorted_array = $form['field_predefined_datacollections'][LANGUAGE_NONE]['#options'];
+      asort($sorted_array);
+      $form['field_predefined_datacollections'][LANGUAGE_NONE]['#options'] = $sorted_array;
+    }
 
     //Add select all to all webservice tabs
     foreach (kms_permissions_widget_type_options() as $key => $value) {
