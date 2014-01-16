@@ -1146,8 +1146,7 @@ function kms_user_filter_admin_views_people_perms_form ($form, &$form_state) {
     }
   else {
       module_load_include('inc', 'user', 'user.pages');
-      $user = user_load(1);
-      $user_form = drupal_get_form('user_profile_form', $user);
+      $user_form = drupal_get_form('user_profile_form');
       $ws_fields = _kms_permissions_webservice_fields();
 
 
