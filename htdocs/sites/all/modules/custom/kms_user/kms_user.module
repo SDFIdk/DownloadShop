@@ -1218,23 +1218,46 @@ function kms_user_views_pre_render(&$view) {
  * @return array
  */
 function _kms_user_get_users_from_services($services) {
+  // Merge user arrays function.
+  $merge_uids = function ($uids_n_sids, &$users) {
+    foreach($uids_n_sids as $uid => $sids) {
+      if(empty($users[$uid])) {
+        $users[$uid] = $sids;
+      }
+      else {
+        $users[$uid] = array_merge($users[$uid], $sids);
+      }
+    }
+  };
+  // The end result users array.
+  $users = array();
   // Users with separate services.
-  $uids_services = _kms_permissions_get_uids_by_separate_services($services);
-
-  // Bundles with services.
-  $sids = array();
-  array_walk($services, function($children) use (&$sids) {
-    $children = $children[LANGUAGE_NONE];
-    $sids = array_merge($sids, $children);
+  $merge_uids(_kms_permissions_get_uids_by_separate_services($services), $users);
+  // Users with permissions in bundles.
+  $merge_uids(_kms_permissions_get_uids_by_bundle_services($services), $users);
+  // Find total number of services.
+  $service_count = 0;
+  array_walk($services, function ($sids) use (&$service_count) {
+    $service_count += count($sids);
   });
-  $bids = _kms_permissions_get_bundles_by_sids($sids);
+  // Filter all users with right amount of services compared with $service_count.
+  $users = array_filter($users, function($sids) use($service_count){
+    return count($sids) == $service_count;
+  });
 
-  // Users with bundles.
-  $uids_bundles = array();
-  if(!empty($bids)) {
-    $uids_bundles = _kms_permissions_get_uids_by_bids($bids);
-  }
+  return array_keys($users);
+}
 
-  // Merge all user ids.
-  return array_merge($uids_services, $uids_bundles);
+/**
+ * Test function to _kms_user_get_users_from_services.
+ * Remember commenting following in the aggregation functions:
+ * $sids = $sids[LANGUAGE_NONE];
+ */
+function _kms_user_get_users_from_services_test() {
+  $services = array(
+    'field_bundle_webservices_wms' => array(1276),
+    'field_bundle_webservices_geo' => array(8, 9),
+  );
+
+  $uids = _kms_user_get_users_from_services($services);
 }

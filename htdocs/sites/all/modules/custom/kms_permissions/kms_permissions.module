@@ -1669,23 +1669,77 @@ function kms_permissions_run_batch($type) {
  *   User ids.
  */
 function _kms_permissions_get_uids_by_separate_services($services) {
-  // Users with separate services.
-  $query = db_select('users', 'u');
-  $query->fields('u', array('uid'));
-  $db_or = db_or();
+  $users = array();
+
+  array_walk($services, function ($sids, $field) use(&$users) {
+    $sids = $sids[LANGUAGE_NONE];
+    $query = db_select('users', 'u');
+    $join_conditions[] = $field .'.entity_id = u.uid';
+    $join_conditions[] = $field . ".entity_type = 'user'";
+    $query->leftJoin('field_data_' . $field, $field, implode(' AND ', $join_conditions));
+    $query->addField($field, sprintf('%s_value', $field), 'sid');
+    $query->addField($field, 'entity_id', 'uid');
+    $query->condition(sprintf('%s.%s_value', $field, $field), $sids, 'IN');
+    $result = $query->execute();
+
+    while($row = $result->fetchAssoc()) {
+      $uid = $row['uid'];
+      $sid = $row['sid'];
+      if(empty($users[$uid])) {
+        $users[$uid] = array($sid);
+      }
+      else {
+        $users[$uid] = array_merge($users[$uid], array($sid));
+      }
+    }
+
+  });
+
+  return $users;
+}
+
+/**
+ * Get all users that has bundles containing specified services.
+ *
+ * @param array $services
+ *   Ex.: array('field_bundle_webservices_geo' => array(1, 4218, 4458), 'field_bundle_webservices_wms' => array(1614))
+ * @return array
+ *   User ids.
+ */
+function _kms_permissions_get_uids_by_bundle_services($services) {
+  $users = array();
+
   foreach($services as $field => $sids) {
     $sids = $sids[LANGUAGE_NONE];
-    $query->leftJoin('field_data_' . $field, $field, $field .'.entity_id = u.uid');
-    array_walk($sids, function($sid) use ($field, &$db_or, &$query){
-      $db_and = db_and();
-      $db_and->condition(sprintf("%s.%s_value", $field, $field), $sid, '=');
-      $db_and->condition(sprintf("%s.entity_type", $field), 'user', '=');
-      $db_or->condition($db_and);
-    });
+    $query = db_select('users', 'u');
+    $query->rightJoin(
+      'field_data_' . $field,
+      $field,
+      $field .'.entity_id = u.uid AND ' . sprintf("%s.bundle = 'access_bundle'", $field)
+    );
+    $ab_alias = 'ab_' . $field;
+    $query->rightJoin(
+      'field_data_field_access_bundles',
+      $ab_alias,
+      sprintf('%s.field_access_bundles_nid = %s.entity_id', $ab_alias, $field)
+    );
+    $query->addField($field, sprintf('%s_value', $field), 'sid');
+    $query->addField($ab_alias, 'entity_id', 'uid');
+    $query->condition(sprintf('%s.%s_value', $field, $field), $sids, 'IN');
+    $result = $query->execute();
+    while($row = $result->fetchAssoc()) {
+      $uid = $row['uid'];
+      $sid = $row['sid'];
+      if(empty($users[$uid])) {
+        $users[$uid] = array($sid);
+      }
+      else {
+        $users[$uid] = array_merge($users[$uid], array($sid));
+      }
+    }
   }
-  $query->condition($db_or);
-  $result = $query->execute();
-  return array_keys($result->fetchAllKeyed());
+
+  return $users;
 }
 
 /**
@@ -1706,7 +1760,7 @@ function _kms_permissions_get_bundles_by_sids($sids) {
       });
     }
   }
-  return $bids;
+  return array_unique($bids);
 }
 
 /**
