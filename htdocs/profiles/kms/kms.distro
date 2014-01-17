@@ -11,7 +11,7 @@ projects[drupal][version] = "7.17"
 projects[drupal][patch][] = "http://drupal.org/files/symlinks_within_files_directory-1008402-72-D7.14-do-not-test.patch"
 
 ; Modules
-;includes[kms_distro_inc] = "kms.distro.inc"
+includes[kms_distro_inc] = "kms.distro.inc"
 
 ;admin_views -- patched
 projects[admin_views][subdir] = "contrib"
