@@ -11,7 +11,7 @@ projects[drupal][version] = "7.17"
 projects[drupal][patch][] = "http://drupal.org/files/symlinks_within_files_directory-1008402-72-D7.14-do-not-test.patch"
 
 ; Modules
-includes[kms_distro_inc] = "kms.distro.inc"
+;includes[kms_distro_inc] = "kms.distro.inc"
 
 ;admin_views -- patched
 projects[admin_views][subdir] = "contrib"
@@ -39,14 +39,13 @@ projects[hierarchical_select][type] = "module"
 projects[colorbox_node][download][type] = "git"
 projects[colorbox_node][download][url] = "git://git.drupal.org/project/colorbox_node.git"
 projects[colorbox_node][subdir] = "contrib"
-projects[colorbox_node][revision] = "ed77622d40b7892e646485ba76a4b7b33e309563"
+projects[colorbox_node][download][branch] = 7.x-3.x
+projects[colorbox_node][tag] = "7.x-3.2"
 projects[colorbox_node][type] = "module"
 
 ;subuser
-projects[subuser][download][type] = "git"
-projects[subuser][download][url] = "git://git.drupal.org/project/subuser.git"
 projects[subuser][subdir] = "contrib"
-projects[subuser][revision] = "ea7efeb81e86f107800ef3f175e3af3b94d234a5"
+projects[subuser][version] = "2.0-alpha3"
 projects[subuser][type] = "module"
 
 projects[adapt_module][type] = 'module'
