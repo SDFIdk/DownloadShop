@@ -39,14 +39,14 @@ projects[hierarchical_select][type] = "module"
 projects[colorbox_node][download][type] = "git"
 projects[colorbox_node][download][url] = "git://git.drupal.org/project/colorbox_node.git"
 projects[colorbox_node][subdir] = "contrib"
-projects[colorbox_node][tag] = "7.x-3.2"
+projects[colorbox_node][revision] = "ed77622d40b7892e646485ba76a4b7b33e309563"
 projects[colorbox_node][type] = "module"
 
 ;subuser
 projects[subuser][download][type] = "git"
 projects[subuser][download][url] = "git://git.drupal.org/project/subuser.git"
 projects[subuser][subdir] = "contrib"
-projects[subuser][revision] = "83c2058004d78ea4c58dabbf7a204975e759fae9"
+projects[subuser][revision] = "ea7efeb81e86f107800ef3f175e3af3b94d234a5"
 projects[subuser][type] = "module"
 
 projects[adapt_module][type] = 'module'
