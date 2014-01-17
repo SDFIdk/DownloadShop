@@ -40,7 +40,7 @@ projects[colorbox_node][version] = "3.x-dev"
 projects[colorbox_node][download][type] = "git"
 projects[colorbox_node][download][url] = "git://git.drupal.org/project/colorbox_node.git"
 projects[colorbox_node][subdir] = "contrib"
-projects[colorbox_node][revision] = "1658ac0a624a97a637b8375b530ba15e8b720e61"
+projects[colorbox_node][tag] = "7.x-3.2"
 projects[colorbox_node][type] = "module"
 
 ;subuser
