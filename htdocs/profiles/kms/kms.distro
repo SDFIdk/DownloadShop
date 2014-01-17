@@ -36,7 +36,6 @@ projects[hierarchical_select][version] = "3.x-dev"
 projects[hierarchical_select][type] = "module"
 
 ;colorbox_node - dev
-projects[colorbox_node][version] = "3.x-dev"
 projects[colorbox_node][download][type] = "git"
 projects[colorbox_node][download][url] = "git://git.drupal.org/project/colorbox_node.git"
 projects[colorbox_node][subdir] = "contrib"
