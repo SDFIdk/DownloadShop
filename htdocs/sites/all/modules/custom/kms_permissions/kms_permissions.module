@@ -1505,18 +1505,21 @@ function kms_permissions_vbo_copy_user_services(&$account, $context = array()) {
   if(!$source_account) {
     return;
   }
-  $source = entity_metadata_wrapper('user', $source_account);
-  $target = entity_metadata_wrapper('user', $context['user']);
-  $target->field_access_bundles->set($source->field_access_bundles->value());
-  foreach(_kms_permissions_webservice_fields() as $field){
-    $target->$field->set($source->$field->value());
-  }
-  $target->save();
+  kms_permissions_clone_perms($source_account, $context['user']);
 }
 
-function kms_permissions_clone_perms($source_account, $target_account) {
+function kms_permissions_clone_perms($source_account, $target_account, $reset = TRUE) {
   $source = entity_metadata_wrapper('user', $source_account);
   $target = entity_metadata_wrapper('user', $target_account);
+
+  if($reset){
+    $target->field_access_bundles = NULL;
+    foreach(_kms_permissions_webservice_fields() as $field){
+      $target->$field = NULL;
+    }
+    $target->save();
+  }
+
   $target->field_access_bundles->set($source->field_access_bundles->value());
   foreach(_kms_permissions_webservice_fields() as $field){
     $target->$field->set($source->$field->value());
