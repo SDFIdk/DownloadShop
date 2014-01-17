@@ -1224,7 +1224,8 @@ function _kms_user_get_users_from_services($services) {
         $users[$uid] = $sids;
       }
       else {
-        $users[$uid] = array_merge($users[$uid], $sids);
+        $sids = array_merge($users[$uid], $sids);
+        $users[$uid] = array_unique($sids);
       }
     }
   };
