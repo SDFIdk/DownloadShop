@@ -1237,6 +1237,7 @@ function _kms_user_get_users_from_services($services) {
   // Find total number of services.
   $service_count = 0;
   array_walk($services, function ($sids) use (&$service_count) {
+    $sids = $sids[LANGUAGE_NONE];
     $service_count += count($sids);
   });
   // Filter all users with right amount of services compared with $service_count.
