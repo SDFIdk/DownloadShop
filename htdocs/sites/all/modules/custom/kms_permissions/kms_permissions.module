@@ -570,10 +570,22 @@ function kms_permissions_user_presave(&$edit, $account, $category) {
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-  function kms_permissions_form_access_bundle_node_form_alter(&$form, &$form_state) {
-    $form['actions']['submit']['#submit'][] = 'kms_permissions_access_bundle_update';
-    $form['actions']['delete']['#submit'][] = 'kms_permissions_access_bundle_update';
-  }
+function kms_permissions_form_access_bundle_node_form_alter(&$form, &$form_state) {
+  $form['#attached']['js'][] = drupal_get_path('module', 'kms_permissions') .'/js/kms_perms_user_checkboxes.js';
+  $form['#attached']['css'][] = drupal_get_path('module', 'kms_permissions') .'/css/edit_bundles_and_services.css';
+  $form['#attached']['library'][] = array('kms_permissions', 'jquery.foggy');
+    
+  $form['actions']['submit']['#submit'][] = 'kms_permissions_access_bundle_update';
+  $form['actions']['delete']['#submit'][] = 'kms_permissions_access_bundle_update';
+
+  $form['Legend element'] = array(
+      '#title' => t('Bundle Legend'),
+      '#markup' => views_embed_view('bundle_legend_header', 'default'),
+      '#weight' => 6
+    );
+
+  _kms_permissions_common_form_alter($form);
+}
 
 
 /**
@@ -613,7 +625,49 @@ function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
 
   $form['field_access_bundles'][LANGUAGE_NONE]['#suffix'] = render($services_description);
   $form['field_access_bundles'][LANGUAGE_NONE]['#pre_render'][] = 'kms_permissions_process_access_bundles_form_element';
+
+  _kms_permissions_common_form_alter($form);
 }
+
+/**
+ *  Do some common form alter for access node and user profile
+ */
+function _kms_permissions_common_form_alter(&$form) {
+  // Sort prefedined datacollections alphabetically 
+  if(isset($form['field_predefined_datacollections'])) {
+    $sorted_array = $form['field_predefined_datacollections'][LANGUAGE_NONE]['#options'];
+    asort($sorted_array);
+    $form['field_predefined_datacollections'][LANGUAGE_NONE]['#options'] = $sorted_array;
+  }
+
+  //Add select all to all webservice tabs
+  foreach (kms_permissions_widget_type_options() as $key => $value) {
+    $form['select_all_field_'.strtolower($value)] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Select / Unselect all'),
+        '#attributes' => array('onclick' => 'Drupal.behaviors.kms_perms_user_checkboxes.checkUncheckAll(this, "field-name-field-bundle-webservices-'.strtolower($value).'");'),
+    );
+
+    $form['#group_children']['select_all_field_'.strtolower($value)] = 'group_webservices_'.strtolower($value);
+  }
+
+  //Add manually select all checkboxed for predefined and application tabs
+  $form['select_all_field_predefined'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Select / Unselect all'),
+      '#attributes' => array('onclick' => 'Drupal.behaviors.kms_perms_user_checkboxes.checkUncheckAll(this, "field-name-field-predefined-datacollections");'),
+  ); 
+
+  $form['select_all_field_applications'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Select / Unselect all'),
+      '#attributes' => array('onclick' => 'Drupal.behaviors.kms_perms_user_checkboxes.checkUncheckAll(this, "field-name-field-applications");'),
+  ); 
+    
+  $form['#group_children']['select_all_field_predefined'] = 'group_tab_predefined';
+  $form['#group_children']['select_all_field_applications'] = 'group_tab_applications';
+}
+
 
 function kms_permissions_process_access_bundles_form_element($element) {
   $bids = _kms_permissions_get_default_bundles();
@@ -1570,57 +1624,8 @@ function kms_permissions_form_alter(&$form, &$form_state, $form_id) {
 
   if($form['#id'] == 'access-bundle-node-form' || $form['#id'] == 'user-profile-form') {
 
-    //Check all function, we need to include some js magic
-    //drupal_add_js(drupal_get_path('module', 'kms_permissions') .'/js/kms_permissions_checkall.js');
-    drupal_add_js(drupal_get_path('module', 'kms_permissions') .'/js/kms_perms_user_checkboxes.js');
-    drupal_add_library('kms_permissions', 'jquery.foggy');
-    drupal_add_css(drupal_get_path('module', 'kms_permissions') .'/css/edit_bundles_and_services.css');
-
-    // Sort prefedined datacollections alphabetically
-    if(isset($form['field_predefined_datacollections'])) {
-      $sorted_array = $form['field_predefined_datacollections'][LANGUAGE_NONE]['#options'];
-      asort($sorted_array);
-      $form['field_predefined_datacollections'][LANGUAGE_NONE]['#options'] = $sorted_array;
-    }
-
-    //Add select all to all webservice tabs
-    foreach (kms_permissions_widget_type_options() as $key => $value) {
-      $form['select_all_field_'.strtolower($value)] = array(
-        '#type' => 'checkbox',
-        '#title' => t('Select / Unselect all'),
-        '#attributes' => array('onclick' => 'Drupal.behaviors.kms_perms_user_checkboxes.checkUncheckAll(this, "field-name-field-bundle-webservices-'.strtolower($value).'");'),
-      );
-
-      $form['#group_children']['select_all_field_'.strtolower($value)] = 'group_webservices_'.strtolower($value);
-    }
-
-    //Add manually select all checkboxed for predefined and application tabs
-    $form['select_all_field_predefined'] = array(
-        '#type' => 'checkbox',
-        '#title' => t('Select / Unselect all'),
-        '#attributes' => array('onclick' => 'Drupal.behaviors.kms_perms_user_checkboxes.checkUncheckAll(this, "field-name-field-predefined-datacollections");'),
-    ); 
-
-    $form['select_all_field_applications'] = array(
-        '#type' => 'checkbox',
-        '#title' => t('Select / Unselect all'),
-        '#attributes' => array('onclick' => 'Drupal.behaviors.kms_perms_user_checkboxes.checkUncheckAll(this, "field-name-field-applications");'),
-    ); 
-    
-    $form['#group_children']['select_all_field_predefined'] = 'group_tab_predefined';
-    $form['#group_children']['select_all_field_applications'] = 'group_tab_applications';
-
-  }
-
-  if($form['#id'] == 'access-bundle-node-form') {
-    // Embed view before webservice tabs
-    $form['Legend element'] = array(
-        '#title' => t('Bundle Legend'),
-        '#markup' => views_embed_view('bundle_legend_header', 'default'),
-        '#weight' => 6
-    );
-  }
-
+  
+  } 
 
 }
 
