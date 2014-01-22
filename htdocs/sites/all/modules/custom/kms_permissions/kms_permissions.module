@@ -1603,10 +1603,9 @@ function kms_permissions_user_autocomplete_callback($string = "") {
   drupal_json_output($matches);
 }
 
-function kms_permissions_form_alter(&$form, &$form_state, $form_id) {
+function kms_permissions_form_views_exposed_form_alter(&$form, &$form_state, $form_id) {
 
   if($form['#id'] == 'views-exposed-form-admin-views-user-system-1'){
-
     foreach ($form['field_user_type_tid']['#options'] as $term_key => $term) {
 
       // Check if this isn't the 'ANY' option
@@ -1617,16 +1616,8 @@ function kms_permissions_form_alter(&$form, &$form_state, $form_id) {
           unset($form['field_user_type_tid']['#options'][$term_key]);
         }
       }
-
     }
-
   }
-
-  if($form['#id'] == 'access-bundle-node-form' || $form['#id'] == 'user-profile-form') {
-
-  
-  } 
-
 }
 
 
