@@ -292,7 +292,7 @@ $drupal_hash_salt = 'FZ7cjE7VPpcUCIhLC7-Q0TMzv6WpbQV-9oakjFxFK_M';
  * It is not allowed to have a trailing slash; Drupal will add it
  * for you.
  */
-$base_url = 'http://kms.dev:8181';  // NO trailing slash!
+$base_url = 'http://kms.dev';  // NO trailing slash!
 
 /**
  * PHP settings:

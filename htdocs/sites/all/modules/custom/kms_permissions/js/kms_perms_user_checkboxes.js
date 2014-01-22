@@ -1,7 +1,6 @@
 /**
  * Created by mikkel on 12/2/13.
  */
-
 (function ($) {
   Drupal.behaviors.kms_perms_user_checkboxes = {
     attach: function(context, settings) {
