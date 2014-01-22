@@ -1,44 +1,49 @@
 /* line 2, ../sass/kms_oci_queue_reports.scss */
-.kms-oci-queue-jobs-overview .status-0 {
-  color: green;
-}
-/* line 5, ../sass/kms_oci_queue_reports.scss */
-.kms-oci-queue-jobs-overview .status-1 {
+.kms-oci-queue-jobs-overview .kms-oci-queue-status-waiting {
   color: cornflowerblue;
 }
+/* line 5, ../sass/kms_oci_queue_reports.scss */
+.kms-oci-queue-jobs-overview .kms-oci-queue-status-processing {
+  color: darkblue;
+}
 /* line 8, ../sass/kms_oci_queue_reports.scss */
-.kms-oci-queue-jobs-overview .status-2 {
+.kms-oci-queue-jobs-overview .kms-oci-queue-status-done {
+  color: green;
+}
+/* line 12, ../sass/kms_oci_queue_reports.scss */
+.kms-oci-queue-jobs-overview .kms-oci-queue-severity-error,
+.kms-oci-queue-jobs-overview .kms-oci-queue-status-failed {
   color: red;
 }
-/* line 11, ../sass/kms_oci_queue_reports.scss */
+/* line 15, ../sass/kms_oci_queue_reports.scss */
 .kms-oci-queue-jobs-overview tr.kms-oci-queue-job-log {
   display: none;
   border-style: none;
 }
-/* line 14, ../sass/kms_oci_queue_reports.scss */
+/* line 18, ../sass/kms_oci_queue_reports.scss */
 .kms-oci-queue-jobs-overview tr.kms-oci-queue-job-log table {
   border: 0;
 }
-/* line 16, ../sass/kms_oci_queue_reports.scss */
+/* line 20, ../sass/kms_oci_queue_reports.scss */
 .kms-oci-queue-jobs-overview tr.kms-oci-queue-job-log table tr {
   background: transparent;
   border: 0;
 }
-/* line 19, ../sass/kms_oci_queue_reports.scss */
+/* line 23, ../sass/kms_oci_queue_reports.scss */
 .kms-oci-queue-jobs-overview tr.kms-oci-queue-job-log table tr td {
   border: 0;
 }
-/* line 25, ../sass/kms_oci_queue_reports.scss */
+/* line 29, ../sass/kms_oci_queue_reports.scss */
 .kms-oci-queue-jobs-overview td {
   border-bottom: 1px solid #bebfb9;
 }
-/* line 27, ../sass/kms_oci_queue_reports.scss */
+/* line 31, ../sass/kms_oci_queue_reports.scss */
 .kms-oci-queue-jobs-overview td.job-log-trigger {
   padding-left: 25px;
   cursor: pointer;
   background: url(/misc/arrow-desc.png) no-repeat 5px 10px;
 }
-/* line 31, ../sass/kms_oci_queue_reports.scss */
+/* line 35, ../sass/kms_oci_queue_reports.scss */
 .kms-oci-queue-jobs-overview td.job-log-trigger.active {
   background: url(/misc/arrow-asc.png) no-repeat 5px 10px;
 }

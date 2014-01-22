@@ -193,7 +193,7 @@ function kms_oci_queue_admin_page_jobs () {
       'data' => array(
         array('data' => $job->jid, 'data-jid' => $job->jid, 'class' => 'job-log-trigger'),
         array('data' => $job_info, 'data-jid' => $job->jid, 'class' => array('job-info')),
-        array('data' => $job->status->message, 'class' => 'status-' . $job->status->status),
+        array('data' => $job->status->message, 'class' => KmsOciQueueJob::cssClassStatus($job->status->status)),
         array('data' => format_date($job->created)),
       )
     );
@@ -240,9 +240,10 @@ function kms_oci_queue_admin_page_job_log($jid){
       if(empty($message_vars) || !is_array($message_vars)) {
         $message_vars = array();
       }
+      $classes = array(KmsOciQueueJob::cssClassSeverity($entry->severity));
       $rows[] = array(
-        array('data' => format_date($entry->timestamp), 'colspan' => 1),
-        array('data' => format_string($entry->message, $message_vars), 'colspan' => 2),
+        array('data' => format_date($entry->timestamp), 'colspan' => 1, 'class' => $classes),
+        array('data' => format_string($entry->message, $message_vars), 'colspan' => 2, 'class' => $classes),
       );
     }
     $output["log_$lid"] = array(

@@ -1,11 +1,15 @@
 .kms-oci-queue-jobs-overview {
-  .status-0 {
-    color: green;
-  }
-  .status-1 {
+  .kms-oci-queue-status-waiting {
     color: cornflowerblue;
   }
-  .status-2 {
+  .kms-oci-queue-status-processing {
+    color: darkblue;
+  }
+  .kms-oci-queue-status-done {
+    color: green;
+  }
+  .kms-oci-queue-severity-error,
+  .kms-oci-queue-status-failed {
     color: red;
   }
   tr.kms-oci-queue-job-log {

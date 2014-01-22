@@ -37,12 +37,14 @@ class KmsOciQueueJob {
   public function __construct($jid) {
     $this->setJid($jid);
     $this->setJob();
-    $this->setQueueItem($this->loadQueueItem());
-    $this->setCreated();
-    $this->setInfo();
-    $this->setInfoDetails();
-    $this->setStatus();
-    $this->setQueryNum();
+    if($this->job) {
+      $this->setQueueItem($this->loadQueueItem());
+      $this->setCreated();
+      $this->setInfo();
+      $this->setInfoDetails();
+      $this->setStatus();
+      $this->setQueryNum();
+    }
   }
 
   private function setJid($jid){
@@ -118,6 +120,19 @@ class KmsOciQueueJob {
     return $result;
   }
 
+  public function changeStatus($status, $message, $variables = array()) {
+    $severity = WATCHDOG_INFO;
+    switch($status) {
+      case self::STATUS_FAILED:
+        $severity = WATCHDOG_ERROR;
+        break;
+    }
+    $job = $this->job;
+    $job->status = $status;
+    KmsOciQueueJobDb::updateJob($job);
+    self::log($this->jid, $message, $variables, $severity);
+  }
+
   public static function create($params) {
     $queue = DrupalQueue::get(self::$queues['creator']['name'], TRUE);
     $job = new stdClass();
@@ -128,10 +143,6 @@ class KmsOciQueueJob {
     if ($job_saved) {
       self::log($job->jid, t('Job %jid created'), array('%jid' => $job->jid));
     }
-  }
-
-  public function setState($state){
-
   }
 
   public function delete() {
@@ -156,7 +167,10 @@ class KmsOciQueueJob {
     $record->variables = $variables;
     $record->severity = $severity;
     $record->timestamp = time();
-    drupal_write_record('kms_oci_queue_log', $record);
+    // Makes it possible to skip the kms_oci_queue_log by setting the jid to 0 or FALSE;
+    if($jid) {
+      drupal_write_record('kms_oci_queue_log', $record);
+    }
     watchdog(implode(':', array(KMS_OCI_QUEUE_PREFIX, $jid)), $message, $variables, $severity);
   }
 
@@ -170,8 +184,34 @@ class KmsOciQueueJob {
       self::STATUS_WAITING => t('Waiting'),
       self::STATUS_PROCESSING => t('Processing'),
       self::STATUS_FAILED => t('Failed'),
+      self::STATUS_DONE => t('Done'),
     );
   }
+
+  public static function cssClassSeverity($severity) {
+    $map = array(
+      WATCHDOG_DEBUG     => 'kms-oci-queue-severity-debug',
+      WATCHDOG_INFO      => 'kms-oci-queue-severity-info',
+      WATCHDOG_NOTICE    => 'kms-oci-queue-severity-notice',
+      WATCHDOG_WARNING   => 'kms-oci-queue-severity-warning',
+      WATCHDOG_ERROR     => 'kms-oci-queue-severity-error',
+      WATCHDOG_CRITICAL  => 'kms-oci-queue-severity-critical',
+      WATCHDOG_ALERT     => 'kms-oci-queue-severity-alert',
+      WATCHDOG_EMERGENCY => 'kms-oci-queue-severity-emerg',
+    );
+    return !empty($map[$severity]) ? $map[$severity] : '';
+  }
+
+  public static function cssClassStatus($status) {
+    $map = array(
+      self::STATUS_WAITING     => 'kms-oci-queue-status-waiting',
+      self::STATUS_PROCESSING  => 'kms-oci-queue-status-processing',
+      self::STATUS_FAILED      => 'kms-oci-queue-status-failed',
+      self::STATUS_DONE        => 'kms-oci-queue-status-done',
+    );
+    return !empty($map[$status]) ? $map[$status] : '';
+  }
+
 }
 
 class KmsOciQueueJobDb {
@@ -208,10 +248,17 @@ class KmsOciQueueJobFactory {
   private static $jobs;
 
   public static function get($jid) {
+
     if (!isset($jobs[$jid])) {
       $job = new KmsOciQueueJob($jid);
-      self::$jobs[$job->jid] = $job;
+      // If both status and created are not populated the job object is not valid.
+      if(empty($job->status) && empty($job->created)) {
+        $job = FALSE;
+      }
+
+      self::$jobs[$jid] = $job;
     }
+
     return self::$jobs[$jid];
   }
 
