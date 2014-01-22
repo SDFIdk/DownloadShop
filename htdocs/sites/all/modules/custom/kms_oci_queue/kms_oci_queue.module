@@ -1,6 +1,7 @@
 <?php
 
 define('KMS_OCI_QUEUE_PREFIX', 'kms_oci_queue');
+define('KMS_OCI_QUEUE_ENGINE_ROOT_DIR_URI', 'public://' . KMS_OCI_QUEUE_PREFIX);
 
 /**
  * Implements hook_menu().
@@ -108,9 +109,8 @@ function kms_oci_queue_query_run($item) {
     $replacements[] = "'$v'";
   });
   $txt = preg_replace($patterns, $replacements, $item->query, 1) . ";\n";
-  $file_name = 'kms_oci_queue_query_run_' . $item->jid;
-  $temp_name = sprintf('temporary://%s.tmp', $file_name);
-  $dest_name = sprintf('public://%s.job', $file_name);
+  $temp_name = sprintf('temporary://%s.tmp', $item->jid);
+  $dest_name = sprintf('%s/jobs/%s.job', KMS_OCI_QUEUE_ENGINE_ROOT_DIR_URI, $item->jid);
   if (file_put_contents($temp_name, $txt, FILE_APPEND) === FALSE) {
     KmsOciQueueJob::log($item->jid, 'File creation failed. Could not write to tmp dir.', WATCHDOG_ERROR);
   }elseif($item->is_last_item) {

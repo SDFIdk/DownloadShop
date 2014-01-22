@@ -1,10 +1,21 @@
 <?php
 
+/**
+ * Implements hook_install().
+ */
 function kms_oci_queue_install() {
+  // Create necesarry job queues
   foreach(KmsOciQueueJob::$queues as $queue) {
     variable_set('queue_class_' . $queue['name'], $queue['class']);
     $q = DrupalQueue::get($queue['name']);
     $q->createQueue();
+  }
+  // Create kms oci queue engine folders.
+  if(drupal_mkdir(KMS_OCI_QUEUE_ENGINE_ROOT_DIR_URI, NULL, TRUE)) {
+    file_create_htaccess(KMS_OCI_QUEUE_ENGINE_ROOT_DIR_URI);
+    foreach(array('jobs', 'jobs_processed') as $subdir) {
+      drupal_mkdir(KMS_OCI_QUEUE_ENGINE_ROOT_DIR_URI . '/' . $subdir);
+    }
   }
 }
 
@@ -126,10 +137,3 @@ function kms_oci_queue_schema() {
 
   return $schema;
 }
-
-//function _kms_oci_queue_queues() {
-//  return array(
-//    'kms_oci_queue_query_creator' => 'QueryQueue',
-//    'kms_oci_queue_query' => 'SystemQueue',
-//  );
-//}

@@ -1,13 +1,17 @@
 <?php
 // Define paths
-define('KMS_OCI_QUEUE_ENGINE_ROOT', dirname(__FILE__));
-define('DRUPAL_ROOT', realpath(KMS_OCI_QUEUE_ENGINE_ROOT . '/../../htdocs'));
+define('QUERY_ENGINE_ROOT', dirname(__FILE__));
+define('DRUPAL_ROOT', realpath(QUERY_ENGINE_ROOT . '/../../htdocs'));
+
 $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 
 require_once DRUPAL_ROOT . '/includes/bootstrap.inc';
 require_once 'query_engine.inc';
 
 drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
+
+// Atodo: Fix this and do it otherwise. Somehow drupal_realpath cannot resolve the uri in the right way...
+define('KMS_OCI_QUEUE_ENGINE_ROOT', sprintf('%s/sites/default/files/%s', DRUPAL_ROOT, KMS_OCI_QUEUE_PREFIX));
 
 // Run as admin.
 $user = user_load(1);

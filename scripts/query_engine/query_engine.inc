@@ -29,7 +29,7 @@ function qe_resolve_arguments() {
     $args['filepath'] = sprintf('%s/jobs/%s', KMS_OCI_QUEUE_ENGINE_ROOT, $args['filename']);
   }
   // Define job id.
-  $args['jid'] = (int)preg_replace('#[^0-9]+_([0-9]+).job$#', "$1", $args['filename']);
+  $args['jid'] = (int)preg_replace('#^([0-9]+).job$#', "$1", $args['filename']);
   if(!$args['jid']) {
     qe_error("filename is not formatted correctly (%filename)", array('%filename' => $args['filename']));
     exit(1);
