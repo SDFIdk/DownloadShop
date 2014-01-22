@@ -14,21 +14,27 @@ $user = user_load(1);
 // Create arguments from given script options.
 $args = qe_resolve_arguments();
 
+// If kms_oci_queue is not enabled do nothing.
+if(!module_exists('kms_oci_queue')) {
+  qe_error('kms_oci_queue is not enabled');
+}
+
 // Get the current job.
 $job = KmsOciQueueJobFactory::get($args['jid']);
+
 // If job could not be loaded then exit.
 if(!$job) {
-  exit(1);
+  $message = 'No jobs existing with id: %jid';
+  $vars = array('%jid' => $args['jid']);
+  qe_error($message, $vars);
 }
 
 // If the job file could not be loaded change job status and exit.
 if(!file_exists($args['filepath'])) {
-  $job->changeStatus(
-    KmsOciQueueJob::STATUS_FAILED,
-    'File: %file does not exist',
-    array('%file' => $args['filepath'])
-  );
-  exit(1);
+  $message = 'File: %file does not exist';
+  $vars = array('%file' => $args['filepath']);
+  $job->changeStatus(KmsOciQueueJob::STATUS_FAILED, $message, $vars);
+  qe_error($message, $vars, TRUE);
 }
 
 // Db connection settings.
@@ -40,7 +46,7 @@ $db_conf = array(
 );
 // Generate sql string.
 $sql = qe_generate_sql($db_conf, $args);
-// Execute generated sql.
+// Execute generated sql and get result of it.
 $result = qe_execute_sql($sql, $args);
 // Move file to processed folder upon success.
 if($result['exit_code'] === 0) {
@@ -56,7 +62,7 @@ else {
   // Report that the job has failed.
   $job->changeStatus(KmsOciQueueJob::STATUS_FAILED, implode('; ', $result['message']));
 }
-// Atodo: Check if php can return exit code like this...
+// Expose exit code.
 exit($result['exit_code']);
 
 
