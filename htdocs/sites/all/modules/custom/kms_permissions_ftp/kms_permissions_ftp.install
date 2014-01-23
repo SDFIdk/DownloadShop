@@ -1,0 +1,60 @@
+<?php
+/**
+ * @file
+ * Install file for dismissable panel pane.
+ */
+
+
+/**
+ * Implements hook_install().
+ */
+function kms_permissions_ftp_install() {
+  
+  // 1 - users
+  _kms_permissions_ftp_default_insert('C478C5EC94510FCDE04400144FAD60AB','directoryA, directoryB, directoryC');
+  _kms_permissions_ftp_default_insert('DD6B5F55260E1251C12576BE003FD64A','directoryB, directoryC');
+  _kms_permissions_ftp_default_insert('4F226DFD071C60D7C1256D79001F8F37','directoryA, directoryC');
+  _kms_permissions_ftp_default_insert(17656,'directoryC');
+  _kms_permissions_ftp_default_insert(17286,'directoryC, directoryD');
+  _kms_permissions_ftp_default_insert(18092,'directoryC, directoryE, directoryF');
+  _kms_permissions_ftp_default_insert(18414,'directoryC, directoryF');
+    
+}
+
+/**
+ * Implements hook_schema().
+ */
+
+function kms_permissions_ftp_schema() {
+  $schema['external_ftp_users'] = array(
+    'fields' => array(
+      'uid' => array(
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'description' => "User Id",
+      ),  
+      'directories' => array(
+        'description' => 'Directories',
+        'type' => 'text',
+        'not null' => TRUE,
+      )
+    ),
+  );
+  
+  return $schema;
+}
+
+/**
+ * Inserts default entry into kms_csv_cron_point table
+ *
+ * @param $type of export
+ * @param $unid id of the last exported item
+ */
+function _kms_permissions_ftp_default_insert($userid, $directory_list) {
+  $data = array(
+    'uid' => $userid,
+    'directories' => $directory_list
+  );
+  drupal_write_record('external_ftp_users', $data);
+}

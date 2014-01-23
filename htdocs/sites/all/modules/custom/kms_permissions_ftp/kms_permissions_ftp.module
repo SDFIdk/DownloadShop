@@ -1,0 +1,34 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function kms_permissions_ftp_menu() {
+  $items = array();
+
+  
+  return $items;
+}
+
+function kms_permissions_ftp_scan_structure() {
+
+  $settings['username'] = variable_get('kms_csv_ftp_username','linas.snieglente-eu');
+  $settings['password'] = variable_get('kms_csv_ftp_password','linas');
+  $settings['advanced']['hostname']= variable_get('kms_csv_ftp_hostname','fox.snieglente.eu');
+  $settings['advanced']['port']= variable_get('kms_csv_ftp_port','21');
+
+  $day =  format_date(time(), 'custom', 'd_m_y');
+  
+  try {
+    // Copy the files.
+    $ftp = FileTransferFTP::factory($jail, $settings);
+    $ftp->connect();
+    $ftp->copyFile($file, "file_{$type}_{$day}.csv");
+  }
+  catch(Exception $e) {
+   print($e);
+   watchdog('FTP', 'FTP failed during connect or filetransfer ');
+  } 
+  
+}
+

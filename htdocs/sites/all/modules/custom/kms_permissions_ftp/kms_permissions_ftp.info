@@ -1,0 +1,4 @@
+name = KMS permissions ftp
+package = KMS
+description = "Handles writing of permissions of ftp and exposes widget"
+core = 7.x
