@@ -1,5 +1,12 @@
 <?php
-// Define paths
+/**
+ * @file
+ * query_engine.php.
+ * User: mikkel@adapt.dk
+ * Date: 01/21/14 - 11:16 PM
+ */
+
+// Define paths.
 define('QUERY_ENGINE_ROOT', dirname(__FILE__));
 define('DRUPAL_ROOT', realpath(QUERY_ENGINE_ROOT . '/../../htdocs'));
 
@@ -10,8 +17,12 @@ require_once 'query_engine.inc';
 
 drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL);
 
-// Atodo: Fix this and do it otherwise. Somehow drupal_realpath cannot resolve the uri in the right way...
-define('KMS_OCI_QUEUE_ENGINE_ROOT', sprintf('%s/sites/default/files/%s', DRUPAL_ROOT, KMS_OCI_QUEUE_PREFIX));
+// Atodo: Fix this and do it otherwise.
+// Somehow drupal_realpath($uri) cannot resolve the uri in the right way...
+define(
+  'KMS_OCI_QUEUE_ENGINE_ROOT',
+  sprintf('%s/sites/default/files/%s', DRUPAL_ROOT, KMS_OCI_QUEUE_PREFIX)
+);
 
 // Run as admin.
 $user = user_load(1);
@@ -19,7 +30,7 @@ $user = user_load(1);
 $args = qe_resolve_arguments();
 
 // If kms_oci_queue is not enabled do nothing.
-if(!module_exists('kms_oci_queue')) {
+if (!module_exists('kms_oci_queue')) {
   qe_error('kms_oci_queue is not enabled');
 }
 
@@ -27,14 +38,14 @@ if(!module_exists('kms_oci_queue')) {
 $job = KmsOciQueueJobFactory::get($args['jid']);
 
 // If job could not be loaded then exit.
-if(!$job) {
+if (!$job) {
   $message = 'No jobs existing with id: %jid';
   $vars = array('%jid' => $args['jid']);
   qe_error($message, $vars);
 }
 
 // If the job file could not be loaded change job status and exit.
-if(!file_exists($args['filepath'])) {
+if (!file_exists($args['filepath'])) {
   $message = 'File: %file does not exist';
   $vars = array('%file' => $args['filepath']);
   $job->changeStatus(KmsOciQueueJob::STATUS_FAILED, $message, $vars);
@@ -43,30 +54,40 @@ if(!file_exists($args['filepath'])) {
 
 // Db connection settings.
 $db_conf = array(
-  'user' =>  $conf['kms_oci_conn_user'],
+  'user' => $conf['kms_oci_conn_user'],
   'pass' => $conf['kms_oci_conn_pass'],
   'host' => $conf['kms_oci_conn_host'],
   'db' => $conf['kms_oci_conn_db'],
 );
 // Generate sql string.
 $sql = qe_generate_sql($db_conf, $args);
+// Report sql execution.
+$job->changeStatus(
+  KmsOciQueueJob::STATUS_PROCESSING,
+  'Job: %jid is being processed',
+  array('%jid' => $job->jid)
+);
 // Execute generated sql and get result of it.
 $result = qe_execute_sql($sql, $args);
 // Move file to processed folder upon success.
-if($result['exit_code'] === 0) {
+if ($result['exit_code'] === 0) {
   // Move file.
   rename(
     sprintf('%s/jobs/%s', KMS_OCI_QUEUE_ENGINE_ROOT, $args['filename']),
     sprintf('%s/jobs_processed/%s', KMS_OCI_QUEUE_ENGINE_ROOT, $args['filename'])
   );
   // Report everything well and change status to 'done'.
-  $job->changeStatus(KmsOciQueueJob::STATUS_DONE, implode('; ', $result['message']));
+  $job->changeStatus(
+    KmsOciQueueJob::STATUS_DONE,
+    implode('; ', $result['message'])
+  );
 }
 else {
   // Report that the job has failed.
-  $job->changeStatus(KmsOciQueueJob::STATUS_FAILED, implode('; ', $result['message']));
+  $job->changeStatus(
+    KmsOciQueueJob::STATUS_FAILED,
+    implode('; ', $result['message'])
+  );
 }
 // Expose exit code.
 exit($result['exit_code']);
-
-

@@ -1,9 +1,16 @@
 <?php
+/**
+ * @file
+ * query_engine.inc.
+ * User: mikkel@adapt.dk
+ * Date: 01/21/14 - 11:18 PM
+ */
 
 /**
  * Populate args array depending on given cli options.
  *
- * @return array $args
+ * @return array
+ *   $args
  */
 function qe_resolve_arguments() {
   $options_conf = array(
@@ -21,16 +28,16 @@ function qe_resolve_arguments() {
   $args['type'] = !empty($opt['t']) ? $opt['t'] : (!empty($opt['job-type']) ? $opt['job-type'] : FALSE);
   // Define file to import from.
   $args['filename'] = !empty($opt['f']) ? $opt['f'] : (!empty($opt['job-file']) ? $opt['job-file'] : FALSE);
-  if(!$args['filename']) {
+  if (!$args['filename']) {
     qe_error("filename parameter is missing");
     exit(1);
   }
-  else{
+  else {
     $args['filepath'] = sprintf('%s/jobs/%s', KMS_OCI_QUEUE_ENGINE_ROOT, $args['filename']);
   }
   // Define job id.
-  $args['jid'] = (int)preg_replace('#^([0-9]+).job$#', "$1", $args['filename']);
-  if(!$args['jid']) {
+  $args['jid'] = (int) preg_replace('#^([0-9]+).job$#', "$1", $args['filename']);
+  if (!$args['jid']) {
     qe_error("filename is not formatted correctly (%filename)", array('%filename' => $args['filename']));
     exit(1);
   }
@@ -43,8 +50,9 @@ function qe_resolve_arguments() {
  *
  * @param string $sql
  *   Generated sql to be executed.
- * @param array $args
- *   Arguments fetched from script options.
+ *
+ * @return array
+ *   exit code and output.
  */
 function qe_execute_sql($sql) {
   // Run sql transaction.
@@ -54,7 +62,7 @@ function qe_execute_sql($sql) {
 
   return array(
     'exit_code' => $exit_code,
-    'message' => $message
+    'message' => $message,
   );
 }
 
@@ -67,10 +75,17 @@ function qe_execute_sql($sql) {
  *   Variables used in sql statement.
  *
  * @return string
+ *   Generated sql.
  */
 function qe_generate_sql($db_conf, $sql_vars) {
   // Construct connection string.
-  $conn = sprintf('%s/%s@%s/%s', $db_conf['user'], $db_conf['pass'], $db_conf['host'], $db_conf['db']);
+  $conn = sprintf(
+    '%s/%s@%s/%s',
+    $db_conf['user'],
+    $db_conf['pass'],
+    $db_conf['host'],
+    $db_conf['db']
+  );
   // Extract vars that are used in sql generation.
   extract($sql_vars);
   // Generate sql.
@@ -105,7 +120,7 @@ EOD;
  *   Should the error message only be printed and not logged?
  */
 function qe_error($message, $vars = array(), $std_output_only = FALSE) {
-  if(!$std_output_only) {
+  if (!$std_output_only) {
     KmsOciQueueJob::log(0, $message, $vars, WATCHDOG_ERROR);
   }
   echo strip_tags(format_string($message, $vars)) . "\n";
