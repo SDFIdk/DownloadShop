@@ -12,15 +12,22 @@
  * @return array
  *   $args
  */
-function qe_resolve_arguments() {
-  $options_conf = array(
-    'f:' => 'job-file:',
-    't:' => 'job-type:',
-  );
 
-  $opt = getopt(
-    implode('', array_keys($options_conf)),
-    $options_conf
+/**
+ * Resolve cli arguments (options).
+ *
+ * @param array $opt
+ *   Options used for constructing arguments for the application.
+ *
+ * @return array
+ *   Return resolved options as an argument array.
+ */
+function qe_resolve_arguments($opt) {
+  $opt += array(
+    't' => '',
+    'job-type' => '',
+    'f' => '',
+    'job-file' => '',
   );
 
   $args = array();
@@ -33,11 +40,7 @@ function qe_resolve_arguments() {
     exit(1);
   }
   else {
-    $args['filepath'] = sprintf(
-      '%s/jobs/%s',
-      KMS_OCI_QUEUE_ENGINE_ROOT,
-      $args['filename']
-    );
+    $args['filepath'] = qe_absolute_filepath($args['filename']);
   }
   // Define job id.
   $args['jid'] = (int) preg_replace('#^([0-9]+).job$#', "$1", $args['filename']);
@@ -50,6 +53,23 @@ function qe_resolve_arguments() {
   }
 
   return $args;
+}
+
+/**
+ * Get options passed to the script at command line.
+ *
+ * @return array
+ *   Options array.
+ */
+function qe_set_options_from_cli() {
+  $options_conf = array(
+    'f:' => 'job-file:',
+    't:' => 'job-type:',
+  );
+  return getopt(
+    implode('', array_keys($options_conf)),
+    $options_conf
+  );
 }
 
 /**
@@ -132,4 +152,67 @@ function qe_error($message, $vars = array(), $std_output_only = FALSE) {
   }
   echo strip_tags(format_string($message, $vars)) . "\n";
   exit(1);
+}
+
+/**
+ * Find job file with the lowest job id.
+ *
+ * @return bool|string
+ *   If file found return filename otherwise FALSE.
+ */
+function qe_find_job_file_lowest_id() {
+  $job_files = file_scan_directory(
+    KMS_OCI_QUEUE_ENGINE_ROOT . '/' . KMS_OCI_QUEUE_ENGINE_DIR_JOBS,
+    '/[0-9]+\.job/',
+    array('key' => 'filename')
+  );
+  if (!empty($job_files)) {
+    // Order latest job files first.
+    asort($job_files);
+    // Pick the first job file.
+    return key($job_files);
+  }
+  return FALSE;
+}
+
+/**
+ * Get absolute path to job file.
+ *
+ * @param string $filename
+ *   The name of the job file.
+ * @param string $subdir
+ *   The name of the subdir.
+ *
+ * @return string
+ *   Absolute path to the file.
+ */
+function qe_absolute_filepath($filename, $subdir = KMS_OCI_QUEUE_ENGINE_DIR_JOBS) {
+  return implode(
+    '/',
+    array(
+      KMS_OCI_QUEUE_ENGINE_ROOT,
+      $subdir,
+      $filename,
+    )
+  );
+}
+
+/**
+ * Get job type from file.
+ *
+ * @param string $filepath
+ *   The path to the job file.
+ *
+ * @return string
+ *   Either 'unknown' or one of the known (kms_oci_queue) types.
+ */
+function qe_get_job_type_from_file($filepath) {
+  $type = 'unknown';
+  if ($f = fopen($filepath, 'r')) {
+    $line = fgets($f);
+    fclose($f);
+    $type_line = preg_replace('#^-- type:([a-z_]+)[\r\n]+#', "$1", $line, -1, $c);
+    $type = $c ? $type_line : $type;
+  }
+  return $type;
 }
