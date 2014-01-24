@@ -10,13 +10,20 @@ function kms_oci_queue_install() {
     $q = DrupalQueue::get($queue['name']);
     $q->createQueue();
   }
-  // Create kms oci queue engine folders.
-  if(drupal_mkdir(KMS_OCI_QUEUE_ENGINE_ROOT_DIR_URI, NULL, TRUE)) {
-    file_create_htaccess(KMS_OCI_QUEUE_ENGINE_ROOT_DIR_URI);
-    foreach(array('jobs', 'jobs_processed') as $subdir) {
-      drupal_mkdir(KMS_OCI_QUEUE_ENGINE_ROOT_DIR_URI . '/' . $subdir);
-    }
+
+  $root_dir = KMS_OCI_QUEUE_ENGINE_ROOT_URI;
+  $root_dir_created = file_prepare_directory($root_dir);
+  if ($root_dir_created) {
+    file_create_htaccess($root_dir);
   }
+  $subdirs = array(
+    KMS_OCI_QUEUE_ENGINE_DIR_JOBS,
+    KMS_OCI_QUEUE_ENGINE_DIR_JOBS_PROCESSED,
+  );
+  foreach ($subdirs as $subdir) {
+    file_prepare_directory(sprintf('%s/%s', $root_dir, $subdir));
+  }
+
 }
 
 function kms_oci_queue_uninstall() {
@@ -101,8 +108,15 @@ function kms_oci_queue_schema() {
         'not null' => TRUE,
         'description' => 'Primary key: Job id.',
       ),
-      'type' => array(
-        'description' => 'The job type.',
+//      'type' => array(
+//        'description' => 'The job type.',
+//        'type' => 'varchar',
+//        'length' => 32,
+//        'not null' => TRUE,
+//        'default' => '',
+//      ),
+      'cid' => array(
+        'description' => 'The connection id.',
         'type' => 'varchar',
         'length' => 32,
         'not null' => TRUE,

@@ -41,8 +41,8 @@ switch (QUERY_ENGINE_RUN_MODE) {
     // Get job filename from file_scan_directory of jobs dir.
     $opt['f'] = qe_find_job_file_lowest_id();
     $file = qe_absolute_filepath($opt['f']);
-    // Get job type from job file comment.
-    $opt['t'] = qe_get_job_type_from_file($file);
+    // Get job info from job.
+    $opt['i'] = !empty($job->info) ? $job->info : 'unknown';
     break;
 
   case 'cli':
@@ -72,12 +72,7 @@ if (!file_exists($args['filepath'])) {
 }
 
 // Db connection settings.
-$db_conf = array(
-  'user' => $conf['kms_oci_conn_user'],
-  'pass' => $conf['kms_oci_conn_pass'],
-  'host' => $conf['kms_oci_conn_host'],
-  'db' => $conf['kms_oci_conn_db'],
-);
+$db_conf = KmsOciQueueJobDb::getConnectionSettings($job->cid);
 
 // Generate sql string.
 $sql = qe_generate_sql($db_conf, $args);

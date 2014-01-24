@@ -1,5 +1,6 @@
 <?php
 /**
+ * @file
  * kms_oci_queue_job.inc.
  * User: mikkel@adapt.dk
  * Date: 11/16/13 - 12:16 PM
@@ -29,50 +30,59 @@ class KmsOciQueueJob {
   public $info;
   public $infoDetails;
   public $queryNum;
-  private $queueItem;
-  private $job;
+  public $cid;
+  protected $queueItem;
+  protected $job;
 
 
 
   public function __construct($jid) {
-    $this->setJid($jid);
+    $this->setJobId($jid);
     $this->setJob();
-    if($this->job) {
+    if ($this->job) {
       $this->setQueueItem($this->loadQueueItem());
       $this->setCreated();
       $this->setInfo();
       $this->setInfoDetails();
       $this->setStatus();
       $this->setQueryNum();
+      $this->setConnectionId();
     }
   }
 
-  private function setJid($jid){
+  protected function setJobId($jid){
     $this->jid = $jid;
   }
 
-  private function setJob(){
+  protected function setJob(){
     $this->job = KmsOciQueueJobDb::loadJob($this->jid);
   }
 
-  private function setCreated(){
+  protected function setCreated(){
     $this->created = $this->job->created;
   }
 
-  private function setQueueItem($item){
+  protected function setConnectionId(){
+    $this->cid = $this->job->cid;
+  }
+
+  protected function setQueueItem($item){
     $this->queueItem = $item;
   }
 
-  private function setInfo(){
+  protected function setInfo(){
     $this->info = '';
-    if(property_exists($this->queueItem, 'data') && !empty($this->queueItem->data->action)) {
+    if (property_exists($this->queueItem, 'data')
+      && !empty($this->queueItem->data->action)
+    ) {
       $this->info = $this->queueItem->data->action;
     }
   }
 
-  private function setInfoDetails(){
+  protected function setInfoDetails(){
     $this->infoDetails = '';
-    if(property_exists($this->queueItem, 'data') && !empty($this->queueItem->data->params)) {
+    if (property_exists($this->queueItem, 'data')
+      && !empty($this->queueItem->data->params)) {
       $this->infoDetails = print_r($this->queueItem->data->params, TRUE);
     }
   }
@@ -81,23 +91,23 @@ class KmsOciQueueJob {
     return $this->loadLog($mode);
   }
 
-  private function setStatus() {
-    $this->status = (object)array(
+  protected function setStatus() {
+    $this->status = (object) array(
       'status' => $this->job->status,
       'message' => $this->job->message,
     );
   }
 
-  private function setQueryNum() {
+  protected function setQueryNum() {
     $this->queryNum = $this->job->query_num;
   }
 
-  private function loadLog($mode = 'all') {
+  protected function loadLog($mode = 'all') {
     $query = db_select('kms_oci_queue_log', 'ql');
     $query->fields('ql');
     $query->condition('ql.jid', $this->jid, '=');
-    $query->orderBy('timestamp', 'DESC');
-    switch($mode) {
+    $query->orderBy('lid', 'DESC');
+    switch ($mode) {
       case 'latest':
         $query->range(0,1);
         break;
@@ -108,13 +118,13 @@ class KmsOciQueueJob {
     return $result ? $result : array();
   }
 
-  private function loadQueueItem() {
+  protected function loadQueueItem() {
     $query = db_select('queue', 'q');
     $query->fields('q');
     $query->condition('q.item_id', $this->jid, '=');
     $result = $query->execute()->fetchObject();
 
-    if(is_object($result) && !empty($result->data)){
+    if (is_object($result) && !empty($result->data)) {
       $result->data = unserialize($result->data);
     }
     return $result;
@@ -122,7 +132,7 @@ class KmsOciQueueJob {
 
   public function changeStatus($status, $message, $variables = array()) {
     $severity = WATCHDOG_INFO;
-    switch($status) {
+    switch ($status) {
       case self::STATUS_FAILED:
         $severity = WATCHDOG_ERROR;
         break;
@@ -133,12 +143,13 @@ class KmsOciQueueJob {
     self::log($this->jid, $message, $variables, $severity);
   }
 
-  public static function create($params) {
+  public static function create($params, $cid = 'default') {
     $queue = DrupalQueue::get(self::$queues['creator']['name'], TRUE);
     $job = new stdClass();
-    $job->jid = $queue->createItem((object)$params);
+    $job->jid = $queue->createItem((object) $params);
     $job->status = KmsOciQueueJob::STATUS_WAITING;
     $job->created = time();
+    $job->cid = $cid;
     $job_saved = KmsOciQueueJobDb::insertJob($job);
     if ($job_saved) {
       self::log($job->jid, t('Job %jid created'), array('%jid' => $job->jid));
@@ -148,7 +159,7 @@ class KmsOciQueueJob {
   public function delete() {
     // Delete queue item;
     $queue = DrupalQueue::get($this->queueItem->name);
-    $queue->deleteItem((object)array('item_id' => $this->jid));
+    $queue->deleteItem((object) array('item_id' => $this->jid));
     // Delete job from job table.
     KmsOciQueueJobDb::deleteJob($this->jid);
     // Delete related log entries.
@@ -167,11 +178,17 @@ class KmsOciQueueJob {
     $record->variables = $variables;
     $record->severity = $severity;
     $record->timestamp = time();
-    // Makes it possible to skip the kms_oci_queue_log by setting the jid to 0 or FALSE;
-    if($jid) {
+    // Makes it possible to skip the kms_oci_queue_log
+    // by setting the jid to 0 or FALSE;
+    if ($jid) {
       drupal_write_record('kms_oci_queue_log', $record);
     }
-    watchdog(implode(':', array(KMS_OCI_QUEUE_PREFIX, $jid)), $message, $variables, $severity);
+    watchdog(
+      implode(':', array(KMS_OCI_QUEUE_PREFIX, $jid)),
+      $message,
+      $variables,
+      $severity
+    );
   }
 
   public static function status2human($status) {
@@ -179,7 +196,7 @@ class KmsOciQueueJob {
     return $statuses[$status];
   }
 
-  private static function statuses() {
+  protected static function statuses() {
     return array(
       self::STATUS_WAITING => t('Waiting'),
       self::STATUS_PROCESSING => t('Processing'),
@@ -230,7 +247,7 @@ class KmsOciQueueJobDb {
     $query->fields('j');
     $query->condition('j.jid', $jid, '=');
     $result = $query->execute()->fetchObject();
-    if($result) {
+    if ($result) {
       $result->message = KmsOciQueueJob::status2human($result->status);
     }
     return $result;
@@ -242,17 +259,39 @@ class KmsOciQueueJobDb {
       ->execute();
   }
 
+  public static function getConnectionSettings($cid) {
+    switch ($cid) {
+      case 'kms_permissions':
+        return array(
+          'user' => variable_get('kms_permissions_conn_user', ''),
+          'pass' => variable_get('kms_permissions_conn_pass', ''),
+          'host' => variable_get('kms_permissions_conn_host', ''),
+          'db' => variable_get('kms_permissions_conn_db', ''),
+        );
+        break;
+      default:
+        return array(
+          'user' => variable_get('kms_oci_conn_user', ''),
+          'pass' => variable_get('kms_oci_conn_pass', ''),
+          'host' => variable_get('kms_oci_conn_host', ''),
+          'db' => variable_get('kms_oci_conn_db', ''),
+        );
+        break;
+    }
+  }
+
 }
 
 class KmsOciQueueJobFactory {
-  private static $jobs;
+  protected static $jobs;
 
   public static function get($jid) {
 
     if (!isset($jobs[$jid])) {
       $job = new KmsOciQueueJob($jid);
-      // If both status and created are not populated the job object is not valid.
-      if(empty($job->status) && empty($job->created)) {
+      // If both status and created are not populated
+      // the job object is not valid.
+      if (empty($job->status) && empty($job->created)) {
         $job = FALSE;
       }
 

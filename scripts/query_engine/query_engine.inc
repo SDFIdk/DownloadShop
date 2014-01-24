@@ -24,15 +24,15 @@
  */
 function qe_resolve_arguments($opt) {
   $opt += array(
-    't' => '',
-    'job-type' => '',
+    'i' => '',
+    'job-info' => '',
     'f' => '',
     'job-file' => '',
   );
 
   $args = array();
-  // Define job type.
-  $args['type'] = !empty($opt['t']) ? $opt['t'] : (!empty($opt['job-type']) ? $opt['job-type'] : FALSE);
+  // Define job info.
+  $args['info'] = !empty($opt['i']) ? $opt['i'] : (!empty($opt['job-info']) ? $opt['job-info'] : FALSE);
   // Define file to import from.
   $args['filename'] = !empty($opt['f']) ? $opt['f'] : (!empty($opt['job-file']) ? $opt['job-file'] : FALSE);
   if (!$args['filename']) {
@@ -64,7 +64,7 @@ function qe_resolve_arguments($opt) {
 function qe_set_options_from_cli() {
   $options_conf = array(
     'f:' => 'job-file:',
-    't:' => 'job-type:',
+    'i:' => 'job-info:',
   );
   return getopt(
     implode('', array_keys($options_conf)),
@@ -127,9 +127,9 @@ SET FEEDBACK OFF
 SET HEADING OFF
 SET LINESIZE 15000
 WHENEVER SQLERROR EXIT FAILURE ROLLBACK
-SELECT 'Processing job. Jid: $jid, type: $type, file: $filename',to_char(sysdate,'YYYYMMDD HH24:MI:SS') from dual;
+SELECT 'Oracle import start. Jid: $jid, type: $type, file: $filename',to_char(sysdate,'YYYYMMDD HH24:MI:SS') from dual;
 START $filepath
-SELECT 'Finishing job. Jid: $jid, type: $type, file: $filename',to_char(sysdate,'YYYYMMDD HH24:MI:SS') from dual;
+SELECT 'Oracle import end. Jid: $jid, type: $type, file: $filename',to_char(sysdate,'YYYYMMDD HH24:MI:SS') from dual;
 EXIT COMMIT
 !!
 EOD;
@@ -163,7 +163,7 @@ function qe_error($message, $vars = array(), $std_output_only = FALSE) {
 function qe_find_job_file_lowest_id() {
   $job_files = file_scan_directory(
     KMS_OCI_QUEUE_ENGINE_ROOT . '/' . KMS_OCI_QUEUE_ENGINE_DIR_JOBS,
-    '/[0-9]+\.job/',
+    '/^[0-9]+\.job$/',
     array('key' => 'filename')
   );
   if (!empty($job_files)) {

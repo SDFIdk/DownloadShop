@@ -1,7 +1,10 @@
 <?php
 
 define('KMS_OCI_QUEUE_PREFIX', 'kms_oci_queue');
-define('KMS_OCI_QUEUE_ENGINE_ROOT_DIR_URI', 'public://' . KMS_OCI_QUEUE_PREFIX);
+define('KMS_OCI_QUEUE_ENGINE_ROOT_URI', 'public://' . KMS_OCI_QUEUE_PREFIX);
+//define('KMS_OCI_QUEUE_ENGINE_ROOT', drupal_realpath(KMS_OCI_QUEUE_ENGINE_ROOT_URI));
+define('KMS_OCI_QUEUE_ENGINE_DIR_JOBS', 'jobs');
+define('KMS_OCI_QUEUE_ENGINE_DIR_JOBS_PROCESSED', 'jobs_processed');
 
 /**
  * Implements hook_menu().
@@ -9,7 +12,7 @@ define('KMS_OCI_QUEUE_ENGINE_ROOT_DIR_URI', 'public://' . KMS_OCI_QUEUE_PREFIX);
 function kms_oci_queue_menu() {
   $items = array();
   $items['admin/reports/kms-oci-queue'] = array(
-    'title' =>'Oci queue status',
+    'title' => 'Oci queue status',
     'description' => 'Show oci queue status',
     'page callback' => 'kms_oci_queue_admin_page',
     'access arguments' => array('administer kms oci queue'),
@@ -78,17 +81,17 @@ function kms_oci_queue_query_creator_run() {
   $queue = DrupalQueue::get(KmsOciQueueJob::$queues['creator']['name'], TRUE);
   $queue_item = $queue->claimItem();
   $item = $queue_item->data;
-  switch($item->action) {
+  switch ($item->action) {
     case 'insert user':
-      if(!empty($item->params)) {
+      if (!empty($item->params)) {
         $query_count = count($item->params);
         $i = 1;
-        foreach($item->params as $user_query) {
+        foreach ($item->params as $user_query) {
           $queue = DrupalQueue::get(KmsOciQueueJob::$queues['executor']['name'], TRUE);
           kms_oci_filter_query_data($user_query[0]);
           $query = kms_oci_generate_query('insert', $user_query[0], array('table' => $user_query[1]));
           // Queue the string.
-          $runner_item = (object)array(
+          $runner_item = (object) array(
             'jid' => $queue_item->item_id,
             'query' => $query,
             'data' => $user_query[0],
@@ -103,28 +106,43 @@ function kms_oci_queue_query_creator_run() {
 }
 
 function kms_oci_queue_query_run($item) {
+  $job = KmsOciQueueJobFactory::get($item->jid);
   $patterns = $replacements = array();
   array_walk($item->data, function($v, $k) use(&$patterns, &$replacements){
     $patterns[] = '#\\' . $k . '#';
     $replacements[] = "'$v'";
   });
   $txt = preg_replace($patterns, $replacements, $item->query, 1) . ";\n";
-  $temp_name = sprintf('temporary://%s.tmp', $item->jid);
-  $dest_name = sprintf('%s/jobs/%s.job', KMS_OCI_QUEUE_ENGINE_ROOT_DIR_URI, $item->jid);
+  $filename = $job->jid . '.job';
+  $temp_name = sprintf('temporary://%s.tmp', $job->jid);
+  $dest_name = implode(
+    '/',
+    array(
+      KMS_OCI_QUEUE_ENGINE_ROOT_URI,
+      KMS_OCI_QUEUE_ENGINE_DIR_JOBS,
+      $filename,
+    )
+  );
   if (file_put_contents($temp_name, $txt, FILE_APPEND) === FALSE) {
-    KmsOciQueueJob::log($item->jid, 'File creation failed. Could not write to tmp dir.', WATCHDOG_ERROR);
+    $job->changeStatus(
+      KmsOciQueueJob::STATUS_FAILED,
+      'File creation failed. Could not write to tmp dir.'
+    );
   }elseif($item->is_last_item) {
     $move = file_unmanaged_move($temp_name, $dest_name, FILE_EXISTS_REPLACE);
     if($move) {
-      KmsOciQueueJob::log(
-        $item->jid,
+      $job->changeStatus(
+        KmsOciQueueJob::STATUS_WAITING,
         'File creation succeeded. Saved in %filepath',
-        array('%filepath' => $move),
-        WATCHDOG_INFO
+        array('%filepath' => $move)
       );
+      // Atodo: Release kms_oci_queue_query_creator here.
     }
     else {
-      KmsOciQueueJob::log($item->jid, 'File creation failed. Cannot move file from tmp dir.', WATCHDOG_ERROR);
+      $job->changeStatus(
+        KmsOciQueueJob::STATUS_FAILED,
+        'File creation failed. Cannot move filename from tmp dir.'
+      );
     }
 
   }
@@ -186,6 +204,7 @@ function kms_oci_queue_admin_page_jobs () {
     '#tag' => 'h2',
     '#value' => t('Jobs'),
   );
+  $rows = array();
   foreach(kms_oci_queue_get_job_ids() as $jid) {
     $job = KmsOciQueueJobFactory::get($jid);
     $job_info =  $job->info . ' [<a href="#" class="more">' . t('info') . '</a>]';
@@ -211,6 +230,14 @@ function kms_oci_queue_admin_page_jobs () {
       'data-jid' => $job->jid,
       'data' => array(
         array('data' => '&nbsp;', 'colspan' => 4),
+      ),
+    );
+  }
+
+  if(empty($rows)) {
+    $rows[] = array(
+      'data' => array(
+        array('data' => t('There are currently no jobs.'), 'colspan' => 4),
       ),
     );
   }
