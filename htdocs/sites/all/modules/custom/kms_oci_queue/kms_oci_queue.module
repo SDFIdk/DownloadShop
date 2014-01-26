@@ -80,27 +80,43 @@ function kms_oci_queue_query_creator_run() {
   // Atodo: Do this as a cron queue instead.
   $queue = DrupalQueue::get(KmsOciQueueJob::$queues['creator']['name'], TRUE);
   $queue_item = $queue->claimItem();
+  $jid = $queue_item->item_id;
   $item = $queue_item->data;
   switch ($item->action) {
     case 'insert user':
       if (!empty($item->params)) {
+        $exe_queue = DrupalQueue::get(
+          KmsOciQueueJob::$queues['executor']['name'],
+          TRUE
+        );
         $query_count = count($item->params);
-        $i = 1;
+        $i = 0;
         foreach ($item->params as $user_query) {
-          $queue = DrupalQueue::get(KmsOciQueueJob::$queues['executor']['name'], TRUE);
+          $i++;
           kms_oci_filter_query_data($user_query[0]);
-          $query = kms_oci_generate_query('insert', $user_query[0], array('table' => $user_query[1]));
+          $query = kms_oci_generate_query(
+            'insert',
+            $user_query[0],
+            array('table' => $user_query[1])
+          );
           // Queue the string.
-          $runner_item = (object) array(
-            'jid' => $queue_item->item_id,
+          $exe_queue_item = (object) array(
+            'jid' => $jid,
             'query' => $query,
             'data' => $user_query[0],
             'is_last_item' => $i == $query_count,
           );
-          $queue->createItem($runner_item);
-          $i++;
+          $exe_queue->createItem($exe_queue_item);
         }
+        KmsOciQueueJob::log(
+          $jid,
+          '%lines lines to be written in job file.',
+          array('%lines' => $i)
+        );
       }
+      break;
+
+    case KP_QUEUE_ACTION_ALL_USERS_UPDATE_PERMS:
       break;
   }
 }
