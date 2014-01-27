@@ -12,7 +12,7 @@ function kms_oci_queue_install() {
   }
 
   $root_dir = KMS_OCI_QUEUE_ENGINE_ROOT_URI;
-  $root_dir_created = file_prepare_directory($root_dir);
+  $root_dir_created = file_prepare_directory($root_dir, FILE_CREATE_DIRECTORY);
   if ($root_dir_created) {
     file_create_htaccess($root_dir);
   }
@@ -21,7 +21,7 @@ function kms_oci_queue_install() {
     KMS_OCI_QUEUE_ENGINE_DIR_JOBS_PROCESSED,
   );
   foreach ($subdirs as $subdir) {
-    file_prepare_directory(sprintf('%s/%s', $root_dir, $subdir));
+    file_prepare_directory(sprintf('%s/%s', $root_dir, $subdir), FILE_CREATE_DIRECTORY);
   }
 
 }
@@ -115,13 +115,13 @@ function kms_oci_queue_schema() {
 //        'not null' => TRUE,
 //        'default' => '',
 //      ),
-      'cid' => array(
-        'description' => 'The connection id.',
-        'type' => 'varchar',
-        'length' => 32,
-        'not null' => TRUE,
-        'default' => '',
-      ),
+//      'cid' => array(
+//        'description' => 'The connection id.',
+//        'type' => 'varchar',
+//        'length' => 32,
+//        'not null' => TRUE,
+//        'default' => '',
+//      ),
       'query_num' => array(
         'type' => 'int',
         'not null' => TRUE,
