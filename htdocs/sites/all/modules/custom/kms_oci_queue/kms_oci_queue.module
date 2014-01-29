@@ -1,8 +1,14 @@
 <?php
+/**
+ * @file
+ * kms_oci_queue.module
+ * Handle query queues.
+ *
+ * @author Mikkel Jakobsen <mikkel@adapt.dk>
+ */
 
 define('KMS_OCI_QUEUE_PREFIX', 'kms_oci_queue');
 define('KMS_OCI_QUEUE_ENGINE_ROOT_URI', 'public://' . KMS_OCI_QUEUE_PREFIX);
-//define('KMS_OCI_QUEUE_ENGINE_ROOT', drupal_realpath(KMS_OCI_QUEUE_ENGINE_ROOT_URI));
 define('KMS_OCI_QUEUE_ENGINE_DIR_JOBS', 'jobs');
 define('KMS_OCI_QUEUE_ENGINE_DIR_JOBS_PROCESSED', 'jobs_processed');
 
@@ -20,9 +26,16 @@ function kms_oci_queue_menu() {
   );
   $items['kms-oci-queue/ajax/load-log/%'] = array(
     'title' => 'Show job log',
-    'page callback' => 'kms_oci_queue_admin_page_job_log',
+    'page callback' => 'kms_oci_queue_admin_page_ajax_job_log',
     'access arguments' => array('access content'),
     'page arguments' => array(3),
+    'type' => MENU_CALLBACK,
+  );
+  $items['kms-oci-queue/ajax/load-statuses'] = array(
+    'title' => 'Show job log',
+    'page callback' => 'kms_oci_queue_admin_page_ajax_job_statuses',
+    'access arguments' => array('access content'),
+//    'page arguments' => array(3),
     'type' => MENU_CALLBACK,
   );
   return $items;
@@ -76,6 +89,9 @@ function kms_oci_queue_cron_queue_info() {
   return $queues;
 }
 
+/**
+ * Process a job queue item of the query creator queue..
+ */
 function kms_oci_queue_query_creator_run() {
   // Atodo: Do this as a cron queue instead.
   $queue = DrupalQueue::get(KmsOciQueueJob::$queues['creator']['name'], TRUE);
@@ -121,6 +137,12 @@ function kms_oci_queue_query_creator_run() {
   }
 }
 
+/**
+ * Process a job queue item of the query queue.
+ *
+ * @param object $item
+ *   Queue item object.
+ */
 function kms_oci_queue_query_run($item) {
   $job = KmsOciQueueJobFactory::get($item->jid);
   $patterns = $replacements = array();
@@ -144,9 +166,10 @@ function kms_oci_queue_query_run($item) {
       KmsOciQueueJob::STATUS_FAILED,
       'File creation failed. Could not write to tmp dir.'
     );
-  }elseif($item->is_last_item) {
+  }
+  elseif ($item->is_last_item) {
     $move = file_unmanaged_move($temp_name, $dest_name, FILE_EXISTS_REPLACE);
-    if($move) {
+    if ($move) {
       $job->changeStatus(
         KmsOciQueueJob::STATUS_WAITING,
         'File creation succeeded. Saved in %filepath',
@@ -190,15 +213,12 @@ function kms_oci_queue_fetch_queue_names() {
 }
 
 function kms_oci_queue_admin_page () {
-  drupal_add_js(drupal_get_path('module', 'kms_oci_queue') .'/js/kms_oci_queue_reports.js');
-  drupal_add_css(drupal_get_path('module', 'kms_oci_queue') .'/css/kms_oci_queue_reports.css');
+  drupal_add_library('system', 'jquery.cookie');
+  drupal_add_js(drupal_get_path('module', 'kms_oci_queue') . '/js/kms_oci_queue_reports.js');
+  drupal_add_css(drupal_get_path('module', 'kms_oci_queue') . '/css/kms_oci_queue_reports.css');
 
   $output['queues'] = kms_oci_queue_admin_page_jobs();
   return $output;
-}
-
-function kms_oci_queue_admin_page_logs() {
-
 }
 
 function kms_oci_queue_admin_page_jobs () {
@@ -221,16 +241,31 @@ function kms_oci_queue_admin_page_jobs () {
     '#value' => t('Jobs'),
   );
   $rows = array();
-  foreach(kms_oci_queue_get_job_ids() as $jid) {
+  foreach (kms_oci_queue_get_job_ids() as $jid) {
     $job = KmsOciQueueJobFactory::get($jid);
-    $job_info =  $job->info . ' [<a href="#" class="more">' . t('info') . '</a>]';
+    $job_info = $job->info . ' [<a href="#" class="more">' . t('info') . '</a>]';
     $rows[] = array(
       'data' => array(
-        array('data' => $job->jid, 'data-jid' => $job->jid, 'class' => 'job-log-trigger'),
-        array('data' => $job_info, 'data-jid' => $job->jid, 'class' => array('job-info')),
-        array('data' => $job->status->message, 'class' => KmsOciQueueJob::cssClassStatus($job->status->status)),
+        array(
+          'data' => $job->jid,
+          'data-jid' => $job->jid,
+          'class' => 'job-log-trigger',
+        ),
+        array(
+          'data' => $job_info,
+          'data-jid' => $job->jid,
+          'class' => array('job-info'),
+        ),
+        array(
+          'data' => $job->status->message,
+          'data-jid' => $job->jid,
+          'class' => array(
+            'status',
+            KmsOciQueueJob::cssClassStatus($job->status->status),
+          ),
+        ),
         array('data' => format_date($job->created)),
-      )
+      ),
     );
 
     $options['job_info_beautytip_' . $job->jid] = array(
@@ -250,7 +285,7 @@ function kms_oci_queue_admin_page_jobs () {
     );
   }
 
-  if(empty($rows)) {
+  if (empty($rows)) {
     $rows[] = array(
       'data' => array(
         array('data' => t('There are currently no jobs.'), 'colspan' => 4),
@@ -264,29 +299,42 @@ function kms_oci_queue_admin_page_jobs () {
     '#rows' => $rows,
   );
 
-
   $output["kms_oci_queue_jobs"] = $jobs_output;
 
   return $output;
 }
 
-function kms_oci_queue_admin_page_job_log($jid){
+/**
+ * Print a log for a given job.
+ * 
+ * @param integer $jid
+ *   Job id
+ */
+function kms_oci_queue_admin_page_ajax_job_log($jid) {
   $json['html'] = '';
   $job = KmsOciQueueJobFactory::get($jid);
-  if(!empty($job)){
+  if (!empty($job)) {
     $log = $job->getLog();
   }
   $output = array();
-  if(!empty($log)){
-    foreach($log as $lid => $entry) {
+  if (!empty($log)) {
+    foreach ($log as $lid => $entry) {
       $message_vars = unserialize($entry->variables);
-      if(empty($message_vars) || !is_array($message_vars)) {
+      if (empty($message_vars) || !is_array($message_vars)) {
         $message_vars = array();
       }
       $classes = array(KmsOciQueueJob::cssClassSeverity($entry->severity));
       $rows[] = array(
-        array('data' => format_date($entry->timestamp), 'colspan' => 1, 'class' => $classes),
-        array('data' => format_string($entry->message, $message_vars), 'colspan' => 2, 'class' => $classes),
+        array(
+          'data' => format_date($entry->timestamp),
+          'colspan' => 1,
+          'class' => $classes,
+        ),
+        array(
+          'data' => format_string($entry->message, $message_vars),
+          'colspan' => 2,
+          'class' => $classes,
+        ),
       );
     }
     $output["log_$lid"] = array(
@@ -301,5 +349,28 @@ function kms_oci_queue_admin_page_job_log($jid){
   }
 
   drupal_json_output($json);
+  exit;
+}
+
+/**
+ * Load statuses of the different jobs and print them as table cells.
+ * Prints a json object with a structure like: job id => td table cell (html).
+ */
+function kms_oci_queue_admin_page_ajax_job_statuses() {
+  $status = array();
+  foreach (kms_oci_queue_get_job_ids() as $jid) {
+    $job = KmsOciQueueJobFactory::get($jid);
+    $status[$jid] = _theme_table_cell(array(
+      'data' => $job->status->message,
+      'data-jid' => $job->jid,
+      'class' => array(
+        'status',
+        KmsOciQueueJob::cssClassStatus($job->status->status),
+      ),
+    ));
+  }
+  drupal_json_output(array(
+    'status' => $status,
+  ));
   exit;
 }
