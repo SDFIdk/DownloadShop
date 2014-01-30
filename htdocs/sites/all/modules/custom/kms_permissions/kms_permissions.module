@@ -1609,10 +1609,10 @@ function kms_permissions_run_batch($type) {
       $chunk_size = 10;
       $chunks = array_chunk($uids, $chunk_size);
 
-      array_walk($chunks, function($uids) use (&$operations, $bid, $user_count){
+      array_walk($chunks, function($uids) use (&$operations, $bid, $user_count, $chunk_size){
         $operations[] = array(
           'kms_permissions_batch_default_bundle_update_users',
-          array($bid, $uids, $user_count)
+          array($bid, $uids, $user_count, $chunk_size)
         );
       });
 
