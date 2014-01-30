@@ -695,3 +695,27 @@ function kms_oci_environment_data() {
 
   return $data;
 }
+
+function kms_oci_get_conn_settings($cid = NULL) {
+
+  switch ($cid) {
+    case 'kms_permissions':
+      return array(
+        'kms_oci_conn_user' => variable_get('kms_permissions_conn_user', ''),
+        'kms_oci_conn_pass' => variable_get('kms_permissions_conn_pass', ''),
+        'kms_oci_conn_host' => variable_get('kms_permissions_conn_host', ''),
+        'kms_oci_conn_db' => variable_get('kms_permissions_conn_db', ''),
+      );
+      break;
+
+    default:
+      return array(
+        'kms_oci_conn_user' => variable_get('kms_oci_conn_user', ''),
+        'kms_oci_conn_pass' => variable_get('kms_oci_conn_pass', ''),
+        'kms_oci_conn_host' => variable_get('kms_oci_conn_host', ''),
+        'kms_oci_conn_db' => variable_get('kms_oci_conn_db', ''),
+      );
+      break;
+
+  }
+}
