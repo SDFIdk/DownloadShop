@@ -337,7 +337,7 @@ function kms_permissions_get_application_list() {
 function _kms_permissions_format_service_list($service_id, $service_name, $type = 'webservice') {
   $html = '';
   // Get the bundle attached to the service id
-  $nid_sid_arr = _kms_permissions_get_bundle_by_sid($service_id, $type);
+  $nid_sid_arr = _kms_permissions_get_bundles_by_id($service_id, $type);
   // If the service is not part of a bundle
   if (!$nid_sid_arr) {
     return '<span class="bundle-no-bundle">' . $service_name . '</span>';
@@ -549,7 +549,7 @@ function kms_permissions_user_presave(&$edit, $account, $category) {
   $permissions = array();
 
   // Get default bundles
-  $default = _kms_permissions_get_bundles_generic('default');
+  $default = _kms_permissions_get_access_bundles('default');
   foreach ($default as $dbid) {
     _kms_permissions_get_permissions_by_bid($dbid, $permissions);
   }  
@@ -562,7 +562,8 @@ function kms_permissions_user_presave(&$edit, $account, $category) {
     }
   }
   // Save to temp tables (in psql)
-  kms_permissions_save_temp_permissions($account->uid, $permissions);
+  // Atodo: Not using this approach anymore. Clean it up!
+//  kms_permissions_save_temp_permissions($account->uid, $permissions);
 }
 
 /**
@@ -594,7 +595,7 @@ function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
   $form['#attached']['css'][] = drupal_get_path('module', 'kms_permissions') .'/css/edit_bundles_and_services.css';
   $form['#attached']['library'][] = array('kms_permissions', 'jquery.foggy');
 
-  foreach(_kms_permissions_get_bundles_generic('default') as $bid) {
+  foreach(_kms_permissions_get_access_bundles('default') as $bid) {
 
   }
   // Atodo: I let this stay in case of change request. Remove if not needed!
@@ -668,7 +669,7 @@ function _kms_permissions_common_form_alter(&$form) {
 
 
 function kms_permissions_process_access_bundles_form_element($element) {
-  $bids = _kms_permissions_get_bundles_generic('default');
+  $bids = _kms_permissions_get_access_bundles('default');
 
   foreach (element_children($element) as $bid) {
     if(in_array($bid, $bids)) {
@@ -1017,7 +1018,7 @@ function kms_permissions_save_permissions($uid, $permissions) {
 function _kms_permissions_get_permissions_by_uid($uid, &$permissions = array()) {
   $user = user_load($uid);
   // Get default bundles
-  $default = _kms_permissions_get_bundles_generic('default');
+  $default = _kms_permissions_get_access_bundles('default');
   // Get users bundles
   $field_access_bundles = field_get_items('user', $user, 'field_access_bundles');
 
@@ -1043,7 +1044,7 @@ function _kms_permissions_get_permissions_by_uid($uid, &$permissions = array()) 
 }
 
 /**
- * Internal function that returns nicely formatted array for oracle inserting
+ * Return nicely formatted array for oracle inserting.
  */
 function _kms_permissions_get_permissions_by_bid($bid, &$permissions = array()) {
   $bundle = node_load($bid);
@@ -1201,7 +1202,7 @@ function _kms_permissions_get_permissions_by_bid($bid, &$permissions = array()) 
 }
 
 /**
- * Internal function for finding all users that have a relation to a given bundle.
+ * Find all users that have a relation to a given bundle.
  */
 function _kms_permissions_get_users_by_bid($bid) {
   $query = new EntityFieldQuery();
@@ -1222,7 +1223,7 @@ function _kms_permissions_get_users_by_bid($bid) {
 }
 
 /**
- * Internal function for finding all active users.
+ * Find all active users.
  * Doing an entity load would be too heavy
  */
 function  _kms_permissions_get_all_users() {
@@ -1235,9 +1236,9 @@ function  _kms_permissions_get_all_users() {
 }
 
 /**
- * Internal function for finding all default and active bundles
+ * Find all default and active bundles.
  */
-function _kms_permissions_get_bundles_generic($subtype) {
+function _kms_permissions_get_access_bundles($subtype) {
   
   if($subtype == 'default') {
     $field_info = field_info_instance('node', 'field_default_bundle', 'access_bundle');
@@ -1270,11 +1271,36 @@ function _kms_permissions_get_bundles_generic($subtype) {
 }
 
 /**
- * Internal function to find what bundle(s) a service is included in
- * @param  [int] $sid The service id (service id comes from Oracle)
- * @return [array/FALSE] Array of bundles and their type (default/custom) or FASLE
+ * Get bundles by service id.
+ *
+ * @param integer $sid
+ * @return array|bool
+ *   array or FALSE.
  */
-function _kms_permissions_get_bundle_by_sid($sid, $type) {
+function _kms_permissions_get_bundles_by_sid($sid) {
+ return _kms_permissions_get_bundles_by_id($sid, 'field_bundle_webservices');
+}
+
+/**
+ * Get bundles by ftp id.
+ *
+ * @param integer $ftp_id
+ * @return array|bool
+ *   array or FALSE.
+ */
+function _kms_permissions_get_bundles_by_ftp_id($ftp_id) {
+  return _kms_permissions_get_bundles_by_id($ftp_id, 'field_ftp_permissions');
+}
+
+/**
+ * Find what bundle(s) a given id is included in.
+ *
+ * @param integer $id
+ * @param string $type
+ * @return array|bool
+ *   array or FALSE.
+ */
+function _kms_permissions_get_bundles_by_id($id, $type) {
   // The returned array
   $nid_sid_arr = array();
 
@@ -1282,7 +1308,7 @@ function _kms_permissions_get_bundle_by_sid($sid, $type) {
     $nid_sid_arr = array();
     $field_name_pattern = ($type == 'webservice' ? 'field_bundle_webservices' : 'field_ftp_permissions');
 
-    $default_bundles_nids = _kms_permissions_get_bundles_generic($subtype);
+    $default_bundles_nids = _kms_permissions_get_access_bundles($subtype);
     foreach ($default_bundles_nids as $nid) {
       $bundle = node_load($nid);
 
@@ -1305,11 +1331,14 @@ function _kms_permissions_get_bundle_by_sid($sid, $type) {
 
   switch ($type) {
     case 'webservice':
-      $nid_sid_arr = array_merge($get_bundle_ids($sid, 'webservice', 'default'),$get_bundle_ids($sid, 'webservice', 'custom')) ;  
+      $nid_sid_arr = array_merge(
+        $get_bundle_ids($id, 'webservice', 'default'),
+        $get_bundle_ids($id, 'webservice', 'custom')
+      ) ;
     break;
 
     case 'ftp':
-      $nid_sid_arr = $get_bundle_ids($sid, 'ftp', 'custom');
+      $nid_sid_arr = $get_bundle_ids($id, 'ftp', 'custom');
     break;
   }
 
@@ -1403,7 +1432,7 @@ function kms_permissions_node_grants($account, $op) {
 
 
 /**
- * Internal function use to compare fields
+ * Compare fields.
  */
 function _kms_permissions_hash_field($entity_type, $entity, $field_name) {
   $hash = '';
@@ -1425,7 +1454,7 @@ function _kms_permissions_hash_field($entity_type, $entity, $field_name) {
 }
 
 /**
- * Internal function to retrieve webservice fieldnames
+ * Retrieve webservice fieldnames.
  * Todo: make smarter
  */
 function _kms_permissions_webservice_fields() {
@@ -1725,7 +1754,7 @@ function _kms_permissions_get_bundles_by_sids($sids) {
   $bids = array();
   if(!empty($sids)) {
     foreach($sids as $sid) {
-      $bundles = _kms_permissions_get_bundle_by_sid($sid);
+      $bundles = _kms_permissions_get_bundles_by_sid($sid);
       if(!$bundles) {
         continue;
       }
