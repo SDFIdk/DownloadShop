@@ -284,3 +284,22 @@ function kms_update_7005(&$sandbox) {
                 system/ajax
                 system/ajax/*');
 }
+
+/**
+ * Remove fake table (if any) and store a view for the ftp permisions
+ * @author Linas Balke <linas@adapt.dk>
+ */
+function kms_update_7006(&$sandbox) {
+  // Drop table if exists - leftfovers from fake table and module installation
+  if(db_table_exists('external_ftp_users')) {
+    db_drop_table('external_ftp_users');
+  }  
+  // Create a view to replace the removed table
+  db_query("CREATE VIEW external_ftp_users AS
+    SELECT u.name as username, array_to_string( array_agg( distinct folders.name ), ',') as directories
+    FROM field_data_field_ftp_permissions as ftp
+    LEFT JOIN field_data_field_access_bundles as bundle ON ftp.entity_id =  bundle.field_access_bundles_nid
+    LEFT JOIN users as u ON u.uid = ftp.entity_id OR u.uid = bundle.entity_id
+    LEFT JOIN kms_permissions_ftp_folders as folders ON ftp.field_ftp_permissions_value::integer = folders.fid
+    GROUP BY u.name;");    
+}
