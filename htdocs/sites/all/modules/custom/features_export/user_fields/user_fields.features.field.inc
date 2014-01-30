@@ -936,6 +936,63 @@ function user_fields_field_default_fields() {
     ),
   );
 
+  // Exported field: 'user-user-field_ftp_permissions'.
+  $fields['user-user-field_ftp_permissions'] = array(
+    'field_config' => array(
+      'active' => '1',
+      'cardinality' => '-1',
+      'deleted' => '0',
+      'entity_types' => array(),
+      'field_name' => 'field_ftp_permissions',
+      'field_permissions' => array(
+        'type' => '0',
+      ),
+      'foreign keys' => array(),
+      'indexes' => array(
+        'value' => array(
+          0 => 'value',
+        ),
+      ),
+      'locked' => '0',
+      'module' => 'list',
+      'settings' => array(
+        'allowed_values' => array(),
+        'allowed_values_function' => '',
+      ),
+      'translatable' => '0',
+      'type' => 'list_text',
+    ),
+    'field_instance' => array(
+      'bundle' => 'user',
+      'default_value' => NULL,
+      'deleted' => '0',
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'list',
+          'settings' => array(),
+          'type' => 'list_default',
+          'weight' => 32,
+        ),
+      ),
+      'entity_type' => 'user',
+      'field_name' => 'field_ftp_permissions',
+      'label' => 'FTP permissions',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => 0,
+      ),
+      'widget' => array(
+        'active' => 0,
+        'module' => 'kms_permissions_ftp',
+        'settings' => array(),
+        'type' => 'kms_ftp_permissions',
+        'weight' => '59',
+      ),
+    ),
+  );
+
   // Exported field: 'user-user-field_kms_user_id'.
   $fields['user-user-field_kms_user_id'] = array(
     'field_config' => array(
@@ -1619,6 +1676,7 @@ function user_fields_field_default_fields() {
   t('Bundles');
   t('Debitor nr');
   t('Ekstra webservices');
+  t('FTP permissions');
   t('Faktureringsadresse');
   t('Geodatastyrelsen må gerne kontakte mig i forbindelse med tilfredshed- og brugerundersøgelser');
   t('Ja tak, jeg vil gerne modtage jeres nyhedsbrev');

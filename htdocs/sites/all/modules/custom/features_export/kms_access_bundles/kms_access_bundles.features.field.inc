@@ -1285,6 +1285,69 @@ function kms_access_bundles_field_default_fields() {
     ),
   );
 
+  // Exported field: 'node-access_bundle-field_ftp_permissions'.
+  $fields['node-access_bundle-field_ftp_permissions'] = array(
+    'field_config' => array(
+      'active' => '1',
+      'cardinality' => '-1',
+      'deleted' => '0',
+      'entity_types' => array(),
+      'field_name' => 'field_ftp_permissions',
+      'field_permissions' => array(
+        'type' => '0',
+      ),
+      'foreign keys' => array(),
+      'indexes' => array(
+        'value' => array(
+          0 => 'value',
+        ),
+      ),
+      'locked' => '0',
+      'module' => 'list',
+      'settings' => array(
+        'allowed_values' => array(),
+        'allowed_values_function' => '',
+      ),
+      'translatable' => '0',
+      'type' => 'list_text',
+    ),
+    'field_instance' => array(
+      'bundle' => 'access_bundle',
+      'default_value' => NULL,
+      'deleted' => '0',
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'list',
+          'settings' => array(),
+          'type' => 'list_default',
+          'weight' => 22,
+        ),
+        'teaser' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => 0,
+        ),
+      ),
+      'entity_type' => 'node',
+      'field_name' => 'field_ftp_permissions',
+      'label' => 'FTP permissions',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 0,
+        'module' => 'kms_permissions_ftp',
+        'settings' => array(),
+        'type' => 'kms_ftp_permissions',
+        'weight' => '28',
+      ),
+    ),
+  );
+
   // Exported field: 'node-access_bundle-field_max_download_size'.
   $fields['node-access_bundle-field_max_download_size'] = array(
     'field_config' => array(
@@ -1556,6 +1619,7 @@ function kms_access_bundles_field_default_fields() {
   t('Colour');
   t('Default bundle');
   t('Default image');
+  t('FTP permissions');
   t('Feature info');
   t('If checked, all existing and future user will have access to products in this bundle');
   t('Max X (right)');

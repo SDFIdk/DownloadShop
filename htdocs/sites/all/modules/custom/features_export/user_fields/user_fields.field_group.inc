@@ -222,6 +222,33 @@ function user_fields_field_group_info() {
   $field_group = new stdClass();
   $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
   $field_group->api_version = 1;
+  $field_group->identifier = 'group_tab_ftp|user|user|form';
+  $field_group->group_name = 'group_tab_ftp';
+  $field_group->entity_type = 'user';
+  $field_group->bundle = 'user';
+  $field_group->mode = 'form';
+  $field_group->parent_name = 'group_webservices';
+  $field_group->data = array(
+    'label' => 'FTP',
+    'weight' => '54',
+    'children' => array(
+      0 => 'field_ftp_permissions',
+    ),
+    'format_type' => 'fieldset',
+    'format_settings' => array(
+      'formatter' => 'collapsible',
+      'instance_settings' => array(
+        'description' => '',
+        'classes' => '',
+        'required_fields' => 1,
+      ),
+    ),
+  );
+  $export['group_tab_ftp|user|user|form'] = $field_group;
+
+  $field_group = new stdClass();
+  $field_group->disabled = FALSE; /* Edit this to true to make a default field_group disabled initially */
+  $field_group->api_version = 1;
   $field_group->identifier = 'group_user_type|user|user|form';
   $field_group->group_name = 'group_user_type';
   $field_group->entity_type = 'user';
@@ -424,11 +451,12 @@ function user_fields_field_group_info() {
     'weight' => '9',
     'children' => array(
       0 => 'group_webservices_geo',
-      1 => 'group_webservices_wfs',
-      2 => 'group_webservices_plot',
-      3 => 'group_webservices_wms',
-      4 => 'group_webservices_wmts',
-      5 => 'group_webservices_wcs',
+      1 => 'group_webservices_plot',
+      2 => 'group_webservices_wcs',
+      3 => 'group_webservices_wfs',
+      4 => 'group_webservices_wms',
+      5 => 'group_webservices_wmts',
+      6 => 'group_tab_ftp',
     ),
     'format_type' => 'htabs',
     'format_settings' => array(
