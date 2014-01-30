@@ -1311,6 +1311,7 @@ function _kms_permissions_get_bundles_by_ftp_item($ftp_id) {
 function _kms_permissions_get_bundles_by_item_id($id, $item_type) {
 
   $get_bundle_ids = function($sid, $type, $subtype) {
+    $bundles = array();
 
     $item_types = array(
       'webservice' => 'field_bundle_webservices',
