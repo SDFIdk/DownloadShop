@@ -937,7 +937,7 @@ function kms_user_vbo_add_access_bundles_submit($form, $form_state) {
  * @return void
  */
 function kms_user_vbo_add_access_bundles(&$account, $context = array()) {
-  kms_user_access_bundle_administer('update', $account, $context['access_bundle']);
+  kms_user_access_bundle_administer('add', $account, $context['access_bundle']);
 }
 
 /**
@@ -1001,21 +1001,22 @@ function kms_user_access_bundle_administer($op, $account, $bundles = array()) {
     return;
   }
   $w = entity_metadata_wrapper('user', $account);
-  $w_bundles = $w->field_access_bundles->value();
-  
+  $w_bundles = array_filter($w->field_access_bundles->value());
   $current_bundles = array();
-  
+
   switch ($op) {
-    case 'update':
+    case 'add':
       array_walk($w_bundles, function($node) use (&$current_bundles){
-        $current_bundles[] = $node->nid;
+        $current_bundles[$node->nid] = $node->nid;
       });
     case 'clear':
-      $bundles = array_merge($current_bundles, $bundles);
+      if (!empty($current_bundles)) {
+        $bundles = array_merge($current_bundles, $bundles);
+      }
       $w->field_access_bundles->set($bundles);
       break;
   }
-  
+
   $w->save();
 }
 
