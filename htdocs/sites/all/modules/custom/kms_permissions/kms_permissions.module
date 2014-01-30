@@ -334,10 +334,10 @@ function kms_permissions_get_application_list() {
  * @param  [string] $service_name The name of the service
  * @return [string] $html         Html ready to be appended to the form option
  */
-function _kms_permissions_format_service_list($service_id, $service_name) {
+function _kms_permissions_format_service_list($service_id, $service_name, $type = 'webservice') {
   $html = '';
   // Get the bundle attached to the service id
-  $nid_sid_arr = _kms_permissions_get_bundle_by_sid($service_id);
+  $nid_sid_arr = _kms_permissions_get_bundle_by_sid($service_id, $type);
   // If the service is not part of a bundle
   if (!$nid_sid_arr) {
     return '<span class="bundle-no-bundle">' . $service_name . '</span>';
@@ -345,8 +345,6 @@ function _kms_permissions_format_service_list($service_id, $service_name) {
   // Start with the name of the service
   $html .= $service_name . ' ';
   
-  
-
   foreach ($nid_sid_arr as $type => $nodes) {
     foreach ($nodes as $nid => $title) {
       $bundle_node = node_load($nid);
@@ -551,7 +549,7 @@ function kms_permissions_user_presave(&$edit, $account, $category) {
   $permissions = array();
 
   // Get default bundles
-  $default = _kms_permissions_get_default_bundles();
+  $default = _kms_permissions_get_bundles_generic('default');
   foreach ($default as $dbid) {
     _kms_permissions_get_permissions_by_bid($dbid, $permissions);
   }  
@@ -596,7 +594,7 @@ function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
   $form['#attached']['css'][] = drupal_get_path('module', 'kms_permissions') .'/css/edit_bundles_and_services.css';
   $form['#attached']['library'][] = array('kms_permissions', 'jquery.foggy');
 
-  foreach(_kms_permissions_get_default_bundles() as $bid) {
+  foreach(_kms_permissions_get_bundles_generic('default') as $bid) {
 
   }
   // Atodo: I let this stay in case of change request. Remove if not needed!
@@ -670,7 +668,7 @@ function _kms_permissions_common_form_alter(&$form) {
 
 
 function kms_permissions_process_access_bundles_form_element($element) {
-  $bids = _kms_permissions_get_default_bundles();
+  $bids = _kms_permissions_get_bundles_generic('default');
 
   foreach (element_children($element) as $bid) {
     if(in_array($bid, $bids)) {
@@ -1019,7 +1017,7 @@ function kms_permissions_save_permissions($uid, $permissions) {
 function _kms_permissions_get_permissions_by_uid($uid, &$permissions = array()) {
   $user = user_load($uid);
   // Get default bundles
-  $default = _kms_permissions_get_default_bundles();
+  $default = _kms_permissions_get_bundles_generic('default');
   // Get users bundles
   $field_access_bundles = field_get_items('user', $user, 'field_access_bundles');
 
@@ -1239,17 +1237,24 @@ function  _kms_permissions_get_all_users() {
 /**
  * Internal function for finding all default and active bundles
  */
-function _kms_permissions_get_default_bundles() {
-  $field_info = field_info_instance('node', 'field_default_bundle', 'access_bundle');
-  // If field does not exist return empty array.
-  if (empty($field_info)) {
-    return array();
+function _kms_permissions_get_bundles_generic($subtype) {
+  
+  if($subtype == 'default') {
+    $field_info = field_info_instance('node', 'field_default_bundle', 'access_bundle');
+    // If field does not exist return empty array.
+    if (empty($field_info)) {
+      return array();
+    }
+    $default_value = 1;
+  } else {
+    $default_value = 0;
   }
+
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'access_bundle')
     ->propertyCondition('status', 1)
-    ->fieldCondition('field_default_bundle', 'value', '1', '=')    
+    ->fieldCondition('field_default_bundle', 'value', $default_value, '=')    
     ->addMetaData('account', user_load(1)); // Run the query as user 1.
 
     $result = $query->execute();
@@ -1263,81 +1268,51 @@ function _kms_permissions_get_default_bundles() {
     
   return $bids;
 }
-
-/**
- * Internal function for finding all custom and active bundles
- */
-function _kms_permissions_get_custom_bundles() {
-  $query = new EntityFieldQuery();
-
-  $query->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', 'access_bundle')
-    ->propertyCondition('status', 1)
-    ->fieldCondition('field_default_bundle', 'value', '0', '=')    
-    ->addMetaData('account', user_load(1)); // Run the query as user 1.
-
-    $result = $query->execute();
-    $bids = array();
-
-    if ($result) {
-      foreach ($result['node'] as $bundle) {
-        $bids[] = $bundle->nid;
-      }
-    }
-    
-  return $bids;
-}
-
-
 
 /**
  * Internal function to find what bundle(s) a service is included in
  * @param  [int] $sid The service id (service id comes from Oracle)
  * @return [array/FALSE] Array of bundles and their type (default/custom) or FASLE
  */
-function _kms_permissions_get_bundle_by_sid($sid) {
+function _kms_permissions_get_bundle_by_sid($sid, $type) {
   // The returned array
   $nid_sid_arr = array();
 
+  $get_bundle_ids = function($sid, $type, $subtype) {
+    $nid_sid_arr = array();
+    $field_name_pattern = ($type == 'webservice' ? 'field_bundle_webservices' : 'field_ftp_permissions');
 
-  // Get all default bundles
-  $default_bundles_nids = _kms_permissions_get_default_bundles();
-  foreach ($default_bundles_nids as $nid) {
-    $bundle = node_load($nid);
-    foreach ($bundle as $field_name => $field_value) {
-      // Only use bundle fields
-      if (strpos($field_name, 'field_bundle_webservices') !== false) {
-        if (!empty($field_value)) {
-          // Search for a match
-          foreach ($field_value['und'] as $service_id) {
-            if ($service_id['value'] == $sid) {
-              $nid_sid_arr['default'][$nid] = $bundle->title;
+    $default_bundles_nids = _kms_permissions_get_bundles_generic($subtype);
+    foreach ($default_bundles_nids as $nid) {
+      $bundle = node_load($nid);
+
+      foreach ($bundle as $field_name => $field_value) {
+        // Only use bundle fields
+        if (strpos($field_name, $field_name_pattern) !== false) {
+          if (!empty($field_value)) {
+            // Search for a match
+            foreach ($field_value['und'] as $service_id) {
+              if ($service_id['value'] == $sid) {
+                $nid_sid_arr[$subtype][$nid] = $bundle->title;
+              }
             }
           }
         }
       }
     }
+    return $nid_sid_arr;
+  };
+
+  switch ($type) {
+    case 'webservice':
+      $nid_sid_arr = array_merge($get_bundle_ids($sid, 'webservice', 'default'),$get_bundle_ids($sid, 'webservice', 'custom')) ;  
+    break;
+
+    case 'ftp':
+      $nid_sid_arr = $get_bundle_ids($sid, 'ftp', 'custom');
+    break;
   }
 
-  // Get all custom bundles
-  $default_bundles_nids = _kms_permissions_get_custom_bundles();
-  foreach ($default_bundles_nids as $nid) {
-    $bundle = node_load($nid);
-    foreach ($bundle as $field_name => $field_value) {
-      // Only use bundle fields
-      if (strpos($field_name, 'field_bundle_webservices') !== false) {
-        if (!empty($field_value)) {
-          // Search for a match
-          foreach ($field_value['und'] as $service_id) {
-            if ($service_id['value'] == $sid) {
-              $nid_sid_arr['custom'][$nid] = $bundle->title;
-            }
-          }
-        }
-      }
-    }
-  }
-  
   // Return value
   if (!empty($nid_sid_arr)) {
     return $nid_sid_arr;

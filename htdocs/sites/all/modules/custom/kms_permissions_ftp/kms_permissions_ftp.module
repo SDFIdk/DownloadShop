@@ -6,29 +6,172 @@
 function kms_permissions_ftp_menu() {
   $items = array();
 
-  
+  $items['kms/ftp/read'] = array(
+    'title' =>'FTP read',
+    'description' => 'Scandir from ftp',
+    'page callback' => 'kms_permissions_ftp_scan_store_structure',
+    'access arguments' => array('ftp read'),
+  );
   return $items;
+}
+
+/**
+* Implements hook_field_widget_info().
+*/
+function kms_permissions_ftp_field_widget_info() {
+  return array(
+    'kms_ftp_permissions' => array(
+      'label' => t('KMS FTP permissions'),
+      'field types' => array('list_text'),
+      'settings' => array(),
+      'behaviors' => array(
+        'multiple values' => FIELD_BEHAVIOR_CUSTOM,
+      ),
+    )
+  );
+}
+
+/**
+* Implements hook_field_widget_form().
+*/
+function kms_permissions_ftp_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+
+  $value_key = key($field['columns']);
+  $type = str_replace('options_', '', $instance['widget']['type']);
+  $multiple = $field['cardinality'] > 1 || $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED;
+  $required = $element['#required'];
+  $has_value = isset($items[0][$value_key]);
+  $properties = _options_properties($type, $multiple, $required, $has_value);
+  $instance_settings = $instance['widget']['settings'];  
+
+      $default_value = array();
+
+      if (is_array($items)) {
+        // Put current field values in
+        foreach ($items as $key => $item) {
+          $default_value[] = $item['value'];
+        }
+      }
+      
+      $options = kms_permissions_ftp_widget_options($instance_settings);
+
+      $element += array(
+        '#type' => $multiple ? 'checkboxes' : 'radios',
+        '#title' => (t('kms_ftp_permissions')),
+        '#default_value' => $default_value,
+        '#options' => $options
+      );
+
+
+  $element += array(
+    '#value_key' => $value_key,
+    '#element_validate' => array('options_field_widget_validate'),
+    '#properties' => $properties,
+  );  
+
+  return $element;
+}
+
+/**
+* Implements hook_field_widget_error().
+*/
+function kms_permissions_ftp_field_widget_error($element, $error) {
+  form_error($element, $error['message']);
+}
+
+/**
+ * Connect to oracle db and get applications or services.
+ * @param string $type - type of option list to get
+ */
+function kms_permissions_ftp_widget_options($instance_settings) {
+
+  $options = array();    
+  static $options;
+      
+  $rows = kms_permissions_ftp_scan_structure();
+  
+  sort($rows);
+
+  if (!empty($rows)) {
+    foreach($rows as $k=>$value) {
+      $html = _kms_permissions_format_service_list($k, $value, 'ftp');
+      $options[$k] = $html;
+    }
+  }
+  
+  return $options;
+}
+
+function kms_permissions_ftp_scan_store_structure() {
+  
+
+  $rows = kms_permissions_ftp_scan_structure();
+  
+  sort($rows);
+
+  if (!empty($rows)) {
+    foreach($rows as $k=>$value) {
+      $data = array(
+        'fid' => $k,
+        'name' => $value
+      );
+      
+      drupal_write_record('kms_permissions_ftp_folders', $data);
+    }
+  }
+
+
 }
 
 function kms_permissions_ftp_scan_structure() {
 
-  $settings['username'] = variable_get('kms_csv_ftp_username','linas.snieglente-eu');
+  $settings['username'] = variable_get('kms_csv_ftp_username','linas.fox-snieglente');
   $settings['password'] = variable_get('kms_csv_ftp_password','linas');
   $settings['advanced']['hostname']= variable_get('kms_csv_ftp_hostname','fox.snieglente.eu');
   $settings['advanced']['port']= variable_get('kms_csv_ftp_port','21');
+ 
+  $ftp_server = variable_get('kms_csv_ftp_hostname','fox.snieglente.eu');
+  $ftp_user_name = variable_get('kms_csv_ftp_username','linas.fox-snieglente');
+  $ftp_user_pass = variable_get('kms_csv_ftp_password','linas');
 
-  $day =  format_date(time(), 'custom', 'd_m_y');
+  // set up basic connection
+  $conn_id = ftp_connect($ftp_server);
+
+  // login with username and password
+  $login_result = ftp_login($conn_id, $ftp_user_name, $ftp_user_pass);
   
-  try {
-    // Copy the files.
-    $ftp = FileTransferFTP::factory($jail, $settings);
-    $ftp->connect();
-    $ftp->copyFile($file, "file_{$type}_{$day}.csv");
-  }
-  catch(Exception $e) {
-   print($e);
-   watchdog('FTP', 'FTP failed during connect or filetransfer ');
-  } 
+  //Enable passive mode, Vagrant specific
+  ftp_pasv( $conn_id, true );
+  // get contents of the current directory
   
+  ftp_chdir($conn_id, 'kms');
+  return kms_permissions_ftp_xdir('.', $conn_id);
+
 }
 
+
+function kms_permissions_ftp_is_dir($folder, $conn_id) {
+  if (ftp_chdir($conn_id, $folder)) {
+      ftp_chdir($conn_id, '..');
+      return true;
+   } else {
+      return false;
+   }
+}
+
+function kms_permissions_ftp_xdir($path, $conn_id) {
+   $contents = ftp_nlist($conn_id, $path);
+   $folders = array();
+
+   foreach($contents as $file) {
+      if ($file!='.'&&$file!='..') {
+         if (kms_permissions_ftp_is_dir($file, $conn_id)) {
+            array_push($folders, $file);
+         } else {
+            //echo $file . ' is a file<br>';
+         }
+      }
+   }
+
+   return $folders;
+}
