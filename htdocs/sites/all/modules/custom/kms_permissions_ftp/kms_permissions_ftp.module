@@ -94,7 +94,7 @@ function kms_permissions_ftp_widget_options($instance_settings) {
 
   if (!empty($rows)) {
     foreach($rows as $k=>$value) {
-      $html = _kms_permissions_format_service_list($k, $value, 'ftp');
+      $html = _kms_permissions_format_item_list_item($k, $value, 'ftp');
       $options[$k] = $html;
     }
   }

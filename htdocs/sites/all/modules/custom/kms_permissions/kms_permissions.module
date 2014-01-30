@@ -230,7 +230,11 @@ function kms_permissions_widget_options($type = 'kms_services', $instance_settin
         
         if (!empty($rows)) {
             foreach ($rows as $row) {
-              $html = _kms_permissions_format_service_list($row['SERVICEID'], $row['SERVICENAME']);
+              $html = _kms_permissions_format_item_list_item(
+                $row['SERVICEID'],
+                $row['SERVICENAME'],
+                'webservice'
+              );
               $options[$row['TYPENAME']][$row['SERVICEID']] = $html;
             }
         }
@@ -327,23 +331,27 @@ function kms_permissions_get_application_list() {
   return $application_data;
 }
 
-
 /**
- * Intern function to format bundle list in webservice list
- * @param  [int] $service_id      The service ID (Oracle id)
- * @param  [string] $service_name The name of the service
- * @return [string] $html         Html ready to be appended to the form option
+ * Format item list used in bundles and users.
+ *
+ * @param integer $item_id
+ *   The ident of the item type.
+ * @param $item_name
+ *   The name of the item.
+ * @param string $item_type
+ *   The type of item.
+ * @return string
  */
-function _kms_permissions_format_service_list($service_id, $service_name, $type = 'webservice') {
+function _kms_permissions_format_item_list_item($item_id, $item_name, $item_type) {
   $html = '';
-  // Get the bundle attached to the service id
-  $nid_sid_arr = _kms_permissions_get_bundles_by_id($service_id, $type);
-  // If the service is not part of a bundle
-  if (!$nid_sid_arr) {
-    return '<span class="bundle-no-bundle">' . $service_name . '</span>';
+  // Get the bundle attached to the item id.
+  $nid_sid_arr = _kms_permissions_get_bundles_by_item_id($item_id, $item_type);
+  // If the service is not part of a bundle.
+  if (empty($nid_sid_arr)) {
+    return '<span class="bundle-no-bundle">' . $item_name . '</span>';
   }
-  // Start with the name of the service
-  $html .= $service_name . ' ';
+  // Start with the name.
+  $html .= $item_name . ' ';
   
   foreach ($nid_sid_arr as $type => $nodes) {
     foreach ($nodes as $nid => $title) {
@@ -1274,62 +1282,69 @@ function _kms_permissions_get_access_bundles($subtype) {
  * Get bundles by service id.
  *
  * @param integer $sid
- * @return array|bool
- *   array or FALSE.
+ * @return array
+ *   Bundles.
  */
-function _kms_permissions_get_bundles_by_sid($sid) {
- return _kms_permissions_get_bundles_by_id($sid, 'field_bundle_webservices');
+function _kms_permissions_get_bundles_by_service_item($sid) {
+ return _kms_permissions_get_bundles_by_item_id($sid, 'webservice');
 }
 
 /**
  * Get bundles by ftp id.
  *
  * @param integer $ftp_id
- * @return array|bool
- *   array or FALSE.
+ * @return array
+ *   Bundles.
  */
-function _kms_permissions_get_bundles_by_ftp_id($ftp_id) {
-  return _kms_permissions_get_bundles_by_id($ftp_id, 'field_ftp_permissions');
+function _kms_permissions_get_bundles_by_ftp_item($ftp_id) {
+  return _kms_permissions_get_bundles_by_item_id($ftp_id, 'ftp');
 }
 
 /**
- * Find what bundle(s) a given id is included in.
+ * Find what bundle(s) a given item is included in.
  *
  * @param integer $id
- * @param string $type
- * @return array|bool
- *   array or FALSE.
+ * @param string $item_type
+ * @return array
+ *   Bundles.
  */
-function _kms_permissions_get_bundles_by_id($id, $type) {
-  // The returned array
-  $nid_sid_arr = array();
+function _kms_permissions_get_bundles_by_item_id($id, $item_type) {
 
   $get_bundle_ids = function($sid, $type, $subtype) {
-    $nid_sid_arr = array();
-    $field_name_pattern = ($type == 'webservice' ? 'field_bundle_webservices' : 'field_ftp_permissions');
 
-    $default_bundles_nids = _kms_permissions_get_access_bundles($subtype);
-    foreach ($default_bundles_nids as $nid) {
+    $item_types = array(
+      'webservice' => 'field_bundle_webservices',
+      'ftp' => 'field_ftp_permissions',
+    );
+
+    if (empty($item_types[$type])) {
+      return array();
+    }
+
+    $field_name_pattern = $item_types[$type];
+
+    foreach (_kms_permissions_get_access_bundles($subtype) as $nid) {
       $bundle = node_load($nid);
 
       foreach ($bundle as $field_name => $field_value) {
         // Only use bundle fields
-        if (strpos($field_name, $field_name_pattern) !== false) {
+        if (strpos($field_name, $field_name_pattern) !== FALSE) {
           if (!empty($field_value)) {
             // Search for a match
             foreach ($field_value['und'] as $service_id) {
               if ($service_id['value'] == $sid) {
-                $nid_sid_arr[$subtype][$nid] = $bundle->title;
+                $bundles[$subtype][$nid] = $bundle->title;
               }
             }
           }
         }
       }
     }
-    return $nid_sid_arr;
+    return $bundles;
   };
 
-  switch ($type) {
+  $nid_sid_arr = array();
+  switch ($item_type) {
     case 'webservice':
       $nid_sid_arr = array_merge(
         $get_bundle_ids($id, 'webservice', 'default'),
@@ -1342,12 +1357,7 @@ function _kms_permissions_get_bundles_by_id($id, $type) {
     break;
   }
 
-  // Return value
-  if (!empty($nid_sid_arr)) {
-    return $nid_sid_arr;
-  }else {
-    return FALSE;
-  }
+  return $nid_sid_arr;
 }
 
 function _kms_permissions_get_services_by_bid($bid) {
@@ -1754,8 +1764,8 @@ function _kms_permissions_get_bundles_by_sids($sids) {
   $bids = array();
   if(!empty($sids)) {
     foreach($sids as $sid) {
-      $bundles = _kms_permissions_get_bundles_by_sid($sid);
-      if(!$bundles) {
+      $bundles = _kms_permissions_get_bundles_by_service_item($sid);
+      if (empty($bundles)) {
         continue;
       }
       array_walk($bundles, function($bundle) use(&$bids) {
