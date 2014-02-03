@@ -307,3 +307,14 @@ function kms_update_7006(&$sandbox) {
     LEFT JOIN kms_permissions_ftp_folders as folders ON ftp.field_ftp_permissions_value::integer = folders.fid
     GROUP BY u.name;");    
 }
+
+/**
+ * Introducing kms_test module.
+ *
+ * @author Mikkel Jakobsen <mikkel@adapt.dk>
+ */
+function kms_update_7007(&$sandbox) {
+
+  module_enable(array('kms_test'));
+
+}
