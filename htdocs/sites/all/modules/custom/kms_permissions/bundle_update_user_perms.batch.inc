@@ -1,7 +1,11 @@
 <?php
+/**
+ * @file
+ * User permissions updates by batch.
+ */
 
 /**
- * Batch Operation Callback
+ * Batch operation callback.
  */
 function kms_permissions_batch_default_bundle_update_users($bid, $uids, $user_count, $chunk_size, &$context) {
 
@@ -31,7 +35,7 @@ function kms_permissions_batch_default_bundle_update_users($bid, $uids, $user_co
 }
 
 /**
- * Batch 'finished' callback
+ * Batch 'finished' callback.
  */
 function kms_permissions_batch_default_bundle_update_users_finished($success, $results, $operations) {
   if ($success) {

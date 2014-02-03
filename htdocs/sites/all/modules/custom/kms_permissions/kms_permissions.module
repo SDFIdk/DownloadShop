@@ -1,8 +1,5 @@
 <?php
 
-define('KP_QUEUE_ACTION_USER_UPDATE_PERMS', 'User: Update permissions');
-define('KP_QUEUE_ACTION_ALL_USERS_UPDATE_PERMS', 'User: Update permissions - all users');
-
 /**
  * Implements hook_menu().
  */
@@ -25,10 +22,16 @@ function kms_permissions_menu() {
   return $items;
 }
 
-function kms_permissions_ctools_plugin_directory($owner, $plugin_type) {
+/**
+ * Implements hook_ctools_plugin_directory().
+ */
+function kms_permissions_ctools_plugin_directory($module, $plugin) {
   // we'll be nice and limit scandir() calls
-  if ($owner == 'ctools' && $plugin_type == 'content_types') {
+  if ($module == 'ctools' && $plugin == 'content_types') {
     return 'plugins/content_types';
+  }
+  if ($module == 'kms_oci_queue') {
+    return 'plugins/kms_oci_queue/' . $plugin;
   }
 }
 
@@ -753,18 +756,29 @@ function kms_permissions_access_bundle_update($form, $form_state) {
   $default_bundle_is_updated = (bool)$form['#node']->update_default_bundle;
   $bundle_is_updated = (bool)$form['#node']->update_bundle;
   $bundle_is_deleted = $form_state['clicked_button']['#id'] == 'edit-delete';
-  $bid = $form['#node']->nid;
+  $bundle = $form['#node'];
+  $bid = $bundle->nid;
 
   if ($default_bundle_is_updated) {
     // If a bundle is set as a default bundle or WAS set as a default bundle, update all users.
     $uids = _kms_permissions_get_all_users();
+    // Atodo: remove this again.
+    if (kMS_OCI_QUEUE_DEBUG) {
+      array_splice($uids, 30);
+    }
     if(!empty($uids)) {
-      KmsOciQueueJob::create(array(
-        'action' => KP_QUEUE_ACTION_ALL_USERS_UPDATE_PERMS,
-        'params' => array(),
-      ));
+      $job_params = array(
+        'action' => KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE,
+        'params' => array(
+          'uids' => $uids,
+          'bid' => $bid,
+        ),
+      );
 
-      kms_permissions_run_batch('default_bundle_update_users', $bid, $uids);
+      // Atodo: remove this again.
+      if (!KMS_OCI_QUEUE_DEBUG) {
+        kms_permissions_run_batch('default_bundle_update_users', $bid, $uids);
+      }
 
     }
 
@@ -772,25 +786,52 @@ function kms_permissions_access_bundle_update($form, $form_state) {
   else if ($bundle_is_updated) {
     // When a bundle get updated, find all users related to that bundle, and queue them for updating.
     $uids = _kms_permissions_get_users_by_bid($bid);
+    // Atodo: remove this again.
+    if (kMS_OCI_QUEUE_DEBUG) {
+      array_splice($uids, 30);
+    }
+
     if(!empty($uids)) {
-      KmsOciQueueJob::create(array(
-        'action' => KP_QUEUE_ACTION_USER_UPDATE_PERMS,
+      $job_params = array(
+        'action' => KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE,
         'params' => array(
           'uids' => $uids,
+          'bid' => $bid,
         ),
-      ));
+      );
     }
+
   }
   elseif($bundle_is_deleted) {
     // Atodo: Create delete perms job.
-//    KmsOciQueueJob::create(array(
-//      'action' => KP_QUEUE_ACTION_USER_UPDATE_PERMS,
-//      'params' => array(
-//        'uids' => $uids,
-//      ),
-//    ));
+    $uids = _kms_permissions_get_users_by_bid($bid);
+    // Atodo: remove this again.
+    if (kMS_OCI_QUEUE_DEBUG) {
+      array_splice($uids, 30);
+    }
+
+    if(!empty($uids)) {
+      $job_params = array(
+        'action' => KMS_OCI_QUEUE_ACTION_BUNDLE_DELETE,
+        'params' => array(
+          'uids' => $uids,
+          'bid' => $bid,
+        ),
+      );
+    }
   }
 
+  // Atodo: Figure out if all the cases above can be solved with the same job type.
+  $job_info_details = format_string(
+    'Bundle: "@bundle" saved. Affects @count users.',
+    array(
+      '@bundle' => $bundle->title,
+      '@count' => count($uids)
+    )
+  );
+
+  KmsOciQueueJob::create($job_params, $job_info_details);
+  KmsOciQueueJob::create($job_params, $job_info_details, 'kms_permissions');
 
 }
 
@@ -1022,6 +1063,7 @@ function kms_permissions_save_permissions($uid, $permissions) {
  * Get all permissions for a given user
  * @param object $uid - the user id
  * @param array $permissions - a permissions array
+ * @atodo Get separate perms as well.
  */
 function _kms_permissions_get_permissions_by_uid($uid, &$permissions = array()) {
   $user = user_load($uid);

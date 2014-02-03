@@ -98,6 +98,8 @@ if ($result['exit_code'] === 0) {
     KmsOciQueueJob::STATUS_DONE,
     implode('; ', $result['message'])
   );
+  // Close job and remove queue.
+  $job->finish();
 }
 else {
   // Report that the job has failed.

@@ -11,6 +11,10 @@ define('KMS_OCI_QUEUE_PREFIX', 'kms_oci_queue');
 define('KMS_OCI_QUEUE_ENGINE_ROOT_URI', 'public://' . KMS_OCI_QUEUE_PREFIX);
 define('KMS_OCI_QUEUE_ENGINE_DIR_JOBS', 'jobs');
 define('KMS_OCI_QUEUE_ENGINE_DIR_JOBS_PROCESSED', 'jobs_processed');
+define('KMS_OCI_QUEUE_ACTION_USER_INSERT', 'user_insert');
+define('KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE', 'bundle_save');
+define('KMS_OCI_QUEUE_ACTION_BUNDLE_DELETE', 'bundle_delete');
+define('kMS_OCI_QUEUE_DEBUG', TRUE);
 
 /**
  * Implements hook_menu().
@@ -39,6 +43,17 @@ function kms_oci_queue_menu() {
     'type' => MENU_CALLBACK,
   );
   return $items;
+}
+
+/**
+ * Implements hook_ctools_plugin_type().
+ */
+function kms_oci_queue_ctools_plugin_type() {
+  return array(
+    'queue_runner' => array(
+      'use hooks' => FALSE,
+    ),
+  );
 }
 
 //// Define custom cron functions
@@ -74,8 +89,6 @@ function kms_oci_queue_cron() {
 
 /**
  * Implements hook_cron_queue_info().
- *
- * Set up ten queues that all send items to the same callback function.
  */
 function kms_oci_queue_cron_queue_info() {
 //  $queues['kms_oci_queue_query_creator'] = array(
@@ -90,51 +103,58 @@ function kms_oci_queue_cron_queue_info() {
 }
 
 /**
- * Process a job queue item of the query creator queue..
+ * Process a job queue item of the query creator queue.
  */
 function kms_oci_queue_query_creator_run() {
-  // Atodo: Do this as a cron queue instead.
-  $queue = DrupalQueue::get(KmsOciQueueJob::$queues['creator']['name'], TRUE);
-  $queue_item = $queue->claimItem();
-  $jid = $queue_item->item_id;
-  $item = $queue_item->data;
-  switch ($item->action) {
-    case 'insert user':
-      if (!empty($item->params)) {
-        $exe_queue = DrupalQueue::get(
-          KmsOciQueueJob::$queues['executor']['name'],
-          TRUE
-        );
-        $query_count = count($item->params);
-        $i = 0;
-        foreach ($item->params as $user_query) {
-          $i++;
-          kms_oci_filter_query_data($user_query[0]);
-          $query = kms_oci_generate_query(
-            'insert',
-            $user_query[0],
-            array('table' => $user_query[1])
-          );
-          // Queue the string.
-          $exe_queue_item = (object) array(
-            'jid' => $jid,
-            'query' => $query,
-            'data' => $user_query[0],
-            'is_last_item' => $i == $query_count,
-          );
-          $exe_queue->createItem($exe_queue_item);
-        }
-        KmsOciQueueJob::log(
-          $jid,
-          '%lines lines to be written in job file.',
-          array('%lines' => $i)
-        );
-      }
-      break;
-
-    case KP_QUEUE_ACTION_ALL_USERS_UPDATE_PERMS:
-      break;
+  // Load query creator queue.
+  $creator_queue = DrupalQueue::get(
+    KmsOciQueueJob::$queues['creator']['name'],
+    TRUE
+  );
+  // Load query executor queue.
+  $exe_queue = DrupalQueue::get(
+    KmsOciQueueJob::$queues['executor']['name'],
+    TRUE
+  );
+  // Get query creator item.
+  $item = $creator_queue->claimItem();
+  // Find job id.
+  $jid = $item->item_id;
+  // Creator item with data to create query queue.
+  $creator_item = $item->data;
+  // We need parameters in order to create queries.
+  if (empty($creator_item->params)) {
+    return;
   }
+  // Do not need original item anymore.
+  unset($item);
+
+  // Create executor queue items via ctools plugins.
+  ctools_include('plugins');
+  $plugins = ctools_get_plugins('kms_oci_queue', 'queue_runner');
+  $line_num = 0;
+  array_walk(
+    $plugins,
+    function($plugin) use ($jid, $creator_item, $exe_queue, &$line_num) {
+    // Only load plugins corresponding to the queue item action.
+    if ($plugin['type'] != $creator_item->action) {
+      return;
+    }
+    // Get proper plugin function in order to create executor items.
+    if ($function = ctools_plugin_get_function($plugin, 'query_creator_run')) {
+      $line_num = $function($jid, $creator_item, $exe_queue);
+    }
+  });
+
+  // If line number is returned from plugin(s) then write it in log.
+  if ($line_num) {
+    KmsOciQueueJob::log(
+      $jid,
+      '%line_num lines to be written in job file.',
+      array('%line_num' => $line_num)
+    );
+  }
+
 }
 
 /**
@@ -144,13 +164,26 @@ function kms_oci_queue_query_creator_run() {
  *   Queue item object.
  */
 function kms_oci_queue_query_run($item) {
-  $job = KmsOciQueueJobFactory::get($item->jid);
-  $patterns = $replacements = array();
-  array_walk($item->data, function($v, $k) use(&$patterns, &$replacements){
-    $patterns[] = '#\\' . $k . '#';
-    $replacements[] = "'$v'";
+  // Load query queue executor plugins to create sql output.
+  ctools_include('plugins');
+  $plugins = ctools_get_plugins('kms_oci_queue', 'queue_runner');
+  $output = '';
+  array_walk($plugins, function($plugin) use ($item, &$output) {
+    // Only load plugins corresponding to the queue item action.
+    if ($plugin['type'] != $item->action) {
+      return;
+    }
+    // Accumulate output.
+    if ($function = ctools_plugin_get_function($plugin, 'query_run')) {
+      $output .= $function($item);
+    }
   });
-  $txt = preg_replace($patterns, $replacements, $item->query, 1) . ";\n";
+  // If no output return (do nothing).
+  if (empty($output)) {
+    return;
+  }
+  // Write job (sql) file.
+  $job = KmsOciQueueJobFactory::get($item->jid);
   $filename = $job->jid . '.job';
   $temp_name = sprintf('temporary://%s.tmp', $job->jid);
   $dest_name = implode(
@@ -161,12 +194,14 @@ function kms_oci_queue_query_run($item) {
       $filename,
     )
   );
-  if (file_put_contents($temp_name, $txt, FILE_APPEND) === FALSE) {
+  // Append output to tmp file.
+  if (file_put_contents($temp_name, $output, FILE_APPEND) === FALSE) {
     $job->changeStatus(
       KmsOciQueueJob::STATUS_FAILED,
       'File creation failed. Could not write to tmp dir.'
     );
   }
+  // If last line has been written move tmp file to actual destination dir.
   elseif ($item->is_last_item) {
     $move = file_unmanaged_move($temp_name, $dest_name, FILE_EXISTS_REPLACE);
     if ($move) {
@@ -175,7 +210,6 @@ function kms_oci_queue_query_run($item) {
         'File creation succeeded. Saved in %filepath',
         array('%filepath' => $move)
       );
-      // Atodo: Release kms_oci_queue_query_creator here.
     }
     else {
       $job->changeStatus(
@@ -187,31 +221,23 @@ function kms_oci_queue_query_run($item) {
   }
 }
 
-function kms_oci_queue_get_items($queue_name) {
-  $items = array();
-  $result = db_query("SELECT item_id, data, expire, created FROM {queue} WHERE name = :name ORDER BY item_id",
-    array(':name' => $queue_name),
-    array('fetch' => PDO::FETCH_ASSOC));
-  foreach ($result as $item) {
-    $items[] = $item;
-  }
-  return $items;
-}
-
+/**
+ * Get all current job ids.
+ *
+ * @return array
+ *   Array of all current job ids.
+ */
 function kms_oci_queue_get_job_ids() {
   $result = db_select('kms_oci_queue_job', 'j')->fields('j', array('jid'))->execute()->fetchCol();
   return $result ?: array();
 }
 
-function kms_oci_queue_fetch_queue_names() {
-  $query = db_select('queue', 'q');
-  $query->fields('q', array('name'));
-  $query->condition('q.name', "kms_oci_queue_query_creator", '=');
-  $query->groupBy('q.name');
-  $result = $query->execute()->fetchAllAssoc('name');
-  return $result ? array_keys($result) : array();
-}
-
+/**
+ * Show Kms oci report page.
+ *
+ * @return array
+ *   Render array.
+ */
 function kms_oci_queue_admin_page () {
   drupal_add_library('system', 'jquery.cookie');
   drupal_add_js(drupal_get_path('module', 'kms_oci_queue') . '/js/kms_oci_queue_reports.js');
@@ -221,6 +247,12 @@ function kms_oci_queue_admin_page () {
   return $output;
 }
 
+/**
+ * Render table with kms oci jobs.
+ *
+ * @return array
+ *   Render array.
+ */
 function kms_oci_queue_admin_page_jobs () {
   $output = array(
     '#type' => 'container',
@@ -307,7 +339,7 @@ function kms_oci_queue_admin_page_jobs () {
 /**
  * Print a log for a given job.
  * 
- * @param integer $jid
+ * @param int $jid
  *   Job id
  */
 function kms_oci_queue_admin_page_ajax_job_log($jid) {
@@ -339,10 +371,7 @@ function kms_oci_queue_admin_page_ajax_job_log($jid) {
     }
     $output["log_$lid"] = array(
       '#theme' => 'table',
-      '#header' => array(
-//        array('data' => t('Log'), 'colspan' => 2),
-//        array('data' => t('Message'), 'colspan' => 2),
-      ),
+      '#header' => array(),
       '#rows' => $rows,
     );
     $json['html'] = render($output);

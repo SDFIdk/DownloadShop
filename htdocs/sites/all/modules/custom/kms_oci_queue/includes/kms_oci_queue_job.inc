@@ -72,7 +72,7 @@ class KmsOciQueueJob {
 
   protected function setInfo(){
     $this->info = '';
-    if (property_exists($this->queueItem, 'data')
+    if (!empty($this->queueItem) && property_exists($this->queueItem, 'data')
       && !empty($this->queueItem->data->action)
     ) {
       $this->info = $this->queueItem->data->action;
@@ -81,7 +81,10 @@ class KmsOciQueueJob {
 
   protected function setInfoDetails(){
     $this->infoDetails = '';
-    if (property_exists($this->queueItem, 'data')
+    if (!empty($this->job->info_details)) {
+      $this->infoDetails = $this->job->info_details;
+    }
+    elseif (!empty($this->queueItem) && property_exists($this->queueItem, 'data')
       && !empty($this->queueItem->data->params)) {
       $this->infoDetails = print_r($this->queueItem->data->params, TRUE);
     }
@@ -143,13 +146,14 @@ class KmsOciQueueJob {
     self::log($this->jid, $message, $variables, $severity);
   }
 
-  public static function create($params, $cid = 'default') {
+  public static function create($params, $info_details = '', $cid = 'default') {
     $queue = DrupalQueue::get(self::$queues['creator']['name'], TRUE);
     $job = new stdClass();
     $job->jid = $queue->createItem((object) $params);
     $job->status = KmsOciQueueJob::STATUS_WAITING;
     $job->created = time();
     $job->cid = $cid;
+    $job->info_details = $info_details;
     $job_saved = KmsOciQueueJobDb::insertJob($job);
     if ($job_saved) {
       self::log($job->jid, t('Job %jid created'), array('%jid' => $job->jid));
@@ -166,6 +170,12 @@ class KmsOciQueueJob {
     db_delete('kms_oci_queue_log')
       ->condition('jid', $this->jid)
       ->execute();
+  }
+
+  public function finish() {
+    // Delete queue item;
+    $queue = DrupalQueue::get($this->queueItem->name);
+    $queue->deleteItem((object) array('item_id' => $this->jid));
   }
 
   public static function log($jid, $message, $variables = array(), $severity = WATCHDOG_INFO) {

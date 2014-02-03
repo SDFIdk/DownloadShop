@@ -581,12 +581,12 @@ function _kms_user_submit_insert_user_oracle($form, &$form_state) {
     = $account->field_contact_me[LANGUAGE_NONE][0]['value'];
   }
   // Insert oracle user data.
-  if (module_exists('kms_oci') && !kms_user_smuser_exists($account)) {
+  if (module_exists('kms_oci_queue') && !kms_user_smuser_exists($account)) {
 //      kms_oci_insert($data['user_extra'], 'smuser_extra');
 //      kms_oci_insert($data['user'], 'smuser');
-    // Atodo: Needs testing:
+    // Create oci queue job.
     KmsOciQueueJob::create(array(
-      'action' => 'insert user',
+      'action' => KMS_OCI_QUEUE_ACTION_USER_INSERT,
       'params' => array(
         array($data['user'], 'smuser'),
         array($data['user_extra'], 'smuser_extra'),
@@ -1248,18 +1248,4 @@ function _kms_user_get_users_from_services($services) {
   });
 
   return array_keys($users);
-}
-
-/**
- * Test function to _kms_user_get_users_from_services.
- * Remember commenting following in the aggregation functions:
- * $sids = $sids[LANGUAGE_NONE];
- */
-function _kms_user_get_users_from_services_test() {
-  $services = array(
-    'field_bundle_webservices_wms' => array(1276),
-    'field_bundle_webservices_geo' => array(8, 9),
-  );
-
-  $uids = _kms_user_get_users_from_services($services);
 }

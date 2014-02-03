@@ -108,25 +108,24 @@ function kms_oci_queue_schema() {
         'not null' => TRUE,
         'description' => 'Primary key: Job id.',
       ),
-//      'type' => array(
-//        'description' => 'The job type.',
-//        'type' => 'varchar',
-//        'length' => 32,
-//        'not null' => TRUE,
-//        'default' => '',
-//      ),
-//      'cid' => array(
-//        'description' => 'The connection id.',
-//        'type' => 'varchar',
-//        'length' => 32,
-//        'not null' => TRUE,
-//        'default' => '',
-//      ),
+      'cid' => array(
+        'description' => 'The connection id.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+      ),
       'query_num' => array(
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
         'description' => 'Number of queries to process.',
+      ),
+      'info_details' => array(
+        'type' => 'text',
+        'not null' => TRUE,
+        'size' => 'big',
+        'description' => 'Info details about job params etc.',
       ),
       'status' => array(
         'type' => 'int',
