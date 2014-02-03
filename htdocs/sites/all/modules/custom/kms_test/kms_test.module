@@ -1,0 +1,153 @@
+<?php
+
+/**
+ * Test function to _kms_user_get_users_from_services.
+ * Remember commenting following in the aggregation functions:
+ * $sids = $sids[LANGUAGE_NONE];
+ */
+function _kms_test_get_users_from_services_test() {
+  $services = array(
+    'field_bundle_webservices_wms' => array(1276),
+    'field_bundle_webservices_geo' => array(8, 9),
+  );
+
+  $uids = _kms_user_get_users_from_services($services);
+}
+
+/**
+ * Remove batch, queue, background_process and cache_field data.
+ */
+function kms_test_db_cleanup_batch_mess() {
+  $query = '';
+//  $query .= <<<EOD
+//DELETE FROM {field_data_field_access_bundles} WHERE entity_type = 'user';
+//DELETE FROM {field_revision_field_access_bundles} WHERE entity_type = 'user';
+//EOD;
+  $query .= <<<EOD
+DELETE FROM {queue};
+DELETE FROM {batch};
+DELETE FROM {background_process};
+DELETE FROM {cache_field};
+EOD;
+  db_query($query);
+
+}
+
+/**
+ * Remove data from kms_oci_queue tables and queue table.
+ */
+function kms_test_db_cleanup_kms_oci_mess() {
+  $query = <<<EOD
+DELETE FROM {kms_oci_queue_job};
+DELETE FROM {kms_oci_queue_log};
+DELETE FROM {queue};
+EOD;
+  db_query($query);
+
+}
+
+/**
+ * Test bundle save.
+ */
+function kms_test_bundle_save() {
+  kms_test_db_cleanup_batch_mess();
+  kms_test_db_cleanup_kms_oci_mess();
+  $uids = array (
+    0 => '12504',
+    1 => '9806',
+    2 => '15730',
+    3 => '7248',
+    4 => '10627',
+    5 => '7246',
+    6 => '7239',
+    7 => '7821',
+    8 => '13764',
+    9 => '8004',
+    10 => '8009',
+    11 => '8013',
+    12 => '8021',
+    13 => '8026',
+    14 => '8001',
+    15 => '10245',
+    16 => '8676',
+    17 => '9143',
+    18 => '8627',
+    19 => '7996',
+    20 => '7238',
+    21 => '7229',
+    22 => '11009',
+    23 => '7999',
+    24 => '7244',
+    25 => '13046',
+    26 => '13241',
+    27 => '7242',
+    28 => '8022',
+    29 => '12725',
+  );
+  $bid = 124;
+  $bundle = node_load($bid);
+  $job_info_details = format_string(
+    'Bundle: "@bundle" saved. Affects @count users.',
+    array(
+      '@bundle' => $bundle->title,
+      '@count' => count($uids)
+    )
+  );
+  $job_params = array (
+    'action' => KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE,
+    'params' =>
+      array (
+        'uids' => $uids,
+        'bid' => $bid,
+      ),
+  );
+  KmsOciQueueJob::create($job_params, $job_info_details);
+  KmsOciQueueJob::create($job_params, $job_info_details, 'kms_permissions');
+}
+
+/**
+ * Finish specified job. Available for test and not real-use.
+ *
+ * @param int $jid
+ *   Job id.
+ */
+function kms_test_finish_job($jid) {
+  $job = KmsOciQueueJobFactory::get($jid);
+  $job->finish();
+}
+
+/**
+ * Test user insert.
+ */
+function kms_test_insert_user() {
+  kms_test_db_cleanup_batch_mess();
+  kms_test_db_cleanup_kms_oci_mess();
+  $userid = time();
+  $data = array (
+    'user' =>
+      array (
+        ':userid' => $userid,
+        ':name' => 'miktest1528',
+        ':emailaddress' => 'mikkel+1528@adapt.dk',
+        ':password' => 'wk7LWq9Hhv',
+        ':disabled' => 0,
+      ),
+    'user_extra' =>
+      array (
+        ':duid' => $userid,
+        ':userid' => $userid,
+        ':usertype' => '3520',
+        ':usertype_info' => 'asdasdads',
+        ':receive_newsletter' => 1,
+        ':accept_terms' => 1,
+        ':contact_me' => 1,
+      ),
+  );
+  KmsOciQueueJob::create(array(
+    'action' => KMS_OCI_QUEUE_ACTION_USER_INSERT,
+    'params' => array(
+      array($data['user'], 'smuser'),
+      array($data['user_extra'], 'smuser_extra'),
+    )
+  ));
+}

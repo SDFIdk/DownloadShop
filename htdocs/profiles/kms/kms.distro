@@ -135,6 +135,11 @@ projects[kms_files][download][url] = "svn+ssh://svnhost/data/subversion/drupal/k
 projects[kms_files][type] = "module"
 projects[kms_files][subdir] = "custom"
 
+projects[kms_test][download][type] = "svn"
+projects[kms_test][download][url] = "svn+ssh://svnhost/data/subversion/drupal/kms/trunk/htdocs/sites/all/modules/custom/kms_test"
+projects[kms_test][type] = "module"
+projects[kms_test][subdir] = "custom"
+
 ; Libraries
 ;; Ckeditor
 libraries[ckeditor][download][type] = 'svn'
