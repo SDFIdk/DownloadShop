@@ -1111,15 +1111,7 @@ function _kms_permissions_get_permissions_by_bid($bid, &$permissions = array()) 
 
   // Get all bounding box info
   $bounding_box = array();
-  $field_values = array(
-    'field_bundle_minx',
-    'field_bundle_miny',
-    'field_bundle_maxx',
-    'field_bundle_maxy',
-    'field_bundle_maxpixelwidth',
-    'field_bundle_maxpixelheight',
-  );
-  foreach ($field_values as $value) {
+  foreach (_kms_permissions_bounding_box_fields() as $value) {
     $box_field = field_get_items('node', $bundle, $value);
     $bounding_box[$value] = $box_field[0]['value'];
   }
@@ -1832,4 +1824,86 @@ function _kms_permissions_get_uids_by_bids($bids) {
   $query->condition('ab.field_access_bundles_nid', $bids, 'IN');
   $result = $query->execute();
   return array_keys($result->fetchAllKeyed());
+}
+
+/**
+ * Get separate services from specified user id.
+ *
+ * @param int $uid
+ *   Drupal user id.
+ * @return array
+ *   Service ids.
+ */
+function _kms_permissions_get_separate_services_by_uid($uid) {
+  $user = user_load($uid);
+  $uw = entity_metadata_wrapper('user', $user);
+  $services = array();
+  foreach(_kms_permissions_webservice_fields() as $field) {
+    $sids = $uw->$field->value();
+    if (!empty($sids)) {
+      array_walk($sids, function($sid) use (&$services) {
+        $services[]['id'] = $sid;
+      });
+    }
+  }
+  return $services;
+}
+
+/**
+ * Get bounding box data from specified bundle id.
+ *
+ * @param int $bid
+ *   Bundle id.
+ * @return array
+ *   Bounding box data array.
+ */
+function _kms_permissions_get_bundle_bounding_box_data($bid) {
+  // Load access_bundle.
+  $node = node_load($bid);
+  $bw = entity_metadata_wrapper('node', $node);
+
+  $field_map = array_flip(_kms_permissions_bounding_box_fields());
+  $data = array();
+  foreach(_kms_permissions_bounding_box_fields() as $field) {
+    $value = $bw->$field->value();
+    if (!empty($value)) {
+      $data[$field_map[$field]] = $value;
+    }
+  }
+  return $data;
+}
+
+/**
+ * Return known boundary box fields.
+ *
+ * @return array
+ */
+function _kms_permissions_bounding_box_fields() {
+  return array(
+    'MINX' => 'field_bundle_minx',
+    'MINY' => 'field_bundle_miny',
+    'MAXX' => 'field_bundle_maxx',
+    'MAXY' => 'field_bundle_maxy',
+    'MAXPIXELWIDTH' => 'field_bundle_maxpixelwidth',
+    'MAXPIXELHEIGHT' => 'field_bundle_maxpixelheight',
+  );
+}
+
+/**
+ * Return node id(s) of default access bundles.
+ *
+ * @return array
+ *   Node ids.
+ */
+function _kms_permissions_get_default_bundles() {
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'access_bundle')
+    ->fieldCondition('field_default_bundle', 'value', 1, '=')
+    ->propertyCondition('status', 1)
+    ->propertyOrderBy('nid')
+    ->execute();
+  $result = $query->execute();
+  return isset($result['node']) ? array_keys($result['node']) : array();
 }
