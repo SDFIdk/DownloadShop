@@ -134,11 +134,14 @@ function kms_user_cron() {
   _kms_user_cron_expire_users();
 }
 
-function kms_user_ctools_plugin_directory($owner, $plugin_type) {
+function kms_user_ctools_plugin_directory($module, $plugin) {
   // we'll be nice and limit scandir() calls
   // if (in_array($owner, array('ctools', 'addressfield'))) {
-  if (in_array($owner, array('ctools'))) {
-    return "plugins/$plugin_type";
+  if (in_array($module, array('ctools'))) {
+    return "plugins/$plugin";
+  }
+  if ($module == 'kms_oci_queue') {
+    return 'plugins/kms_oci_queue/' . $plugin;
   }
 }
 
@@ -585,12 +588,29 @@ function _kms_user_submit_insert_user_oracle($form, &$form_state) {
 //      kms_oci_insert($data['user_extra'], 'smuser_extra');
 //      kms_oci_insert($data['user'], 'smuser');
     // Create oci queue job.
+
+    // Populate user tables in oracle.
     KmsOciQueueJob::create(array(
       'action' => KMS_OCI_QUEUE_ACTION_USER_INSERT,
       'params' => array(
         array($data['user'], 'smuser'),
         array($data['user_extra'], 'smuser_extra'),
       )
+    ));
+    // Populate user permission tables of the new user in Oracle
+    // with permissions from the default bundles.
+    $job_params = array(
+      'uid' => $account->uid,
+      'bids' => _kms_permissions_get_default_bundles(),
+    );
+    KmsOciQueueJob::create(array(
+      'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+      'params' => $job_params,
+    ));
+    KmsOciQueueJob::create(array(
+      'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+      'params' => $job_params,
+      'kms_permissions',
     ));
   }
 

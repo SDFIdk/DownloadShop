@@ -1,19 +1,20 @@
 <?php
 /**
  * @file
- * kms_permissions_bundle_save.inc
+ * kms_user_bundles_attach.inc
  *
  * Provides callback functions run by the queue handling functions.
- * Creates oracle queries with permissions for all the involved users.
+ * Attaches specified bundles to a given user.
  */
 
+
 $plugin = array(
-  'type' => KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE,
+  'type' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
   'query_creator_run' => array(
-    'function' => 'kms_permissions_bundle_save_query_creator_run',
+    'function' => 'kms_user_bundles_attach_query_creator_run',
   ),
   'query_run' => array(
-    'function' => 'kms_permissions_bundle_save_query_run',
+    'function' => 'kms_user_bundles_attach_query_run',
   ),
 );
 
@@ -30,16 +31,18 @@ $plugin = array(
  * @return int
  *   Number of query lines to be written.
  */
-function kms_permissions_bundle_save_query_creator_run($jid, $creator_item, $exe_queue) {
-  $uids = $creator_item->params['uids'];
-  $user_count = count($uids);
-  $bid = $creator_item->params['bid'];
+function kms_user_bundles_attach_query_creator_run($jid, $creator_item, $exe_queue) {
+  $uid = $creator_item->params['uid'];
+  $bids = $creator_item->params['bids'];
   $line_num = 0;
-  array_walk($uids, function ($uid) use ($jid, $bid, $creator_item, $user_count, &$exe_queue, &$line_num) {
-    $perms = array();
-    _kms_permissions_get_permissions_by_uid($uid, $perms);
+  array_walk($bids, function ($bid) use ($jid, $uid, $creator_item, &$exe_queue, &$line_num) {
+    static $perms;
 
-    _kms_permissions_get_separate_perms_by_uid($uid, $perms);
+    if (empty($perms)) {
+      _kms_permissions_get_separate_perms_by_uid($uid, $perms);
+    }
+    _kms_permissions_get_permissions_by_bid($bid, $perms);
+
 
     if (!empty($perms)) {
       $user = user_load($uid);
@@ -49,7 +52,7 @@ function kms_permissions_bundle_save_query_creator_run($jid, $creator_item, $exe
         'action' => $creator_item->action,
         'perms' => $perms,
         'kms_id' => kms_user_get_userid($user),
-        'is_last_item' => $line_num == $user_count,
+        'is_last_item' => TRUE,
       );
       $exe_queue->createItem((object)$exe_queue_item);
       $line_num = $line_num + count(array_keys($perms));
@@ -70,7 +73,7 @@ function kms_permissions_bundle_save_query_creator_run($jid, $creator_item, $exe
  * @return string
  *   Generated oracle queries.
  */
-function kms_permissions_bundle_save_query_run($item) {
+function kms_user_bundles_attach_query_run($item) {
   $output = $last_perm_name = '';
   array_walk(
     $item->perms,

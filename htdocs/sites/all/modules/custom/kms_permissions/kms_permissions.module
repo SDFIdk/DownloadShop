@@ -1842,7 +1842,7 @@ function _kms_permissions_get_separate_services_by_uid($uid) {
     $sids = $uw->$field->value();
     if (!empty($sids)) {
       array_walk($sids, function($sid) use (&$services) {
-        $services[]['id'] = $sid;
+        $services[$sid] = $sid;
       });
     }
   }
@@ -1906,4 +1906,87 @@ function _kms_permissions_get_default_bundles() {
     ->execute();
   $result = $query->execute();
   return isset($result['node']) ? array_keys($result['node']) : array();
+}
+
+/**
+ * Get the bounding box data of the oldest default bundle created.
+ *
+ * @return array
+ *   Bounding box data.
+ */
+function _kms_permissions_get_default_bundle_bounding_box_data() {
+  $default_bundles = _kms_permissions_get_default_bundles();
+  return !empty($default_bundles) ? $default_bundles[0] : array();
+}
+
+/**
+ * Get separate permissions from a specified user.
+ *
+ * @param int $uid
+ *   Drupal user id.
+ * @param array $perms
+ *   The golden kms permissions permission array. Passed by ref.
+ * @Atodo Implement all separate perms.
+ */
+function _kms_permissions_get_separate_perms_by_uid($uid, &$perms) {
+  // Get all service ids.
+  $separate_services = _kms_permissions_get_separate_services_by_uid($uid);
+  // If no separate permissions do nothing.
+  // Atodo: Consider all other types of permissions here.
+  if (empty($separate_services)) {
+    return;
+  }
+  // Atodo: Consider if this is the right way:
+  // Atodo: If no default bounding box data is found don't add separate services.
+  $bounding_box_data = _kms_permissions_get_default_bundle_bounding_box_data();
+  if (!empty($bounding_box_data)) {
+    // If services key is not created yet - do it.
+    if (empty($perms) || empty($perms['services'])) {
+      $perms['services'] = array();
+    }
+    array_walk(
+      $separate_services,
+      function($id) use (&$perms, $bounding_box_data) {
+        // If we do not have service id in our services array yet
+        // create it and attach boundary box data.
+        if (empty($perms['services']['s' . $id])) {
+          $perms['services']['s' . $id] = array('id' => $id);
+          $perms['services']['s' . $id] += $bounding_box_data;
+        }
+      }
+    );
+  }
+}
+
+/**
+ * Return array that reflects relations
+ *   between Drupal and Oracle data permission wise.
+ *
+ * @return array
+ *   Data relations array.
+ */
+function _kms_permissions_perms_oracle_relations() {
+  return array(
+    'services' => array(
+      'table' => 'USERRESTRICTIONS2',
+      'cid' => 'kms_permissions',
+      'default_values' => array(
+        ':MINX' => '',
+        ':MINY' => '',
+        ':MAXX' => '',
+        ':MAXY' => '',
+        ':MAXPIXELWIDTH' => '',
+        ':MAXPIXELHEIGHT' => '',
+        ':FEATUREINFO' => '',
+      )
+    ),
+    'applications' => array(
+      'table' => 'SMUSERGROUP',
+      'cid' => 'default',
+      'default_values' => array(
+        ':USERID' => '',
+        ':GROUPID' => '',
+      )
+    ),
+  );
 }

@@ -12,6 +12,7 @@ define('KMS_OCI_QUEUE_ENGINE_ROOT_URI', 'public://' . KMS_OCI_QUEUE_PREFIX);
 define('KMS_OCI_QUEUE_ENGINE_DIR_JOBS', 'jobs');
 define('KMS_OCI_QUEUE_ENGINE_DIR_JOBS_PROCESSED', 'jobs_processed');
 define('KMS_OCI_QUEUE_ACTION_USER_INSERT', 'user_insert');
+define('KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH', 'bundle_attach');
 define('KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE', 'bundle_save');
 define('KMS_OCI_QUEUE_ACTION_BUNDLE_DELETE', 'bundle_delete');
 define('kMS_OCI_QUEUE_DEBUG', TRUE);
@@ -402,4 +403,20 @@ function kms_oci_queue_admin_page_ajax_job_statuses() {
     'status' => $status,
   ));
   exit;
+}
+
+function _kms_oci_queue_sql_generate_line($type, $data, $table) {
+  switch ($type) {
+    case 'insert':
+      $query = kms_oci_generate_query('insert', $data, array('table' => $table));
+      break;
+  }
+
+  $patterns = $replacements = array();
+  array_walk($data, function($v, $k) use(&$patterns, &$replacements){
+    $patterns[] = '#\\' . $k . '#';
+    $replacements[] = "'$v'";
+  });
+  return preg_replace($patterns, $replacements, $query, 1) . ";\n";
+
 }
