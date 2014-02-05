@@ -1,15 +1,15 @@
-# KMS Oci Queue test
+# KMS Oci Queue
 
-## Urls:
-+ Cron page: [http://kms.dev/admin/config/system/cron][cron page].
-+ Oci queue report page: [http://kms.dev/admin/reports/kms-oci-queue][report page].
-
-## Info
+## Testing
 In tests affecting all users the amount of users are reduced to 30 in debug mode.
 
 The debug mode is controlled by the constant: KMS_OCI_QUEUE_DEBUG. (TRUE = is in debug mode).
 
-## Tests
+
+### Urls:
++ Cron page: [http://kms.dev/admin/config/system/cron][cron page].
++ Oci queue report page: [http://kms.dev/admin/reports/kms-oci-queue][report page].
+
 ### Insert user
 + Go to: [opret-mig-som-bruger](http://kms.dev//content/opret-mig-som-bruger).
 + Fill in test user data.
