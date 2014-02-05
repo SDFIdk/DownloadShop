@@ -121,7 +121,14 @@ function kms_oci_queue_schema() {
         'default' => 0,
         'description' => 'Number of queries to process.',
       ),
-      'info_details' => array(
+      'action' => array(
+        'description' => 'The connection id.',
+        'type' => 'varchar',
+        'length' => 32,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'action_details' => array(
         'type' => 'text',
         'not null' => TRUE,
         'size' => 'big',

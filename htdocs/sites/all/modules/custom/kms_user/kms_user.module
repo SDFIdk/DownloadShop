@@ -592,6 +592,12 @@ function _kms_user_submit_insert_user_oracle($form, &$form_state) {
     // Populate user tables in oracle.
     KmsOciQueueJob::create(array(
       'action' => KMS_OCI_QUEUE_ACTION_USER_INSERT,
+      'action_details' => format_string(
+        'Inserting new user: @user_details.',
+        array(
+          '@user_details' => json_encode($data),
+        )
+      ),
       'params' => array(
         array($data['user'], 'smuser'),
         array($data['user_extra'], 'smuser_extra'),
@@ -603,8 +609,16 @@ function _kms_user_submit_insert_user_oracle($form, &$form_state) {
       'uid' => $account->uid,
       'bids' => _kms_permissions_get_default_bundles(),
     );
+    $bundles_attach_action_details = format_string(
+      'Attaching default bundles: @bundles to new user: @user.',
+      array(
+        '@bundles' => implode(', ', $job_params['bids']),
+        '@user' => $job_params['uid'],
+      )
+    );
     KmsOciQueueJob::create(array(
       'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+      'action_details' => $bundles_attach_action_details,
       'params' => $job_params,
     ));
     KmsOciQueueJob::create(array(

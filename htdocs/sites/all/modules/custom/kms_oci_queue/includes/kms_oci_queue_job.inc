@@ -27,8 +27,8 @@ class KmsOciQueueJob {
   public $jid = 0;
   public $created;
   public $status;
-  public $info;
-  public $infoDetails;
+  public $action;
+  public $actionDetails;
   public $queryNum;
   public $cid;
   protected $queueItem;
@@ -42,8 +42,8 @@ class KmsOciQueueJob {
     if ($this->job) {
       $this->setQueueItem($this->loadQueueItem());
       $this->setCreated();
-      $this->setInfo();
-      $this->setInfoDetails();
+      $this->setAction();
+      $this->setActionDetails();
       $this->setStatus();
       $this->setQueryNum();
       $this->setConnectionId();
@@ -70,24 +70,13 @@ class KmsOciQueueJob {
     $this->queueItem = $item;
   }
 
-  protected function setInfo(){
-    $this->info = '';
-    if (!empty($this->queueItem) && property_exists($this->queueItem, 'data')
-      && !empty($this->queueItem->data->action)
-    ) {
-      $this->info = $this->queueItem->data->action;
-    }
+  protected function setAction(){
+    $this->action = $this->job->action;
   }
 
-  protected function setInfoDetails(){
-    $this->infoDetails = '';
-    if (!empty($this->job->info_details)) {
-      $this->infoDetails = $this->job->info_details;
-    }
-    elseif (!empty($this->queueItem) && property_exists($this->queueItem, 'data')
-      && !empty($this->queueItem->data->params)) {
-      $this->infoDetails = print_r($this->queueItem->data->params, TRUE);
-    }
+  protected function setActionDetails(){
+    $action_details = unserialize($this->job->action_details);
+    $this->actionDetails = '<pre>' . print_r($action_details, TRUE) . '</pre>';
   }
 
   public function getLog($mode = 'all') {
@@ -146,14 +135,25 @@ class KmsOciQueueJob {
     self::log($this->jid, $message, $variables, $severity);
   }
 
-  public static function create($params, $info_details = '', $cid = 'default') {
+  public function changeActionDetails($action_details) {
+    $job = $this->job;
+    $job->action_details = $action_details;
+    KmsOciQueueJobDb::updateJob($job);
+  }
+
+  public static function create($params, $cid = 'default') {
+    $params += array(
+      'action' => '',
+      'action_details' => '',
+    );
     $queue = DrupalQueue::get(self::$queues['creator']['name'], TRUE);
     $job = new stdClass();
     $job->jid = $queue->createItem((object) $params);
     $job->status = KmsOciQueueJob::STATUS_WAITING;
     $job->created = time();
     $job->cid = $cid;
-    $job->info_details = $info_details;
+    $job->action = $params['action'];
+    $job->action_details = serialize($params['action_details']);
     $job_saved = KmsOciQueueJobDb::insertJob($job);
     if ($job_saved) {
       self::log($job->jid, t('Job %jid created'), array('%jid' => $job->jid));
@@ -172,7 +172,7 @@ class KmsOciQueueJob {
       ->execute();
   }
 
-  public function finish() {
+  public function finishQueue() {
     // Delete queue item;
     $queue = DrupalQueue::get($this->queueItem->name);
     $queue->deleteItem((object) array('item_id' => $this->jid));

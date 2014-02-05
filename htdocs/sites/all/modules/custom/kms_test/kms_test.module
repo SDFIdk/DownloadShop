@@ -86,13 +86,7 @@ function kms_test_bundle_save() {
   );
   $bid = 124;
   $bundle = node_load($bid);
-  $job_info_details = format_string(
-    'Bundle: "@bundle" saved. Affects @count users.',
-    array(
-      '@bundle' => $bundle->title,
-      '@count' => count($uids)
-    )
-  );
+
   $job_params = array (
     'action' => KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE,
     'params' =>
@@ -101,8 +95,15 @@ function kms_test_bundle_save() {
         'bid' => $bid,
       ),
   );
-  KmsOciQueueJob::create($job_params, $job_info_details);
-  KmsOciQueueJob::create($job_params, $job_info_details, 'kms_permissions');
+  $job_params['action_details'] = format_string(
+    'Bundle: "@bundle" saved. Affects @count users.',
+    array(
+      '@bundle' => $bundle->title,
+      '@count' => count($uids),
+    )
+  );
+  KmsOciQueueJob::create($job_params);
+  KmsOciQueueJob::create($job_params, 'kms_permissions');
 }
 
 /**
@@ -143,11 +144,48 @@ function kms_test_insert_user() {
         ':contact_me' => 1,
       ),
   );
+  // Populate user tables in oracle.
   KmsOciQueueJob::create(array(
     'action' => KMS_OCI_QUEUE_ACTION_USER_INSERT,
+    'action_details' => $data,
     'params' => array(
       array($data['user'], 'smuser'),
       array($data['user_extra'], 'smuser_extra'),
     )
   ));
+  // Populate user permission tables of the new user in Oracle
+  // with permissions from the default bundles.
+  $job_params = array(
+    'uid' => $userid,
+    'bids' => _kms_permissions_get_default_bundles(),
+  );
+  $bundles_attach_action_details = format_string(
+    'Attaching default bundles: @bundles to new user: @user.',
+    array(
+      '@bundles' => implode(', ', $job_params['bids']),
+      '@user' => $job_params['uid'],
+    )
+  );
+  KmsOciQueueJob::create(array(
+    'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+    'action_details' => $bundles_attach_action_details,
+    'params' => $job_params,
+  ));
+  KmsOciQueueJob::create(array(
+    'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+    'action_details' => $bundles_attach_action_details,
+    'params' => $job_params,
+    'kms_permissions',
+  ));
+
+}
+
+function kms_test_run_queue_run() {
+  $queues = array(
+    'kms_oci_queue_query' =>
+      array (
+        'worker callback' => 'kms_oci_queue_query_run',
+        'time' => 120,
+      ),
+  );
 }

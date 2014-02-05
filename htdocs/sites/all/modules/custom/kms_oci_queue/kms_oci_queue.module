@@ -211,6 +211,7 @@ function kms_oci_queue_query_run($item) {
         'File creation succeeded. Saved in %filepath',
         array('%filepath' => $move)
       );
+      $job->finishQueue();
     }
     else {
       $job->changeStatus(
@@ -239,7 +240,7 @@ function kms_oci_queue_get_job_ids() {
  * @return array
  *   Render array.
  */
-function kms_oci_queue_admin_page () {
+function kms_oci_queue_admin_page() {
   drupal_add_library('system', 'jquery.cookie');
   drupal_add_js(drupal_get_path('module', 'kms_oci_queue') . '/js/kms_oci_queue_reports.js');
   drupal_add_css(drupal_get_path('module', 'kms_oci_queue') . '/css/kms_oci_queue_reports.css');
@@ -254,7 +255,7 @@ function kms_oci_queue_admin_page () {
  * @return array
  *   Render array.
  */
-function kms_oci_queue_admin_page_jobs () {
+function kms_oci_queue_admin_page_jobs() {
   $output = array(
     '#type' => 'container',
     '#attributes' => array(
@@ -276,7 +277,7 @@ function kms_oci_queue_admin_page_jobs () {
   $rows = array();
   foreach (kms_oci_queue_get_job_ids() as $jid) {
     $job = KmsOciQueueJobFactory::get($jid);
-    $job_info = $job->info . ' [<a href="#" class="more">' . t('info') . '</a>]';
+    $job_action = $job->action . ' [<a href="#" class="more">' . t('info') . '</a>]';
     $rows[] = array(
       'data' => array(
         array(
@@ -285,7 +286,7 @@ function kms_oci_queue_admin_page_jobs () {
           'class' => 'job-log-trigger',
         ),
         array(
-          'data' => $job_info,
+          'data' => $job_action,
           'data-jid' => $job->jid,
           'class' => array('job-info'),
         ),
@@ -304,8 +305,8 @@ function kms_oci_queue_admin_page_jobs () {
     $options['job_info_beautytip_' . $job->jid] = array(
       'cssSelect' => 'td[data-jid="' . $job->jid .  '"].job-info .more',
       'trigger' => array(0 => 'mouseover', 1 => 'click'),
-      'text' => $job->infoDetails,
-      'width' => 350,
+      'text' => $job->actionDetails,
+      'width' => 500,
     );
     beautytips_add_beautytips($options);
 
@@ -384,6 +385,7 @@ function kms_oci_queue_admin_page_ajax_job_log($jid) {
 
 /**
  * Load statuses of the different jobs and print them as table cells.
+ *
  * Prints a json object with a structure like: job id => td table cell (html).
  */
 function kms_oci_queue_admin_page_ajax_job_statuses() {
@@ -405,6 +407,19 @@ function kms_oci_queue_admin_page_ajax_job_statuses() {
   exit;
 }
 
+/**
+ * Generate sql line for a kms_oci_queue job.
+ *
+ * @param string $type
+ *   What type of query. Eg. 'insert'.
+ * @param array $data
+ *   Query data (':col' => data).
+ * @param string $table
+ *   Which table is manipulated.
+ *
+ * @return string
+ *   Query.
+ */
 function _kms_oci_queue_sql_generate_line($type, $data, $table) {
   switch ($type) {
     case 'insert':
@@ -419,4 +434,80 @@ function _kms_oci_queue_sql_generate_line($type, $data, $table) {
   });
   return preg_replace($patterns, $replacements, $query, 1) . ";\n";
 
+}
+
+/**
+ * Process a save bundle queue item created by a query creator queue.
+ *
+ * The function creates sql lines to be written in a kms_oci_queue job file.
+ *
+ * @param object $item
+ *   Queue item.
+ *
+ * @return string
+ *   Sql output.
+ */
+function _kms_oci_queue_bundle_save_process_query_creator_queue_item($item) {
+  $output = $last_perm_name = '';
+  array_walk(
+    $item->perms,
+    function($perms, $perm_name) use ($item, &$output) {
+      $perms_oracle_rel = _kms_permissions_perms_oracle_relations();
+      // Only handle permissions mentioned in in oracle relations.
+      if (empty($perms_oracle_rel[$perm_name])) {
+        return;
+      }
+
+      $job = KmsOciQueueJobFactory::get($item->jid);
+      $perm_conf = $perms_oracle_rel[$perm_name];
+      // If the connection id of the job does not match the one in $perm_conf
+      // do nothing.
+      if ($job->cid != $perm_conf['cid']) {
+        return;
+      }
+      // Create sql line that deletes all data from table owned by current user.
+      $output .= sprintf(
+        "DELETE FROM %s WHERE USERID = '%s'\n",
+        $perm_conf['table'],
+        $item->kms_id
+      );
+
+      // Create data for insert query line.
+      foreach ($perms as $perm) {
+        $perm += $perm_conf['default_values'];
+        switch ($perm_name) {
+          case 'services':
+            $data = array(
+              ':USERID' => $item->kms_id,
+              ':SERVICEID' => $perm['id'],
+              ':MINX' => $perm['MINX'],
+              ':MINY' => $perm['MINY'],
+              ':MAXX' => $perm['MAXX'],
+              ':MAXY' => $perm['MAXY'],
+              ':MAXPIXELWIDTH' => $perm['MAXPIXELWIDTH'],
+              ':MAXPIXELHEIGHT' => $perm['MAXPIXELHEIGHT'],
+              ':FEATUREINFO' => $perm['FEATUREINFO'],
+            );
+            break;
+
+          case 'applications':
+            $data = array(
+              ':USERID' => $item->kms_id,
+              ':GROUPID' => $perm['id'],
+            );
+            break;
+        }
+        // Create insert query line.
+        $output .= _kms_oci_queue_sql_generate_line(
+          'insert',
+          $data,
+          $perm_conf['table']
+        );
+      }
+
+    }
+
+  );
+  // Return all created query lines.
+  return $output;
 }
