@@ -1835,9 +1835,12 @@ function _kms_permissions_get_uids_by_bids($bids) {
  *   Service ids.
  */
 function _kms_permissions_get_separate_services_by_uid($uid) {
-  $user = user_load($uid);
-  $uw = entity_metadata_wrapper('user', $user);
   $services = array();
+  $user = user_load($uid);
+  if (!$user) {
+    return $services;
+  }
+  $uw = entity_metadata_wrapper('user', $user);
   foreach(_kms_permissions_webservice_fields() as $field) {
     $sids = $uw->$field->value();
     if (!empty($sids)) {

@@ -7,43 +7,47 @@
   color: darkblue;
 }
 /* line 8, ../sass/kms_oci_queue_reports.scss */
+.kms-oci-queue-jobs-overview .kms-oci-queue-status-file-ready {
+  color: hotpink;
+}
+/* line 11, ../sass/kms_oci_queue_reports.scss */
 .kms-oci-queue-jobs-overview .kms-oci-queue-status-done {
   color: green;
 }
-/* line 12, ../sass/kms_oci_queue_reports.scss */
+/* line 15, ../sass/kms_oci_queue_reports.scss */
 .kms-oci-queue-jobs-overview .kms-oci-queue-severity-error,
 .kms-oci-queue-jobs-overview .kms-oci-queue-status-failed {
   color: red;
 }
-/* line 15, ../sass/kms_oci_queue_reports.scss */
+/* line 18, ../sass/kms_oci_queue_reports.scss */
 .kms-oci-queue-jobs-overview tr.kms-oci-queue-job-log {
   display: none;
   border-style: none;
 }
-/* line 18, ../sass/kms_oci_queue_reports.scss */
+/* line 21, ../sass/kms_oci_queue_reports.scss */
 .kms-oci-queue-jobs-overview tr.kms-oci-queue-job-log table {
   border: 0;
 }
-/* line 20, ../sass/kms_oci_queue_reports.scss */
+/* line 23, ../sass/kms_oci_queue_reports.scss */
 .kms-oci-queue-jobs-overview tr.kms-oci-queue-job-log table tr {
   background: transparent;
   border: 0;
 }
-/* line 23, ../sass/kms_oci_queue_reports.scss */
+/* line 26, ../sass/kms_oci_queue_reports.scss */
 .kms-oci-queue-jobs-overview tr.kms-oci-queue-job-log table tr td {
   border: 0;
 }
-/* line 29, ../sass/kms_oci_queue_reports.scss */
+/* line 32, ../sass/kms_oci_queue_reports.scss */
 .kms-oci-queue-jobs-overview td {
   border-bottom: 1px solid #bebfb9;
 }
-/* line 31, ../sass/kms_oci_queue_reports.scss */
+/* line 34, ../sass/kms_oci_queue_reports.scss */
 .kms-oci-queue-jobs-overview td.job-log-trigger {
   padding-left: 25px;
   cursor: pointer;
   background: url(/misc/arrow-desc.png) no-repeat 5px 10px;
 }
-/* line 35, ../sass/kms_oci_queue_reports.scss */
+/* line 38, ../sass/kms_oci_queue_reports.scss */
 .kms-oci-queue-jobs-overview td.job-log-trigger.active {
   background: url(/misc/arrow-asc.png) no-repeat 5px 10px;
 }

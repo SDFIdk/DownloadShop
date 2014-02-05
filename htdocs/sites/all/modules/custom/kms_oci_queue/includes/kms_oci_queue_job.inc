@@ -10,8 +10,9 @@ class KmsOciQueueJob {
 
   const STATUS_WAITING = 0;
   const STATUS_PROCESSING = 1;
-  const STATUS_FAILED = 2;
-  const STATUS_DONE = 3;
+  const STATUS_FILE_READY = 2;
+  const STATUS_FAILED = 3;
+  const STATUS_DONE = 4;
 
   public static $queues = array(
     'creator' => array(
@@ -210,6 +211,7 @@ class KmsOciQueueJob {
     return array(
       self::STATUS_WAITING => t('Waiting'),
       self::STATUS_PROCESSING => t('Processing'),
+      self::STATUS_FILE_READY  => t('Job file ready'),
       self::STATUS_FAILED => t('Failed'),
       self::STATUS_DONE => t('Done'),
     );
@@ -233,6 +235,7 @@ class KmsOciQueueJob {
     $map = array(
       self::STATUS_WAITING     => 'kms-oci-queue-status-waiting',
       self::STATUS_PROCESSING  => 'kms-oci-queue-status-processing',
+      self::STATUS_FILE_READY  => 'kms-oci-queue-status-file-ready',
       self::STATUS_FAILED      => 'kms-oci-queue-status-failed',
       self::STATUS_DONE        => 'kms-oci-queue-status-done',
     );

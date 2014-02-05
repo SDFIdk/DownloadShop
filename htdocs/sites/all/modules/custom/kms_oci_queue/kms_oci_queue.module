@@ -57,45 +57,38 @@ function kms_oci_queue_ctools_plugin_type() {
   );
 }
 
-//// Define custom cron functions
-//function kms_oci_queue_cronapi($op, $job = NULL) {
-//  switch($op) {
-//    case 'list':
-//      return array(
-//        'kms_oci_queue_query_creator_run' => 'Kms oci queue: Run query creator',
-//      );
-//
-//    case 'rule':
-//      switch($job) {
-//        case 'kms_oci_queue_query_creator_run': return '1 * * * *';
-//        break;
-//      }
-//      break;
-//
-//    case 'execute':
-//      switch($job) {
-//        case 'kms_oci_queue_query_creator_run':
-//          kms_oci_queue_query_creator_run();
-//          break;
-//      }
-//      break;
-//  }
-//
-//}
+/**
+ * Implements hook_cronapi().
+ */
+function kms_oci_queue_cronapi($op, $job = NULL) {
+  switch($op) {
+    case 'list':
+      return array(
+        'kms_oci_queue_query_creator_run' => 'Kms oci queue: Run query creator',
+      );
 
-function kms_oci_queue_cron() {
-  // Atodo: Do this as a cron queue instead.
-  kms_oci_queue_query_creator_run();
+    case 'rule':
+      switch($job) {
+        case 'kms_oci_queue_query_creator_run': return '*/1 * * * *';
+        break;
+      }
+      break;
+
+    case 'execute':
+      switch($job) {
+        case 'kms_oci_queue_query_creator_run':
+          kms_oci_queue_query_creator_run();
+          break;
+      }
+      break;
+  }
+
 }
 
 /**
  * Implements hook_cron_queue_info().
  */
 function kms_oci_queue_cron_queue_info() {
-//  $queues['kms_oci_queue_query_creator'] = array(
-//    'worker callback' => 'kms_oci_queue_query_creator_run',
-//    'time' => 120,
-//  );
   $queues['kms_oci_queue_query'] = array(
     'worker callback' => 'kms_oci_queue_query_run',
     'time' => 120,
@@ -119,6 +112,10 @@ function kms_oci_queue_query_creator_run() {
   );
   // Get query creator item.
   $item = $creator_queue->claimItem();
+  // If no queue item found do nothing.
+  if (!$item) {
+    return;
+  }
   // Find job id.
   $jid = $item->item_id;
   // Creator item with data to create query queue.
@@ -149,8 +146,9 @@ function kms_oci_queue_query_creator_run() {
 
   // If line number is returned from plugin(s) then write it in log.
   if ($line_num) {
-    KmsOciQueueJob::log(
-      $jid,
+    $job = KmsOciQueueJobFactory::get($jid);
+    $job->changeStatus(
+      KmsOciQueueJob::STATUS_PROCESSING,
       '%line_num lines to be written in job file.',
       array('%line_num' => $line_num)
     );
@@ -207,7 +205,7 @@ function kms_oci_queue_query_run($item) {
     $move = file_unmanaged_move($temp_name, $dest_name, FILE_EXISTS_REPLACE);
     if ($move) {
       $job->changeStatus(
-        KmsOciQueueJob::STATUS_WAITING,
+        KmsOciQueueJob::STATUS_FILE_READY,
         'File creation succeeded. Saved in %filepath',
         array('%filepath' => $move)
       );
@@ -230,7 +228,7 @@ function kms_oci_queue_query_run($item) {
  *   Array of all current job ids.
  */
 function kms_oci_queue_get_job_ids() {
-  $result = db_select('kms_oci_queue_job', 'j')->fields('j', array('jid'))->execute()->fetchCol();
+  $result = db_select('kms_oci_queue_job', 'j')->fields('j', array('jid'))->orderBy('jid')->execute()->fetchCol();
   return $result ?: array();
 }
 
