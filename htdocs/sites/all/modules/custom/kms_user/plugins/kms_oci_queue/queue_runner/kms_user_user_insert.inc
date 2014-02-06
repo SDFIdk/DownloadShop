@@ -73,7 +73,8 @@ function kms_user_user_insert_query_creator_run($jid, $creator_item, $exe_queue)
  *   Generated oracle queries.
  */
 function kms_user_user_insert_query_run($item) {
-  $output = sprintf("DELETE FROM %s WHERE USERID = '%s';\n", $item->table, $item->kms_id);
+  $output = sprintf("DELETE FROM %s WHERE USERID = '%s'", $item->table, $item->kms_id);
+  $output .= ";\n";
   $patterns = $replacements = array();
   array_walk($item->data, function($v, $k) use(&$patterns, &$replacements){
     $patterns[] = '#\\' . $k . '#';

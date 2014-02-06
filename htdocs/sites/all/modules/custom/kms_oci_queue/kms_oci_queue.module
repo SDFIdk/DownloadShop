@@ -465,10 +465,11 @@ function _kms_oci_queue_bundle_save_process_query_creator_queue_item($item) {
       }
       // Create sql line that deletes all data from table owned by current user.
       $output .= sprintf(
-        "DELETE FROM %s WHERE USERID = '%s'\n",
+        "DELETE FROM %s WHERE USERID = '%s'",
         $perm_conf['table'],
         $item->kms_id
       );
+      $output .= ";\n";
 
       // Create data for insert query line.
       foreach ($perms as $perm) {
