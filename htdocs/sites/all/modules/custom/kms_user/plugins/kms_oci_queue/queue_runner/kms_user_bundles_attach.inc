@@ -38,20 +38,23 @@ function kms_user_bundles_attach_query_creator_run($jid, $creator_item, $exe_que
   array_walk($bids, function ($bid) use ($jid, $uid, $creator_item, &$exe_queue, &$line_num) {
     static $perms;
 
+    $user = user_load($uid);
+    if ($user) {
+      $uid = kms_user_get_userid($user);
+    }
+
     if (empty($perms)) {
       _kms_permissions_get_separate_perms_by_uid($uid, $perms);
     }
     _kms_permissions_get_permissions_by_bid($bid, $perms);
 
-
     if (!empty($perms)) {
-      $user = user_load($uid);
       // Queue the item.
       $exe_queue_item = array(
         'jid' => $jid,
         'action' => $creator_item->action,
         'perms' => $perms,
-        'kms_id' => kms_user_get_userid($user),
+        'kms_id' => $uid,
         'is_last_item' => TRUE,
       );
       $exe_queue->createItem((object)$exe_queue_item);
