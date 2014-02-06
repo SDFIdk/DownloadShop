@@ -40,9 +40,15 @@ function kms_test_db_cleanup_kms_oci_mess() {
   $query = <<<EOD
 DELETE FROM {kms_oci_queue_job};
 DELETE FROM {kms_oci_queue_log};
-DELETE FROM {queue};
 EOD;
   db_query($query);
+  $queues = array();
+  foreach(KmsOciQueueJob::$queues as $queue) {
+    $queues[] = $queue['name'];
+  }
+  db_delete('queue')
+    ->condition('name', $queues, 'IN')
+    ->execute();
 
 }
 
@@ -50,7 +56,7 @@ EOD;
  * Test bundle save.
  */
 function kms_test_bundle_save() {
-  kms_test_db_cleanup_batch_mess();
+//  kms_test_db_cleanup_batch_mess();
   kms_test_db_cleanup_kms_oci_mess();
   $uids = array (
     0 => '12504',
@@ -121,7 +127,7 @@ function kms_test_finish_job($jid) {
  * Test user insert.
  */
 function kms_test_insert_user() {
-  kms_test_db_cleanup_batch_mess();
+//  kms_test_db_cleanup_batch_mess();
   kms_test_db_cleanup_kms_oci_mess();
   $userid = time();
   $data = array (
