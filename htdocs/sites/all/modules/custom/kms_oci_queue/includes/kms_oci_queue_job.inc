@@ -77,7 +77,10 @@ class KmsOciQueueJob {
 
   protected function setActionDetails(){
     $action_details = unserialize($this->job->action_details);
-    $this->actionDetails = '<pre>' . print_r($action_details, TRUE) . '</pre>';
+    $this->actionDetails = kms_oci_queue_json_pretty(
+      $action_details,
+      array('format' => 'html')
+    );
   }
 
   public function getLog($mode = 'all') {
