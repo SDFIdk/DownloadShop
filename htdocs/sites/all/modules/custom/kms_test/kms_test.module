@@ -186,3 +186,15 @@ function kms_test_insert_user() {
   );
 
 }
+
+/**
+ * Test if kms_test_check_oracle_user_exists works as intended.
+ *
+ * @param int $uid
+ *   Drupal user id.
+ */
+function kms_test_check_oracle_user_exists($uid) {
+  $user = user_load($uid);
+//  var_dump($user);
+  var_dump(kms_user_smuser_exists($user));
+}

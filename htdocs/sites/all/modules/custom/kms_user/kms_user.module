@@ -588,7 +588,7 @@ function _kms_user_submit_insert_user_oracle($form, &$form_state) {
 //      kms_oci_insert($data['user_extra'], 'smuser_extra');
 //      kms_oci_insert($data['user'], 'smuser');
     // Create oci queue job.
-
+_adapt_debug('mikkel', $jff);
     // Populate user tables in oracle.
     KmsOciQueueJob::create(array(
       'action' => KMS_OCI_QUEUE_ACTION_USER_INSERT,
@@ -894,7 +894,7 @@ function kms_user_smuser_exists($user) {
 
   $stid = oci_parse(
     $oci,
-    sprintf("SELECT * FROM smuser_extra WHERE duid = '%s'", $user->uid)
+    sprintf("SELECT * FROM smuser WHERE name = '%s'", $user->name)
   );
 
   oci_execute($stid);
