@@ -89,10 +89,10 @@ function kms_permissions_ftp_widget_options($instance_settings) {
   static $options;
       
   $rows = kms_permissions_ftp_scan_structure();
-  
-  sort($rows);
 
   if (!empty($rows)) {
+    sort($rows);
+    
     foreach($rows as $k=>$value) {
       $html = _kms_permissions_format_item_list_item($k, $value, 'ftp');
       $options[$k] = $html;
@@ -127,26 +127,27 @@ function kms_permissions_ftp_scan_structure() {
 
   $settings['username'] = variable_get('kms_csv_ftp_username','linas.fox-snieglente');
   $settings['password'] = variable_get('kms_csv_ftp_password','linas');
-  $settings['advanced']['hostname']= variable_get('kms_csv_ftp_hostname','fox.snieglente.eu');
+  $settings['advanced']['hostname']= variable_get('kms_csv_ftp_hostname','fox.lt');
   $settings['advanced']['port']= variable_get('kms_csv_ftp_port','21');
  
-  $ftp_server = variable_get('kms_csv_ftp_hostname','fox.snieglente.eu');
+  $ftp_server = variable_get('kms_csv_ftp_hostname','fox.lt');
   $ftp_user_name = variable_get('kms_csv_ftp_username','linas.fox-snieglente');
   $ftp_user_pass = variable_get('kms_csv_ftp_password','linas');
 
   // set up basic connection
   $conn_id = ftp_connect($ftp_server);
 
-  // login with username and password
-  $login_result = ftp_login($conn_id, $ftp_user_name, $ftp_user_pass);
+  if(is_resource($conn_id)) {
+    // login with username and password
+    $login_result = ftp_login($conn_id, $ftp_user_name, $ftp_user_pass);
   
-  //Enable passive mode, Vagrant specific
-  ftp_pasv( $conn_id, true );
-  // get contents of the current directory
+    //Enable passive mode, Vagrant specific
+    ftp_pasv( $conn_id, true );
+    // get contents of the current directory
   
-  ftp_chdir($conn_id, 'kms');
-  return kms_permissions_ftp_xdir('.', $conn_id);
-
+    ftp_chdir($conn_id, 'kms');
+    return kms_permissions_ftp_xdir('.', $conn_id);
+  }
 }
 
 
