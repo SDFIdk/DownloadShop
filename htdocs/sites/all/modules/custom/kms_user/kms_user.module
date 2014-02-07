@@ -719,7 +719,8 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
       KmsOciQueueJob::create($job_params);
       KmsOciQueueJob::create($job_params, 'kms_permissions');
     }
-
+  }
+  
 }
 
 /**
