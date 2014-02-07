@@ -1499,6 +1499,19 @@ function _kms_permissions_hash_field($entity_type, $entity, $field_name) {
 }
 
 /**
+ * Wrapper to retrieve all services:webservices, predefined collections, applications and ftp fieldnames.
+ */
+function _kms_permissions_service_fields() {
+  $fields = array();
+  $fields = array_merge(
+    _kms_permissions_webservice_fields(),
+    _kms_permissions_extra_service_fields()
+  );
+
+  return $fields;
+}
+
+/**
  * Retrieve webservice fieldnames.
  * Todo: make smarter
  */
@@ -1508,10 +1521,21 @@ function _kms_permissions_webservice_fields() {
   foreach ($types as $type) {
     $fields[] = 'field_bundle_webservices_' . strtolower($type);
   }
-
+  
   return $fields;
 }
 
+/**
+ * Retrieve extra service fieldnames.
+ */
+function _kms_permissions_extra_service_fields() {
+  $fields = array();
+  $fields[] = 'field_predefined_datacollections';
+  $fields[] = 'field_applications';
+  $fields[] = 'field_ftp_permissions';
+
+  return $fields;
+}
 
 /**
  * Batch definition
@@ -1617,14 +1641,14 @@ function kms_permissions_clone_perms($source_account, $target_account, $reset = 
 
   if($reset){
     $target->field_access_bundles = NULL;
-    foreach(_kms_permissions_webservice_fields() as $field){
+    foreach(_kms_permissions_service_fields() as $field){
       $target->$field = NULL;
     }
     $target->save();
   }
 
   $target->field_access_bundles->set($source->field_access_bundles->value());
-  foreach(_kms_permissions_webservice_fields() as $field){
+  foreach(_kms_permissions_service_fields() as $field){
     $target->$field->set($source->$field->value());
   }
   $target->save();
