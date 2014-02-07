@@ -32,7 +32,7 @@ Some handy commands in order to run tests from CLI and clear data from db:
 drush eval 'kms_test_insert_user()'. Inserts some test user info with a unix timestamp as user id.
 
 ##### How to test assignment of default bundle:
-+ Needs to be done
++ Same test procedure as 'Insert user'.
 
 #### Update user
 
