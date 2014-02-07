@@ -12,15 +12,15 @@ Some handy commands in order to run tests from CLI and clear data from db:
 
 
 ### Urls:
-+ Cron page: [http://kms.dev/admin/config/system/cron][cron page].
-+ Oci queue report page: [http://kms.dev/admin/reports/kms-oci-queue][report page].
++ Cron page: [http://test.download.kortforsyningen.dk/admin/config/system/cron][cron page].
++ Oci queue report page: [http://test.download.kortforsyningen.dk/admin/reports/kms-oci-queue][report page].
 
 ### Users
 
 #### Insert user
 
 ##### How to test:
-+ Go to: [opret-mig-som-bruger](http://kms.dev/content/opret-mig-som-bruger).
++ Go to: /content/opret-mig-som-bruger.
 + Fill in test user data.
 + Watch newly created job on [report page].
 + Wait and watch changes in job log at [report page].
@@ -37,7 +37,13 @@ drush eval 'kms_test_insert_user()'. Inserts some test user info with a unix tim
 #### Update user
 
 ##### How to test:
-+ Needs to be done
++ Edit user from /admin/people
++ Change values
++ Save user
++ Wait and watch changes in job log at [report page].
++ A job file should have been created in: public://kms_oci_queue/jobs. Check that it is there with correct data.
++ Wait for query engine cron job to import the job file(s) and watch changes in job log at [report page]. Status should be: 'Done'.
++ Check oracle database if data has been imported.
 
 ### Bundles
 
@@ -78,5 +84,5 @@ drush eval 'kms_test_bundle_save([BUNDLE_ID])'. Is running the action invoked by
 ##### How to test:
 + Needs to be done
 
-[cron page]: http://kms.dev/admin/config/system/cron
-[report page]: http://kms.dev/admin/reports/kms-oci-queue
+[cron page]: http://test.download.kortforsyningen.dk/admin/config/system/cron
+[report page]: http://test.download.kortforsyningen.dk/admin/reports/kms-oci-queue
