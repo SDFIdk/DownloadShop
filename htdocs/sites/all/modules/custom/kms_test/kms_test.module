@@ -152,7 +152,7 @@ function kms_test_insert_user() {
   );
   // Populate user tables in oracle.
   KmsOciQueueJob::create(array(
-    'action' => KMS_OCI_QUEUE_ACTION_USER_INSERT,
+    'action' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
     'action_details' => $data,
     'params' => array(
       array($data['user'], 'smuser'),
@@ -195,6 +195,71 @@ function kms_test_insert_user() {
  */
 function kms_test_check_oracle_user_exists($uid) {
   $user = user_load($uid);
-//  var_dump($user);
   var_dump(kms_user_smuser_exists($user));
+}
+
+function kms_test_update_user($uid) {
+  $user = user_load($uid);
+  if (!$user) {
+    die('Could not load user!');
+  }
+  $data = array(
+    'user' => array(
+      ':userid' => $user->uid,
+      ':name' => $user->name,
+      ':emailaddress' => $user->mail,
+      ':disabled' => 0,
+    ),
+    'user_extra' => array(
+      ':duid' => $user->uid,
+      ':userid' => $user->uid,
+      ':usertype' => '3522',
+      ':usertype_info' => 'heppsoosososs',
+      ':accept_terms' => 1,
+      ':contact_me' => 1,
+    ),
+  );
+  $userid_old = kms_user_get_userid($user);
+  $userid_new = $user->uid;
+  $data['user'][':userid'] = $data['user_extra'][':userid'] = $userid_new;
+
+  // Populate user tables in oracle.
+  KmsOciQueueJob::create(array(
+    'action' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
+    'action_details' => format_string(
+      'Updating user: @user_details.',
+      array(
+        '@user_details' => json_encode($data),
+      )
+    ),
+    'params' => array(
+      array($data['user'], 'smuser'),
+      array($data['user_extra'], 'smuser_extra'),
+    ),
+  ));
+  // Populate user permission tables of the user in Oracle
+  // with permissions from the users bundles.
+  if (!empty($user->field_access_bundles[LANGUAGE_NONE][0]['nid'])) {
+    $bids = array_map(function ($v){
+      return $v['nid'];
+    }, $user->field_access_bundles[LANGUAGE_NONE]);
+
+    $job_params = array(
+      'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+      'action_details' => format_string(
+        'Attaching default bundles: @bundles to user: @user.',
+        array(
+          '@bundles' => implode(', ', $bids),
+          '@user' => $userid_new,
+        )
+      ),
+      'params' => array(
+        'uid' => $userid_old,
+        'bids' => $bids,
+      ),
+    );
+    KmsOciQueueJob::create($job_params);
+    KmsOciQueueJob::create($job_params, 'kms_permissions');
+  }
+
 }

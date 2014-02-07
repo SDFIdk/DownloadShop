@@ -1,19 +1,19 @@
 <?php
 /**
  * @file
- * kms_user_user_insert.inc
+ * kms_user_user_save.inc
  *
  * Provides callback functions run by the queue handling functions.
  * Creates oracle queries with user data for the involved user.
  */
 
 $plugin = array(
-  'type' => KMS_OCI_QUEUE_ACTION_USER_INSERT,
+  'type' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
   'query_creator_run' => array(
-    'function' => 'kms_user_user_insert_query_creator_run',
+    'function' => 'kms_user_user_save_query_creator_run',
   ),
   'query_run' => array(
-    'function' => 'kms_user_user_insert_query_run',
+    'function' => 'kms_user_user_save_query_run',
   ),
 );
 
@@ -30,7 +30,7 @@ $plugin = array(
  * @return int
  *   Number of query lines to be written.
  */
-function kms_user_user_insert_query_creator_run($jid, $creator_item, $exe_queue) {
+function kms_user_user_save_query_creator_run($jid, $creator_item, $exe_queue) {
   $num_exe_items = count($creator_item->params);
   $line_num = 0;
   array_walk(
@@ -72,14 +72,20 @@ function kms_user_user_insert_query_creator_run($jid, $creator_item, $exe_queue)
  * @return string
  *   Generated oracle queries.
  */
-function kms_user_user_insert_query_run($item) {
+function kms_user_user_save_query_run($item) {
   $output = sprintf("DELETE FROM %s WHERE USERID = '%s'", $item->table, $item->kms_id);
   $output .= ";\n";
-  $patterns = $replacements = array();
-  array_walk($item->data, function($v, $k) use(&$patterns, &$replacements){
-    $patterns[] = '#\\' . $k . '#';
-    $replacements[] = "'$v'";
-  });
-  $output .= preg_replace($patterns, $replacements, $item->query, 1) . ";\n";
+  $output .= _kms_oci_queue_sql_generate_line(
+    'insert',
+    $item->data,
+    $item->table
+  );
+//  _adapt_debug('mikkel', $item);
+//  $patterns = $replacements = array();
+//  array_walk($item->data, function($v, $k) use(&$patterns, &$replacements){
+//    $patterns[] = '#\\' . $k . '#';
+//    $replacements[] = "'$v'";
+//  });
+//  $output .= preg_replace($patterns, $replacements, $item->query, 1) . ";\n";
   return $output;
 }

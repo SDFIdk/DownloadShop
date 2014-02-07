@@ -1942,8 +1942,16 @@ function _kms_permissions_get_default_bundles() {
  *   Bounding box data.
  */
 function _kms_permissions_get_default_bundle_bounding_box_data() {
+  $data = array();
   $default_bundles = _kms_permissions_get_default_bundles();
-  return !empty($default_bundles) ? $default_bundles[0] : array();
+  if (!empty($default_bundles)) {
+    $bid = $default_bundles[0];
+    $bounding_box_data = _kms_permissions_get_bundle_bounding_box_data($bid);
+    if (!empty($bounding_box_data)) {
+      $data = $bounding_box_data;
+    }
+  }
+  return $data;
 }
 
 /**
@@ -1998,21 +2006,21 @@ function _kms_permissions_perms_oracle_relations() {
       'table' => 'USERRESTRICTIONS2',
       'cid' => 'kms_permissions',
       'default_values' => array(
-        ':MINX' => '',
-        ':MINY' => '',
-        ':MAXX' => '',
-        ':MAXY' => '',
-        ':MAXPIXELWIDTH' => '',
-        ':MAXPIXELHEIGHT' => '',
-        ':FEATUREINFO' => '',
+        'MINX' => '',
+        'MINY' => '',
+        'MAXX' => '',
+        'MAXY' => '',
+        'MAXPIXELWIDTH' => '',
+        'MAXPIXELHEIGHT' => '',
+        'FEATUREINFO' => '',
       )
     ),
     'applications' => array(
       'table' => 'SMUSERGROUP',
       'cid' => 'default',
       'default_values' => array(
-        ':USERID' => '',
-        ':GROUPID' => '',
+        'USERID' => '',
+        'GROUPID' => '',
       )
     ),
   );

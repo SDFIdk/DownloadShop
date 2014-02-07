@@ -35,32 +35,29 @@ function kms_user_bundles_attach_query_creator_run($jid, $creator_item, $exe_que
   $uid = $creator_item->params['uid'];
   $bids = $creator_item->params['bids'];
   $line_num = 0;
-  array_walk($bids, function ($bid) use ($jid, $uid, $creator_item, &$exe_queue, &$line_num) {
-    static $perms;
+  $perms = array();
+  // Get separate user permissions and add them to $perms array.
+  _kms_permissions_get_separate_perms_by_uid($uid, $perms);
 
-    $user = user_load($uid);
-    if ($user) {
-      $uid = kms_user_get_userid($user);
-    }
-
-    if (empty($perms)) {
-      _kms_permissions_get_separate_perms_by_uid($uid, $perms);
-    }
+  foreach ($bids as $bid) {
+    // Get permissions from a bundle and add them to $perms array.
     _kms_permissions_get_permissions_by_bid($bid, $perms);
+  }
 
-    if (!empty($perms)) {
-      // Queue the item.
-      $exe_queue_item = array(
-        'jid' => $jid,
-        'action' => $creator_item->action,
-        'perms' => $perms,
-        'kms_id' => $uid,
-        'is_last_item' => TRUE,
-      );
-      $exe_queue->createItem((object)$exe_queue_item);
-      $line_num = $line_num + count(array_keys($perms));
+  if (!empty($perms)) {
+    foreach ($perms as $perm) {
+      $line_num += count($perm);
     }
-  });
+    // Queue the item.
+    $exe_queue_item = array(
+      'jid' => $jid,
+      'action' => $creator_item->action,
+      'perms' => $perms,
+      'kms_id' => $uid,
+      'is_last_item' => TRUE,
+    );
+    $exe_queue->createItem((object) $exe_queue_item);
+  }
 
   return $line_num;
 }

@@ -11,8 +11,8 @@ define('KMS_OCI_QUEUE_PREFIX', 'kms_oci_queue');
 define('KMS_OCI_QUEUE_ENGINE_ROOT_URI', 'public://' . KMS_OCI_QUEUE_PREFIX);
 define('KMS_OCI_QUEUE_ENGINE_DIR_JOBS', 'jobs');
 define('KMS_OCI_QUEUE_ENGINE_DIR_JOBS_PROCESSED', 'jobs_processed');
-define('KMS_OCI_QUEUE_ACTION_USER_INSERT', 'user_insert');
-define('KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH', 'bundle_attach');
+define('KMS_OCI_QUEUE_ACTION_USER_SAVE', 'user_save');
+define('KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH', 'bundles_attach');
 define('KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE', 'bundle_save');
 define('KMS_OCI_QUEUE_ACTION_BUNDLE_DELETE', 'bundle_delete');
 // Atodo: Remove this after testing. And remove usages!
@@ -305,7 +305,7 @@ function kms_oci_queue_admin_page_jobs() {
       'cssSelect' => 'td[data-jid="' . $job->jid .  '"].job-info .more',
       'trigger' => array(0 => 'mouseover', 1 => 'click'),
       'text' => $job->actionDetails,
-      'width' => 500,
+      'width' => 400,
     );
     beautytips_add_beautytips($options);
 
