@@ -234,6 +234,63 @@ function user_fields_field_default_fields() {
     ),
   );
 
+  // Exported field: 'user-user-field_applications'.
+  $fields['user-user-field_applications'] = array(
+    'field_config' => array(
+      'active' => '1',
+      'cardinality' => '-1',
+      'deleted' => '0',
+      'entity_types' => array(),
+      'field_name' => 'field_applications',
+      'field_permissions' => array(
+        'type' => '0',
+      ),
+      'foreign keys' => array(),
+      'indexes' => array(
+        'value' => array(
+          0 => 'value',
+        ),
+      ),
+      'locked' => '0',
+      'module' => 'list',
+      'settings' => array(
+        'allowed_values' => array(),
+        'allowed_values_function' => '',
+      ),
+      'translatable' => '0',
+      'type' => 'list_text',
+    ),
+    'field_instance' => array(
+      'bundle' => 'user',
+      'default_value' => NULL,
+      'deleted' => '0',
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'list',
+          'settings' => array(),
+          'type' => 'list_default',
+          'weight' => 34,
+        ),
+      ),
+      'entity_type' => 'user',
+      'field_name' => 'field_applications',
+      'label' => 'Applications',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => 0,
+      ),
+      'widget' => array(
+        'active' => 0,
+        'module' => 'kms_permissions',
+        'settings' => array(),
+        'type' => 'kms_applications',
+        'weight' => '63',
+      ),
+    ),
+  );
+
   // Exported field: 'user-user-field_billing_address'.
   $fields['user-user-field_billing_address'] = array(
     'field_config' => array(
@@ -1257,6 +1314,78 @@ function user_fields_field_default_fields() {
     ),
   );
 
+  // Exported field: 'user-user-field_predefined_datacollections'.
+  $fields['user-user-field_predefined_datacollections'] = array(
+    'field_config' => array(
+      'active' => '1',
+      'cardinality' => '-1',
+      'deleted' => '0',
+      'entity_types' => array(),
+      'field_name' => 'field_predefined_datacollections',
+      'field_permissions' => array(
+        'type' => '0',
+      ),
+      'foreign keys' => array(),
+      'indexes' => array(
+        'target_id' => array(
+          0 => 'target_id',
+        ),
+      ),
+      'locked' => '0',
+      'module' => 'entityreference',
+      'settings' => array(
+        'handler' => 'base',
+        'handler_settings' => array(
+          'behaviors' => array(
+            'views-select-list' => array(
+              'status' => 0,
+            ),
+          ),
+          'sort' => array(
+            'type' => 'none',
+          ),
+          'target_bundles' => array(
+            'product_display' => 'product_display',
+          ),
+        ),
+        'target_type' => 'node',
+      ),
+      'translatable' => '0',
+      'type' => 'entityreference',
+    ),
+    'field_instance' => array(
+      'bundle' => 'user',
+      'default_value' => NULL,
+      'deleted' => '0',
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'entityreference',
+          'settings' => array(
+            'link' => FALSE,
+          ),
+          'type' => 'entityreference_label',
+          'weight' => 33,
+        ),
+      ),
+      'entity_type' => 'user',
+      'field_name' => 'field_predefined_datacollections',
+      'label' => 'Predefined datacollections',
+      'required' => 0,
+      'settings' => array(
+        'user_register_form' => 0,
+      ),
+      'widget' => array(
+        'active' => 1,
+        'module' => 'options',
+        'settings' => array(),
+        'type' => 'options_buttons',
+        'weight' => '61',
+      ),
+    ),
+  );
+
   // Exported field: 'user-user-field_terms_and_conditions'.
   $fields['user-user-field_terms_and_conditions'] = array(
     'field_config' => array(
@@ -1670,6 +1799,7 @@ function user_fields_field_default_fields() {
   // Translatables
   // Included for use with string extractors like potx.
   t('Address');
+  t('Applications');
   t('Bruger type info');
   t('Brugerbemærkning');
   t('Brugertype');
@@ -1683,6 +1813,7 @@ function user_fields_field_default_fields() {
   t('Jeg accepterer de rettigheder der er tilknyttet data');
   t('KMS User ID');
   t('Kodeord');
+  t('Predefined datacollections');
   t('Telefon');
   t('Udløbsdato');
   t('Updated');
