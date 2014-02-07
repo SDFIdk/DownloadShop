@@ -5,6 +5,11 @@ In tests affecting all users the amount of users are reduced to 30 in debug mode
 
 The debug mode is controlled by the constant: KMS_OCI_QUEUE_DEBUG. (TRUE = is in debug mode).
 
+Some handy commands in order to run tests from CLI and clear data from db:
+
++ drush eval 'kms_test_db_cleanup_kms_oci_mess()'. Removes data from job and log table and queues.
+
+
 
 ### Urls:
 + Cron page: [http://kms.dev/admin/config/system/cron][cron page].
@@ -22,6 +27,9 @@ The debug mode is controlled by the constant: KMS_OCI_QUEUE_DEBUG. (TRUE = is in
 + A job file should have been created in: public://kms_oci_queue/jobs. Check that it is there with correct data.
 + Wait for query engine cron job to import the job file(s) and watch changes in job log at [report page]. Status should be: 'Done'.
 + Check oracle database if data has been imported.
+
+##### Test from CLI:
+drush eval 'kms_test_insert_user()'. Inserts some test user info with a unix timestamp as user id.
 
 ##### How to test assignment of default bundle:
 + Needs to be done
@@ -49,6 +57,9 @@ The debug mode is controlled by the constant: KMS_OCI_QUEUE_DEBUG. (TRUE = is in
 + A job file should have been created in: public://kms_oci_queue/jobs. Check that it is there with correct data.
 + Wait for query engine cron job to import the job file(s) and watch changes in job log at [report page]. Status should be: 'Done'.
 + Check oracle database if data has been imported.
+
+##### Test from CLI:
+drush eval 'kms_test_bundle_save([BUNDLE_ID])'. Is running the action invoked by saving the specified bundle id.
 
 ### Subusers
 

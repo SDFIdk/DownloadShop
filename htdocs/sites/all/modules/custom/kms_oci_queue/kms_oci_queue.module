@@ -15,6 +15,7 @@ define('KMS_OCI_QUEUE_ACTION_USER_INSERT', 'user_insert');
 define('KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH', 'bundle_attach');
 define('KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE', 'bundle_save');
 define('KMS_OCI_QUEUE_ACTION_BUNDLE_DELETE', 'bundle_delete');
+// Atodo: Remove this after testing. And remove usages!
 define('kMS_OCI_QUEUE_DEBUG', FALSE);
 
 /**

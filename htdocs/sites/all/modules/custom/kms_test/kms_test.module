@@ -55,7 +55,7 @@ EOD;
 /**
  * Test bundle save.
  */
-function kms_test_bundle_save() {
+function kms_test_bundle_save($bid) {
 //  kms_test_db_cleanup_batch_mess();
   kms_test_db_cleanup_kms_oci_mess();
   $uids = array (
@@ -90,7 +90,7 @@ function kms_test_bundle_save() {
     28 => '8022',
     29 => '12725',
   );
-  $bid = 124;
+
   $bundle = node_load($bid);
 
   $job_params = array (
