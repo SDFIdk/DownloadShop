@@ -71,5 +71,5 @@ function kms_permissions_bundle_save_query_creator_run($jid, $creator_item, $exe
  *   Generated oracle queries.
  */
 function kms_permissions_bundle_save_query_run($item) {
-  return _kms_oci_queue_bundle_save_process_query_creator_queue_item($item);
+  return _kms_oci_queue_process_perms_query_creator_queue_item($item);
 }

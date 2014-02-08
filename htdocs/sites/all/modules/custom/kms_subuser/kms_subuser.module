@@ -130,16 +130,16 @@ function kms_subuser_form($form, &$form_state, $master_user, $mode = 'insert') {
     '#type' => 'textfield', 
     '#title' => t('Username'), 
     '#size' => 16, 
-    '#maxlength' => 128, 
+    '#maxlength' => 128,
     '#required' => TRUE,
     // '#states' => $states_add_subuser,
     '#element_validate' => array('_kms_user_validate_username'),
   );
   $form['user_pass']['pass'] = array(
-    '#type' => 'textfield', 
-    '#size' => 16, 
-    '#maxlength' => 128, 
-    '#title' => t('Password'), 
+    '#type' => 'textfield',
+    '#size' => 16,
+    '#maxlength' => 128,
+    '#title' => t('Password'),
     '#required' => TRUE,
     // '#states' => $states_add_subuser,
   );
@@ -147,7 +147,7 @@ function kms_subuser_form($form, &$form_state, $master_user, $mode = 'insert') {
     '#title' => t('Expire date'),
     '#type' => 'date_popup',
     '#date_type' => DATE_UNIX,
-    '#size' => 16, 
+    '#size' => 16,
     '#description' => t('(optional) Select when user expires. Leave empty for never.'),
     '#date_format' => 'd.m.Y',
     // '#states' => $states_add_subuser,
@@ -719,8 +719,52 @@ function kms_subuser_insert_account_oracle($user, $account) {
   $data['user_extra'][':master_userid'] = $user->uid;
   // Insert oracle user data.
   if (module_exists('kms_oci') && !kms_user_smuser_exists($account)) {
-    kms_oci_insert($data['user_extra'], 'smuser_extra');
-    kms_oci_insert($data['user'], 'smuser');
+//    kms_oci_insert($data['user_extra'], 'smuser_extra');
+//    kms_oci_insert($data['user'], 'smuser');
+    KmsOciQueueJob::create(array(
+      'action' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
+      'action_details' => format_string(
+        'Inserting new subuser: @subuser_details.',
+        array(
+          '@subuser_details' => json_encode($data),
+        )
+      ),
+      'params' => array(
+        array($data['user'], 'smuser'),
+        array($data['user_extra'], 'smuser_extra'),
+      ),
+    ));
+    // Populate user permission tables of the user in Oracle
+    // with permissions from the source user bundles.
+    $bids = array();
+    if (!empty($user->field_access_bundles[LANGUAGE_NONE][0]['nid'])) {
+      $bids = array_map(function ($v){
+        return !empty($v['nid']) ? $v['nid'] : '';
+      }, $user->field_access_bundles[LANGUAGE_NONE]);
+    }
+
+    // Get separate source user permissions and add them to $perms array.
+    $perms = array();
+    _kms_permissions_get_separate_perms_by_uid($user->uid, $perms);
+
+    $job_params = array(
+      'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+      'action_details' => format_string(
+        'Attaching bundles: @bundles to subuser: @subuser.',
+        array(
+          '@bundles' => implode(', ', $bids),
+          '@subuser' => $account->uid,
+        )
+      ),
+      'params' => array(
+        'uid' => $account->uid,
+        'bids' => $bids,
+        'perms' => $perms,
+      ),
+    );
+    KmsOciQueueJob::create($job_params);
+    KmsOciQueueJob::create($job_params, 'kms_permissions');
+
   }
 }
 
@@ -740,10 +784,23 @@ function kms_subuser_update_account_oracle($user, $account) {
   // Set master user id.
   $data['user_extra'][':master_userid'] = $user->uid;
   // Update oracle user data.
-  if (module_exists('kms_oci') && !kms_user_smuser_exists($account)) {
-    $kms_userid = kms_user_get_userid($account);
-    kms_oci_update_user($data['user_extra'], 'smuser_extra', $kms_userid);
-    kms_oci_update_user($data['user'], 'smuser', $kms_userid);
+  if (module_exists('kms_oci') && kms_user_smuser_exists($account)) {
+//    $kms_userid = kms_user_get_userid($account);
+//    kms_oci_update_user($data['user_extra'], 'smuser_extra', $kms_userid);
+//    kms_oci_update_user($data['user'], 'smuser', $kms_userid);
+    KmsOciQueueJob::create(array(
+      'action' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
+      'action_details' => format_string(
+        'Updating subuser: @subuser_details.',
+        array(
+          '@subuser_details' => json_encode($data),
+        )
+      ),
+      'params' => array(
+        array($data['user'], 'smuser'),
+        array($data['user_extra'], 'smuser_extra'),
+      ),
+    ));
   }
 }
 

@@ -446,7 +446,7 @@ function _kms_oci_queue_sql_generate_line($type, $data, $table) {
  * @return string
  *   Sql output.
  */
-function _kms_oci_queue_bundle_save_process_query_creator_queue_item($item) {
+function _kms_oci_queue_process_perms_query_creator_queue_item($item) {
   $output = $last_perm_name = '';
   array_walk(
     $item->perms,

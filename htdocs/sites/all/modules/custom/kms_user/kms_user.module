@@ -673,14 +673,14 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
     $account->field_contact_me[LANGUAGE_NONE][0]['value'];
   }
   
-  $userid_old = kms_user_get_userid($user);
-  $userid_new = kms_user_get_userid($account);
-  $data['user'][':userid'] = $data['user_extra'][':userid'] = $userid_new;
+  $userids['old'] = kms_user_get_userid($user);
+  $userids['new'] = kms_user_get_userid($account);
+  $data['user'][':userid'] = $data['user_extra'][':userid'] = $userids['new'];
 
   // Update Oracle tables.
   if (module_exists('kms_oci') && kms_user_smuser_exists($user)) {
-//    kms_oci_update_user($data['user_extra'], 'smuser_extra', $userid_old);
-//    kms_oci_update_user($data['user'], 'smuser', $userid_old);
+//    kms_oci_update_user($data['user_extra'], 'smuser_extra', $userids['old']);
+//    kms_oci_update_user($data['user'], 'smuser', $userids['old']);
     // Populate user tables in oracle.
     KmsOciQueueJob::create(array(
       'action' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
@@ -696,31 +696,37 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
       ),
     ));
     // Populate user permission tables of the user in Oracle
-    // with permissions from the users bundles.
-    if (!empty($user->field_access_bundles[LANGUAGE_NONE][0]['nid'])) {
+    // with permissions from the users bundles + separate perms.
+    $bids = array();
+    if (!empty($account->field_access_bundles[LANGUAGE_NONE][0]['nid'])) {
       $bids = array_map(function ($v){
-        return $v['nid'];
-      }, $user->field_access_bundles[LANGUAGE_NONE]);
-
-      $job_params = array(
-        'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
-        'action_details' => format_string(
-          'Attaching bundles: @bundles to user: @user.',
-          array(
-            '@bundles' => implode(', ', $bids),
-            '@user' => $userid_new,
-          )
-        ),
-        'params' => array(
-          'uid' => $userid_old,
-          'bids' => $bids,
-        ),
-      );
-      KmsOciQueueJob::create($job_params);
-      KmsOciQueueJob::create($job_params, 'kms_permissions');
+        return !empty($v['nid']) ? $v['nid'] : '';
+      }, $account->field_access_bundles[LANGUAGE_NONE]);
     }
+
+    // Get separate user permissions and add them to $perms array.
+    $perms = array();
+    _kms_permissions_get_separate_perms_by_uid($account->uid, $perms);
+
+    $job_params = array(
+      'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+      'action_details' => format_string(
+        'Attaching bundles: @bundles to user: @user.',
+        array(
+          '@bundles' => implode(', ', $bids),
+          '@user' => $userids['new'],
+        )
+      ),
+      'params' => array(
+        'uid' => $userids['old'],
+        'bids' => $bids,
+        'perms' => $perms,
+      ),
+    );
+    KmsOciQueueJob::create($job_params);
+    KmsOciQueueJob::create($job_params, 'kms_permissions');
   }
-  
+  // Atodo: Handle subuser update jobs here...
 }
 
 /**

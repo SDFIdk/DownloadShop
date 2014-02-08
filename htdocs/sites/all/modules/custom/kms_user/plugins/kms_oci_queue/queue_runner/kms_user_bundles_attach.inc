@@ -34,10 +34,8 @@ $plugin = array(
 function kms_user_bundles_attach_query_creator_run($jid, $creator_item, $exe_queue) {
   $uid = $creator_item->params['uid'];
   $bids = $creator_item->params['bids'];
+  $perms = !empty($creator_item->perms) ? $creator_item->perms : array();
   $line_num = 0;
-  $perms = array();
-  // Get separate user permissions and add them to $perms array.
-  _kms_permissions_get_separate_perms_by_uid($uid, $perms);
 
   foreach ($bids as $bid) {
     // Get permissions from a bundle and add them to $perms array.
@@ -74,5 +72,5 @@ function kms_user_bundles_attach_query_creator_run($jid, $creator_item, $exe_que
  *   Generated oracle queries.
  */
 function kms_user_bundles_attach_query_run($item) {
-  return _kms_oci_queue_bundle_save_process_query_creator_queue_item($item);
+  return _kms_oci_queue_process_perms_query_creator_queue_item($item);
 }

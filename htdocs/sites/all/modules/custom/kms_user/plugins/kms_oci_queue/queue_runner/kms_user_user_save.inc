@@ -80,12 +80,5 @@ function kms_user_user_save_query_run($item) {
     $item->data,
     $item->table
   );
-//  _adapt_debug('mikkel', $item);
-//  $patterns = $replacements = array();
-//  array_walk($item->data, function($v, $k) use(&$patterns, &$replacements){
-//    $patterns[] = '#\\' . $k . '#';
-//    $replacements[] = "'$v'";
-//  });
-//  $output .= preg_replace($patterns, $replacements, $item->query, 1) . ";\n";
   return $output;
 }

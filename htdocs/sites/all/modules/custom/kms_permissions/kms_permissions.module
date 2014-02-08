@@ -1635,6 +1635,16 @@ function kms_permissions_vbo_copy_user_services(&$account, $context = array()) {
   kms_permissions_clone_perms($source_account, $context['user']);
 }
 
+/**
+ * Clone permissions internally from a source user to a target user.
+ *
+ * @param $source_account
+ *   The user to clone permissions from.
+ * @param $target_account
+ *   The user to clone permissions to.
+ * @param bool $reset
+ *   Should the permissons be wiped on target user before cloning?
+ */
 function kms_permissions_clone_perms($source_account, $target_account, $reset = TRUE) {
   $source = entity_metadata_wrapper('user', $source_account);
   $target = entity_metadata_wrapper('user', $target_account);
@@ -1858,7 +1868,7 @@ function _kms_permissions_get_uids_by_bids($bids) {
  * @return array
  *   Service ids.
  */
-function _kms_permissions_get_separate_services_by_uid($uid) {
+function _kms_permissions_get_separate_webservices_by_uid($uid) {
   $services = array();
   $user = user_load($uid);
   if (!$user) {
@@ -1874,6 +1884,30 @@ function _kms_permissions_get_separate_services_by_uid($uid) {
     }
   }
   return $services;
+}
+
+/**
+ * Get separate applications by user id.
+ *
+ * @param int $uid
+ *   Drupal user id.
+ * @return array
+ *   Application ids.
+ */
+function _kms_permissions_get_separate_applications_by_uid($uid) {
+  $applications = array();
+  $user = user_load($uid);
+  if (!$user) {
+    return $applications;
+  }
+  $uw = entity_metadata_wrapper('user', $user);
+  $ids = $uw->field_applications->value();
+  if (!empty($ids)) {
+    array_walk($ids, function($sid) use (&$applications) {
+      $applications[$sid] = $sid;
+    });
+  }
+  return $applications;
 }
 
 /**
@@ -1966,11 +2000,6 @@ function _kms_permissions_get_default_bundle_bounding_box_data() {
 function _kms_permissions_get_separate_perms_by_uid($uid, &$perms) {
   // Get all service ids.
   $separate_services = _kms_permissions_get_separate_services_by_uid($uid);
-  // If no separate permissions do nothing.
-  // Atodo: Consider all other types of permissions here.
-  if (empty($separate_services)) {
-    return;
-  }
   // Atodo: Consider if this is the right way:
   // Atodo: If no default bounding box data is found don't add separate services.
   $bounding_box_data = _kms_permissions_get_default_bundle_bounding_box_data();
@@ -1991,6 +2020,21 @@ function _kms_permissions_get_separate_perms_by_uid($uid, &$perms) {
       }
     );
   }
+  // Get all application ids.
+  $separate_applications = _kms_permissions_get_separate_applications_by_uid($uid);
+  if (empty($perms) || empty($perms['applications'])) {
+    $perms['applications'] = array();
+  }
+  array_walk(
+    $separate_applications,
+    function($id) use (&$perms) {
+      // If we do not have application id
+      // in our applications array yet create it.
+      if (empty($perms['applications']['a' . $id])) {
+        $perms['applications']['a' . $id] = array('id' => $id);
+      }
+    }
+  );
 }
 
 /**
