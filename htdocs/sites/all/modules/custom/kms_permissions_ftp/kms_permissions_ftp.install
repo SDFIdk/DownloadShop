@@ -21,19 +21,22 @@ function kms_permissions_ftp_install() {
 function kms_permissions_ftp_schema() {
 
   $schema['kms_permissions_ftp_folders'] = array(
+    'description' => 'Table with mapping of folder id and directory name',
     'fields' => array(
       'fid' => array(
         'description' => 'Folder id',
         'type' => 'int',
-        'unsinged' => TRUE,
+        'unsigned' => TRUE,
         'not null' => TRUE,
-      ),  
+      ),
       'name' => array(
         'description' => 'Directory name',
         'type' => 'text',
+        'size' => 'normal',
         'not null' => TRUE,
-      )
+      ),
     ),
+    'primary key' => array('fid'),
   );
 
   return $schema;
