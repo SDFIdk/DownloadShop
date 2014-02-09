@@ -8,7 +8,7 @@ The debug mode is controlled by the constant: KMS_OCI_QUEUE_DEBUG. (TRUE = is in
 Some handy commands in order to run tests from CLI and clear data from db:
 
 + drush eval 'kms_test_db_cleanup_kms_oci_mess()'. Removes data from job and log table and queues.
-
++ drush eval "kms_test_insert_new_user_test(18580)". Create a user with fields (fields that are relevant to KMS OCI Queue) cloned from another user.
 
 
 ### Urls:
@@ -22,8 +22,9 @@ Some handy commands in order to run tests from CLI and clear data from db:
 ##### How to test:
 + Go to: /content/opret-mig-som-bruger.
 + Fill in test user data.
-+ Watch newly created job on [report page].
++ Run KMS OCI Queue cron [cron job - KMS OCI Queue].
 + Wait and watch changes in job log at [report page].
++ Run kms_oci_queue_query [cron job - kms_oci_queue_query]
 + A job file should have been created in: public://kms_oci_queue/jobs. Check that it is there with correct data.
 + Wait for query engine cron job to import the job file(s) and watch changes in job log at [report page]. Status should be: 'Done'.
 + Check oracle database if data has been imported.
@@ -32,7 +33,7 @@ Some handy commands in order to run tests from CLI and clear data from db:
 drush eval 'kms_test_insert_user()'. Inserts some test user info with a unix timestamp as user id.
 
 ##### How to test assignment of default bundle:
-+ Same test procedure as 'Insert user'.
++ It happens in the test: "Insert user".
 
 #### Update user
 
@@ -40,10 +41,28 @@ drush eval 'kms_test_insert_user()'. Inserts some test user info with a unix tim
 + Edit user from /admin/people
 + Change values
 + Save user
++ Run KMS OCI Queue cron [cron job - KMS OCI Queue].
 + Wait and watch changes in job log at [report page].
++ Run kms_oci_queue_query [cron job - kms_oci_queue_query]
 + A job file should have been created in: public://kms_oci_queue/jobs. Check that it is there with correct data.
 + Wait for query engine cron job to import the job file(s) and watch changes in job log at [report page]. Status should be: 'Done'.
 + Check oracle database if data has been imported.
+
+#### Delete user
+
+##### How to test:
++ Cancel a user. Eg. by calling /user/UID/cancel. Choose delete user and its content.
++ Run KMS OCI Queue cron [cron job - KMS OCI Queue].
++ Wait and watch changes in job log at [report page].
++ Run kms_oci_queue_query [cron job - kms_oci_queue_query]
++ A job file should have been created in: public://kms_oci_queue/jobs. Check that it is there with correct data.
++ Wait for query engine cron job to import the job file(s) and watch changes in job log at [report page]. Status should be: 'Done'.
++ Check oracle database if user data has been deleted.
+
+#### Expire user
+
+##### How to test:
++ Needs to be done
 
 ### Bundles
 
@@ -57,9 +76,9 @@ drush eval 'kms_test_insert_user()'. Inserts some test user info with a unix tim
 
 ##### How to test:
 + Change an existing bundle.
-+ Watch newly created job on [report page].
-+ Watch newly created job on [report page].
++ Run KMS OCI Queue cron [cron job - KMS OCI Queue].
 + Wait and watch changes in job log at [report page].
++ Run kms_oci_queue_query [cron job - kms_oci_queue_query]
 + A job file should have been created in: public://kms_oci_queue/jobs. Check that it is there with correct data.
 + Wait for query engine cron job to import the job file(s) and watch changes in job log at [report page]. Status should be: 'Done'.
 + Check oracle database if data has been imported.
@@ -72,17 +91,34 @@ drush eval 'kms_test_bundle_save([BUNDLE_ID])'. Is running the action invoked by
 #### Insert subuser
 
 ##### How to test:
-+ Needs to be done
++ Go to your own user profile edit page /user/UID/edit.
++ Go to 'Underbruger administration' section.
++ Choose create subuser (Tilføj underbruger) and fill in data in the form.
++ Run KMS OCI Queue cron [cron job - KMS OCI Queue].
++ Wait and watch changes in job log at [report page].
++ Run kms_oci_queue_query [cron job - kms_oci_queue_query]
++ A job file should have been created in: public://kms_oci_queue/jobs. Check that it is there with correct data.
++ Wait for query engine cron job to import the job file(s) and watch changes in job log at [report page]. Status should be: 'Done'.
++ Check oracle database if data has been imported.
 
 #### Update subuser
 
 ##### How to test:
-+ Needs to be done
-
-#### Subuser expires
++ Go to your own user profile edit page /user/UID/edit.
++ Go to 'Underbruger administration' section.
++ Choose 'edit' on one of the existing subusers and change some data in the form.
++ Run KMS OCI Queue cron [cron job - KMS OCI Queue].
++ Wait and watch changes in job log at [report page].
++ Run kms_oci_queue_query [cron job - kms_oci_queue_query]
++ A job file should have been created in: public://kms_oci_queue/jobs. Check that it is there with correct data.
++ Wait for query engine cron job to import the job file(s) and watch changes in job log at [report page]. Status should be: 'Done'.
++ Check oracle database if data has been imported.
+#### Delete subuser
 
 ##### How to test:
-+ Needs to be done
++ Same steps as 'Delete user' test.
 
 [cron page]: http://test.download.kortforsyningen.dk/admin/config/system/cron
 [report page]: http://test.download.kortforsyningen.dk/admin/reports/kms-oci-queue
+[cron job - KMS OCI Queue]: http://kms.dev/admin/ultimate-cron/service/start/kms_oci_queue_query_creator_run?destination=admin/config/system/cron
+[cron job - kms_oci_queue_query]: http://kms.dev/admin/ultimate-cron/service/start/ultimate_cron_queue_kms_oci_queue_query?destination=admin/config/system/cron
