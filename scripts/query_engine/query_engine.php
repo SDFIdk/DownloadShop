@@ -65,7 +65,7 @@ if (!$job) {
 
 // If the job file could not be loaded change job status and exit.
 if (!file_exists($args['filepath'])) {
-  $message = 'File: %file does not exist';
+  $message = 'Query engine: File: %file does not exist';
   $vars = array('%file' => $args['filepath']);
   $job->changeStatus(KmsOciQueueJob::STATUS_FAILED, $message, $vars);
   qe_error($message, $vars, TRUE);
@@ -80,7 +80,7 @@ $sql = qe_generate_sql($db_conf, $args);
 // Report sql execution.
 $job->changeStatus(
   KmsOciQueueJob::STATUS_PROCESSING,
-  'Job: %jid is being processed',
+  'Query engine: %jid is being processed',
   array('%jid' => $job->jid)
 );
 // Execute generated sql and get result of it.
@@ -94,17 +94,27 @@ if ($result['exit_code'] === 0) {
     qe_absolute_filepath($args['filename'], KMS_OCI_QUEUE_ENGINE_DIR_JOBS_PROCESSED)
   );
   // Report everything well and change status to 'done'.
-  $job->changeStatus(
-    KmsOciQueueJob::STATUS_DONE,
-    implode('; ', $result['message'])
-  );
+  $job_status = KmsOciQueueJob::STATUS_DONE;
+  $message = implode('; ', $result['message']);
 }
 else {
-  // Report that the job has failed.
-  $job->changeStatus(
-    KmsOciQueueJob::STATUS_FAILED,
-    implode('; ', $result['message'])
-  );
+  $job_status = KmsOciQueueJob::STATUS_FAILED;
+  if (!empty($result['message'])) {
+    $message = implode('; ', $result['message']);
+    $message_vars = array();
+  }
+  else {
+    $message = 'Something went wrong with exit code: @exit_code.';
+    $message_vars = array('@exit_code' => $result['exit_code']);
+  }
 }
+
+// Change job status depending on exit code.
+$job->changeStatus(
+  $job_status,
+  'Query engine: ' . $message,
+  $message_vars
+);
+
 // Expose exit code.
 exit($result['exit_code']);
