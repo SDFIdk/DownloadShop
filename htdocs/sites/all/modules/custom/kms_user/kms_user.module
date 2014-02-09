@@ -678,7 +678,9 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
   $data['user'][':userid'] = $data['user_extra'][':userid'] = $userids['new'];
 
   // Update Oracle tables.
-  if (module_exists('kms_oci') && kms_user_smuser_exists($user)) {
+  // Atodo: Remove after debugging!
+//  if (module_exists('kms_oci') && kms_user_smuser_exists($user)) {
+  if (TRUE) {
 //    kms_oci_update_user($data['user_extra'], 'smuser_extra', $userids['old']);
 //    kms_oci_update_user($data['user'], 'smuser', $userids['old']);
     // Populate user tables in oracle.
@@ -725,8 +727,12 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
     );
     KmsOciQueueJob::create($job_params);
     KmsOciQueueJob::create($job_params, 'kms_permissions');
+    // Atodo: Handle subuser update jobs here...
+    $user_roles = !empty($account->roles) ? $account->roles : array();
+//    _adapt_debug('mikkel', in_array(KMS_SUBUSER_ROLE_NAME, $user_roles));
+//    _adapt_debug('mikkel', $user_roles);
+//    _adapt_debug('mikkel', relation_get_related_entity('user', $account->uid));
   }
-  // Atodo: Handle subuser update jobs here...
 }
 
 /**

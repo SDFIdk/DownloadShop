@@ -1999,7 +1999,7 @@ function _kms_permissions_get_default_bundle_bounding_box_data() {
  */
 function _kms_permissions_get_separate_perms_by_uid($uid, &$perms) {
   // Get all service ids.
-  $separate_services = _kms_permissions_get_separate_services_by_uid($uid);
+  $separate_services = _kms_permissions_get_separate_webservices_by_uid($uid);
   // Atodo: Consider if this is the right way:
   // Atodo: If no default bounding box data is found don't add separate services.
   $bounding_box_data = _kms_permissions_get_default_bundle_bounding_box_data();
