@@ -55,7 +55,7 @@ EOD;
 /**
  * Test bundle save.
  */
-function kms_test_bundle_save($bid) {
+function kms_test_bundle_save_test($bid) {
 //  kms_test_db_cleanup_batch_mess();
   kms_test_db_cleanup_kms_oci_mess();
   $uids = array (
@@ -126,7 +126,7 @@ function kms_test_finish_job($jid) {
 /**
  * Test user insert.
  */
-function kms_test_insert_user() {
+function kms_test_insert_user_test() {
 //  kms_test_db_cleanup_batch_mess();
   kms_test_db_cleanup_kms_oci_mess();
   $userid = time();
@@ -262,4 +262,61 @@ function kms_test_update_user($uid) {
     KmsOciQueueJob::create($job_params, 'kms_permissions');
   }
 
+}
+
+/**
+ * Create a test user with various inherited fields.
+ *
+ * @param int $clone_uid
+ *   The user id of the user to clone fields from.
+ */
+function kms_test_insert_new_user_test($clone_uid = 0) {
+  global $base_url;
+
+  $id = uniqid();
+  $fields = array(
+    'name' => 'kms_test_' . $id,
+    'mail' => 'kms_test_' . $id . '@adapt.dk',
+    'pass' => '1234',
+    'status' => 1,
+    'init' => 'email address',
+    'roles' => array(
+      DRUPAL_AUTHENTICATED_RID => 'authenticated user',
+    ),
+  );
+
+  $source_account = user_load($clone_uid);
+  if (!$source_account) {
+    return;
+  }
+  $account = user_save('', $fields);
+  $target_account = user_load($account->uid);
+
+  if (!empty($source_account->field_user_type[LANGUAGE_NONE][0]['tid'])) {
+    $target_account->field_user_type[LANGUAGE_NONE][]['tid']
+      = $source_account->field_user_type[LANGUAGE_NONE][0]['tid'];
+  }
+  if (!empty($source_account->field_user_type_info[LANGUAGE_NONE][0]['value'])) {
+    $target_account->field_user_type_info[LANGUAGE_NONE][]['value']
+      = $source_account->field_user_type_info[LANGUAGE_NONE][0]['value'];
+  }
+  if (!empty($source_account->field_newsletter[LANGUAGE_NONE][0]['value'])) {
+    $target_account->field_newsletter[LANGUAGE_NONE][]['value']
+      = $source_account->field_newsletter[LANGUAGE_NONE][0]['value'];
+  }
+  if (!empty($source_account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'])) {
+    $target_account->field_terms_and_conditions[LANGUAGE_NONE][]['value']
+      = $source_account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'];
+  }
+  if (!empty($source_account->field_contact_me[LANGUAGE_NONE][0]['value'])) {
+    $target_account->field_contact_me[LANGUAGE_NONE][]['value']
+      = $source_account->field_contact_me[LANGUAGE_NONE][0]['value'];
+  }
+
+
+  if ($source_account) {
+    kms_permissions_clone_perms($source_account, $target_account);
+  }
+  var_dump('Delete url:');
+  var_dump($base_url . '/user/' . $target_account->uid . '/cancel');
 }

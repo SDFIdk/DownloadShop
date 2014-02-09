@@ -52,7 +52,7 @@ class KmsOciQueueJob {
   }
 
   protected function setJobId($jid){
-    $this->jid = $jid;
+    $this->jid = is_null($jid) || $jid == 'null' ? NULL : $jid;
   }
 
   protected function setJob(){

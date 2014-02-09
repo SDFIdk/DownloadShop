@@ -832,16 +832,40 @@ function kms_user_smuser_delete($user) {
     $user = user_load($user);
   }
   $kms_userid = kms_user_get_userid($user);
-
   if (!empty($kms_userid)) {
-    $result = kms_oci_query(
-      'DELETE FROM smuser WHERE userid = :userid',
-      array(':userid' => $kms_userid)
-    );
-    $result = kms_oci_query(
-      'DELETE FROM smuser_extra WHERE userid = :userid',
-      array(':userid' => $kms_userid)
-    );
+//    $result = kms_oci_query(
+//      'DELETE FROM smuser WHERE userid = :userid',
+//      array(':userid' => $kms_userid)
+//    );
+//    $result = kms_oci_query(
+//      'DELETE FROM smuser_extra WHERE userid = :userid',
+//      array(':userid' => $kms_userid)
+//    );
+    // Delete all oracle rows belonging to user.
+    KmsOciQueueJob::create(array(
+      'action' => KMS_OCI_QUEUE_ACTION_USER_DELETE,
+      'action_details' => format_string(
+        'Deleting user: @user.',
+        array(
+          '@user' => $user->name,
+        )
+      ),
+      'params' => array(
+        'kms_id' => $kms_userid,
+      )
+    ));
+    KmsOciQueueJob::create(array(
+      'action' => KMS_OCI_QUEUE_ACTION_USER_DELETE,
+      'action_details' => format_string(
+        'Deleting user: @user.',
+        array(
+          '@user' => $user->name,
+        )
+      ),
+      'params' => array(
+        'kms_id' => $kms_userid,
+      )
+    ), 'kms_permissions');
   }
 }
 
