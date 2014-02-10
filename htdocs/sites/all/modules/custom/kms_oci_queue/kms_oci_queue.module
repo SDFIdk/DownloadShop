@@ -17,7 +17,7 @@ define('KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH', 'bundles_attach');
 define('KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE', 'bundle_save');
 define('KMS_OCI_QUEUE_ACTION_BUNDLE_DELETE', 'bundle_delete');
 // Atodo: Remove this after testing. And remove usages!
-define('kMS_OCI_QUEUE_DEBUG', FALSE);
+define('kMS_OCI_QUEUE_DEBUG', TRUE);
 
 /**
  * Implements hook_menu().
@@ -563,7 +563,7 @@ function kms_oci_queue_json_pretty($json, $options = array()) {
     $ind = $options['indent'];
   }
 
-  $in_literal = false;
+  $in_literal = FALSE;
   foreach ($tokens as $token) {
     if ($token == '') {
       continue;
@@ -590,11 +590,99 @@ function kms_oci_queue_json_pretty($json, $options = array()) {
 
       // Count # of unescaped double-quotes in token, subtract # of
       // escaped double-quotes and if the result is odd then we are
-      // inside a string literal
+      // inside a string literal.
       if ((substr_count($token, "\"") - substr_count($token, "\\\"")) % 2 != 0) {
         $in_literal = !$in_literal;
       }
     }
   }
   return $result;
+}
+
+/**
+ * @param $account
+ * @param bool $user
+ * @atodo Comment this.
+ *
+ * @return array
+ */
+function _kms_oci_queue_create_update_smuser_data($account, $user = FALSE) {
+  $data = _kms_user_oracle_default_user_data($account, 'update');
+  unset($data['user_extra'][':usertype']);
+  unset($data['user_extra'][':usertype_info']);
+
+  $data['user'][':disabled'] = (integer)!$account->status;
+  if (!empty($account->field_address[LANGUAGE_NONE][0]['first_name'])) {
+    $data['user'][':firstname']
+      = $account->field_address[LANGUAGE_NONE][0]['first_name'];
+  }
+  if (!empty($account->field_address[LANGUAGE_NONE][0]['last_name'])) {
+    $data['user'][':lastname']
+      = $account->field_address[LANGUAGE_NONE][0]['last_name'];
+  }
+  if (!empty($account->field_phone[LANGUAGE_NONE][0]['value'])) {
+    $data['user'][':telephonenumber']
+      = $account->field_phone[LANGUAGE_NONE][0]['value'];
+  }
+  if (!empty($account->field_debtor_nr[LANGUAGE_NONE][0]['value'])) {
+    $data['user'][':debitorno']
+      = $account->field_debtor_nr[LANGUAGE_NONE][0]['value'];
+  }
+  // smuser_extra.
+  if (!empty($account->field_user_type[LANGUAGE_NONE][0]['tid'])) {
+    $data['user_extra'][':usertype']
+      = $account->field_user_type[LANGUAGE_NONE][0]['tid'];
+  }
+  if (!empty($account->field_user_type_info[LANGUAGE_NONE][0]['value'])) {
+    $data['user_extra'][':usertype_info']
+      = $account->field_user_type_info[LANGUAGE_NONE][0]['value'];
+  }
+  if (!empty($account->field_newsletter[LANGUAGE_NONE][0]['value'])) {
+    $data['user_extra'][':receive_newsletter']
+      = $account->field_newsletter[LANGUAGE_NONE][0]['value'];
+  }
+  if (!empty($account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'])) {
+    $data['user_extra'][':accept_terms'] =
+      $account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'];
+  }
+  if (!empty($account->field_contact_me[LANGUAGE_NONE][0]['value'])) {
+    $data['user_extra'][':contact_me'] =
+      $account->field_contact_me[LANGUAGE_NONE][0]['value'];
+  }
+
+  $data['user'][':userid'] = $data['user_extra'][':userid'] = $userids['new'];
+  return $data;
+}
+
+/**
+ * @param $account
+ * @atodo Comment this.
+ *
+ * @return array
+ */
+function _kms_oci_queue_create_insert_smuser_data($account) {
+  $data = _kms_user_oracle_default_user_data($account, 'insert');
+
+  if (!empty($account->field_user_type[LANGUAGE_NONE][0]['tid'])) {
+    $data['user_extra'][':usertype']
+      = $account->field_user_type[LANGUAGE_NONE][0]['tid'];
+  }
+  if (!empty($account->field_user_type_info[LANGUAGE_NONE][0]['value'])) {
+    $data['user_extra'][':usertype_info']
+      = $account->field_user_type_info[LANGUAGE_NONE][0]['value'];
+  }
+  if (!empty($account->field_newsletter[LANGUAGE_NONE][0]['value'])) {
+    $data['user_extra'][':receive_newsletter']
+      = $account->field_newsletter[LANGUAGE_NONE][0]['value'];
+  }
+  if (!empty($account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'])) {
+    $data['user_extra'][':accept_terms']
+      = $account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'];
+  }
+  if (!empty($account->field_contact_me[LANGUAGE_NONE][0]['value'])) {
+    $data['user_extra'][':contact_me']
+      = $account->field_contact_me[LANGUAGE_NONE][0]['value'];
+  }
+
+  return $data;
 }

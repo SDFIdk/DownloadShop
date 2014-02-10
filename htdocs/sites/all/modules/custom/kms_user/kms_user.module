@@ -10,9 +10,9 @@ define('KMS_USER_VIEW_DISPLAY_ADMIN_VIEWS_USER', 'system_1');
  * Implements hook_init().
  */
 function kms_user_init() {
-  if(current_path() == 'admin/people') {
-    drupal_add_js(drupal_get_path('module', 'kms_user') .'/js/admin_views_people.js');
-    drupal_add_css(drupal_get_path('module', 'kms_user') .'/css/admin_views_people.css');
+  if (current_path() == 'admin/people') {
+    drupal_add_js(drupal_get_path('module', 'kms_user') . '/js/admin_views_people.js');
+    drupal_add_css(drupal_get_path('module', 'kms_user') . '/css/admin_views_people.css');
     drupal_add_library('kms_permissions', 'jquery.foggy');
   }
 }
@@ -40,10 +40,13 @@ function kms_user_watchdog(array $log_entry) {
   }
 }
 
+/**
+ * Implements hook_permission().
+ */
 function kms_user_permission() {
   return array(
     'access kms user pages' => array(
-      'title' => t('Access kms user pages'), 
+      'title' => t('Access kms user pages'),
       'description' => t('Access kms user pages.'),
     ),
   );
@@ -560,34 +563,11 @@ function _kms_user_submit_insert_user_oracle($form, &$form_state) {
     return;
   }
 
-  // Get default data.
-  $data = _kms_user_oracle_default_user_data($account, 'insert');
-
-  if (!empty($account->field_user_type[LANGUAGE_NONE][0]['tid'])) {
-    $data['user_extra'][':usertype'] =
-    $account->field_user_type[LANGUAGE_NONE][0]['tid'];
-  }
-  if (!empty($account->field_user_type_info[LANGUAGE_NONE][0]['value'])) {
-    $data['user_extra'][':usertype_info'] =
-    $account->field_user_type_info[LANGUAGE_NONE][0]['value'];
-  }
-  if (!empty($account->field_newsletter[LANGUAGE_NONE][0]['value'])) {
-    $data['user_extra'][':receive_newsletter'] =
-    $account->field_newsletter[LANGUAGE_NONE][0]['value'];
-  }
-  if (!empty($account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'])) {
-    $data['user_extra'][':accept_terms'] =
-    $account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'];
-  }
-  if (!empty($account->field_contact_me[LANGUAGE_NONE][0]['value'])) {
-    $data['user_extra'][':contact_me']
-    = $account->field_contact_me[LANGUAGE_NONE][0]['value'];
-  }
   // Insert oracle user data.
-  if (module_exists('kms_oci_queue') && !kms_user_smuser_exists($account)) {
+  if (module_exists('kms_oci_queue')) {
 //      kms_oci_insert($data['user_extra'], 'smuser_extra');
 //      kms_oci_insert($data['user'], 'smuser');
-
+    $data = _kms_oci_queue_create_insert_smuser_data($account);
     // Populate user tables in oracle.
     KmsOciQueueJob::create(array(
       'action' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
@@ -629,60 +609,17 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
   $account = (object)$form_state['values'];
   $user = $form['#user'];
 
-  $data = _kms_user_oracle_default_user_data($account, 'update');
-  unset($data['user_extra'][':usertype']);
-  unset($data['user_extra'][':usertype_info']);
 
-  // smuser.
-  $data['user'][':disabled'] = (integer)!$account->status;
-  if (!empty($account->field_address[LANGUAGE_NONE][0]['first_name'])) {
-    $data['user'][':firstname'] =
-    $account->field_address[LANGUAGE_NONE][0]['first_name'];
-  }
-  if (!empty($account->field_address[LANGUAGE_NONE][0]['last_name'])) {
-    $data['user'][':lastname'] =
-    $account->field_address[LANGUAGE_NONE][0]['last_name'];
-  }
-  if (!empty($account->field_phone[LANGUAGE_NONE][0]['value'])) {
-    $data['user'][':telephonenumber'] =
-    $account->field_phone[LANGUAGE_NONE][0]['value'];
-  }
-  if (!empty($account->field_debtor_nr[LANGUAGE_NONE][0]['value'])) {
-    $data['user'][':debitorno'] =
-    $account->field_debtor_nr[LANGUAGE_NONE][0]['value'];
-  }
-  // smuser_extra.
-  if (!empty($account->field_user_type[LANGUAGE_NONE][0]['tid'])) {
-    $data['user_extra'][':usertype'] =
-    $account->field_user_type[LANGUAGE_NONE][0]['tid'];
-  }
-  if (!empty($account->field_user_type_info[LANGUAGE_NONE][0]['value'])) {
-    $data['user_extra'][':usertype_info'] =
-    $account->field_user_type_info[LANGUAGE_NONE][0]['value'];
-  }
-  if (!empty($account->field_newsletter[LANGUAGE_NONE][0]['value'])) {
-    $data['user_extra'][':receive_newsletter'] =
-    $account->field_newsletter[LANGUAGE_NONE][0]['value'];
-  }
-  if (!empty($account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'])) {
-    $data['user_extra'][':accept_terms'] =
-    $account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'];
-  }
-  if (!empty($account->field_contact_me[LANGUAGE_NONE][0]['value'])) {
-    $data['user_extra'][':contact_me'] =
-    $account->field_contact_me[LANGUAGE_NONE][0]['value'];
-  }
-  
-  $userids['old'] = kms_user_get_userid($user);
-  $userids['new'] = kms_user_get_userid($account);
-  $data['user'][':userid'] = $data['user_extra'][':userid'] = $userids['new'];
 
   // Update Oracle tables.
-  // Atodo: Remove after debugging!
-//  if (module_exists('kms_oci') && kms_user_smuser_exists($user)) {
-  if (TRUE) {
+  if (module_exists('kms_oci')) {
 //    kms_oci_update_user($data['user_extra'], 'smuser_extra', $userids['old']);
 //    kms_oci_update_user($data['user'], 'smuser', $userids['old']);
+    $data = _kms_oci_queue_create_update_smuser_data($account, $user);
+    $userids['old'] = kms_user_get_userid($user);
+    $userids['new'] = kms_user_get_userid($account);
+    $data['user'][':userid'] = $data['user_extra'][':userid'] = $userids['new'];
+
     // Populate user tables in oracle.
     KmsOciQueueJob::create(array(
       'action' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
@@ -922,21 +859,34 @@ function kms_user_get_userid($user) {
 /**
  * Deactivate Oracle smuser.
  *
- * @param mixed $user
+ * @param mixed $account
  *   object/integer. Either Drupal user object or Drupal user id.
  *
  * @return void
  */
-function kms_user_smuser_deactivate($user) {
-  if (is_int($user)) {
-    $user = user_load($user);
+function kms_user_smuser_deactivate($account) {
+  if (is_int($account)) {
+    $account = user_load($account);
   }
+  $data = _kms_oci_queue_create_update_smuser_data($account);
+  unset($data['user_extra']);
+  $data['user'][':disabled'] = 1;
+  $data['user'][':userid'] = kms_user_get_userid($account);
 
-  kms_oci_update_user(
-    array(':disabled' => '1'),
-    'smuser',
-    kms_user_get_userid($user)
-  );
+  // Atodo: Create kms oci queue job here.
+  KmsOciQueueJob::create(array(
+    'action' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
+    'action_details' => format_string(
+      'Deactivating user: @user_details.',
+      array(
+        '@user_details' => json_encode($data),
+      )
+    ),
+    'params' => array(
+      array($data['user'], 'smuser'),
+    )
+  ));
+
 }
 
 /**

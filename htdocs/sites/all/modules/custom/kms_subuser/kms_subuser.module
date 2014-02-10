@@ -718,7 +718,7 @@ function kms_subuser_insert_account_oracle($user, $account) {
   // Set master user id.
   $data['user_extra'][':master_userid'] = $user->uid;
   // Insert oracle user data.
-  if (module_exists('kms_oci') && !kms_user_smuser_exists($account)) {
+  if (module_exists('kms_oci')) {
 //    kms_oci_insert($data['user_extra'], 'smuser_extra');
 //    kms_oci_insert($data['user'], 'smuser');
     KmsOciQueueJob::create(array(
@@ -784,7 +784,7 @@ function kms_subuser_update_account_oracle($user, $account) {
   // Set master user id.
   $data['user_extra'][':master_userid'] = $user->uid;
   // Update oracle user data.
-  if (module_exists('kms_oci') && kms_user_smuser_exists($account)) {
+  if (module_exists('kms_oci')) {
 //    $kms_userid = kms_user_get_userid($account);
 //    kms_oci_update_user($data['user_extra'], 'smuser_extra', $kms_userid);
 //    kms_oci_update_user($data['user'], 'smuser', $kms_userid);
