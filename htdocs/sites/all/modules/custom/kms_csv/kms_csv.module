@@ -7,31 +7,25 @@ define('KMS_CSV_CONCAT_SEPARATOR', '|');
  */
 function kms_csv_menu() {
 
-  $items['admin/content/csv'] = array(
-    'title' => 'CSV export',
-    'description' => 'Export data as CSV.',
-    'access arguments' => array('download csv'),
-  );
- 
   $items['admin/content/csv/download'] = array(
     'title' =>'Download CSV',
     'description' => 'Download CSV page',
     'page callback' => '_kms_csv_admin_page',
-    'access arguments' => array('download csv'),
+    'access arguments' => array('administer users'),
   );
   $items['csv/generate/%'] = array(
     'title' => 'Generate csv file',
     'page callback' => 'kms_csv_generate',
     'page arguments' => array(2),
     'type' => MENU_CALLBACK,
-    'access arguments' => array('download csv'),
+    'access arguments' => array('administer users'),
   );
   $items['csv/download/%'] = array(
     'title' => 'Download csv file',
     'page callback' => 'kms_csv_download',
     'page arguments' => array(2),
     'type' => MENU_CALLBACK,
-    'access arguments' => array('download csv'),
+    'access arguments' => array('administer users'),
   );
 
   return $items;
@@ -189,7 +183,7 @@ function _kms_csv_generate_data_orders_rows($oid, $file, $max, &$context){
 
     kms_csv_convert_row2latin1($row);
 
-    fputcsv($handle, $row, ';');
+    fputcsv($handle, $row, ';', '"');
     $context['sandbox']['line_items']++;
   }
 
@@ -424,7 +418,7 @@ function _kms_csv_generate_data_users_row($uid, $file, $max, &$context){
   
   kms_csv_convert_row2latin1($row);
 
-  fputcsv($handle, $row, ';');
+  fputcsv($handle, $row, ';', '"');
 
   $context['sandbox']['progress']++;
   $context['message'] = t('Exporting user: %user', array('%user' => $username));

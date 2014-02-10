@@ -74,7 +74,7 @@ class kms_permissions_handler_has_separate_services extends views_handler_field 
       if(!empty($values->$value_key)) {
         return array(
           '#type' => 'markup',
-          '#markup' => t('Separate services'),
+          '#markup' => t('Separat Permission'),
           '#prefix' => '<span class="separate-services">',
           '#suffix' => '</span>',
         );

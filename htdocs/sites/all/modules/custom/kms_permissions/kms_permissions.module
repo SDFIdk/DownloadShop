@@ -55,7 +55,7 @@ function kms_permissions_library() {
 function kms_permissions_action_info() {
   return array(
     'kms_permissions_vbo_copy_user_services' => array(
-      'label' => t('Copy user services'),
+      'label' => t('Copy user Permissions'),
       'type' => 'user',
       'configurable' => TRUE,
       'hooks' => array(),
