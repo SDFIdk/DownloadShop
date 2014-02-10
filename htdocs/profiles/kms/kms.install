@@ -290,16 +290,12 @@ function kms_update_7005(&$sandbox) {
  * @author Linas Balke <linas@adapt.dk>
  */
 function kms_update_7006(&$sandbox) {
-
+  // Enable the module
   module_enable(array('kms_permissions_ftp'));
-
-  // Drop table if exists - leftfovers from fake table and module installation
-  if(db_table_exists('external_ftp_users')) {
-    db_drop_table('external_ftp_users');
-  }
     
   // Create a view to replace the removed table
-  db_query("CREATE VIEW external_ftp_users AS
+  db_query("DROP VIEW IF EXISTS external_ftp_users;
+    CREATE VIEW external_ftp_users AS
     SELECT u.name as username, array_to_string( array_agg( distinct folders.name ), ',') as directories
     FROM field_data_field_ftp_permissions as ftp
     LEFT JOIN field_data_field_access_bundles as bundle ON ftp.entity_id =  bundle.field_access_bundles_nid
