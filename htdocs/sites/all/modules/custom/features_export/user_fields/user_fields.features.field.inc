@@ -141,7 +141,7 @@ function user_fields_field_default_fields() {
       'label' => 'Bundles',
       'required' => 0,
       'settings' => array(
-        'user_register_form' => 0,
+        'user_register_form' => 1,
       ),
       'widget' => array(
         'active' => 1,
@@ -243,7 +243,7 @@ function user_fields_field_default_fields() {
       'entity_types' => array(),
       'field_name' => 'field_applications',
       'field_permissions' => array(
-        'type' => '0',
+        'type' => '2',
       ),
       'foreign keys' => array(),
       'indexes' => array(
@@ -279,7 +279,7 @@ function user_fields_field_default_fields() {
       'label' => 'Applications',
       'required' => 0,
       'settings' => array(
-        'user_register_form' => 0,
+        'user_register_form' => 1,
       ),
       'widget' => array(
         'active' => 0,
@@ -375,7 +375,7 @@ function user_fields_field_default_fields() {
       'entity_types' => array(),
       'field_name' => 'field_bundle_webservices_geo',
       'field_permissions' => array(
-        'type' => '0',
+        'type' => '2',
       ),
       'foreign keys' => array(),
       'indexes' => array(
@@ -411,7 +411,7 @@ function user_fields_field_default_fields() {
       'label' => 'Webservices (GEO)',
       'required' => 0,
       'settings' => array(
-        'user_register_form' => 0,
+        'user_register_form' => 1,
       ),
       'widget' => array(
         'active' => 1,
@@ -434,7 +434,7 @@ function user_fields_field_default_fields() {
       'entity_types' => array(),
       'field_name' => 'field_bundle_webservices_plot',
       'field_permissions' => array(
-        'type' => '0',
+        'type' => '2',
       ),
       'foreign keys' => array(),
       'indexes' => array(
@@ -470,7 +470,7 @@ function user_fields_field_default_fields() {
       'label' => 'Webservices (PLOT)',
       'required' => 0,
       'settings' => array(
-        'user_register_form' => 0,
+        'user_register_form' => 1,
       ),
       'widget' => array(
         'active' => 1,
@@ -493,7 +493,7 @@ function user_fields_field_default_fields() {
       'entity_types' => array(),
       'field_name' => 'field_bundle_webservices_wcs',
       'field_permissions' => array(
-        'type' => '0',
+        'type' => '2',
       ),
       'foreign keys' => array(),
       'indexes' => array(
@@ -529,7 +529,7 @@ function user_fields_field_default_fields() {
       'label' => 'Webservices (WCS)',
       'required' => 0,
       'settings' => array(
-        'user_register_form' => 0,
+        'user_register_form' => 1,
       ),
       'widget' => array(
         'active' => 1,
@@ -552,7 +552,7 @@ function user_fields_field_default_fields() {
       'entity_types' => array(),
       'field_name' => 'field_bundle_webservices_wfs',
       'field_permissions' => array(
-        'type' => '0',
+        'type' => '2',
       ),
       'foreign keys' => array(),
       'indexes' => array(
@@ -588,7 +588,7 @@ function user_fields_field_default_fields() {
       'label' => 'Webservices (WFS)',
       'required' => 0,
       'settings' => array(
-        'user_register_form' => 0,
+        'user_register_form' => 1,
       ),
       'widget' => array(
         'active' => 1,
@@ -611,7 +611,7 @@ function user_fields_field_default_fields() {
       'entity_types' => array(),
       'field_name' => 'field_bundle_webservices_wms',
       'field_permissions' => array(
-        'type' => '0',
+        'type' => '2',
       ),
       'foreign keys' => array(),
       'indexes' => array(
@@ -647,7 +647,7 @@ function user_fields_field_default_fields() {
       'label' => 'Webservices (WMS)',
       'required' => 0,
       'settings' => array(
-        'user_register_form' => 0,
+        'user_register_form' => 1,
       ),
       'widget' => array(
         'active' => 1,
@@ -670,7 +670,7 @@ function user_fields_field_default_fields() {
       'entity_types' => array(),
       'field_name' => 'field_bundle_webservices_wmts',
       'field_permissions' => array(
-        'type' => '0',
+        'type' => '2',
       ),
       'foreign keys' => array(),
       'indexes' => array(
@@ -706,7 +706,7 @@ function user_fields_field_default_fields() {
       'label' => 'Webservices (WMTS)',
       'required' => 0,
       'settings' => array(
-        'user_register_form' => 0,
+        'user_register_form' => 1,
       ),
       'widget' => array(
         'active' => 1,
@@ -1002,7 +1002,7 @@ function user_fields_field_default_fields() {
       'entity_types' => array(),
       'field_name' => 'field_ftp_permissions',
       'field_permissions' => array(
-        'type' => '0',
+        'type' => '2',
       ),
       'foreign keys' => array(),
       'indexes' => array(
@@ -1038,7 +1038,7 @@ function user_fields_field_default_fields() {
       'label' => 'FTP permissions',
       'required' => 0,
       'settings' => array(
-        'user_register_form' => 0,
+        'user_register_form' => 1,
       ),
       'widget' => array(
         'active' => 0,
@@ -1323,7 +1323,7 @@ function user_fields_field_default_fields() {
       'entity_types' => array(),
       'field_name' => 'field_predefined_datacollections',
       'field_permissions' => array(
-        'type' => '0',
+        'type' => '2',
       ),
       'foreign keys' => array(),
       'indexes' => array(
@@ -1374,7 +1374,7 @@ function user_fields_field_default_fields() {
       'label' => 'Predefined datacollections',
       'required' => 0,
       'settings' => array(
-        'user_register_form' => 0,
+        'user_register_form' => 1,
       ),
       'widget' => array(
         'active' => 1,
