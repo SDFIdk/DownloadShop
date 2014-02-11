@@ -557,35 +557,17 @@ function kms_permissions_check_max_pixels($pid, $uid = NULL) {
  */
 function kms_permissions_user_presave(&$edit, $account, $category) {
   $lang = field_language('user', $edit, 'field_access_bundles');
-  $permissions = array();
-  
-  // Get default bundles
-  $default = _kms_permissions_get_access_bundles('default');
-  foreach ($default as $dbid) {
-    _kms_permissions_get_permissions_by_bid($dbid, $permissions);
-  }  
-
-  // Since the user is potentially being updated, we need to build the permissions array from the $edit array
-  if (!empty($edit['field_access_bundles']) && !empty($edit['field_access_bundles'][$lang])) {
-    // Loop bundles and load permissions
-    foreach ($edit['field_access_bundles'][$lang] as $bid) {
-      _kms_permissions_get_permissions_by_bid($bid['nid'], $permissions);
-    }
-  }
 
   // Assign default bundles to a new user
   if ($account->is_new) {
     $array_index = 0;
-    foreach ($default as $bundle_id) {
+    foreach (_kms_permissions_get_access_bundles('default') as $bundle_id) {
       // Add Node reference to field field_access_bundle 
       $edit['field_access_bundles'][$lang][$array_index]['nid'] = $bundle_id;
       $array_index++;
     }
   }
   
-  // Save to temp tables (in psql)
-  // Atodo: Not using this approach anymore. Clean it up! Linas: Everything above assign default bundles to a new user can be removed?
-  //  kms_permissions_save_temp_permissions($account->uid, $permissions);
 }
 
 /**
