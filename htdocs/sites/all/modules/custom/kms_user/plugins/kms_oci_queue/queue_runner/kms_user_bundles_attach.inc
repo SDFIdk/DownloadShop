@@ -34,7 +34,7 @@ $plugin = array(
 function kms_user_bundles_attach_query_creator_run($jid, $creator_item, $exe_queue) {
   $uid = $creator_item->params['uid'];
   $bids = $creator_item->params['bids'];
-  $perms = !empty($creator_item->perms) ? $creator_item->perms : array();
+  $perms = !empty($creator_item->params['perms']) ? $creator_item->params['perms'] : array();
   $line_num = 0;
 
   foreach ($bids as $bid) {
