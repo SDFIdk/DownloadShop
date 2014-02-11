@@ -102,9 +102,11 @@ function kms_permissions_ftp_widget_options($instance_settings) {
   return $options;
 }
 
+/**
+ * Store the structure of the folders.
+ */
 function kms_permissions_ftp_scan_store_structure() {
   
-
   $rows = kms_permissions_ftp_scan_structure();
   
   sort($rows);
@@ -119,12 +121,20 @@ function kms_permissions_ftp_scan_store_structure() {
       drupal_write_record('kms_permissions_ftp_folders', $data);
     }
   }
-
-
 }
 
+/**
+ * Read the structure of the folders. Ret
+ * @return alphabetically sorted array of folders
+ */
 function kms_permissions_ftp_scan_structure() {
+  // Set the dir to read from
+  $dir    = '/data3/Statsaftalen';
+  $folders = scandir($dir);
+ 
+  return $folders;
 
+  /* FTP settings, initial version of the script was supposed to use ftp connection
   $settings['username'] = variable_get('kms_csv_ftp_username','linas.fox-snieglente');
   $settings['password'] = variable_get('kms_csv_ftp_password','linas');
   $settings['advanced']['hostname']= variable_get('kms_csv_ftp_hostname','fox.lt');
@@ -148,9 +158,12 @@ function kms_permissions_ftp_scan_structure() {
     ftp_chdir($conn_id, 'kms');
     return kms_permissions_ftp_xdir('.', $conn_id);
   }
+  */
 }
 
-
+/*
+*  Deprecated functions, to be deleted if FTP connection will never be used
+*/
 function kms_permissions_ftp_is_dir($folder, $conn_id) {
   if (ftp_chdir($conn_id, $folder)) {
       ftp_chdir($conn_id, '..');
@@ -160,6 +173,9 @@ function kms_permissions_ftp_is_dir($folder, $conn_id) {
    }
 }
 
+/*
+*  Deprecated functions, to be deleted if FTP connection will never be used
+*/
 function kms_permissions_ftp_xdir($path, $conn_id) {
    $contents = ftp_nlist($conn_id, $path);
    $folders = array();
