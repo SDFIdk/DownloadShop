@@ -612,45 +612,44 @@ function _kms_oci_queue_create_update_smuser_data($account, $user = FALSE) {
   unset($data['user_extra'][':usertype_info']);
 
   $data['user'][':disabled'] = (integer)!$account->status;
-  if (!empty($account->field_address[LANGUAGE_NONE][0]['first_name'])) {
+  if (isset($account->field_address[LANGUAGE_NONE][0]['first_name'])) {
     $data['user'][':firstname']
       = $account->field_address[LANGUAGE_NONE][0]['first_name'];
   }
-  if (!empty($account->field_address[LANGUAGE_NONE][0]['last_name'])) {
+  if (isset($account->field_address[LANGUAGE_NONE][0]['last_name'])) {
     $data['user'][':lastname']
       = $account->field_address[LANGUAGE_NONE][0]['last_name'];
   }
-  if (!empty($account->field_phone[LANGUAGE_NONE][0]['value'])) {
+  if (isset($account->field_phone[LANGUAGE_NONE][0]['value'])) {
     $data['user'][':telephonenumber']
       = $account->field_phone[LANGUAGE_NONE][0]['value'];
   }
-  if (!empty($account->field_debtor_nr[LANGUAGE_NONE][0]['value'])) {
+  if (isset($account->field_debtor_nr[LANGUAGE_NONE][0]['value'])) {
     $data['user'][':debitorno']
       = $account->field_debtor_nr[LANGUAGE_NONE][0]['value'];
   }
   // smuser_extra.
-  if (!empty($account->field_user_type[LANGUAGE_NONE][0]['tid'])) {
+  if (isset($account->field_user_type[LANGUAGE_NONE][0]['tid'])) {
     $data['user_extra'][':usertype']
       = $account->field_user_type[LANGUAGE_NONE][0]['tid'];
   }
-  if (!empty($account->field_user_type_info[LANGUAGE_NONE][0]['value'])) {
+  if (isset($account->field_user_type_info[LANGUAGE_NONE][0]['value'])) {
     $data['user_extra'][':usertype_info']
       = $account->field_user_type_info[LANGUAGE_NONE][0]['value'];
   }
-  if (!empty($account->field_newsletter[LANGUAGE_NONE][0]['value'])) {
+  if (isset($account->field_newsletter[LANGUAGE_NONE][0]['value'])) {
     $data['user_extra'][':receive_newsletter']
       = $account->field_newsletter[LANGUAGE_NONE][0]['value'];
   }
-  if (!empty($account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'])) {
+  if (isset($account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'])) {
     $data['user_extra'][':accept_terms'] =
       $account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'];
   }
-  if (!empty($account->field_contact_me[LANGUAGE_NONE][0]['value'])) {
+  if (isset($account->field_contact_me[LANGUAGE_NONE][0]['value'])) {
     $data['user_extra'][':contact_me'] =
       $account->field_contact_me[LANGUAGE_NONE][0]['value'];
   }
 
-  $data['user'][':userid'] = $data['user_extra'][':userid'] = $userids['new'];
   return $data;
 }
 
@@ -663,23 +662,23 @@ function _kms_oci_queue_create_update_smuser_data($account, $user = FALSE) {
 function _kms_oci_queue_create_insert_smuser_data($account) {
   $data = _kms_user_oracle_default_user_data($account, 'insert');
 
-  if (!empty($account->field_user_type[LANGUAGE_NONE][0]['tid'])) {
+  if (isset($account->field_user_type[LANGUAGE_NONE][0]['tid'])) {
     $data['user_extra'][':usertype']
       = $account->field_user_type[LANGUAGE_NONE][0]['tid'];
   }
-  if (!empty($account->field_user_type_info[LANGUAGE_NONE][0]['value'])) {
+  if (isset($account->field_user_type_info[LANGUAGE_NONE][0]['value'])) {
     $data['user_extra'][':usertype_info']
       = $account->field_user_type_info[LANGUAGE_NONE][0]['value'];
   }
-  if (!empty($account->field_newsletter[LANGUAGE_NONE][0]['value'])) {
+  if (isset($account->field_newsletter[LANGUAGE_NONE][0]['value'])) {
     $data['user_extra'][':receive_newsletter']
       = $account->field_newsletter[LANGUAGE_NONE][0]['value'];
   }
-  if (!empty($account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'])) {
+  if (isset($account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'])) {
     $data['user_extra'][':accept_terms']
       = $account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'];
   }
-  if (!empty($account->field_contact_me[LANGUAGE_NONE][0]['value'])) {
+  if (isset($account->field_contact_me[LANGUAGE_NONE][0]['value'])) {
     $data['user_extra'][':contact_me']
       = $account->field_contact_me[LANGUAGE_NONE][0]['value'];
   }

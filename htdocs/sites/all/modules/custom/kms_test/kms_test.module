@@ -292,31 +292,68 @@ function kms_test_insert_new_user_test($clone_uid = 0) {
   $account = user_save('', $fields);
   $target_account = user_load($account->uid);
 
-  if (!empty($source_account->field_user_type[LANGUAGE_NONE][0]['tid'])) {
-    $target_account->field_user_type[LANGUAGE_NONE][]['tid']
+  if (isset($source_account->field_user_type[LANGUAGE_NONE][0]['tid'])) {
+    $target_account->field_user_type[LANGUAGE_NONE][0]['tid']
       = $source_account->field_user_type[LANGUAGE_NONE][0]['tid'];
   }
-  if (!empty($source_account->field_user_type_info[LANGUAGE_NONE][0]['value'])) {
-    $target_account->field_user_type_info[LANGUAGE_NONE][]['value']
+  if (isset($source_account->field_user_type_info[LANGUAGE_NONE][0]['value'])) {
+    $target_account->field_user_type_info[LANGUAGE_NONE][0]['value']
       = $source_account->field_user_type_info[LANGUAGE_NONE][0]['value'];
   }
-  if (!empty($source_account->field_newsletter[LANGUAGE_NONE][0]['value'])) {
-    $target_account->field_newsletter[LANGUAGE_NONE][]['value']
+  if (isset($source_account->field_newsletter[LANGUAGE_NONE][0]['value'])) {
+    $target_account->field_newsletter[LANGUAGE_NONE][0]['value']
       = $source_account->field_newsletter[LANGUAGE_NONE][0]['value'];
   }
-  if (!empty($source_account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'])) {
-    $target_account->field_terms_and_conditions[LANGUAGE_NONE][]['value']
+
+  if (isset($source_account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'])) {
+    $target_account->field_terms_and_conditions[LANGUAGE_NONE][0]['value']
       = $source_account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'];
   }
-  if (!empty($source_account->field_contact_me[LANGUAGE_NONE][0]['value'])) {
-    $target_account->field_contact_me[LANGUAGE_NONE][]['value']
+  if (isset($source_account->field_contact_me[LANGUAGE_NONE][0]['value'])) {
+    $target_account->field_contact_me[LANGUAGE_NONE][0]['value']
       = $source_account->field_contact_me[LANGUAGE_NONE][0]['value'];
   }
-
 
   if ($source_account) {
     kms_permissions_clone_perms($source_account, $target_account);
   }
+  // Atodo: Find out why drush does not accept boolean parameter.
+  if (TRUE) {
+    $data = _kms_oci_queue_create_insert_smuser_data($target_account);
+    KmsOciQueueJob::create(array(
+      'action' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
+      'action_details' => format_string(
+        'Inserting new user: @user_details.',
+        array(
+          '@user_details' => json_encode($data),
+        )
+      ),
+      'params' => array(
+        array($data['user'], 'smuser'),
+        array($data['user_extra'], 'smuser_extra'),
+      )
+    ));
+    // Populate user permission tables of the new user in Oracle
+    // with permissions from the default bundles.
+    $bids = _kms_permissions_get_default_bundles();
+    $job_params = array(
+      'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+      'action_details' => format_string(
+        'Attaching default bundles: @bundles to new user: @user.',
+        array(
+          '@bundles' => implode(', ', $bids),
+          '@user' => $account->uid,
+        )
+      ),
+      'params' => array(
+        'uid' => $account->uid,
+        'bids' => $bids,
+      ),
+    );
+    KmsOciQueueJob::create($job_params);
+    KmsOciQueueJob::create($job_params, 'kms_permissions');
+  }
+
   var_dump('Delete url:');
   var_dump($base_url . '/user/' . $target_account->uid . '/cancel');
 }

@@ -611,65 +611,85 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
 
 
 
-  // Update Oracle tables.
-  if (module_exists('kms_oci')) {
+  // Update Oracle tables if Oracle connection is available.
+  if (!module_exists('kms_oci')) {
+    return;
+  }
 //    kms_oci_update_user($data['user_extra'], 'smuser_extra', $userids['old']);
 //    kms_oci_update_user($data['user'], 'smuser', $userids['old']);
-    $data = _kms_oci_queue_create_update_smuser_data($account, $user);
-    $userids['old'] = kms_user_get_userid($user);
-    $userids['new'] = kms_user_get_userid($account);
-    $data['user'][':userid'] = $data['user_extra'][':userid'] = $userids['new'];
+  $data = _kms_oci_queue_create_update_smuser_data($account, $user);
+  $userids['old'] = kms_user_get_userid($user);
+  $userids['new'] = kms_user_get_userid($account);
+  $data['user'][':userid'] = $data['user_extra'][':userid'] = $userids['new'];
 
-    // Populate user tables in oracle.
-    KmsOciQueueJob::create(array(
-      'action' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
-      'action_details' => format_string(
-        'Updating user: @user_details.',
-        array(
-          '@user_details' => json_encode($data),
-        )
-      ),
-      'params' => array(
-        array($data['user'], 'smuser'),
-        array($data['user_extra'], 'smuser_extra'),
-      ),
-    ));
-    // Populate user permission tables of the user in Oracle
-    // with permissions from the users bundles + separate perms.
-    $bids = array();
-    if (!empty($account->field_access_bundles[LANGUAGE_NONE][0]['nid'])) {
-      $bids = array_map(function ($v){
-        return !empty($v['nid']) ? $v['nid'] : '';
-      }, $account->field_access_bundles[LANGUAGE_NONE]);
-    }
+  // Populate user tables in oracle.
+  KmsOciQueueJob::create(array(
+    'action' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
+    'action_details' => format_string(
+      'Updating user: @user_details.',
+      array(
+        '@user_details' => json_encode($data),
+      )
+    ),
+    'params' => array(
+      array($data['user'], 'smuser'),
+      array($data['user_extra'], 'smuser_extra'),
+    ),
+  ));
+  // Populate user permission tables of the user in Oracle
+  // with permissions from the users bundles + separate perms.
+  $bids = array();
+  if (!empty($account->field_access_bundles[LANGUAGE_NONE][0]['nid'])) {
+    $bids = array_map(function ($v){
+      return !empty($v['nid']) ? $v['nid'] : '';
+    }, $account->field_access_bundles[LANGUAGE_NONE]);
+  }
 
-    // Get separate user permissions and add them to $perms array.
-    $perms = array();
-    _kms_permissions_get_separate_perms_by_uid($account->uid, $perms);
+  // Get separate user permissions and add them to $perms array.
+  $perms = array();
+  _kms_permissions_get_separate_perms_by_uid($account->uid, $perms);
 
+  $job_params = array(
+    'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+    'action_details' => format_string(
+      'Attaching bundles: @bundles to user: @user.',
+      array(
+        '@bundles' => implode(', ', $bids),
+        '@user' => $userids['new'],
+      )
+    ),
+    'params' => array(
+      'uid' => $userids['old'],
+      'bids' => $bids,
+      'perms' => $perms,
+    ),
+  );
+  KmsOciQueueJob::create($job_params);
+  KmsOciQueueJob::create($job_params, 'kms_permissions');
+
+   // Atodo: Update all subusers with the same bundles perms as their master.
+  $subusers = subuser_load_all($user);
+  foreach ($subusers as $subuser_uid) {
+    $subuser = user_load($subuser_uid);
     $job_params = array(
       'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
       'action_details' => format_string(
-        'Attaching bundles: @bundles to user: @user.',
+        'Attaching bundles: @bundles to subuser: @subuser.',
         array(
           '@bundles' => implode(', ', $bids),
-          '@user' => $userids['new'],
+          '@subuser' => $subuser->name,
         )
       ),
       'params' => array(
-        'uid' => $userids['old'],
+        'uid' => $subuser->uid,
         'bids' => $bids,
         'perms' => $perms,
       ),
     );
     KmsOciQueueJob::create($job_params);
     KmsOciQueueJob::create($job_params, 'kms_permissions');
-    // Atodo: Handle subuser update jobs here...
-    $user_roles = !empty($account->roles) ? $account->roles : array();
-//    _adapt_debug('mikkel', in_array(KMS_SUBUSER_ROLE_NAME, $user_roles));
-//    _adapt_debug('mikkel', $user_roles);
-//    _adapt_debug('mikkel', relation_get_related_entity('user', $account->uid));
   }
+
 }
 
 /**
