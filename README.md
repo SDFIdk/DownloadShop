@@ -84,7 +84,7 @@ and watch changes in job log at [report page]. Status should be: 'Done'.
 + Check oracle database if data has been imported.
 
 #### Delete user
-``kms_user.module``, inside ``kms_user_smuser_delete($user)``, in line 788.
+``kms_user.module``, inside ``kms_user_smuser_delete($user)``, at line 788.
 
 ##### How to test:
 + Cancel a user. Eg. by calling /user/UID/cancel. Choose delete user and its content.
@@ -99,7 +99,7 @@ and watch changes in job log at [report page]. Status should be: 'Done'.
 + Check oracle database if user data has been deleted.
 
 #### Expire user
-``kms_user.module``, inside ``kms_user_smuser_deactivate($account)``, in line 867.
+``kms_user.module``, inside ``kms_user_smuser_deactivate($account)``, at line 867.
 
 ##### How to test:
 + Edit a user at /user/UID/edit or pick one from /admin/people and edit.
@@ -121,7 +121,7 @@ and watch changes in job log at [report page]. Status should be: 'Done'.
 + Have to double check.
 
 #### Update bundle
-``kms_permissions.module``, inside ``kms_permissions_access_bundle_update($form, $form_state)``, in line 867.
+``kms_permissions.module``, inside ``kms_permissions_access_bundle_update($form, $form_state)``, at line 867.
 
 ##### How to test:
 + Change an existing bundle.
@@ -140,7 +140,7 @@ This function runs the job action invoked by saving the specified bundle id.
 ### Subusers
 
 #### Insert subuser
-``kms_subuser.module``, inside ``kms_subuser_insert_account_oracle($user, $account)``, in line 715.
+``kms_subuser.module``, inside ``kms_subuser_insert_account_oracle($user, $account)``, at line 715.
 
 ##### How to test:
 + Go to your own user profile edit page /user/UID/edit.
@@ -155,7 +155,7 @@ and watch changes in job log at [report page]. Status should be: 'Done'.
 + Check oracle database if data has been imported.
 
 #### Update subuser
-``kms_subuser.module``, inside ``kms_subuser_update_account_oracle($user, $account)``, in line 781.
+``kms_subuser.module``, inside ``kms_subuser_update_account_oracle($user, $account)``, at line 781.
 
 ##### How to test:
 + Go to your own user profile edit page /user/UID/edit.
@@ -171,7 +171,7 @@ and watch changes in job log at [report page]. Status should be: 'Done'.
 + Check oracle database if data has been imported.
 
 #### Delete subuser
-``kms_user.module``, inside ``kms_user_smuser_delete($user)``, in line 773.
+``kms_user.module``, inside ``kms_user_smuser_delete($user)``, at line 773.
 
 
 ##### How to test:
