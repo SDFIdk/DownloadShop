@@ -848,15 +848,16 @@ function kms_user_user_delete($user) {
       'status',
       FALSE
     );
-    // Delete subusers.
+    // Delete subusers in oracle.
+    foreach($subusers as $subuser_uid) {
+      kms_user_smuser_delete($subuser_uid);
+    }
+    // Delete subusers locally.
     user_delete_multiple($subusers);
   }
   
-  // If smuser exist then delete it.
-  if(kms_user_smuser_exists($user)) {
-    // Delete Oracle user data.
-    kms_user_smuser_delete($user);
-  }
+  // Delete Oracle user data.
+  kms_user_smuser_delete($user);
 
 }
 /**
