@@ -221,7 +221,7 @@ function kms_update_7003(&$sandbox) {
   $entity = entity_create('node', $values);
   $w = entity_metadata_wrapper('node', $entity);
   $w->title->set('Access denied');
-  $body_content = 'You are not authorized to view this page, consider '.l('loging in','user');
+  $body_content = 'You are not authorized to view this page, consider '.l('logging in','user');
   $w->body->set(array('value' => $body_content, 'format' => 'filtered_html'));
   $w->save();
 
@@ -234,6 +234,10 @@ function kms_update_7003(&$sandbox) {
  * @author Linas Balke <linas@adapt.dk>
  */
 function kms_update_7004(&$sandbox) {
+
+  //Clear cache - essential to revert taxonomy component of access bundles 
+  drush_invoke_process('@self', 'cache-clear', array('all'));
+
   define('TAXONOMY_NAME', 'bundle_colours');
   $predefined_colours = array('Brun','Graablaa','Grey','Gron','Gul','Hotpink','Koral','Orange','Rod','Sort');
   $vocab = taxonomy_vocabulary_machine_name_load(TAXONOMY_NAME);
@@ -273,7 +277,7 @@ function kms_update_7005(&$sandbox) {
     'colorbox',
     'colorbox_node',
   ));
-  // Activate new kms admin theme.
+  // Activate new kms admin theme.CREATE USER kms_live WITH PASSWORD 'kms_live'
   variable_set('colorbox_inline', '1');
   variable_set('colorbox_pages', 'imagebrowser*
                 img_assist*
