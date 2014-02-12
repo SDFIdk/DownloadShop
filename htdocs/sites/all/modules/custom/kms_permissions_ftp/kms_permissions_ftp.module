@@ -4,7 +4,7 @@
  * kms_permissions_ftp.module
  * Handle FTP folder permissions for users.
  *
- * @author Mikkel Jakobsen <mikkel@adapt.dk>
+ * @author Linas Balke <linas@adapt.dk>
  */
 
 define('KMS_FTP_STRUCTURE_DIR', '/data3/Statsaftalen');
