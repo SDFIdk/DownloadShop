@@ -1,4 +1,13 @@
 <?php
+/**
+ * @file
+ * kms_permissions_ftp.module
+ * Handle FTP folder permissions for users.
+ *
+ * @author Mikkel Jakobsen <mikkel@adapt.dk>
+ */
+
+define('KMS_FTP_STRUCTURE_DIR', '/data3/Statsaftalen');
 
 /**
  * Implements hook_menu().
@@ -129,7 +138,7 @@ function kms_permissions_ftp_scan_store_structure() {
  */
 function kms_permissions_ftp_scan_structure() {
   // Set the dir to read from
-  $dir    = '/data3/Statsaftalen';
+  $dir = KMS_FTP_STRUCTURE_DIR;
   $folders = scandir($dir);
  
   return $folders;
