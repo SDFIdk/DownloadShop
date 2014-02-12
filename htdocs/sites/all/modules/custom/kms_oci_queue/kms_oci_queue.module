@@ -16,6 +16,7 @@ define('KMS_OCI_QUEUE_ACTION_USER_DELETE', 'user_delete');
 define('KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH', 'bundles_attach');
 define('KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE', 'bundle_save');
 define('KMS_OCI_QUEUE_ACTION_BUNDLE_DELETE', 'bundle_delete');
+define('KMS_OCI_QUEUE_CRON_DELETE_JOBS_MAX', 50);
 // Atodo: Remove this after testing. And remove usages!
 define('KMS_OCI_QUEUE_DEBUG', TRUE);
 
@@ -66,13 +67,15 @@ function kms_oci_queue_cronapi($op, $job = NULL) {
   switch($op) {
     case 'list':
       return array(
-        'kms_oci_queue_query_creator_run' => 'Kms oci queue: Run query creator',
+        'kms_oci_queue_query_creator_run' => 'Run query creator',
+        'kms_oci_queue_cleanup_jobs' => 'Cleanup job queue',
       );
 
     case 'rule':
       switch($job) {
         case 'kms_oci_queue_query_creator_run': return '*/1 * * * *';
-        break;
+        case 'kms_oci_queue_cleanup_jobs': return '*/30 * * * *';
+          break;
       }
       break;
 
@@ -80,6 +83,9 @@ function kms_oci_queue_cronapi($op, $job = NULL) {
       switch($job) {
         case 'kms_oci_queue_query_creator_run':
           kms_oci_queue_query_creator_run();
+          break;
+        case 'kms_oci_queue_cleanup_jobs':
+          kms_oci_queue_cron_cleanup_jobs();
           break;
       }
       break;
@@ -683,4 +689,30 @@ function _kms_oci_queue_create_insert_smuser_data($account) {
   }
 
   return $data;
+}
+
+
+/**
+ * Cleanup old jobs cron job.
+ */
+function kms_oci_queue_cron_cleanup_jobs() {
+  // The statuses of the jobs we want to delete.
+  $statuses = array('include' => array(KmsOciQueueJob::STATUS_DONE));
+  // Get all job ids with the status: 'done'.
+  $jids = kms_oci_queue_get_job_ids($statuses);
+  // Truncate the array to the given number.
+  array_splice($jids, KMS_OCI_QUEUE_CRON_DELETE_JOBS_MAX);
+  // Delete jobs and log it.
+  foreach($jids as $jid) {
+    $job = KmsOciQueueJobFactory::get($jid);
+    if (is_object($job)) {
+      $job->delete();
+      watchdog(
+        implode(':', array(KMS_OCI_QUEUE_PREFIX, $jid)),
+        'kms_oci_queue_cron_cleanup_jobs deleted job: @jid',
+        array('@jid' => $jid)
+      );
+    }
+  }
+
 }
