@@ -167,7 +167,7 @@ function kms_access_bundles_field_default_fields() {
       'entity_types' => array(),
       'field_name' => 'field_applications',
       'field_permissions' => array(
-        'type' => '0',
+        'type' => '2',
       ),
       'foreign keys' => array(),
       'indexes' => array(
@@ -758,7 +758,7 @@ function kms_access_bundles_field_default_fields() {
       'entity_types' => array(),
       'field_name' => 'field_bundle_webservices_geo',
       'field_permissions' => array(
-        'type' => '0',
+        'type' => '2',
       ),
       'foreign keys' => array(),
       'indexes' => array(
@@ -823,7 +823,7 @@ function kms_access_bundles_field_default_fields() {
       'entity_types' => array(),
       'field_name' => 'field_bundle_webservices_plot',
       'field_permissions' => array(
-        'type' => '0',
+        'type' => '2',
       ),
       'foreign keys' => array(),
       'indexes' => array(
@@ -888,7 +888,7 @@ function kms_access_bundles_field_default_fields() {
       'entity_types' => array(),
       'field_name' => 'field_bundle_webservices_wcs',
       'field_permissions' => array(
-        'type' => '0',
+        'type' => '2',
       ),
       'foreign keys' => array(),
       'indexes' => array(
@@ -953,7 +953,7 @@ function kms_access_bundles_field_default_fields() {
       'entity_types' => array(),
       'field_name' => 'field_bundle_webservices_wfs',
       'field_permissions' => array(
-        'type' => '0',
+        'type' => '2',
       ),
       'foreign keys' => array(),
       'indexes' => array(
@@ -1018,7 +1018,7 @@ function kms_access_bundles_field_default_fields() {
       'entity_types' => array(),
       'field_name' => 'field_bundle_webservices_wms',
       'field_permissions' => array(
-        'type' => '0',
+        'type' => '2',
       ),
       'foreign keys' => array(),
       'indexes' => array(
@@ -1083,7 +1083,7 @@ function kms_access_bundles_field_default_fields() {
       'entity_types' => array(),
       'field_name' => 'field_bundle_webservices_wmts',
       'field_permissions' => array(
-        'type' => '0',
+        'type' => '2',
       ),
       'foreign keys' => array(),
       'indexes' => array(
