@@ -138,8 +138,7 @@ function kms_permissions_ftp_scan_store_structure() {
  */
 function kms_permissions_ftp_scan_structure() {
   // Set the dir to read from
-  $dir = KMS_FTP_STRUCTURE_DIR;
-  $folders = scandir($dir);
+  is_dir(KMS_FTP_STRUCTURE_DIR) ? $folders = scandir(KMS_FTP_STRUCTURE_DIR): $folders = array();
  
   return $folders;
 
