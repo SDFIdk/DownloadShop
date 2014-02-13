@@ -158,10 +158,10 @@ function kms_oci_queue_query_creator_run() {
   // There are problems with line numbers right now.
   // Among others the connection id tied to a job.
   // So we just change status to processing.
-  if ($line_num) {
+//  if ($line_num) {
     $job = KmsOciQueueJobFactory::get($jid);
     $job->changeStatus(KmsOciQueueJob::STATUS_PROCESSING);
-  }
+//  }
 
 }
 

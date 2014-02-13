@@ -814,17 +814,21 @@ function kms_permissions_access_bundle_update($form, $form_state) {
     }
   }
 
-  // Atodo: Figure out if all the cases above can be solved with the same job type.
-  $job_params['action_details'] = format_string(
-    'Bundle: "@bundle" saved. Affects @count users.',
-    array(
-      '@bundle' => $bundle->title,
-      '@count' => count($uids)
-    )
-  );
+  // Only create a job if there are any users using the bundle.
+  if (!empty($uids)) {
+    // Atodo: Figure out if all the cases above can be solved with the same job type.
+    $job_params['action_details'] = format_string(
+      'Bundle: "@bundle" saved. Affects @count users.',
+      array(
+        '@bundle' => $bundle->title,
+        '@count' => count($uids)
+      )
+    );
 
-  KmsOciQueueJob::create($job_params);
-  KmsOciQueueJob::create($job_params, 'kms_permissions');
+    KmsOciQueueJob::create($job_params);
+    KmsOciQueueJob::create($job_params, 'kms_permissions');
+  }
+
 
 }
 
