@@ -242,7 +242,7 @@ function kms_update_7003(&$sandbox) {
 function kms_update_7004(&$sandbox) {
 
   //Clear cache - essential to revert taxonomy component of access bundles 
-  drush_invoke_process('@self', 'cache-clear', array('all'));
+  drupal_flush_all_caches();
 
   define('TAXONOMY_NAME', 'bundle_colours');
   $predefined_colours = array('Brun','Graablaa','Grey','Gron','Gul','Hotpink','Koral','Orange','Rod','Sort');
