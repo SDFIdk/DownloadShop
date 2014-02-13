@@ -1294,7 +1294,7 @@ function kms_access_bundles_field_default_fields() {
       'entity_types' => array(),
       'field_name' => 'field_ftp_permissions',
       'field_permissions' => array(
-        'type' => '0',
+        'type' => '2',
       ),
       'foreign keys' => array(),
       'indexes' => array(
@@ -1426,7 +1426,7 @@ function kms_access_bundles_field_default_fields() {
       'entity_types' => array(),
       'field_name' => 'field_predefined_datacollections',
       'field_permissions' => array(
-        'type' => '0',
+        'type' => '2',
       ),
       'foreign keys' => array(),
       'indexes' => array(
@@ -1466,6 +1466,9 @@ function kms_access_bundles_field_default_fields() {
           'label' => 'above',
           'module' => 'entityreference',
           'settings' => array(
+            'colorbox_node_height' => '600',
+            'colorbox_node_link' => FALSE,
+            'colorbox_node_width' => '600',
             'link' => FALSE,
           ),
           'type' => 'entityreference_label',
