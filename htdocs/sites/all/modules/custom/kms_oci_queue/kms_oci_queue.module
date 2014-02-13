@@ -64,7 +64,7 @@ function kms_oci_queue_ctools_plugin_type() {
  * Implements hook_cronapi().
  */
 function kms_oci_queue_cronapi($op, $job = NULL) {
-  switch($op) {
+  switch ($op) {
     case 'list':
       return array(
         'kms_oci_queue_query_creator_run' => 'Run query creator',
@@ -72,7 +72,7 @@ function kms_oci_queue_cronapi($op, $job = NULL) {
       );
 
     case 'rule':
-      switch($job) {
+      switch ($job) {
         case 'kms_oci_queue_query_creator_run': return '*/1 * * * *';
         case 'kms_oci_queue_cleanup_jobs': return '*/30 * * * *';
           break;
@@ -80,10 +80,11 @@ function kms_oci_queue_cronapi($op, $job = NULL) {
       break;
 
     case 'execute':
-      switch($job) {
+      switch ($job) {
         case 'kms_oci_queue_query_creator_run':
           kms_oci_queue_query_creator_run();
           break;
+
         case 'kms_oci_queue_cleanup_jobs':
           kms_oci_queue_cron_cleanup_jobs();
           break;
@@ -143,23 +144,23 @@ function kms_oci_queue_query_creator_run() {
     $plugins,
     function($plugin) use ($jid, $creator_item, $exe_queue, &$line_num) {
     // Only load plugins corresponding to the queue item action.
-    if ($plugin['type'] != $creator_item->action) {
-      return;
-    }
+      if ($plugin['type'] != $creator_item->action) {
+        return;
+      }
     // Get proper plugin function in order to create executor items.
-    if ($function = ctools_plugin_get_function($plugin, 'query_creator_run')) {
-      $line_num = $function($jid, $creator_item, $exe_queue);
-    }
+      if ($function = ctools_plugin_get_function($plugin, 'query_creator_run')) {
+        $line_num = $function($jid, $creator_item, $exe_queue);
+      }
   });
 
   // If line number is returned from plugin(s) then write it in log.
+  // Atodo: Fix this.
+  // There are problems with line numbers right now.
+  // Among others the connection id tied to a job.
+  // So we just change status to processing.
   if ($line_num) {
     $job = KmsOciQueueJobFactory::get($jid);
-    $job->changeStatus(
-      KmsOciQueueJob::STATUS_PROCESSING,
-      '%line_num lines to be written in job file.',
-      array('%line_num' => $line_num)
-    );
+    $job->changeStatus(KmsOciQueueJob::STATUS_PROCESSING);
   }
 
 }
@@ -185,14 +186,11 @@ function kms_oci_queue_query_run($item) {
       $output .= $function($item);
     }
   });
-  // If no output return (do nothing).
-  if (empty($output)) {
-    return;
-  }
-  // Write job (sql) file.
   $job = KmsOciQueueJobFactory::get($item->jid);
+  // Construct filenames / paths.
+  $tmp_filename = sprintf('temporary://%s.tmp', $job->jid);
+  // Write job (sql) file.
   $filename = $job->jid . '.job';
-  $temp_name = sprintf('temporary://%s.tmp', $job->jid);
   $dest_name = implode(
     '/',
     array(
@@ -201,8 +199,21 @@ function kms_oci_queue_query_run($item) {
       $filename,
     )
   );
+  // If no output return (do nothing).
+  if (empty($output) && $item->is_last_item && !file_exists($tmp_filename)) {
+    $job->changeStatus(
+      KmsOciQueueJob::STATUS_DONE,
+      'No lines to process in this job'
+    );
+    $job->finishQueue();
+    return;
+  }
+  elseif (empty($output)) {
+    return;
+  }
+
   // Append output to tmp file.
-  if (file_put_contents($temp_name, $output, FILE_APPEND) === FALSE) {
+  if (file_put_contents($tmp_filename, $output, FILE_APPEND) === FALSE) {
     $job->changeStatus(
       KmsOciQueueJob::STATUS_FAILED,
       'File creation failed. Could not write to tmp dir.'
@@ -210,7 +221,7 @@ function kms_oci_queue_query_run($item) {
   }
   // If last line has been written move tmp file to actual destination dir.
   elseif ($item->is_last_item) {
-    $move = file_unmanaged_move($temp_name, $dest_name, FILE_EXISTS_REPLACE);
+    $move = file_unmanaged_move($tmp_filename, $dest_name, FILE_EXISTS_REPLACE);
     if ($move) {
       $job->changeStatus(
         KmsOciQueueJob::STATUS_FILE_READY,
@@ -605,11 +616,15 @@ function kms_oci_queue_json_pretty($json, $options = array()) {
 }
 
 /**
- * @param $account
- * @param bool $user
- * @atodo Comment this.
+ * Prepares update user data for oracle insertion.
  *
- * @return array
+ * @param object $account
+ *   Drupal user account.
+ * @param mixed $user
+ *   Drupal user object or FALSE.
+ *
+ * @return array $data
+ *   Oracle user data.
  */
 function _kms_oci_queue_create_update_smuser_data($account, $user = FALSE) {
   $data = _kms_user_oracle_default_user_data($account, 'update');
@@ -659,8 +674,10 @@ function _kms_oci_queue_create_update_smuser_data($account, $user = FALSE) {
 }
 
 /**
- * @param $account
- * @atodo Comment this.
+ * Formats oracle data for insertion.
+ *
+ * @param object $account
+ *   Drupal user account.
  *
  * @return array
  */

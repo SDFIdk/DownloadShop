@@ -126,7 +126,7 @@ class KmsOciQueueJob {
     return $result;
   }
 
-  public function changeStatus($status, $message, $variables = array()) {
+  public function changeStatus($status, $message = '', $variables = array()) {
     $severity = WATCHDOG_INFO;
     switch ($status) {
       case self::STATUS_FAILED:
@@ -136,7 +136,9 @@ class KmsOciQueueJob {
     $job = $this->job;
     $job->status = $status;
     KmsOciQueueJobDb::updateJob($job);
-    self::log($this->jid, $message, $variables, $severity);
+    if (!empty($message)) {
+      self::log($this->jid, $message, $variables, $severity);
+    }
   }
 
   public function changeActionDetails($action_details) {
