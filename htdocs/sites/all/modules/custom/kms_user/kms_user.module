@@ -269,7 +269,7 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
 
 
   }
-  
+
   if (in_array($form_id, array('user_pass', 'user_profile_form'))) {
     $form['#validate'][] = '_kms_user_user_pass_validate';
   }
@@ -644,6 +644,10 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
       return !empty($v['nid']) ? $v['nid'] : '';
     }, $account->field_access_bundles[LANGUAGE_NONE]);
   }
+  // We will add the default bundles to the user bundles array,
+  // no matter if the default have been attached to the user in postgres yet.
+  $bids_def = _kms_permissions_get_default_bundles();
+  $bids = array_merge($bids, $bids_def);
 
   // Get separate user permissions and add them to $perms array.
   $perms = array();

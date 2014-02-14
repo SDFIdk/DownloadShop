@@ -1247,9 +1247,9 @@ function kms_subuser_insert_form($form, &$form_state) {
   return $form;
 }
 
-  /**
-   * Implements hook_user_update().
-   */
+/**
+ * Implements hook_user_update().
+ */
 function kms_subuser_user_update(&$edit, $account, $category) {
   // Clone permissions (bundles, permissions etc.)
   $subuser_uids = subuser_load_all($account);

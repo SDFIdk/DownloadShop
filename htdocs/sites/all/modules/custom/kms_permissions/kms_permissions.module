@@ -1247,7 +1247,6 @@ function _kms_permissions_get_users_by_bid($bid) {
   $query = new EntityFieldQuery();
 
   $query->entityCondition('entity_type', 'user')
-    ->propertyCondition('status', 1)
     ->fieldCondition('field_access_bundles', 'nid', $bid, '=');
 
   $result = $query->execute();

@@ -42,6 +42,8 @@ function kms_permissions_bundle_save_query_creator_run($jid, $creator_item, $exe
     _kms_permissions_get_separate_perms_by_uid($uid, $perms);
 
     if (!empty($perms)) {
+      $line_num++;
+//        = $line_num + count(array_keys($perms));
       $user = user_load($uid);
       // Queue the item.
       $exe_queue_item = array(
@@ -52,7 +54,6 @@ function kms_permissions_bundle_save_query_creator_run($jid, $creator_item, $exe
         'is_last_item' => $line_num == $user_count,
       );
       $exe_queue->createItem((object)$exe_queue_item);
-      $line_num = $line_num + count(array_keys($perms));
     }
   });
 
