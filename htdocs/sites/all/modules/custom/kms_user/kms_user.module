@@ -659,7 +659,7 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
       'Attaching bundles: @bundles to user: @user.',
       array(
         '@bundles' => implode(', ', $bids),
-        '@user' => $userids['new'],
+        '@user' => $account->name,
       )
     ),
     'params' => array(
