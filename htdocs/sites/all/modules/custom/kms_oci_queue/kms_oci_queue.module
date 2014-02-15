@@ -243,11 +243,25 @@ function kms_oci_queue_query_run($item) {
 /**
  * Get all current job ids.
  *
+ * @param array $job_statuses
+ *   Possbility for including/excluding jobs with certain statuses.
+ *
  * @return array
  *   Array of all current job ids.
  */
-function kms_oci_queue_get_job_ids() {
-  $result = db_select('kms_oci_queue_job', 'j')->fields('j', array('jid'))->orderBy('jid')->execute()->fetchCol();
+function kms_oci_queue_get_job_ids($job_statuses = array()) {
+  $job_statuses += array(
+    'include' => array(),
+    'exclude' => array(),
+  );
+  $query = db_select('kms_oci_queue_job', 'j')->fields('j', array('jid'));
+  if (!empty($job_statuses['include'])) {
+    $query->condition('j.status', $job_statuses['include'], 'IN');
+  }
+  if (!empty($job_statuses['exclude'])) {
+    $query->condition('j.status', $job_statuses['exclude'], 'NOT IN');
+  }
+  $result = $query->orderBy('jid')->execute()->fetchCol();
   return $result ?: array();
 }
 
