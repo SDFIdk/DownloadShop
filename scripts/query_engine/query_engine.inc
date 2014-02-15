@@ -116,7 +116,7 @@ function qe_generate_sql($db_conf, $sql_vars) {
   // Extract vars that are used in sql generation.
   extract($sql_vars);
   // Generate sql.
-  return <<<EOD
+  $sql = <<<EOD
 sqlplus -s /nolog<<!!
 
 connect $conn;
@@ -127,12 +127,16 @@ SET FEEDBACK OFF
 SET HEADING OFF
 SET LINESIZE 15000
 WHENEVER SQLERROR EXIT FAILURE ROLLBACK
-SELECT 'Oracle import start. Jid: $jid, type: $type, file: $filename',to_char(sysdate,'YYYYMMDD HH24:MI:SS') from dual;
+SELECT 'Oracle import start. Jid: $jid, type: $info, file: $filename',to_char(sysdate,'YYYYMMDD HH24:MI:SS') from dual;
 START $filepath
-SELECT 'Oracle import end. Jid: $jid, type: $type, file: $filename',to_char(sysdate,'YYYYMMDD HH24:MI:SS') from dual;
+SELECT 'Oracle import end. Jid: $jid, type: $info, file: $filename',to_char(sysdate,'YYYYMMDD HH24:MI:SS') from dual;
 EXIT COMMIT
 !!
 EOD;
+
+  _adapt_debug('mikkel', $sql);
+
+  return $sql;
 
 }
 

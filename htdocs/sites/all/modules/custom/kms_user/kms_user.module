@@ -578,8 +578,8 @@ function _kms_user_submit_insert_user_oracle($form, &$form_state) {
         )
       ),
       'params' => array(
-        array($data['user'], 'smuser'),
-        array($data['user_extra'], 'smuser_extra'),
+        array($data['user'], 'SMUSER'),
+        array($data['user_extra'], 'SMUSER_EXTRA'),
       )
     ));
     // Populate user permission tables of the new user in Oracle
@@ -632,8 +632,8 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
       )
     ),
     'params' => array(
-      array($data['user'], 'smuser'),
-      array($data['user_extra'], 'smuser_extra'),
+      array($data['user'], 'SMUSER'),
+      array($data['user_extra'], 'SMUSER_EXTRA'),
     ),
   ));
   // Populate user permission tables of the user in Oracle

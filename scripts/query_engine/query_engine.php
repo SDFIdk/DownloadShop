@@ -13,7 +13,13 @@ define('QUERY_ENGINE_ROOT', dirname(__FILE__));
 define('QUERY_ENGINE_RUN_MODE', 'cron');
 define('DRUPAL_ROOT', realpath(QUERY_ENGINE_ROOT . '/../../htdocs'));
 
-$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
+$_SERVER['HTTP_HOST']       = 'default';
+$_SERVER['REMOTE_ADDR']     = '127.0.0.1';
+$_SERVER['SERVER_SOFTWARE'] = NULL;
+$_SERVER['REQUEST_METHOD']  = 'GET';
+$_SERVER['QUERY_STRING']    = '';
+$_SERVER['PHP_SELF']        = $_SERVER['REQUEST_URI'] = '/';
+$_SERVER['HTTP_USER_AGENT'] = 'console';
 
 require_once DRUPAL_ROOT . '/includes/bootstrap.inc';
 require_once 'query_engine.inc';
@@ -42,7 +48,7 @@ switch (QUERY_ENGINE_RUN_MODE) {
     $opt['f'] = qe_find_job_file_lowest_id();
     $file = qe_absolute_filepath($opt['f']);
     // Get job info from job.
-    $opt['i'] = !empty($job->info) ? $job->info : 'unknown';
+    $opt['i'] = !empty($job->action) ? $job->action : 'unknown';
     break;
 
   case 'cli':

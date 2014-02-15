@@ -11,12 +11,12 @@ define('KMS_OCI_EXTENSION_NAME', 'oci8');
 function kms_oci_menu() {
 
   $items['admin/config/oci'] = array(
-    'title' =>'Oracle (oci) settings',
+    'title' => 'Oracle (oci) settings',
     'description' => 'Configure GST oracle integration',
     'access arguments' => array('administer oci settings'),
     'page callback' => 'drupal_get_form',
     'page arguments' => array('_kms_oci_settings_form'),
-    'type' => MENU_CALLBACK,
+    'type' => MENU_NORMAL_ITEM,
 
   );
 
