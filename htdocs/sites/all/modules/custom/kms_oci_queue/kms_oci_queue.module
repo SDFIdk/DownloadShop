@@ -287,13 +287,15 @@ function kms_oci_queue_admin_page() {
   drupal_add_js(drupal_get_path('module', 'kms_oci_queue') . '/js/kms_oci_queue_reports.js');
   drupal_add_css(drupal_get_path('module', 'kms_oci_queue') . '/css/kms_oci_queue_reports.css');
 
-  $output['queues'] = kms_oci_queue_admin_page_jobs(
+  $jobs_not_done = kms_oci_queue_get_job_ids(
     array('exclude' => array(KmsOciQueueJob::STATUS_DONE))
   );
-  $output['queues'] += kms_oci_queue_admin_page_jobs(
-    array('include' => array(KmsOciQueueJob::STATUS_DONE)),
-    t('Jobs done')
+  $jobs_done = kms_oci_queue_get_job_ids(
+    array('include' => array(KmsOciQueueJob::STATUS_DONE))
   );
+  rsort($jobs_done);
+  $output['queues'] = kms_oci_queue_admin_page_jobs($jobs_not_done);
+  $output['queues'] += kms_oci_queue_admin_page_jobs($jobs_done, t('Jobs done'));
 
   return $output;
 }
@@ -301,10 +303,15 @@ function kms_oci_queue_admin_page() {
 /**
  * Render table with kms oci jobs.
  *
+ * @param array $jids
+ *   Job ids.
+ * @param string $title
+ *   Table title.
+ *
  * @return array
- *   Render array.
+ *   Drupal render array.
  */
-function kms_oci_queue_admin_page_jobs($job_statuses, $title = '') {
+function kms_oci_queue_admin_page_jobs($jids, $title = '') {
   $output = array(
     '#type' => 'container',
     '#attributes' => array(
@@ -324,7 +331,7 @@ function kms_oci_queue_admin_page_jobs($job_statuses, $title = '') {
     '#value' => !empty($title) ? $title : t('Jobs'),
   );
   $rows = array();
-  foreach (kms_oci_queue_get_job_ids($job_statuses) as $jid) {
+  foreach ($jids as $jid) {
     $job = KmsOciQueueJobFactory::get($jid);
     $job_action = $job->action . ' [<a href="#" class="more">' . t('info') . '</a>]';
     $rows[] = array(
@@ -382,7 +389,7 @@ function kms_oci_queue_admin_page_jobs($job_statuses, $title = '') {
     '#rows' => $rows,
   );
 
-  $table_id = "kms_oci_queue_jobs_" . md5(serialize($job_statuses));
+  $table_id = "kms_oci_queue_jobs_" . md5(serialize($jids));
   $output[$table_id] = $jobs_output;
 
   return $output;
