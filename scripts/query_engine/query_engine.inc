@@ -220,3 +220,23 @@ function qe_get_job_type_from_file($filepath) {
   }
   return $type;
 }
+
+/**
+ * Do we have undone jobs with a job id less than this one.
+ *
+ * @param object $job
+ *   Kms oci queue job.
+ *
+ * @return bool
+ *   Undone jobs before this one exist?
+ */
+function qe_undone_jobs_before_current_exists($job) {
+  $undone_jobs = kms_oci_queue_get_job_ids(
+    array('exclude' => array(KmsOciQueueJob::STATUS_DONE))
+  );
+  $undone_jobs_b4 = array_filter($undone_jobs, function($jid) use ($job) {
+    return intval($jid) < intval($job->jid);
+  });
+
+  return (bool) count($undone_jobs_b4);
+}

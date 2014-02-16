@@ -77,6 +77,11 @@ if (!file_exists($args['filepath'])) {
   qe_error($message, $vars, TRUE);
 }
 
+// If there are undone jobs before this one do not import it yet.
+if (qe_undone_jobs_before_current_exists($job)) {
+  exit(1);
+}
+
 // Db connection settings.
 $db_conf = KmsOciQueueJobDb::getConnectionSettings($job->cid);
 
