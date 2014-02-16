@@ -132,36 +132,6 @@ function kms_install_load_plugins($name){
 }
 
 /**
- * For demo purpose.
- * Creates to bundles: custom and default.
- */
-function kms_install_create_demo_bundles() {
-  $user = user_load(1);
-  $values = array(
-    'type' => 'access_bundle',
-    'uid' => $user->uid,
-    'status' => 1,
-    'comment' => 0,
-    'promote' => 0,
-  );
-  // Create Custom bundle
-  $entity = entity_create('node', $values);
-  $w = entity_metadata_wrapper('node', $entity);
-  $w->title->set('Custom bundle');
-  $w->field_bundle_webservices_geo->set(array(1,2,7));
-  $w->field_bundle_webservices_wfs->set(array(16,1274));
-  $w->save();
-  // Create Default bundle
-  $entity = entity_create('node', $values);
-  $w = entity_metadata_wrapper('node', $entity);
-  $w->title->set('Default bundle');
-  $w->field_bundle_webservices_geo->set(array(4,5,6));
-  $w->field_bundle_webservices_wfs->set(array(1333,1633));
-  $w->field_default_bundle->set(1);
-  $w->save();
-}
-
-/**
  * Enable kms_permissions, kms_users, kms_oci_queue (used for webservices permissions)
  * @author Mikkel Jakobsen <mikkel@adapt.dk>
  */
@@ -189,26 +159,11 @@ function kms_update_7001(&$sandbox) {
 }
 
 /**
- * Create demo bundles
- * @author Mikkel Jakobsen <mikkel@adapt.dk>
- */
-function kms_update_7002(&$sandbox) {
-  // Demo bundles are dependent on a features revert of kms_access_bundles.
-  module_load_include('module', 'features');
-  $feature_name = 'kms_access_bundles';
-  $feature = features_get_features($feature_name);
-  $components = array_keys($feature->info['features']);
-  features_revert(array($feature_name => $components));
-  // Create demo access bundles.
-  kms_install_create_demo_bundles();
-}
-
-/**
  * Create access denied page and set it as default.
  *
  * @author Linas Balke <linas@adapt.dk>
  */
-function kms_update_7003(&$sandbox) {
+function kms_update_7004(&$sandbox) {
   $user = user_load(1);
 
   $values = array(
@@ -239,7 +194,7 @@ function kms_update_7003(&$sandbox) {
  * Create predefined list of taxonomy terms for bundle colours
  * @author Linas Balke <linas@adapt.dk>
  */
-function kms_update_7004(&$sandbox) {
+function kms_update_7005(&$sandbox) {
 
   //Clear cache - essential to revert taxonomy component of access bundles 
   drupal_flush_all_caches();
@@ -277,7 +232,7 @@ function kms_update_7004(&$sandbox) {
  * Enable colorbox, colorbox_node (used for webservices overview on legend icons)
  * @author Linas Balke <linas@adapt.dk>
  */
-function kms_update_7005(&$sandbox) {
+function kms_update_7006(&$sandbox) {
   // Enable relevant kms permission modules.
   module_enable(array(
     'colorbox',
@@ -299,7 +254,7 @@ function kms_update_7005(&$sandbox) {
  * Remove fake table (if any) and store a view for the ftp permisions
  * @author Linas Balke <linas@adapt.dk>
  */
-function kms_update_7006(&$sandbox) {
+function kms_update_7007(&$sandbox) {
   // Enable the module
   module_enable(array('kms_permissions_ftp'));
     
@@ -319,8 +274,18 @@ function kms_update_7006(&$sandbox) {
  *
  * @author Mikkel Jakobsen <mikkel@adapt.dk>
  */
-function kms_update_7007(&$sandbox) {
-
+function kms_update_7008(&$sandbox) {
   module_enable(array('kms_test'));
+}
 
+/**
+ * Granting access to kms oci administration to super user.
+ *
+ * @author Mikkel Jakobsen <mikkel@adapt.dk>
+ */
+function kms_update_7009(&$sandbox) {
+  user_role_grant_permissions(
+    KMS_USER_ROLES_SUPERUSER_ID,
+    array('administer kms oci queue')
+  );
 }
