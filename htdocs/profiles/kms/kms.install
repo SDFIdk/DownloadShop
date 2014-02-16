@@ -178,7 +178,7 @@ function kms_update_7004(&$sandbox) {
   $w = entity_metadata_wrapper('node', $entity);
   $w->title->set('Access denied');
   $body_content = t(
-    'You are not authorized to view this page, consider !logging_in',
+    'You are not authorized to view this page, consider !logging_in.',
     array(
       '!logging_in' => l(t('logging in'), 'user'),
     )
