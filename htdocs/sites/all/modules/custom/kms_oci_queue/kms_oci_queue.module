@@ -35,18 +35,29 @@ function kms_oci_queue_menu() {
   $items['kms-oci-queue/ajax/load-log/%'] = array(
     'title' => 'Show job log',
     'page callback' => 'kms_oci_queue_admin_page_ajax_job_log',
-    'access arguments' => array('access content'),
+    'access arguments' => array('administer kms oci queue'),
     'page arguments' => array(3),
     'type' => MENU_CALLBACK,
   );
   $items['kms-oci-queue/ajax/load-statuses'] = array(
     'title' => 'Show job log',
     'page callback' => 'kms_oci_queue_admin_page_ajax_job_statuses',
-    'access arguments' => array('access content'),
+    'access arguments' => array('administer kms oci queue'),
 //    'page arguments' => array(3),
     'type' => MENU_CALLBACK,
   );
   return $items;
+}
+
+/**
+ * Implements hook_permission().
+ */
+function kms_oci_queue_permission() {
+  return array(
+    'administer kms oci queue' => array(
+      'title' => t('Administer Kms Oci Queue.'),
+    ),
+  );
 }
 
 /**
@@ -276,7 +287,14 @@ function kms_oci_queue_admin_page() {
   drupal_add_js(drupal_get_path('module', 'kms_oci_queue') . '/js/kms_oci_queue_reports.js');
   drupal_add_css(drupal_get_path('module', 'kms_oci_queue') . '/css/kms_oci_queue_reports.css');
 
-  $output['queues'] = kms_oci_queue_admin_page_jobs();
+  $output['queues'] = kms_oci_queue_admin_page_jobs(
+    array('exclude' => array(KmsOciQueueJob::STATUS_DONE))
+  );
+  $output['queues'] += kms_oci_queue_admin_page_jobs(
+    array('include' => array(KmsOciQueueJob::STATUS_DONE)),
+    t('Jobs done')
+  );
+
   return $output;
 }
 
@@ -286,7 +304,7 @@ function kms_oci_queue_admin_page() {
  * @return array
  *   Render array.
  */
-function kms_oci_queue_admin_page_jobs() {
+function kms_oci_queue_admin_page_jobs($job_statuses, $title = '') {
   $output = array(
     '#type' => 'container',
     '#attributes' => array(
@@ -303,10 +321,10 @@ function kms_oci_queue_admin_page_jobs() {
   $jobs_output["job_queue_title"] = array(
     '#type' => 'html_tag',
     '#tag' => 'h2',
-    '#value' => t('Jobs'),
+    '#value' => !empty($title) ? $title : t('Jobs'),
   );
   $rows = array();
-  foreach (kms_oci_queue_get_job_ids() as $jid) {
+  foreach (kms_oci_queue_get_job_ids($job_statuses) as $jid) {
     $job = KmsOciQueueJobFactory::get($jid);
     $job_action = $job->action . ' [<a href="#" class="more">' . t('info') . '</a>]';
     $rows[] = array(
@@ -364,7 +382,8 @@ function kms_oci_queue_admin_page_jobs() {
     '#rows' => $rows,
   );
 
-  $output["kms_oci_queue_jobs"] = $jobs_output;
+  $table_id = "kms_oci_queue_jobs_" . md5(serialize($job_statuses));
+  $output[$table_id] = $jobs_output;
 
   return $output;
 }

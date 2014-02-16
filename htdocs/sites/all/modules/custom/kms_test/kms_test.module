@@ -357,3 +357,33 @@ function kms_test_insert_new_user_test($clone_uid = 0) {
   var_dump('Delete url:');
   var_dump($base_url . '/user/' . $target_account->uid . '/cancel');
 }
+
+/**
+ * For demo purpose.
+ * Creates to bundles: custom and default.
+ */
+function kms_test_create_demo_bundles() {
+  $user = user_load(1);
+  $values = array(
+    'type' => 'access_bundle',
+    'uid' => $user->uid,
+    'status' => 1,
+    'comment' => 0,
+    'promote' => 0,
+  );
+  // Create Custom bundle
+  $entity = entity_create('node', $values);
+  $w = entity_metadata_wrapper('node', $entity);
+  $w->title->set('Custom bundle');
+  $w->field_bundle_webservices_geo->set(array(1,2,7));
+  $w->field_bundle_webservices_wfs->set(array(16,1274));
+  $w->save();
+  // Create Default bundle
+  $entity = entity_create('node', $values);
+  $w = entity_metadata_wrapper('node', $entity);
+  $w->title->set('Default bundle');
+  $w->field_bundle_webservices_geo->set(array(4,5,6));
+  $w->field_bundle_webservices_wfs->set(array(1333,1633));
+  $w->field_default_bundle->set(1);
+  $w->save();
+}
