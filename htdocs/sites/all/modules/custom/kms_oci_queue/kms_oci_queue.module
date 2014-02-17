@@ -39,9 +39,9 @@ function kms_oci_queue_menu() {
     'page arguments' => array(3),
     'type' => MENU_CALLBACK,
   );
-  $items['kms-oci-queue/ajax/load-statuses'] = array(
+  $items['kms-oci-queue/ajax/poll-jobs'] = array(
     'title' => 'Show job log',
-    'page callback' => 'kms_oci_queue_admin_page_ajax_job_statuses',
+    'page callback' => 'kms_oci_queue_admin_page_ajax_jobs',
     'access arguments' => array('administer kms oci queue'),
 //    'page arguments' => array(3),
     'type' => MENU_CALLBACK,
@@ -85,7 +85,7 @@ function kms_oci_queue_cronapi($op, $job = NULL) {
     case 'rule':
       switch ($job) {
         case 'kms_oci_queue_query_creator_run': return '*/1 * * * *';
-        case 'kms_oci_queue_cleanup_jobs': return '*/30 * * * *';
+        case 'kms_oci_queue_cleanup_jobs': return '11 4 * * *';
           break;
       }
       break;
@@ -444,25 +444,27 @@ function kms_oci_queue_admin_page_ajax_job_log($jid) {
 }
 
 /**
- * Load statuses of the different jobs and print them as table cells.
- *
- * Prints a json object with a structure like: job id => td table cell (html).
+ * Loads job tables if jobs have changed and put html in json object.
  */
-function kms_oci_queue_admin_page_ajax_job_statuses() {
-  $status = array();
-  foreach (kms_oci_queue_get_job_ids() as $jid) {
-    $job = KmsOciQueueJobFactory::get($jid);
-    $status[$jid] = _theme_table_cell(array(
-      'data' => $job->status->message,
-      'data-jid' => $job->jid,
-      'class' => array(
-        'status',
-        KmsOciQueueJob::cssClassStatus($job->status->status),
-      ),
-    ));
+function kms_oci_queue_admin_page_ajax_jobs() {
+  $html = '';
+  $state_changed = _kms_oci_queue_jobs_state_changed();
+  if ($state_changed) {
+    $jobs_not_done = kms_oci_queue_get_job_ids(
+      array('exclude' => array(KmsOciQueueJob::STATUS_DONE))
+    );
+    $jobs_done = kms_oci_queue_get_job_ids(
+      array('include' => array(KmsOciQueueJob::STATUS_DONE))
+    );
+    rsort($jobs_done);
+    $output['queues'] = kms_oci_queue_admin_page_jobs($jobs_not_done);
+    $output['queues'] += kms_oci_queue_admin_page_jobs($jobs_done, t('Jobs done'));
+    $html = render($output);
   }
+
   drupal_json_output(array(
-    'status' => $status,
+    'stateChanged' => $state_changed,
+    'html' => $html,
   ));
   exit;
 }
@@ -770,6 +772,36 @@ function kms_oci_queue_cron_cleanup_jobs() {
         array('@jid' => $jid)
       );
     }
+  }
+
+}
+
+/**
+ * If kms oci table and logs state has changed.
+ *
+ * @return bool
+ *   Has state changed?
+ */
+function _kms_oci_queue_jobs_state_changed() {
+  $query = db_select('kms_oci_queue_job', 'j')
+    ->fields('j', array('jid', 'status'))
+    ->orderBy('jid');
+  $jobs = $query->execute()->fetchAllKeyed(0, 1);
+  $query = db_select('kms_oci_queue_log', 'l')
+    ->fields('l', array('lid', 'jid'))
+    ->orderBy('lid');
+  $log = $query->execute()->fetchAllKeyed(0, 1);
+  // Create state hash.
+  $jobs_state = md5(serialize(array($jobs, $log)));
+  // If current state is not the same as the last one set variable
+  // to remember state and return TRUE.
+  if ($jobs_state != variable_get('kms_oci_queue_jobs_state', '')) {
+    variable_set('kms_oci_queue_jobs_state', $jobs_state);
+    return TRUE;
+  }
+  // Otherwise false.
+  else {
+    return FALSE;
   }
 
 }
