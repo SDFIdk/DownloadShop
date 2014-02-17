@@ -163,7 +163,7 @@ function kms_update_7001(&$sandbox) {
  *
  * @author Linas Balke <linas@adapt.dk>
  */
-function kms_update_7004(&$sandbox) {
+function kms_update_7002(&$sandbox) {
   $user = user_load(1);
 
   $values = array(
@@ -194,7 +194,7 @@ function kms_update_7004(&$sandbox) {
  * Create predefined list of taxonomy terms for bundle colours
  * @author Linas Balke <linas@adapt.dk>
  */
-function kms_update_7005(&$sandbox) {
+function kms_update_7003(&$sandbox) {
 
   //Clear cache - essential to revert taxonomy component of access bundles 
   drupal_flush_all_caches();
@@ -232,7 +232,7 @@ function kms_update_7005(&$sandbox) {
  * Enable colorbox, colorbox_node (used for webservices overview on legend icons)
  * @author Linas Balke <linas@adapt.dk>
  */
-function kms_update_7006(&$sandbox) {
+function kms_update_7004(&$sandbox) {
   // Enable relevant kms permission modules.
   module_enable(array(
     'colorbox',
@@ -254,7 +254,7 @@ function kms_update_7006(&$sandbox) {
  * Remove fake table (if any) and store a view for the ftp permisions
  * @author Linas Balke <linas@adapt.dk>
  */
-function kms_update_7007(&$sandbox) {
+function kms_update_7005(&$sandbox) {
   // Enable the module
   module_enable(array('kms_permissions_ftp'));
     
@@ -274,7 +274,7 @@ function kms_update_7007(&$sandbox) {
  *
  * @author Mikkel Jakobsen <mikkel@adapt.dk>
  */
-function kms_update_7008(&$sandbox) {
+function kms_update_7006(&$sandbox) {
   module_enable(array('kms_test'));
 }
 
@@ -283,7 +283,7 @@ function kms_update_7008(&$sandbox) {
  *
  * @author Mikkel Jakobsen <mikkel@adapt.dk>
  */
-function kms_update_7009(&$sandbox) {
+function kms_update_7007(&$sandbox) {
   user_role_grant_permissions(
     KMS_USER_ROLES_SUPERUSER_ID,
     array('administer kms oci queue')
