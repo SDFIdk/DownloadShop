@@ -149,7 +149,7 @@ libraries[colorbox][download][url] = 'git://github.com/jackmoore/colorbox.git'
 ; Beautytips
 libraries[beautytips_ie_lib][download][type] = "get"
 libraries[beautytips_ie_lib][download][url] = "https://explorercanvas.googlecode.com/files/excanvas_r3.zip"
-libraries[beautytips_ie_lib][download][md5] = "f1b9f7a44428eb0c7b27fe8ac0242d34ec94a385"
+libraries[beautytips_ie_lib][download][md5] = "81a041b98c477f92ed772f2fac0835ad"
 libraries[beautytips_ie_lib][directory_name] = "excanvas_r3"
 libraries[beautytips_ie_lib][destination] = "modules/contrib/beautytips"
 
