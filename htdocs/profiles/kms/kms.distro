@@ -151,7 +151,7 @@ libraries[beautytips_ie_lib][download][type] = "get"
 libraries[beautytips_ie_lib][download][url] = "https://explorercanvas.googlecode.com/files/excanvas_r3.zip"
 libraries[beautytips_ie_lib][download][md5] = "81a041b98c477f92ed772f2fac0835ad"
 libraries[beautytips_ie_lib][directory_name] = "excanvas_r3"
-libraries[beautytips_ie_lib][destination] = "modules/contrib/beautytips"
+libraries[beautytips_ie_lib][destination] = "modules/contrib/beautytips/other_libs"
 
 ; Themes
 projects[adapt_theme][download][type] = "svn"
