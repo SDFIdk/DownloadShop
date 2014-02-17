@@ -38,7 +38,6 @@
             url: "/kms-oci-queue/ajax/poll-jobs",
             type: 'GET',
             success: function(xhr){
-              console.log(xhr.stateChanged);
               if (xhr.stateChanged) {
                 $('.kms-oci-queue-jobs-overview', context).html(xhr.html);
                 $('.bt-wrapper').hide();
