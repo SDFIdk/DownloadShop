@@ -127,14 +127,12 @@ SET FEEDBACK OFF
 SET HEADING OFF
 SET LINESIZE 15000
 WHENEVER SQLERROR EXIT FAILURE ROLLBACK
-SELECT 'Oracle import start. Jid: $jid, type: $info, file: $filename',to_char(sysdate,'YYYYMMDD HH24:MI:SS') from dual;
+SELECT 'Oracle import start. Jid: $jid, info: $info, file: $filename',to_char(sysdate,'YYYYMMDD HH24:MI:SS') from dual;
 START $filepath
-SELECT 'Oracle import end. Jid: $jid, type: $info, file: $filename',to_char(sysdate,'YYYYMMDD HH24:MI:SS') from dual;
+SELECT 'Oracle import end. Jid: $jid, info: $info, file: $filename',to_char(sysdate,'YYYYMMDD HH24:MI:SS') from dual;
 EXIT COMMIT
 !!
 EOD;
-
-  _adapt_debug('mikkel', $sql);
 
   return $sql;
 
