@@ -609,18 +609,13 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
   $account = (object)$form_state['values'];
   $user = $form['#user'];
 
-
-
   // Update Oracle tables if Oracle connection is available.
   if (!module_exists('kms_oci')) {
     return;
   }
-//    kms_oci_update_user($data['user_extra'], 'smuser_extra', $userids['old']);
-//    kms_oci_update_user($data['user'], 'smuser', $userids['old']);
-  $data = _kms_oci_queue_create_update_smuser_data($account, $user);
-  $userids['old'] = kms_user_get_userid($user);
-  $userids['new'] = kms_user_get_userid($account);
-  $data['user'][':userid'] = $data['user_extra'][':userid'] = $userids['new'];
+
+  $data = _kms_user_user_update_oci_queue_prepare_data($user, $account);
+  $user_data = $data['user_data'];
 
   // Populate user tables in oracle.
   KmsOciQueueJob::create(array(
@@ -628,71 +623,16 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
     'action_details' => format_string(
       'Updating user: @user_details.',
       array(
-        '@user_details' => json_encode($data),
+        '@user_details' => json_encode($user_data['user']),
       )
     ),
     'params' => array(
-      array($data['user'], 'SMUSER'),
-      array($data['user_extra'], 'SMUSER_EXTRA'),
+      array($user_data['user'], 'SMUSER'),
+      array($user_data['user_extra'], 'SMUSER_EXTRA'),
     ),
   ));
-  // Populate user permission tables of the user in Oracle
-  // with permissions from the users bundles + separate perms.
-  $bids = array();
-  if (!empty($account->field_access_bundles[LANGUAGE_NONE][0]['nid'])) {
-    $bids = array_map(function ($v){
-      return !empty($v['nid']) ? $v['nid'] : '';
-    }, $account->field_access_bundles[LANGUAGE_NONE]);
-  }
-  // We will add the default bundles to the user bundles array,
-  // no matter if the default have been attached to the user in postgres yet.
-  $bids_def = _kms_permissions_get_default_bundles();
-  $bids = array_merge($bids, $bids_def);
 
-  // Get separate user permissions and add them to $perms array.
-  $perms = array();
-  _kms_permissions_get_separate_perms_by_uid($account->uid, $perms);
-
-  $job_params = array(
-    'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
-    'action_details' => format_string(
-      'Attaching bundles: @bundles to user: @user.',
-      array(
-        '@bundles' => implode(', ', $bids),
-        '@user' => $account->name,
-      )
-    ),
-    'params' => array(
-      'uid' => $userids['old'],
-      'bids' => $bids,
-      'perms' => $perms,
-    ),
-  );
-  KmsOciQueueJob::create($job_params);
-  KmsOciQueueJob::create($job_params, 'kms_permissions');
-
-   // Atodo: Update all subusers with the same bundles perms as their master.
-  $subusers = subuser_load_all($user);
-  foreach ($subusers as $subuser_uid) {
-    $subuser = user_load($subuser_uid);
-    $job_params = array(
-      'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
-      'action_details' => format_string(
-        'Attaching bundles: @bundles to subuser: @subuser.',
-        array(
-          '@bundles' => implode(', ', $bids),
-          '@subuser' => $subuser->name,
-        )
-      ),
-      'params' => array(
-        'uid' => $subuser->uid,
-        'bids' => $bids,
-        'perms' => $perms,
-      ),
-    );
-    KmsOciQueueJob::create($job_params);
-    KmsOciQueueJob::create($job_params, 'kms_permissions');
-  }
+  _kms_user_user_update_oci_queue_bundles_attach($account, $user, $data);
 
 }
 
@@ -1070,32 +1010,36 @@ function kms_user_vbo_access_bundle_options() {
  * @param object $account
  *   Drupal user object
  * @param array $bundles
- *   Bundles to be added (optional). If $op = clear then it is not needed.
+ *   Bundles to be added (optional). If $op = clear then it is not needed to be set.
  *
- * @return [type]
+ * @return void
  */
 function kms_user_access_bundle_administer($op, $account, $bundles = array()) {
   if (empty($account)) {
     return;
   }
+  $def_bundles = _kms_permissions_get_default_bundles();
+  $current_bundles = array_combine($def_bundles, $def_bundles);
+
   $w = entity_metadata_wrapper('user', $account);
   $w_bundles = array_filter($w->field_access_bundles->value());
-  $current_bundles = array();
-
   switch ($op) {
     case 'add':
       array_walk($w_bundles, function($node) use (&$current_bundles){
         $current_bundles[$node->nid] = $node->nid;
       });
+      $bundles = array_merge($current_bundles, $bundles);
+      break;
     case 'clear':
-      if (!empty($current_bundles)) {
-        $bundles = array_merge($current_bundles, $bundles);
-      }
-      $w->field_access_bundles->set($bundles);
+      $bundles = $current_bundles;
       break;
   }
 
+  $w->field_access_bundles->set($bundles);
   $w->save();
+  // Load changes and activate oci queue jobs.
+  $account = user_load($account->uid);
+  _kms_user_user_update_oci_queue_bundles_attach($account, $account);
 }
 
 /**
@@ -1265,6 +1209,7 @@ function kms_user_views_pre_render(&$view) {
   if (
     $view->name == KMS_USER_VIEW_NAME_ADMIN_VIEWS_USER
     && $view->current_display == KMS_USER_VIEW_DISPLAY_ADMIN_VIEWS_USER
+    && $_SERVER['REQUEST_METHOD'] == 'GET'
   ) {
     ctools_include('modal');
     ctools_modal_add_js();
@@ -1326,4 +1271,99 @@ function _kms_user_get_users_from_services($services) {
   });
 
   return array_keys($users);
+}
+
+/**
+ * Start jobs related to user update.
+ *
+ * @param object $user
+ * @param object $account
+ * @param array $data
+ * @atodo Fix dependency on both user and account vars and use only one.
+ *
+ * return void
+ */
+function _kms_user_user_update_oci_queue_bundles_attach($account, $user, $data = array()) {
+  if (empty($data)) {
+    $data = _kms_user_user_update_oci_queue_prepare_data($account, $user);
+  }
+  $userids = $data['userids'];
+
+  // Populate user permission tables of the user in Oracle
+  // with permissions from the users bundles + separate perms.
+  $bids = array();
+  if (!empty($account->field_access_bundles[LANGUAGE_NONE][0]['nid'])) {
+    $bids = array_map(function ($v){
+      return !empty($v['nid']) ? $v['nid'] : '';
+    }, $account->field_access_bundles[LANGUAGE_NONE]);
+  }
+  // We will add the default bundles to the user bundles array,
+  // no matter if the default have been attached to the user in postgres yet.
+  $bids_def = _kms_permissions_get_default_bundles();
+  $bids = array_unique(array_merge($bids, $bids_def));
+
+
+  // Get separate user permissions and add them to $perms array.
+  $perms = array();
+  _kms_permissions_get_separate_perms_by_uid($account->uid, $perms);
+
+  $job_params = array(
+    'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+    'action_details' => format_string(
+      'Attaching bundles: @bundles to user: @user.',
+      array(
+        '@bundles' => implode(', ', $bids),
+        '@user' => $account->name,
+      )
+    ),
+    'params' => array(
+      'uid' => $userids['old'],
+      'bids' => $bids,
+      'perms' => $perms,
+    ),
+  );
+  KmsOciQueueJob::create($job_params);
+  KmsOciQueueJob::create($job_params, 'kms_permissions');
+
+  // Atodo: Update all subusers with the same bundles perms as their master.
+  $subusers = subuser_load_all($user);
+  foreach ($subusers as $subuser_uid) {
+    $subuser = user_load($subuser_uid);
+    $job_params = array(
+      'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+      'action_details' => format_string(
+        'Attaching bundles: @bundles to subuser: @subuser.',
+        array(
+          '@bundles' => implode(', ', $bids),
+          '@subuser' => $subuser->name,
+        )
+      ),
+      'params' => array(
+        'uid' => $subuser->uid,
+        'bids' => $bids,
+        'perms' => $perms,
+      ),
+    );
+    KmsOciQueueJob::create($job_params);
+    KmsOciQueueJob::create($job_params, 'kms_permissions');
+  }
+
+}
+
+/**
+ * Prepare user data for oci queue job creation.
+ *
+ * @param $account
+ * @param $user
+ * @return array
+ */
+function _kms_user_user_update_oci_queue_prepare_data($account, $user) {
+  $user_data = _kms_oci_queue_create_update_smuser_data($account, $user);
+  $userids['old'] = kms_user_get_userid($user);
+  $userids['new'] = kms_user_get_userid($account);
+  $user_data['user'][':userid'] = $user_data['user_extra'][':userid'] = $userids['new'];
+  return array(
+    'user_data' => $user_data,
+    'userids' => $userids,
+  );
 }

@@ -55,7 +55,7 @@ function kms_permissions_library() {
 function kms_permissions_action_info() {
   return array(
     'kms_permissions_vbo_copy_user_services' => array(
-      'label' => t('Copy user Permissions'),
+      'label' => t('Clone permissions (choose target users)'),
       'type' => 'user',
       'configurable' => TRUE,
       'hooks' => array(),
@@ -1587,7 +1587,8 @@ function _kms_permissions_extra_service_fields() {
 function kms_permissions_vbo_copy_user_services_form($context) {
   $form['source_username'] = array(
     '#type' => 'textfield',
-    '#title' => t('Choose a user.'),
+    '#title' => t('Choose source user.'),
+    '#description' => t('You have choosen target users. Now choose user to clone from.'),
     // The autocomplete path is provided in hook_menu in ajax_example.module.
     '#autocomplete_path' => 'kms-permissions/ajax/user-autocomplete',
   );
@@ -1628,7 +1629,9 @@ function kms_permissions_vbo_copy_user_services(&$account, $context = array()) {
   if(!$source_account) {
     return;
   }
+  $target_account = $context['user'];
   kms_permissions_clone_perms($source_account, $context['user']);
+  _kms_user_user_update_oci_queue_bundles_attach($target_account, $target_account);
 }
 
 /**

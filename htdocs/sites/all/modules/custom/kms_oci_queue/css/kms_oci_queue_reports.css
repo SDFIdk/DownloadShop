@@ -51,3 +51,7 @@
 .kms-oci-queue-jobs-overview td.job-log-trigger.active {
   background: url(/misc/arrow-asc.png) no-repeat 5px 10px;
 }
+/* line 41, ../sass/kms_oci_queue_reports.scss */
+.kms-oci-queue-jobs-overview td.job-log-trigger.loading {
+  background: url(../images/ajax-loader.gif) no-repeat 5px 10px;
+}

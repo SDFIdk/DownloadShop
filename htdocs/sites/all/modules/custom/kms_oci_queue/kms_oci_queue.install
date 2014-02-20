@@ -4,8 +4,8 @@
  * Implements hook_install().
  */
 function kms_oci_queue_install() {
-  // Create necesarry job queues
-  foreach(KmsOciQueueJob::$queues as $queue) {
+  // Create necessary job queues.
+  foreach (KmsOciQueueJob::$queues as $queue) {
     variable_set('queue_class_' . $queue['name'], $queue['class']);
     $q = DrupalQueue::get($queue['name']);
     $q->createQueue();
@@ -154,6 +154,42 @@ function kms_oci_queue_schema() {
       'timestamp' => array('created'),
     ),
   );
+/*
+  This will be introduced later:
+  $schema['kms_oci_queue_job_group'] = array(
+    'description' => 'Table that contains current job status.',
+    'fields' => array(
+      'jgid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'Primary key: Job id.',
+      ),
+    ),
+    'primary key' => array('jgid'),
+    'indexes' => array(
+      'timestamp' => array('jgid'),
+    ),
+  );
 
+  $schema['kms_oci_queue_job_group_jobs'] = array(
+    'description' => 'Table that contains current job status.',
+    'fields' => array(
+      'jgid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'Primary key: Job id.',
+      ),
+      'jid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'Primary key: Job id.',
+      ),
+    ),
+    'primary key' => array('jid'),
+    'indexes' => array(
+      'job_group_job' => array('jgid', 'jid'),
+    ),
+  );
+*/
   return $schema;
 }

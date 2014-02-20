@@ -41,19 +41,17 @@
               if (xhr.stateChanged) {
                 $('.kms-oci-queue-jobs-overview', context).html(xhr.html);
                 $('.bt-wrapper').hide();
-                Drupal.behaviors.beautytips.attach(context, settings);
-                Drupal.behaviors.kmsOciQueueReports.attach(context, settings);
+                Drupal.attachBehaviors(context, settings);
               }
-
             },
             complete: pollJobs,
-            timeout: 8000
+            timeout: 4500
           });
-        }, 8000);
+        }, 4500);
       }
-
     }
   }
+
 
 
 })(jQuery, Drupal);

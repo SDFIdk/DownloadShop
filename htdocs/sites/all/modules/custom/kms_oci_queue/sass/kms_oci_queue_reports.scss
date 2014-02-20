@@ -38,6 +38,9 @@
       &.active {
         background: url(/misc/arrow-asc.png) no-repeat 5px 10px;
       }
+      &.loading {
+        background: url(../images/ajax-loader.gif) no-repeat 5px 10px;
+      }
     }
   }
 }
