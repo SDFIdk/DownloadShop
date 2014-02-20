@@ -36,8 +36,13 @@ function qe_resolve_arguments($opt) {
   // Define file to import from.
   $args['filename'] = !empty($opt['f']) ? $opt['f'] : (!empty($opt['job-file']) ? $opt['job-file'] : FALSE);
   if (!$args['filename']) {
-    qe_error("filename parameter is missing");
-    exit(1);
+    if (QUERY_ENGINE_RUN_MODE == 'cli') {
+      qe_error("filename parameter is missing");
+      exit(1);
+    }
+    else {
+      exit(0);
+    }
   }
   else {
     $args['filepath'] = qe_absolute_filepath($args['filename']);
