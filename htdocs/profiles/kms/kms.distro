@@ -3,7 +3,7 @@ core = 7.x
 api = 2
 
 
-projects[drupal][version] = "7.17"
+projects[drupal][version] = "7.26"
 projects[drupal][patch][] = "http://drupal.org/files/symlinks_within_files_directory-1008402-72-D7.14-do-not-test.patch"
 
 includes[kms_distro_inc] = "kms.distro.inc"
