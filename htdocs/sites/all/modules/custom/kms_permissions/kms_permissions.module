@@ -1713,7 +1713,7 @@ function kms_permissions_run_batch($type) {
       list($bid, $uids) = $args;
       $operations = array();
       $user_count = count($uids);
-      $chunk_size = 10;
+      $chunk_size = 500;
       $chunks = array_chunk($uids, $chunk_size);
 
       array_walk($chunks, function($uids) use (&$operations, $bid, $user_count, $chunk_size){
@@ -2067,4 +2067,64 @@ function _kms_permissions_perms_oracle_relations() {
       )
     ),
   );
+}
+
+/**
+ * Attach default bundles to a user.
+ *
+ * @param integer $uid
+ * @param array $bids
+ */
+function _kms_permissions_attach_default_bundles_to_user($uid, $bids) {
+  if (empty($uid) || empty($bids)) {
+    return;
+  }
+  // If only one bundle id arrayify it.
+  if (intval($bids)) {
+    $bids = array($bids);
+  }
+  // Row data needed for creating default bundle rows.
+  $row_data = array(
+    'entity_type' => 'user',
+    'bundle' => 'user',
+    'language' => LANGUAGE_NONE,
+    'entity_id' => $uid,
+    'revision_id' => $uid,
+  );
+  // Attach bundles to user.
+  foreach ($bids as $def_bundle) {
+    $row_data['field_access_bundles_nid'] = $def_bundle;
+    $tables = array(
+      'field_data_field_access_bundles',
+      'field_revision_field_access_bundles',
+    );
+    // Process field data table and field revision table.
+    array_walk($tables, function($table) use ($row_data) {
+      // Check if a row is already existing in the table.
+      $query = db_select($table, 'f')
+        ->fields('f', array('entity_id'));
+      foreach($row_data as $k => $v) {
+        $query->condition("f.$k", $v, '=');
+      }
+      $result = $query->execute()->fetchField();
+      // If a row does not exist with the default bundle create one.
+      if ($result === FALSE) {
+        // First find next available delta.
+        $query = db_select($table, 'f');
+        $query->addExpression('MAX(delta) + 1');
+        foreach($row_data as $k => $v) {
+          if (in_array($k, array('language', 'field_access_bundles_nid'))) {
+            continue;
+          }
+          $query->condition("f.$k", $v, '=');
+        }
+        $result = $query->execute()->fetchField();
+        // Insert new default bundle row with the new delta.
+        $row_data['delta'] = !is_null($result) ? $result : 0;
+        db_insert($table)
+          ->fields($row_data)
+          ->execute();
+      }
+    });
+  }
 }

@@ -10,20 +10,7 @@
 function kms_permissions_batch_default_bundle_update_users($bid, $uids, $user_count, $chunk_size, &$context) {
 
   foreach ($uids as $uid) {
-
-    $user = user_load($uid);
-    if (!$user) {
-      continue;
-    }
-
-    $uw = entity_metadata_wrapper('user', $user);
-    $current_bundles = $uw->field_access_bundles->value() ?: array();
-    array_walk($current_bundles, function(&$v){
-      $v = $v->nid;
-    });
-    $bundles = array_unique(array_merge($current_bundles, array($bid)));
-    $uw->field_access_bundles->set($bundles);
-    $uw->save();
+    _kms_permissions_attach_default_bundles_to_user($uid, $bid);
   }
 
   $context['results'][] = $uids;
@@ -31,7 +18,9 @@ function kms_permissions_batch_default_bundle_update_users($bid, $uids, $user_co
     'Attaching default bundle to users. Processed %progress out of %max users',
     array('%progress' => count($context['results']) * $chunk_size, '%max' => $user_count)
   );
-
+  // Empty field cache to reflect result.
+  // Atodo; Make finish function work and move it there.
+  field_cache_clear();
 }
 
 /**
@@ -67,4 +56,5 @@ function kms_permissions_batch_default_bundle_update_users_finished($success, $r
       WATCHDOG_ERROR
     );
   }
+
 }
