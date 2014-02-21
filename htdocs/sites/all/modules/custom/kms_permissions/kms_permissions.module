@@ -18,7 +18,7 @@ function kms_permissions_menu() {
     'access arguments' => array('access content'),
     'type' => MENU_CALLBACK,
   );
-  
+
   return $items;
 }
 
@@ -148,16 +148,13 @@ function kms_permissions_field_widget_settings_form($field, $instance) {
 * Implements hook_field_widget_form().
 */
 function kms_permissions_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
-
-
-
   $value_key = key($field['columns']);
   $type = str_replace('options_', '', $instance['widget']['type']);
   $multiple = $field['cardinality'] > 1 || $field['cardinality'] == FIELD_CARDINALITY_UNLIMITED;
   $required = $element['#required'];
   $has_value = isset($items[0][$value_key]);
   $properties = _options_properties($type, $multiple, $required, $has_value);
-  $instance_settings = $instance['widget']['settings'];  
+  $instance_settings = $instance['widget']['settings'];
 
   switch ($instance['widget']['type']) {
     case 'kms_applications':
@@ -170,7 +167,7 @@ function kms_permissions_field_widget_form(&$form, &$form_state, $field, $instan
           $default_value[] = $item['value'];
         }
       }
-      
+
       $options = kms_permissions_widget_options($instance['widget']['type'], $instance_settings);
 
       // If required and there is one single option, preselect it.
@@ -200,8 +197,6 @@ function kms_permissions_field_widget_form(&$form, &$form_state, $field, $instan
     '#element_validate' => array('options_field_widget_validate'),
     '#properties' => $properties,
   );
-   //dsm($element);
-  
 
   return $element;
 }
@@ -219,7 +214,6 @@ function kms_permissions_field_widget_error($element, $error) {
  */
 function kms_permissions_widget_options($type = 'kms_services', $instance_settings) {
 
-  
   switch ($type) {
     case 'kms_services':
       $options = array();
@@ -228,9 +222,7 @@ function kms_permissions_widget_options($type = 'kms_services', $instance_settin
       static $options;
 
       if (empty($options[$type])) {
-        
         $rows = kms_permissions_get_service_list();
-        
         if (!empty($rows)) {
             foreach ($rows as $row) {
               $html = _kms_permissions_format_item_list_item(
@@ -242,20 +234,25 @@ function kms_permissions_widget_options($type = 'kms_services', $instance_settin
             }
         }
       }
-    
+
       return $options[$type];
 
     case 'kms_applications';
       $options = array();
-      
+
       // Connect to default database
-      
+
         $rows = kms_permissions_get_application_list();
         if (!empty($rows)) {
           foreach ($rows as $row) {
-            $options[$row['GROUPID']] = $row['NAME'];
+            $html = _kms_permissions_format_item_list_item(
+              $row['GROUPID'],
+              $row['NAME'],
+              'application'
+            );
+            $options[$row['GROUPID']] = $html;
           }
-        
+
       }
 
       return $options;
@@ -263,7 +260,7 @@ function kms_permissions_widget_options($type = 'kms_services', $instance_settin
 }
 
 function kms_permissions_get_service_list() {
-  
+
   $settings = array(
     'kms_oci_conn_user' => variable_get('kms_permissions_conn_user', ''),
     'kms_oci_conn_pass' => variable_get('kms_permissions_conn_pass', ''),
@@ -274,11 +271,10 @@ function kms_permissions_get_service_list() {
   $service_data = &drupal_static(__FUNCTION__);
 
   if (!isset($service_data)) {
-    
 
     if (kms_oci_get_conn('kms_permissions', $settings)) {
       $query = "SELECT S2.SERVICEID, S2.SERVICENAME, ST.TYPEID, ST.TYPENAME FROM SERVICES2 S2, SERVICETYPES2 ST WHERE S2.TYPEID = ST.TYPEID ORDER BY lower(S2.SERVICENAME) ASC";
-      
+
       $rows = kms_oci_select($query, array(), 'kms_permissions');
 
       if (!empty($rows)) {
@@ -300,7 +296,7 @@ function kms_permissions_get_service_list() {
 }
 
 function kms_permissions_get_application_list() {
-  
+
   $settings = array(
     'kms_oci_conn_user' => variable_get('kms_permissions_conn_user', ''),
     'kms_oci_conn_pass' => variable_get('kms_permissions_conn_pass', ''),
@@ -311,7 +307,6 @@ function kms_permissions_get_application_list() {
   $application_data = &drupal_static(__FUNCTION__);
 
   if (!isset($service_data)) {
-    
 
     if (kms_oci_get_conn()) {
           $query = "SELECT GROUPID, NAME FROM SMGROUP ORDER BY lower(NAME) ASC";
@@ -355,7 +350,7 @@ function _kms_permissions_format_item_list_item($item_id, $item_name, $item_type
   }
   // Start with the name.
   $html .= $item_name . ' ';
-  
+
   foreach ($nid_sid_arr as $type => $nodes) {
     foreach ($nodes as $nid => $title) {
       $bundle_node = node_load($nid);
@@ -411,7 +406,7 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
 
   switch ($display['type']) {
 
-    case 'kms_permissions_bundles_reference': 
+    case 'kms_permissions_bundles_reference':
       $bundle_link = function($nid, $title, $status) {
         $status_class = $status ? 'bundle-active' : 'bundle-inactive';
         if($status == 3) {
@@ -420,7 +415,7 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
         //print('status - '.$status.' on '.$nid.' <br>');
         $bundle_node = node_load($nid);
         $wrapper = entity_metadata_wrapper('node', $bundle_node);
-        
+
         if(isset($wrapper->field_colour->value()->field_default_image)){
           $file_uri = $wrapper->field_colour->value()->field_default_image[LANGUAGE_NONE][0]['uri'];
         } else {
@@ -449,7 +444,7 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
         ->execute();
 
       // We need to load the nodes to get bundle title
-      
+
       if (isset($result['node'])) {
         $result_nids = array_keys($result['node']);
         $result_node = entity_load('node', $result_nids);
@@ -462,16 +457,16 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
           foreach ($items as $item) {
             if ($item['nid'] == $nid && $item['access']) {
               $status_access = 1;
-            } 
+            }
           }
 
-          $element[$nid] = $bundle_link($nid, $result_node[$nid]->title, $status_access);    
+          $element[$nid] = $bundle_link($nid, $result_node[$nid]->title, $status_access);
         }
       }
-      
+
       break;
 
-      case 'kms_permissions_service_bundles': 
+      case 'kms_permissions_service_bundles':
 
           $service_data = kms_permissions_get_service_list();
 
@@ -486,13 +481,13 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
       break;
 
 
-      case 'kms_permissions_applications': 
+      case 'kms_permissions_applications':
 
           $application_data = kms_permissions_get_application_list();
 
           foreach ($application_data as $application) {
             foreach ($items as $item) {
-              
+
               if($item['value']==$application['GROUPID']) {
                 $element[]['#markup']  = $application['NAME'];
               }
@@ -526,7 +521,7 @@ function kms_permissions_check_access_userdefined($pid, $uid = NULL) {
       return TRUE;
     }
   }
-  
+
   return FALSE;
 }
 
@@ -544,7 +539,7 @@ function kms_permissions_check_max_pixels($pid, $uid = NULL) {
 
   $permissions = array();
   _kms_permissions_get_permissions_by_uid($uid, $permissions);
-  
+
   if (isset($permissions['predefined_datacollections']) && isset($permissions['predefined_datacollections']['pd' . $pid])) {
     return $permissions['predefined_datacollections']['pd' . $pid]['max_download_size'];
   }
@@ -557,17 +552,15 @@ function kms_permissions_check_max_pixels($pid, $uid = NULL) {
  */
 function kms_permissions_user_presave(&$edit, $account, $category) {
   $lang = field_language('user', $edit, 'field_access_bundles');
-
   // Assign default bundles to a new user
   if ($account->is_new) {
     $array_index = 0;
     foreach (_kms_permissions_get_access_bundles('default') as $bundle_id) {
-      // Add Node reference to field field_access_bundle 
+      // Add Node reference to field field_access_bundle
       $edit['field_access_bundles'][$lang][$array_index]['nid'] = $bundle_id;
       $array_index++;
     }
   }
-  
 }
 
 /**
@@ -577,7 +570,7 @@ function kms_permissions_form_access_bundle_node_form_alter(&$form, &$form_state
   $form['#attached']['js'][] = drupal_get_path('module', 'kms_permissions') .'/js/kms_perms_user_checkboxes.js';
   $form['#attached']['css'][] = drupal_get_path('module', 'kms_permissions') .'/css/edit_bundles_and_services.css';
   $form['#attached']['library'][] = array('kms_permissions', 'jquery.foggy');
-    
+
   $form['actions']['submit']['#submit'][] = 'kms_permissions_access_bundle_update';
   $form['actions']['delete']['#submit'][] = 'kms_permissions_access_bundle_update';
 
@@ -636,11 +629,15 @@ function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
  *  Do some common form alter for access node and user profile
  */
 function _kms_permissions_common_form_alter(&$form) {
-  // Sort prefedined datacollections alphabetically 
+  // Sort prefedined datacollections alphabetically
   if(isset($form['field_predefined_datacollections'])) {
     $sorted_array = $form['field_predefined_datacollections'][LANGUAGE_NONE]['#options'];
     asort($sorted_array);
     $form['field_predefined_datacollections'][LANGUAGE_NONE]['#options'] = $sorted_array;
+  }
+
+  foreach ($form['field_predefined_datacollections'][LANGUAGE_NONE]['#options'] as $key => $value) {
+    $form['field_predefined_datacollections'][LANGUAGE_NONE]['#options'][$key] =  _kms_permissions_format_item_list_item($key, $value, 'predefined');
   }
 
   //Add select all to all webservice tabs
@@ -659,16 +656,17 @@ function _kms_permissions_common_form_alter(&$form) {
       '#type' => 'checkbox',
       '#title' => t('Select / Unselect all'),
       '#attributes' => array('onclick' => 'Drupal.behaviors.kms_perms_user_checkboxes.checkUncheckAll(this, "field-name-field-predefined-datacollections");'),
-  ); 
+  );
 
   $form['select_all_field_applications'] = array(
       '#type' => 'checkbox',
       '#title' => t('Select / Unselect all'),
       '#attributes' => array('onclick' => 'Drupal.behaviors.kms_perms_user_checkboxes.checkUncheckAll(this, "field-name-field-applications");'),
-  ); 
-    
+  );
+
   $form['#group_children']['select_all_field_predefined'] = 'group_tab_predefined';
   $form['#group_children']['select_all_field_applications'] = 'group_tab_applications';
+
 }
 
 
@@ -924,21 +922,21 @@ function kms_permissions_save_permissions_to_sql_file($psql_table) {
   $path = 'sites/default/files/test.sql';
   $write = file_put_contents($path, $query, FILE_APPEND);
   if ($write) {
-    watchdog('kms_permissions', 
-      'Successfully updated user permission SQL file in @path (size: @size byte(s))', 
+    watchdog('kms_permissions',
+      'Successfully updated user permission SQL file in @path (size: @size byte(s))',
       array('@size' => $write,
-            '@path' => $path), 
-      WATCHDOG_INFO, 
+            '@path' => $path),
+      WATCHDOG_INFO,
       'link');
   }else {
-    watchdog('kms_permissions', 
-      'Couldn\'t write SQL user permission file to @path', 
-      array('@path' => $path), 
-      WATCHDOG_ERROR, 
+    watchdog('kms_permissions',
+      'Couldn\'t write SQL user permission file to @path',
+      array('@path' => $path),
+      WATCHDOG_ERROR,
       'link');
   }
   // TODO: Update oracle db with the SQL file
-  
+  //
   // Reinitialize table and delete sql file
   // kms_permissions_reinit_temp_permission($psql_table, $path);
 }
@@ -952,25 +950,25 @@ function kms_permissions_reinit_temp_permission($psql_table, $path) {
  // Truncate psql temp table
   $truncate = db_truncate($psql_table, array());
   $truncate->execute();
-  watchdog('kms_permissions', 
-    'Successfully truncated @table)', 
-    array('@table' => $psql_table), 
-    WATCHDOG_INFO, 
+  watchdog('kms_permissions',
+    'Successfully truncated @table)',
+    array('@table' => $psql_table),
+    WATCHDOG_INFO,
     'link');
-  
+
   // Delete SQL file
   $delete = unlink($path);
   if ($delete) {
-    watchdog('kms_permissions', 
-      'Successfully deleted @path', 
-      array('@path' => $path), 
-      WATCHDOG_INFO, 
+    watchdog('kms_permissions',
+      'Successfully deleted @path',
+      array('@path' => $path),
+      WATCHDOG_INFO,
       'link');
   }else {
-    watchdog('kms_permissions', 
-      'Couldn\'t delete SQL user permission file at @path', 
-      array('@path' => $path), 
-      WATCHDOG_ERROR, 
+    watchdog('kms_permissions',
+      'Couldn\'t delete SQL user permission file at @path',
+      array('@path' => $path),
+      WATCHDOG_ERROR,
       'link');
   }
 }
@@ -997,7 +995,7 @@ function kms_permissions_save_permissions($uid, $permissions) {
 
       //Delete existing permissions for user
       $query = "DELETE FROM USERRESTRICTIONS2 WHERE USERID = :userid";
-    
+
       $data = array(':userid' => $kms_id);
       kms_oci_query($query, $data, 'kms_permissions');
 
@@ -1046,8 +1044,8 @@ function kms_permissions_save_permissions($uid, $permissions) {
 
       // Close connection
       kms_oci_close_conn();
-    } 
-   
+    }
+
     watchdog('kms_permissons', 'User uid: @uid permissions updated in Oracle', array('@uid' => $uid), WATCHDOG_INFO);
   }
   else {
@@ -1126,7 +1124,7 @@ function _kms_permissions_get_permissions_by_bid($bid, &$permissions = array()) 
       else {
         $access_userdefined_ranges = $field_access_userdefined_ranges['value'];
       }
-      
+
       // Only select min/max value if key exists to avoid notices
       if (isset($permissions['predefined_datacollections']) && isset($permissions['predefined_datacollections'][$pd_key])) {
         $permissions['predefined_datacollections'][$pd_key] = array(
@@ -1277,7 +1275,7 @@ function  _kms_permissions_get_all_users() {
  * Find all default and active bundles.
  */
 function _kms_permissions_get_access_bundles($subtype) {
-  
+
   if($subtype == 'default') {
     $field_info = field_info_instance('node', 'field_default_bundle', 'access_bundle');
     // If field does not exist return empty array.
@@ -1293,7 +1291,7 @@ function _kms_permissions_get_access_bundles($subtype) {
   $query->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'access_bundle')
     ->propertyCondition('status', 1)
-    ->fieldCondition('field_default_bundle', 'value', $default_value, '=')    
+    ->fieldCondition('field_default_bundle', 'value', $default_value, '=')
     ->addMetaData('account', user_load(1)); // Run the query as user 1.
 
     $result = $query->execute();
@@ -1304,7 +1302,7 @@ function _kms_permissions_get_access_bundles($subtype) {
         $bids[] = $bundle->nid;
       }
     }
-    
+
   return $bids;
 }
 
@@ -1346,6 +1344,8 @@ function _kms_permissions_get_bundles_by_item_id($id, $item_type) {
     $item_types = array(
       'webservice' => 'field_bundle_webservices',
       'ftp' => 'field_ftp_permissions',
+      'application' => 'field_applications',
+      'predefined' => 'field_predefined_datacollections',
     );
 
     if (empty($item_types[$type])) {
@@ -1363,14 +1363,22 @@ function _kms_permissions_get_bundles_by_item_id($id, $item_type) {
           if (!empty($field_value)) {
             // Search for a match
             foreach ($field_value['und'] as $service_id) {
-              if ($service_id['value'] == $sid) {
-                $bundles[$subtype][$nid] = $bundle->title;
+
+              if($type =='predefined'){
+                if ($service_id['target_id'] == $sid) {
+                  $bundles[$subtype][$nid] = $bundle->title;
+                }
+              } else {
+                if ($service_id['value'] == $sid) {
+                 $bundles[$subtype][$nid] = $bundle->title;
+                }
               }
             }
           }
         }
       }
     }
+
     return $bundles;
   };
 
@@ -1385,6 +1393,15 @@ function _kms_permissions_get_bundles_by_item_id($id, $item_type) {
 
     case 'ftp':
       $nid_sid_arr = $get_bundle_ids($id, 'ftp', 'custom');
+    break;
+
+    case 'application':
+      $nid_sid_arr = $get_bundle_ids($id, 'application', 'custom');
+    break;
+
+    case 'predefined':
+//      print_r($get_bundle_ids($id, 'predefined', 'custom'));
+      $nid_sid_arr = $get_bundle_ids($id, 'predefined', 'custom');
     break;
   }
 
@@ -1429,7 +1446,7 @@ function kms_permissions_node_access_records($node) {
       foreach ($wnode->field_predefined_datacollections->value() as $prod) {
         // Update node access for all related products
         node_access_acquire_grants($prod, TRUE);
-      } 
+      }
     }
     return array();
   }
@@ -1465,7 +1482,6 @@ function kms_permissions_node_grants($account, $op) {
 
     $grants['kms_permissions_access'] = $prods;
   }
-  
   if (count($grants)) {
     return $grants;
   }
@@ -1482,14 +1498,14 @@ function _kms_permissions_hash_field($entity_type, $entity, $field_name) {
   if ($field_values) {
     foreach ($field_values as $field_value) {
       if (isset($field_value['target_id'])) {
-        $hash .= $field_value['target_id'];  
+        $hash .= $field_value['target_id'];
       }
       else if (isset($field_value['value'])) {
         $hash .= $field_value['value'];
       }
     }
   }
-  
+
   $hash = md5($hash);
   return $hash;
 }
@@ -1517,7 +1533,7 @@ function _kms_permissions_webservice_fields() {
   foreach ($types as $type) {
     $fields[] = 'field_bundle_webservices_' . strtolower($type);
   }
-  
+
   return $fields;
 }
 
