@@ -2,24 +2,26 @@
  * Created by mikkel on 12/2/13.
  */
 (function ($) {
-  Drupal.behaviors.kms_perms_user_checkboxes = {
+  Drupal.behaviors.kms_perms_checkboxes = {
     attach: function(context, settings) {
-      // Prevent click on default bundles.
-      $('#edit-field-access-bundles-und .default-bundle', context).bind('click', function(event){
-        event.stopPropagation();
-        event.preventDefault();
-        return false;
-      });
 
-      // Manipulate service checkboxes from the bundle selections.
-      var bids = Drupal.behaviors.kms_perms_user_checkboxes.getBids(context);
-      Drupal.behaviors.kms_perms_user_checkboxes.servicesFromBundles(bids, context);
+      if (settings.kms_permissions.form_id == 'user_profile_form') {
+        // Prevent click on default bundles.
+        $('#edit-field-access-bundles-und .default-bundle', context).bind('click', function(event){
+          event.stopPropagation();
+          event.preventDefault();
+          return false;
+        });
+        // Manipulate service checkboxes from the bundle selections.
+        var bids = Drupal.behaviors.kms_perms_checkboxes.getBids(context);
+        Drupal.behaviors.kms_perms_checkboxes.servicesFromBundles(bids, context);
 
-      // // Manipulate service checkboxes from the bundle selections on bundle selection change.
-      $('#edit-field-access-bundles-und .form-type-checkbox input', context).not('.default-bundle').click(function () {
-        var bids = Drupal.behaviors.kms_perms_user_checkboxes.getBids(context);
-        Drupal.behaviors.kms_perms_user_checkboxes.servicesFromBundles(bids, context);
-      });
+        // // Manipulate service checkboxes from the bundle selections on bundle selection change.
+        $('#edit-field-access-bundles-und .form-type-checkbox input', context).not('.default-bundle').click(function () {
+          var bids = Drupal.behaviors.kms_perms_checkboxes.getBids(context);
+          Drupal.behaviors.kms_perms_checkboxes.servicesFromBundles(bids, context);
+        });
+      }
 
     },
     servicesFromBundles: function(bids, context) {
@@ -62,7 +64,7 @@
       return bids;
     },
     checkUncheckAll: function(theElement, scope) {
-    $('.'+scope+' input.form-checkbox').each(function(){
+    $('.' + scope + ' input.form-checkbox').each(function(){
         if(!$(this).parent().hasClass('disabled')) $(this).attr("checked", theElement.checked);
       });
     }

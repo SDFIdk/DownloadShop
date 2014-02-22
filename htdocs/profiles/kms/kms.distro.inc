@@ -120,7 +120,7 @@ projects[features][type] = "module"
 
 ;field_group
 projects[field_group][subdir] = "contrib"
-projects[field_group][version] = "1.3"
+projects[field_group][version] = "1.1"
 projects[field_group][type] = "module"
 
 ;field_permissions
