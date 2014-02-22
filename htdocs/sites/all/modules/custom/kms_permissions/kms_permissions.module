@@ -669,7 +669,7 @@ function _kms_permissions_common_form_alter(&$form) {
   $form['select_all_field_applications'] = array(
       '#type' => 'checkbox',
       '#title' => t('Select / Unselect all'),
-      '#attributes' => array('onclick' => 'Drupal.behaviors.kms_perms_checkboxes.checattachkUncheckAll(this, "field-name-field-applications");'),
+      '#attributes' => array('onclick' => 'Drupal.behaviors.kms_perms_checkboxes.checkUncheckAll(this, "field-name-field-applications");'),
   );
 
   $form['#group_children']['select_all_field_predefined'] = 'group_tab_predefined';
