@@ -720,74 +720,6 @@ function user_fields_field_default_fields() {
     ),
   );
 
-  // Exported field: 'user-user-field_bundles'.
-  $fields['user-user-field_bundles'] = array(
-    'field_config' => array(
-      'active' => '1',
-      'cardinality' => '-1',
-      'deleted' => '0',
-      'entity_types' => array(),
-      'field_name' => 'field_bundles',
-      'field_permissions' => array(
-        'type' => '2',
-      ),
-      'foreign keys' => array(
-        'tid' => array(
-          'columns' => array(
-            'tid' => 'tid',
-          ),
-          'table' => 'taxonomy_term_data',
-        ),
-      ),
-      'indexes' => array(
-        'tid' => array(
-          0 => 'tid',
-        ),
-      ),
-      'locked' => '0',
-      'module' => 'taxonomy',
-      'settings' => array(
-        'allowed_values' => array(
-          0 => array(
-            'vocabulary' => 'bundle',
-            'parent' => '0',
-          ),
-        ),
-      ),
-      'translatable' => '0',
-      'type' => 'taxonomy_term_reference',
-    ),
-    'field_instance' => array(
-      'bundle' => 'user',
-      'default_value' => NULL,
-      'deleted' => '0',
-      'description' => '',
-      'display' => array(
-        'default' => array(
-          'label' => 'above',
-          'module' => 'taxonomy',
-          'settings' => array(),
-          'type' => 'taxonomy_term_reference_link',
-          'weight' => 13,
-        ),
-      ),
-      'entity_type' => 'user',
-      'field_name' => 'field_bundles',
-      'label' => 'Bundles',
-      'required' => 0,
-      'settings' => array(
-        'user_register_form' => 1,
-      ),
-      'widget' => array(
-        'active' => 1,
-        'module' => 'options',
-        'settings' => array(),
-        'type' => 'options_buttons',
-        'weight' => '10',
-      ),
-    ),
-  );
-
   // Exported field: 'user-user-field_contact_me'.
   $fields['user-user-field_contact_me'] = array(
     'field_config' => array(
@@ -1363,6 +1295,9 @@ function user_fields_field_default_fields() {
           'label' => 'above',
           'module' => 'entityreference',
           'settings' => array(
+            'colorbox_node_height' => '600',
+            'colorbox_node_link' => FALSE,
+            'colorbox_node_width' => '600',
             'link' => FALSE,
           ),
           'type' => 'entityreference_label',
@@ -1728,74 +1663,6 @@ function user_fields_field_default_fields() {
     ),
   );
 
-  // Exported field: 'user-user-field_webservices_extra'.
-  $fields['user-user-field_webservices_extra'] = array(
-    'field_config' => array(
-      'active' => '1',
-      'cardinality' => '-1',
-      'deleted' => '0',
-      'entity_types' => array(),
-      'field_name' => 'field_webservices_extra',
-      'field_permissions' => array(
-        'type' => '2',
-      ),
-      'foreign keys' => array(
-        'tid' => array(
-          'columns' => array(
-            'tid' => 'tid',
-          ),
-          'table' => 'taxonomy_term_data',
-        ),
-      ),
-      'indexes' => array(
-        'tid' => array(
-          0 => 'tid',
-        ),
-      ),
-      'locked' => '0',
-      'module' => 'taxonomy',
-      'settings' => array(
-        'allowed_values' => array(
-          0 => array(
-            'vocabulary' => 'webservices',
-            'parent' => '0',
-          ),
-        ),
-      ),
-      'translatable' => '0',
-      'type' => 'taxonomy_term_reference',
-    ),
-    'field_instance' => array(
-      'bundle' => 'user',
-      'default_value' => NULL,
-      'deleted' => '0',
-      'description' => '',
-      'display' => array(
-        'default' => array(
-          'label' => 'above',
-          'module' => 'taxonomy',
-          'settings' => array(),
-          'type' => 'taxonomy_term_reference_link',
-          'weight' => 15,
-        ),
-      ),
-      'entity_type' => 'user',
-      'field_name' => 'field_webservices_extra',
-      'label' => 'Ekstra webservices',
-      'required' => 0,
-      'settings' => array(
-        'user_register_form' => 1,
-      ),
-      'widget' => array(
-        'active' => 1,
-        'module' => 'options',
-        'settings' => array(),
-        'type' => 'options_buttons',
-        'weight' => '12',
-      ),
-    ),
-  );
-
   // Translatables
   // Included for use with string extractors like potx.
   t('Address');
@@ -1805,7 +1672,6 @@ function user_fields_field_default_fields() {
   t('Brugertype');
   t('Bundles');
   t('Debitor nr');
-  t('Ekstra webservices');
   t('FTP permissions');
   t('Faktureringsadresse');
   t('Geodatastyrelsen må gerne kontakte mig i forbindelse med tilfredshed- og brugerundersøgelser');
