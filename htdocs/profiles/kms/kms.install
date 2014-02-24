@@ -7,7 +7,7 @@
  */
 
 /**
- * Implements hook_install. 
+ * Implements hook_install.
  */
 function kms_install(){
   $conf = install_profile_info('kms');
@@ -20,9 +20,9 @@ function kms_install(){
 
 /**
  * Save roles and permissions.
- * 
+ *
  * @param array $conf
- *   .info settings 
+ *   .info settings
  */
 function kms_install_save_roles($conf){
   foreach($conf['permissions'] as $name => $perms){
@@ -32,7 +32,7 @@ function kms_install_save_roles($conf){
 
 /**
  * Save role and permissions.
- * 
+ *
  * @param string $name
  *   Role name.
  * @param array $perms
@@ -60,9 +60,9 @@ function _kms_install_save_role($name, $perms){
 /**
  * Save input filters.
  * Depends on plugin files with a file name pattern like:  FILTERNAME.filter.inc.
- * 
+ *
  * @param array $conf
- *   .info settings 
+ *   .info settings
  */
 function kms_install_save_filters($conf){
   $plugins = kms_install_load_plugins('filter');
@@ -75,9 +75,9 @@ function kms_install_save_filters($conf){
 
 /**
  * Save save variables.
- * 
+ *
  * @param array $conf
- *   .info settings 
+ *   .info settings
  */
 function kms_install_save_variables($conf){
   foreach ($conf['variables'] as $variable => $value) {
@@ -87,7 +87,7 @@ function kms_install_save_variables($conf){
 
 /**
  * Save wysiwyg settings for various filters.
- * Depends on plugin files with a file name pattern like:  FILTERNAME.wysiwyg.inc. 
+ * Depends on plugin files with a file name pattern like:  FILTERNAME.wysiwyg.inc.
  */
 function kms_install_save_wysiwyg_settings() {
   $plugins = kms_install_load_plugins('wysiwyg');
@@ -105,7 +105,7 @@ function kms_install_save_wysiwyg_settings() {
 
 /**
  * Save node types.
- * Depends on plugin files with a file name pattern like:  NODETYPE.node_type.inc. 
+ * Depends on plugin files with a file name pattern like:  NODETYPE.node_type.inc.
  */
 function kms_install_save_node_types(){
   $plugins = kms_install_load_plugins('node_type');
@@ -196,13 +196,13 @@ function kms_update_7002(&$sandbox) {
  */
 function kms_update_7003(&$sandbox) {
 
-  //Clear cache - essential to revert taxonomy component of access bundles 
+  //Clear cache - essential to revert taxonomy component of access bundles
   drupal_flush_all_caches();
 
   define('TAXONOMY_NAME', 'bundle_colours');
   $predefined_colours = array('Brun','Graablaa','Grey','Gron','Gul','Hotpink','Koral','Orange','Rod','Sort');
   $vocab = taxonomy_vocabulary_machine_name_load(TAXONOMY_NAME);
-  
+
   $vid = $vocab->vid;
 
   foreach ($predefined_colours as $colour) {
@@ -218,13 +218,13 @@ function kms_update_7003(&$sandbox) {
     );
 
     $file = file_copy($file, file_build_uri(''), FILE_EXISTS_REPLACE);
-    
+
     // Create term, assign it to Vocabulary
     $term = new stdClass();
     $term->name = $colour;
-    $term->vid = $vid; 
-    $term->field_default_image[LANGUAGE_NONE][0] = (array)$file; 
-    taxonomy_term_save($term);    
+    $term->vid = $vid;
+    $term->field_default_image[LANGUAGE_NONE][0] = (array)$file;
+    taxonomy_term_save($term);
   }
 }
 
@@ -257,7 +257,6 @@ function kms_update_7004(&$sandbox) {
 function kms_update_7005(&$sandbox) {
   // Enable the module
   module_enable(array('kms_permissions_ftp'));
-    
   // Create a view to replace the removed table
   db_query("DROP VIEW IF EXISTS external_ftp_users;
     CREATE VIEW external_ftp_users AS
@@ -266,7 +265,7 @@ function kms_update_7005(&$sandbox) {
     LEFT JOIN field_data_field_access_bundles as bundle ON ftp.entity_id =  bundle.field_access_bundles_nid
     LEFT JOIN users as u ON u.uid = ftp.entity_id OR u.uid = bundle.entity_id
     LEFT JOIN kms_permissions_ftp_folders as folders ON ftp.field_ftp_permissions_value::integer = folders.fid
-    GROUP BY u.name;");    
+    GROUP BY u.name;");
 }
 
 /**
@@ -289,3 +288,20 @@ function kms_update_7007(&$sandbox) {
     array('administer kms oci queue')
   );
 }
+
+/**
+ * Remove deprecated views kms_user_webservices (if any) and
+ * remove unused fields in user edit form
+ * @author Linas Balke <linas@adapt.dk>
+ */
+function kms_update_7008(&$sandbox) {
+  // Create a view to replace the removed table
+  db_query("DROP VIEW IF EXISTS kms_user_webservices;");
+  // Remove fields from user_fields
+  field_delete_field('field_bundles');
+  field_delete_field('field_webservices_extra');
+  field_delete_field('group_bundles_n_services');
+}
+
+
+
