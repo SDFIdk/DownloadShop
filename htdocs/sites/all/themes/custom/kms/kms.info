@@ -18,3 +18,6 @@ stylesheets[all][] = css/screen.css
 
 scripts[] = js/searchplaceholder.js
 scripts[] = js/jquery.placeholder.min.js
+
+; Panels layouts. You can place multiple layouts under the "layouts" folder.
+plugins[panels][layouts] = templates/layouts
