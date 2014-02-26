@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the imagestyles_partner feature.
+ */
+
+include_once 'imagestyles_partner.features.inc';
