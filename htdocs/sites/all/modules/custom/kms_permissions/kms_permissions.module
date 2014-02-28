@@ -40,9 +40,9 @@ function kms_permissions_ctools_plugin_directory($module, $plugin) {
  */
 function kms_permissions_permission() {
   return array(
-    'administer own kms permissions' => array(
-      'title' => t('Administer own KMS permissions'),
-      'description' => t('Administer own KMS permissions '),
+    'administer kms permissions' => array(
+      'title' => t('Administer KMS permissions'),
+      'description' => t('Administer KMS permissions '),
     ),
   );
 }
@@ -646,11 +646,27 @@ function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function kms_permissions_form_user_register_form_alter(&$form, &$form_state) {
+  $form['#attached']['js'][] = array(
+    'data' => array('kms_permissions' => array('form_id' => $form['#form_id'])),
+    'type' => 'setting',
+  );
+
+  $form['#attached']['js'][] = drupal_get_path('module', 'kms_permissions') .'/js/kms_perms_checkboxes.js';
+  $form['#attached']['css'][] = drupal_get_path('module', 'kms_permissions') .'/css/edit_bundles_and_services.css';
+  $form['#attached']['library'][] = array('kms_permissions', 'jquery.foggy');
+
+  _kms_permissions_common_form_alter($form);
+}
+
+/**
  *  Do some common form alter for access node and user profile
  */
 function _kms_permissions_common_form_alter(&$form) {
 
-  if (user_access('administer own kms permissions'))  {
+  if (user_access('administer kms permissions'))  {
     // Sort prefedined datacollections alphabetically
     if(isset($form['field_predefined_datacollections'])) {
       $sorted_array = $form['field_predefined_datacollections'][LANGUAGE_NONE]['#options'];
