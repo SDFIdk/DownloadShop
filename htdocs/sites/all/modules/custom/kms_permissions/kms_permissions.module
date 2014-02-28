@@ -35,6 +35,18 @@ function kms_permissions_ctools_plugin_directory($module, $plugin) {
   }
 }
 
+/**
+ * Implements hook_ctools_plugin_directory().
+ */
+function kms_permissions_permission() {
+  return array(
+    'administer own kms permissions' => array(
+      'title' => t('Administer own KMS permissions'),
+      'description' => t('Administer own KMS permissions '),
+    ),
+  );
+}
+
 function kms_permissions_library() {
   // jQuery Foggy plugin.
   $libraries['jquery.foggy'] = array(
@@ -637,44 +649,46 @@ function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
  *  Do some common form alter for access node and user profile
  */
 function _kms_permissions_common_form_alter(&$form) {
-  // Sort prefedined datacollections alphabetically
-  if(isset($form['field_predefined_datacollections'])) {
-    $sorted_array = $form['field_predefined_datacollections'][LANGUAGE_NONE]['#options'];
-    asort($sorted_array);
-    $form['field_predefined_datacollections'][LANGUAGE_NONE]['#options'] = $sorted_array;
-  }
 
-  foreach ($form['field_predefined_datacollections'][LANGUAGE_NONE]['#options'] as $key => $value) {
-    $form['field_predefined_datacollections'][LANGUAGE_NONE]['#options'][$key] =  _kms_permissions_format_item_list_item($key, $value, 'predefined');
-  }
+  if (user_access('administer own kms permissions'))  {
+    // Sort prefedined datacollections alphabetically
+    if(isset($form['field_predefined_datacollections'])) {
+      $sorted_array = $form['field_predefined_datacollections'][LANGUAGE_NONE]['#options'];
+      asort($sorted_array);
+      $form['field_predefined_datacollections'][LANGUAGE_NONE]['#options'] = $sorted_array;
+    }
 
-  //Add select all to all webservice tabs
-  foreach (kms_permissions_widget_type_options() as $key => $value) {
-    $form['select_all_field_'.strtolower($value)] = array(
+    foreach ($form['field_predefined_datacollections'][LANGUAGE_NONE]['#options'] as $key => $value) {
+      $form['field_predefined_datacollections'][LANGUAGE_NONE]['#options'][$key] =  _kms_permissions_format_item_list_item($key, $value, 'predefined');
+    }
+
+    //Add select all to all webservice tabs
+    foreach (kms_permissions_widget_type_options() as $key => $value) {
+      $form['select_all_field_'.strtolower($value)] = array(
+          '#type' => 'checkbox',
+          '#title' => t('Select / Unselect all'),
+          '#attributes' => array('onclick' => 'Drupal.behaviors.kms_perms_checkboxes.checkUncheckAll(this, "field-name-field-bundle-webservices-'.strtolower($value).'");'),
+      );
+
+      $form['#group_children']['select_all_field_'.strtolower($value)] = 'group_webservices_'.strtolower($value);
+    }
+
+    //Add manually select all checkboxed for predefined and application tabs
+    $form['select_all_field_predefined'] = array(
         '#type' => 'checkbox',
         '#title' => t('Select / Unselect all'),
-        '#attributes' => array('onclick' => 'Drupal.behaviors.kms_perms_checkboxes.checkUncheckAll(this, "field-name-field-bundle-webservices-'.strtolower($value).'");'),
+        '#attributes' => array('onclick' => 'Drupal.behaviors.kms_perms_checkboxes.checkUncheckAll(this, "field-name-field-predefined-datacollections");'),
     );
 
-    $form['#group_children']['select_all_field_'.strtolower($value)] = 'group_webservices_'.strtolower($value);
+    $form['select_all_field_applications'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Select / Unselect all'),
+        '#attributes' => array('onclick' => 'Drupal.behaviors.kms_perms_checkboxes.checkUncheckAll(this, "field-name-field-applications");'),
+    );
+
+    $form['#group_children']['select_all_field_predefined'] = 'group_tab_predefined';
+    $form['#group_children']['select_all_field_applications'] = 'group_tab_applications';
   }
-
-  //Add manually select all checkboxed for predefined and application tabs
-  $form['select_all_field_predefined'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Select / Unselect all'),
-      '#attributes' => array('onclick' => 'Drupal.behaviors.kms_perms_checkboxes.checkUncheckAll(this, "field-name-field-predefined-datacollections");'),
-  );
-
-  $form['select_all_field_applications'] = array(
-      '#type' => 'checkbox',
-      '#title' => t('Select / Unselect all'),
-      '#attributes' => array('onclick' => 'Drupal.behaviors.kms_perms_checkboxes.checkUncheckAll(this, "field-name-field-applications");'),
-  );
-
-  $form['#group_children']['select_all_field_predefined'] = 'group_tab_predefined';
-  $form['#group_children']['select_all_field_applications'] = 'group_tab_applications';
-
 }
 
 
