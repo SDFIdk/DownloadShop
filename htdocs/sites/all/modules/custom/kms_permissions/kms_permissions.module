@@ -102,16 +102,6 @@ function kms_permissions_views_api() {
 //  }
 //}
 
-
-/**
- * Implements hook_cron().
- */
-function kms_permissions_save_permissions_callback() {
-  kms_permissions_save_permissions_to_sql_file('temp_application_perm_user');
-  kms_permissions_save_permissions_to_sql_file('temp_service_perm_user');
-}
-
-
 /**
 * Implements hook_field_widget_info().
 */
@@ -247,7 +237,7 @@ function kms_permissions_widget_options($type = 'kms_services', $instance_settin
         }
       }
 
-      return $options[$type];
+      return !empty($options[$type]) ? $options[$type] : array();
 
     case 'kms_applications';
       $options = array();
@@ -868,229 +858,6 @@ function kms_permissions_access_bundle_update($form, $form_state) {
 
 }
 
-/**
- * Save all permissions for a given user to a temporary table (in psql)
- * @param object $uid - the user id
- * @param array $permissions - the permissions
- */
-function kms_permissions_save_temp_permissions($uid, $permissions) {
-  _kms_permissions_get_permissions_by_uid($uid, $permissions);
-  $user = user_load($uid);
-  //Check if Oracle smuser exists
-  if (kms_user_smuser_exists($user)) {
-    $kms_id = kms_user_get_userid($user);
-    //Write services permissions to db
-    if (!empty($permissions['services'])) {
-      // Delete existing entries for user
-      db_delete('temp_service_perm_user')
-        ->condition('USERID', $kms_id, '=')
-        ->execute();
-      foreach ($permissions['services'] as $serv_perms) {
-        $fields = array(
-          'USERID' => $kms_id,
-          'SERVICEID' => $serv_perms['id'],
-          'MINX' => $serv_perms['MINX'],
-          'MINY' => $serv_perms['MINY'],
-          'MAXX' => $serv_perms['MAXX'],
-          'MAXY' => $serv_perms['MAXY'],
-          'MAXPIXELWIDTH' => $serv_perms['MAXPIXELWIDTH'],
-          'MAXPIXELHEIGHT' => $serv_perms['MAXPIXELHEIGHT'],
-          'FEATUREINFO' => $serv_perms['FEATUREINFO'],
-        );
-        //Write to DB
-        drupal_write_record('temp_service_perm_user', $fields);
-      }
-    }
-
-    //Write applications permissions to db
-    if (!empty($permissions['applications'])) {
-      // Delete existing entries for user
-      db_delete('temp_application_perm_user')
-        ->condition('USERID', $kms_id, '=')
-        ->execute();
-      foreach ($permissions['applications'] as $app_perms) {
-        $fields = array(
-          'USERID' => $kms_id,
-          'GROUPID' => $app_perms['id'],
-        );
-        //Write to DB
-        drupal_write_record('temp_application_perm_user', $fields);
-      }
-    }
-  }
-}
-
-/**
- * Save all temporary stored permissions to a SQL file
- * @param  [string] $psql_table - the table to retrieve data from
- */
-function kms_permissions_save_permissions_to_sql_file($psql_table) {
-  $result = db_query("SELECT * FROM $psql_table ORDER BY userid");
-  $count = $result->rowCount();
-  if ($count < 1) {
-    return;
-  }
-  // Set the current table
-  switch ($psql_table) {
-    case 'temp_application_perm_user':
-      $table = 'SMUSERGROUP';
-      break;
-    case 'temp_service_perm_user';
-      $table = 'USERRESTRICTIONS2';
-      break;
-    default:
-      break;
-  }
-
-  // Prepare data
-  $old_user_id = 0;
-  while ($row = $result->fetchAssoc()) {
-    // If new user entry
-    if ($row['userid'] != $old_user_id) {
-      // Add delete statement to SQL
-      $query .= sprintf("DELETE FROM $table WHERE USERID = %s;\n", $row['userid']);
-    }
-    $cols = implode(',', array_keys($row));
-    $cols = strtoupper($cols);
-    $values = implode("','", $row);
-    $query .= "INSERT INTO $table ($cols) VALUES ('$values');\n\n";
-    $old_user_id = $row['userid'];
-  }
-  // Write sql file
-  $path = 'sites/default/files/test.sql';
-  $write = file_put_contents($path, $query, FILE_APPEND);
-  if ($write) {
-    watchdog('kms_permissions',
-      'Successfully updated user permission SQL file in @path (size: @size byte(s))',
-      array('@size' => $write,
-            '@path' => $path),
-      WATCHDOG_INFO,
-      'link');
-  }else {
-    watchdog('kms_permissions',
-      'Couldn\'t write SQL user permission file to @path',
-      array('@path' => $path),
-      WATCHDOG_ERROR,
-      'link');
-  }
-  // TODO: Update oracle db with the SQL file
-  //
-  // Reinitialize table and delete sql file
-  // kms_permissions_reinit_temp_permission($psql_table, $path);
-}
-
-/**
- * Delete temporary permission table (psql) and delete temporary sql file
- * @param  [string] $psql_table name of the table to truncate
- * @param  [string] $path       path to the sql file to delete
- */
-function kms_permissions_reinit_temp_permission($psql_table, $path) {
- // Truncate psql temp table
-  $truncate = db_truncate($psql_table, array());
-  $truncate->execute();
-  watchdog('kms_permissions',
-    'Successfully truncated @table)',
-    array('@table' => $psql_table),
-    WATCHDOG_INFO,
-    'link');
-
-  // Delete SQL file
-  $delete = unlink($path);
-  if ($delete) {
-    watchdog('kms_permissions',
-      'Successfully deleted @path',
-      array('@path' => $path),
-      WATCHDOG_INFO,
-      'link');
-  }else {
-    watchdog('kms_permissions',
-      'Couldn\'t delete SQL user permission file at @path',
-      array('@path' => $path),
-      WATCHDOG_ERROR,
-      'link');
-  }
-}
-/**
- * Save all permissions for a given user to oracle db
- * @param object $uid - the user id
- * @param array $permissions - the permissions
- */
-function kms_permissions_save_permissions($uid, $permissions) {
-  return;
-  $user = user_load($uid);
-
-  //Check if Oracle smuser exists
-  if (kms_user_smuser_exists($user)) {
-    $kms_id = kms_user_get_userid($user);
-    $settings = array(
-      'kms_oci_conn_user' => variable_get('kms_permissions_conn_user', ''),
-      'kms_oci_conn_pass' => variable_get('kms_permissions_conn_pass', ''),
-      'kms_oci_conn_host' => variable_get('kms_permissions_conn_host', ''),
-      'kms_oci_conn_db' => variable_get('kms_permissions_conn_db', ''),
-    );
-
-    if (kms_oci_get_conn('kms_permissions', $settings)) {
-
-      //Delete existing permissions for user
-      $query = "DELETE FROM USERRESTRICTIONS2 WHERE USERID = :userid";
-
-      $data = array(':userid' => $kms_id);
-      kms_oci_query($query, $data, 'kms_permissions');
-
-      //Write services permissions to db
-      if (!empty($permissions['services'])) {
-        foreach ($permissions['services'] as $serv_perms) {
-          $table = 'USERRESTRICTIONS2';
-          $data = array(
-            ':USERID' => $kms_id,
-            ':SERVICEID' => $serv_perms['id'],
-            ':MINX' => $serv_perms['MINX'],
-            ':MINY' => $serv_perms['MINY'],
-            ':MAXX' => $serv_perms['MAXX'],
-            ':MAXY' => $serv_perms['MAXY'],
-            ':MAXPIXELWIDTH' => $serv_perms['MAXPIXELWIDTH'],
-            ':MAXPIXELHEIGHT' => $serv_perms['MAXPIXELHEIGHT'],
-            ':FEATUREINFO' => $serv_perms['FEATUREINFO'],
-          );
-          kms_oci_insert($data, $table, 'kms_permissions');
-        }
-      }
-
-      // Close connection
-      kms_oci_close_conn('kms_permissions');
-    }
-
-    if (kms_oci_get_conn()) {
-
-      //Delete existing permissions for user
-      $query = "DELETE FROM SMUSERGROUP WHERE USERID = :userid";
-
-      $data = array(':userid' => $kms_id);
-      kms_oci_query($query, $data);
-
-      //Write application permissions to db
-      if (!empty($permissions['applications'])) {
-        foreach ($permissions['applications'] as $app_perms) {
-          $table = 'SMUSERGROUP';
-          $data = array(
-            ':USERID' => $kms_id,
-            ':GROUPID' => $app_perms['id']
-          );
-          kms_oci_insert($data, $table);
-        }
-      }
-
-      // Close connection
-      kms_oci_close_conn();
-    }
-
-    watchdog('kms_permissons', 'User uid: @uid permissions updated in Oracle', array('@uid' => $uid), WATCHDOG_INFO);
-  }
-  else {
-    watchdog('kms_permissons', 'User uid: @uid does not exist in Oracle', array('@uid' => $uid), WATCHDOG_ERROR);
-  }
-}
-
 
 /**
  * Get all permissions for a given user
@@ -1476,54 +1243,54 @@ function kms_permissions_ajax_get_services_by_bids() {
 /**
 * Implementation of hook_node_access_records().
 */
-function kms_permissions_node_access_records($node) {
-  // Should this code be here?
-  if ($node->type == 'access_bundle') {
-    $wnode = entity_metadata_wrapper('node', $node);
-    if ($wnode->field_predefined_datacollections->value()) {
-      foreach ($wnode->field_predefined_datacollections->value() as $prod) {
-        // Update node access for all related products
-        node_access_acquire_grants($prod, TRUE);
-      }
-    }
-    return array();
-  }
-
-  if ($node->type == 'product_display') {
-    $grants[] = array(
-      'realm' => 'kms_permissions_access',
-      'gid' => $node->nid,
-      'grant_view' => $node->status,
-      'grant_update' => 0,
-      'grant_delete' => 0,
-      'priority' => 1,
-    );
-  }
-
-  return $grants;
-}
+//function kms_permissions_node_access_records($node) {
+//  // Should this code be here?
+//  if ($node->type == 'access_bundle') {
+//    $wnode = entity_metadata_wrapper('node', $node);
+//    if ($wnode->field_predefined_datacollections->value()) {
+//      foreach ($wnode->field_predefined_datacollections->value() as $prod) {
+//        // Update node access for all related products
+//        node_access_acquire_grants($prod, TRUE);
+//      }
+//    }
+//    return array();
+//  }
+//
+//  if ($node->type == 'product_display') {
+//    $grants[] = array(
+//      'realm' => 'kms_permissions_access',
+//      'gid' => $node->nid,
+//      'grant_view' => $node->status,
+//      'grant_update' => 0,
+//      'grant_delete' => 0,
+//      'priority' => 1,
+//    );
+//  }
+//
+//  return $grants;
+//}
 
 /**
 * Implements hook_node_grants().
 */
-function kms_permissions_node_grants($account, $op) {
-  // Find all products for a user
-  $permissions = array();
-  _kms_permissions_get_permissions_by_uid($account->uid, $permissions);
-
-  $grants = array();
-  if (isset($permissions['predefined_datacollections'])) {
-    $prods = array();
-    foreach ($permissions['predefined_datacollections'] as $perm) {
-      $prods[] = $perm['id'];
-    }
-
-    $grants['kms_permissions_access'] = $prods;
-  }
-  if (count($grants)) {
-    return $grants;
-  }
-}
+//function kms_permissions_node_grants($account, $op) {
+//  // Find all products for a user
+//  $permissions = array();
+//  _kms_permissions_get_permissions_by_uid($account->uid, $permissions);
+//
+//  $grants = array();
+//  if (isset($permissions['predefined_datacollections'])) {
+//    $prods = array();
+//    foreach ($permissions['predefined_datacollections'] as $perm) {
+//      $prods[] = $perm['id'];
+//    }
+//
+//    $grants['kms_permissions_access'] = $prods;
+//  }
+//  if (count($grants)) {
+//    return $grants;
+//  }
+//}
 
 
 /**
