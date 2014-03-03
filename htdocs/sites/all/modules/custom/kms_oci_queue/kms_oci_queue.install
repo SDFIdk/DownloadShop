@@ -154,30 +154,16 @@ function kms_oci_queue_schema() {
       'timestamp' => array('created'),
     ),
   );
-/*
-  This will be introduced later:
-  $schema['kms_oci_queue_job_group'] = array(
-    'description' => 'Table that contains current job status.',
-    'fields' => array(
-      'jgid' => array(
-        'type' => 'int',
-        'not null' => TRUE,
-        'description' => 'Primary key: Job id.',
-      ),
-    ),
-    'primary key' => array('jgid'),
-    'indexes' => array(
-      'timestamp' => array('jgid'),
-    ),
-  );
 
-  $schema['kms_oci_queue_job_group_jobs'] = array(
-    'description' => 'Table that contains current job status.',
+  $schema['kms_oci_queue_job_group'] = array(
+    'description' => 'Table that contains grouped jobs.',
     'fields' => array(
-      'jgid' => array(
-        'type' => 'int',
+      'gid' => array(
+        'type' => 'varchar',
+        'length' => 32,
         'not null' => TRUE,
-        'description' => 'Primary key: Job id.',
+        'default' => '',
+        'description' => 'Job group id.',
       ),
       'jid' => array(
         'type' => 'int',
@@ -187,9 +173,15 @@ function kms_oci_queue_schema() {
     ),
     'primary key' => array('jid'),
     'indexes' => array(
-      'job_group_job' => array('jgid', 'jid'),
+      'job_group_job' => array('gid', 'jid'),
+    ),
+    'foreign keys' => array(
+      'kms_oci_queue_job' => array(
+        'table' => 'kms_oci_queue_job_group',
+        'columns' => array('gid' => 'gid'),
+      ),
     ),
   );
-*/
+
   return $schema;
 }

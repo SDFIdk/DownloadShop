@@ -569,7 +569,8 @@ function _kms_user_submit_insert_user_oracle($form, &$form_state) {
 //      kms_oci_insert($data['user'], 'smuser');
     $data = _kms_oci_queue_create_insert_smuser_data($account);
     // Populate user tables in oracle.
-    KmsOciQueueJob::create(array(
+    $jobs = array();
+    $jobs[] = KmsOciQueueJob::create(array(
       'action' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
       'action_details' => format_string(
         'Inserting new user: @user_details.',
@@ -599,8 +600,10 @@ function _kms_user_submit_insert_user_oracle($form, &$form_state) {
         'bids' => $bids,
       ),
     );
-    KmsOciQueueJob::create($job_params);
-    KmsOciQueueJob::create($job_params, 'kms_permissions');
+    $jobs[] = KmsOciQueueJob::create($job_params);
+    $jobs[] = KmsOciQueueJob::create($job_params, 'kms_permissions');
+    $job_group = new KmsOciQueueJobGroup();
+    $job_group->add($jobs);
   }
 
 }

@@ -30,23 +30,21 @@ class KmsOciQueueJob {
   public $status;
   public $action;
   public $actionDetails;
-  public $queryNum;
   public $cid;
   protected $queueItem;
   protected $job;
-
-
+  public $gid = FALSE;
 
   public function __construct($jid) {
     $this->setJobId($jid);
     $this->setJob();
     if ($this->job) {
+      $this->setGroupId();
       $this->setQueueItem($this->loadQueueItem());
       $this->setCreated();
       $this->setAction();
       $this->setActionDetails();
       $this->setStatus();
-      $this->setQueryNum();
       $this->setConnectionId();
     }
   }
@@ -75,6 +73,10 @@ class KmsOciQueueJob {
     $this->action = $this->job->action;
   }
 
+  protected function setGroupid(){
+    $this->gid = KmsOciQueueJobGroup::getGidFromJid($this->jid);
+  }
+
   protected function setActionDetails(){
     $action_details = unserialize($this->job->action_details);
     $this->actionDetails = kms_oci_queue_json_pretty(
@@ -92,10 +94,6 @@ class KmsOciQueueJob {
       'status' => $this->job->status,
       'message' => $this->job->message,
     );
-  }
-
-  protected function setQueryNum() {
-    $this->queryNum = $this->job->query_num;
   }
 
   protected function loadLog($mode = 'all') {
@@ -163,6 +161,7 @@ class KmsOciQueueJob {
     $job_saved = KmsOciQueueJobDb::insertJob($job);
     if ($job_saved) {
       self::log($job->jid, t('Job %jid created'), array('%jid' => $job->jid));
+      return KmsOciQueueJobFactory::get($job->jid);
     }
   }
 
@@ -174,6 +173,9 @@ class KmsOciQueueJob {
     KmsOciQueueJobDb::deleteJob($this->jid);
     // Delete related log entries.
     db_delete('kms_oci_queue_log')
+      ->condition('jid', $this->jid)
+      ->execute();
+    db_delete('kms_oci_queue_job_group')
       ->condition('jid', $this->jid)
       ->execute();
   }
@@ -299,6 +301,48 @@ class KmsOciQueueJobDb {
   }
 
 }
+
+class KmsOciQueueJobGroup {
+
+  protected $gid = 0;
+
+  public function __construct() {
+//    $this->gid = $this->insertGroup();
+    $this->gid = uniqid();
+  }
+
+  public function add($job) {
+    $jobs = is_array($job) ? $job : array($job);
+    foreach ($jobs as $job) {
+      $this->insertJob($job);
+    }
+  }
+
+//  protected function insertGroup(){
+//    $group = new stdClass();
+//    $group->created = time();
+//    drupal_write_record('kms_oci_queue_job_group', $group);
+//    return $group->gid;
+//  }
+
+  protected function insertJob($job){
+    $group_job = new stdClass();
+    $group_job->gid = $this->gid;
+    $group_job->jid = $job->jid;
+    drupal_write_record('kms_oci_queue_job_group', $group_job);
+    return $group_job->jid;
+  }
+
+  public static function getGidFromJid($jid) {
+    $query = db_select('kms_oci_queue_job_group', 'g');
+    $query->fields('g', array('gid'));
+    $query->condition('g.jid', $jid, '=');
+    $result = $query->execute()->fetchField();
+    return $result;
+  }
+
+}
+
 
 class KmsOciQueueJobFactory {
   protected static $jobs;
