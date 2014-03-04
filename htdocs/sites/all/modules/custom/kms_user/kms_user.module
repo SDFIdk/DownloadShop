@@ -944,6 +944,7 @@ function kms_user_vbo_add_access_bundles_form($context) {
 function kms_user_vbo_add_access_bundles_submit($form, $form_state) {
   return array(
     'access_bundle' => array_filter($form_state['values']['access_bundle']),
+    'uids' => array_filter($form_state['selection']),
   );
 }
 
@@ -959,6 +960,9 @@ function kms_user_vbo_add_access_bundles_submit($form, $form_state) {
  */
 function kms_user_vbo_add_access_bundles(&$account, $context = array()) {
   kms_user_access_bundle_administer('add', $account, $context['access_bundle']);
+  if ($context['progress']['current'] == $context['progress']['total']) {
+    kms_user_vbo_access_bundle_finished('add', $context);
+  }
 }
 
 /**
@@ -973,6 +977,53 @@ function kms_user_vbo_add_access_bundles(&$account, $context = array()) {
  */
 function kms_user_vbo_clear_access_bundles(&$account, $context = array()) {
   kms_user_access_bundle_administer('clear', $account);
+  if ($context['progress']['current'] == $context['progress']['total']) {
+    //Atodo: fix this. It is not working right now.
+    kms_user_vbo_access_bundle_finished('clear', $context);
+  }
+}
+
+/**
+ * Handles actions being done when VBO batch is finished.
+ *
+ * @param string $op
+ *   Action.
+ * @param array $context
+ *   VBO context array.
+ */
+function kms_user_vbo_access_bundle_finished($op, $context) {
+  $uids = !empty($context['uids']) ? $context['uids'] : FALSE;
+  $bids = !empty($context['access_bundle']) ? $context['access_bundle'] : FALSE;
+  switch ($op) {
+    case 'add':
+      $message = 'VBO: Bundle added to users. Affects @count users.';
+      break;
+    case 'clear':
+      $message = 'VBO: Bundle deleted from users. Affects @count users.';
+      break;
+  }
+  if ($uids && $bids) {
+    foreach ($bids as $bid) {
+      $job_params = array(
+        'action' => KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE,
+        'params' => array(
+          'uids' => $uids,
+          'bid' => $bid,
+        ),
+      );
+      $bundle = node_load($bid);
+      $job_params['action_details'] = format_string(
+        $message,
+        array(
+          '@bundle' => $bundle->title,
+          '@count' => count($uids)
+        )
+      );
+
+      KmsOciQueueJob::create($job_params);
+      KmsOciQueueJob::create($job_params, 'kms_permissions');
+    }
+  }
 }
 
 /**
@@ -1040,9 +1091,6 @@ function kms_user_access_bundle_administer($op, $account, $bundles = array()) {
 
   $w->field_access_bundles->set($bundles);
   $w->save();
-  // Load changes and activate oci queue jobs.
-  $account = user_load($account->uid);
-  _kms_user_user_update_oci_queue_bundles_attach($account, $account);
 }
 
 /**

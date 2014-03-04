@@ -165,7 +165,10 @@ function kms_oci_queue_query_creator_run() {
 
 function kms_oci_queue_query_creator_process_job($job, $item, $exe_queue) {
   $jid = $job->jid;
-  $job->changeStatus(KmsOciQueueJob::STATUS_PROCESSING);
+  $job->changeStatus(
+    KmsOciQueueJob::STATUS_PROCESSING,
+    'Writing sql lines...'
+  );
   // Creator item with data to create query queue.
   $creator_item = $item->data;
   // We need parameters in order to create queries.
