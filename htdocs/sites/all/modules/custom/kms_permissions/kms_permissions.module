@@ -1068,12 +1068,17 @@ function _kms_permissions_get_users_by_bid($bid) {
  * Doing an entity load would be too heavy
  */
 function  _kms_permissions_get_all_users() {
-  $query = db_select('users', 'u')
-    ->fields('u', array('uid'))
-    ->condition('status', 1, '=');
-  // For debugging purposes.
-//    ->range(0, 5);
-  return $query->execute()->fetchCol();
+  $uids = &drupal_static(__FUNCTION__);
+  if (!isset($uids)) {
+    $query = db_select('users', 'u')
+      ->fields('u', array('uid'))
+      ->condition('status', 1, '=');
+    // For debugging purposes.
+  //    ->range(0, 5);
+    $result = $query->execute()->fetchCol();
+    $uids = $result ? $result : array();
+  }
+  return $uids;
 }
 
 /**
@@ -1777,16 +1782,21 @@ function _kms_permissions_bounding_box_fields() {
  *   Node ids.
  */
 function _kms_permissions_get_default_bundles() {
-  $query = new EntityFieldQuery();
-  $query
-    ->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', 'access_bundle')
-    ->fieldCondition('field_default_bundle', 'value', 1, '=')
-    ->propertyCondition('status', 1)
-    ->propertyOrderBy('nid')
-    ->execute();
-  $result = $query->execute();
-  return isset($result['node']) ? array_keys($result['node']) : array();
+  $bids = &drupal_static(__FUNCTION__);
+  if (!isset($bids)) {
+    $query = new EntityFieldQuery();
+    $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'access_bundle')
+      ->fieldCondition('field_default_bundle', 'value', 1, '=')
+      ->propertyCondition('status', 1)
+      ->propertyOrderBy('nid')
+      ->execute();
+    $result = $query->execute();
+    $bids = isset($result['node']) ? array_keys($result['node']) : array();
+  }
+
+  return $bids;
 }
 
 /**
