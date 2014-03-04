@@ -906,7 +906,7 @@ function kms_user_action_info() {
     'kms_user_vbo_clear_access_bundles' => array(
       'label' => t('Clear Access Bundles'),
       'type' => 'user',
-      'configurable' => FALSE,
+      'configurable' => TRUE,
       'hooks' => array(),
     ),
  );
@@ -918,7 +918,8 @@ function kms_user_action_info() {
  * @param array $context
  *   VBO context.
  *
- * @return [type]
+ * @return array
+ *   Drupal form array.
  */
 function kms_user_vbo_add_access_bundles_form($context) {
   $form['access_bundle'] = array(
@@ -966,6 +967,35 @@ function kms_user_vbo_add_access_bundles(&$account, $context = array()) {
 }
 
 /**
+ * VBO clear access bundle form.
+ * Empty form is for being able to access $form_state['selection'] in submit handler.
+ *
+ * @param array $context
+ *   VBO context.
+ *
+ * @return array
+ */
+function kms_user_vbo_clear_access_bundles_form($context) {
+  return array();
+}
+
+/**
+ * VBO clear access bundle form submit.
+ *
+ * @param array $form
+ *   Drupal form array.
+ * @param array $form_state
+ *   Drupal form state array.
+ *
+ * @return array
+ */
+function kms_user_vbo_clear_access_bundles_submit($form, $form_state) {
+  return array(
+    'uids' => array_filter($form_state['selection']),
+  );
+}
+
+/**
  * Clear all access bundles from a user.
  *
  * @param object $account
@@ -978,7 +1008,6 @@ function kms_user_vbo_add_access_bundles(&$account, $context = array()) {
 function kms_user_vbo_clear_access_bundles(&$account, $context = array()) {
   kms_user_access_bundle_administer('clear', $account);
   if ($context['progress']['current'] == $context['progress']['total']) {
-    //Atodo: fix this. It is not working right now.
     kms_user_vbo_access_bundle_finished('clear', $context);
   }
 }
@@ -993,15 +1022,18 @@ function kms_user_vbo_clear_access_bundles(&$account, $context = array()) {
  */
 function kms_user_vbo_access_bundle_finished($op, $context) {
   $uids = !empty($context['uids']) ? $context['uids'] : FALSE;
-  $bids = !empty($context['access_bundle']) ? $context['access_bundle'] : FALSE;
+
   switch ($op) {
     case 'add':
       $message = 'VBO: Bundle added to users. Affects @count users.';
+      $bids = !empty($context['access_bundle']) ? $context['access_bundle'] : FALSE;
       break;
     case 'clear':
-      $message = 'VBO: Bundle deleted from users. Affects @count users.';
+      $message = 'VBO: All bundles (except default) are cleared from users. Affects @count users.';
+      $bids = _kms_permissions_get_default_bundles();
       break;
   }
+
   if ($uids && $bids) {
     foreach ($bids as $bid) {
       $job_params = array(
@@ -1024,6 +1056,7 @@ function kms_user_vbo_access_bundle_finished($op, $context) {
       KmsOciQueueJob::create($job_params, 'kms_permissions');
     }
   }
+
 }
 
 /**
