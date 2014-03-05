@@ -173,6 +173,10 @@ function kms_oci_queue_query_creator_process_job($job, $item, $exe_queue) {
     KmsOciQueueJob::STATUS_PROCESSING,
     'Writing sql lines...'
   );
+//  $timer_name = $jid . ':' . __FUNCTION__;
+//  timer_start($timer_name);
+//  _adapt_debug('mikkel', 'Timer start: ' . $timer_name);
+//  _adapt_debug('mikkel', timer_read($timer_name));
   // Creator item with data to create query queue.
   $creator_item = $item->data;
   // We need parameters in order to create queries.
@@ -185,6 +189,7 @@ function kms_oci_queue_query_creator_process_job($job, $item, $exe_queue) {
   // Create executor queue items via ctools plugins.
   ctools_include('plugins');
   $plugins = ctools_get_plugins('kms_oci_queue', 'queue_runner');
+  
   array_walk(
     $plugins,
     function($plugin) use ($jid, $creator_item, $exe_queue) {
@@ -198,6 +203,10 @@ function kms_oci_queue_query_creator_process_job($job, $item, $exe_queue) {
       }
     }
   );
+//  _adapt_debug('mikkel', 'Timer end: ' . $timer_name);
+//  _adapt_debug('mikkel', timer_read($timer_name));
+//  timer_stop($timer_name);
+//  _adapt_debug('mikkel', str_repeat('.', 100));
 }
 
 /**
@@ -207,6 +216,10 @@ function kms_oci_queue_query_creator_process_job($job, $item, $exe_queue) {
  *   Queue item object.
  */
 function kms_oci_queue_query_run($item) {
+  $timer_name = $item->jid . ':' . __FUNCTION__;
+//  timer_start($timer_name);
+//  _adapt_debug('mikkel', 'Timer start: ' . $timer_name);
+//  _adapt_debug('mikkel', timer_read($timer_name));
   // Load query queue executor plugins to create sql output.
   ctools_include('plugins');
   $plugins = ctools_get_plugins('kms_oci_queue', 'queue_runner');
@@ -273,6 +286,12 @@ function kms_oci_queue_query_run($item) {
     }
 
   }
+
+//  _adapt_debug('mikkel', 'Timer end: ' . $timer_name);
+//  _adapt_debug('mikkel', timer_read($timer_name));
+//  timer_stop($timer_name);
+//  _adapt_debug('mikkel', str_repeat('.', 100));
+
 }
 
 /**
@@ -307,9 +326,6 @@ function kms_oci_queue_get_job_ids($job_statuses = array()) {
  *   Render array.
  */
 function kms_oci_queue_admin_page() {
-  drupal_add_library('system', 'jquery.cookie');
-  drupal_add_js(drupal_get_path('module', 'kms_oci_queue') . '/js/kms_oci_queue_reports.js');
-  drupal_add_css(drupal_get_path('module', 'kms_oci_queue') . '/css/kms_oci_queue_reports.css');
 
   $jobs_not_done = kms_oci_queue_get_job_ids(
     array('exclude' => array(KmsOciQueueJob::STATUS_DONE))
@@ -320,6 +336,15 @@ function kms_oci_queue_admin_page() {
   rsort($jobs_done);
   $output['queues'] = kms_oci_queue_admin_page_jobs($jobs_not_done);
   $output['queues'] += kms_oci_queue_admin_page_jobs($jobs_done, t('Jobs done'));
+
+  $module_path = drupal_get_path('module', 'kms_oci_queue');
+  $output['#attached']['js'][] = $module_path .'/js/kms_oci_queue_reports.js';
+  $output['#attached']['css'][] = $module_path .'/css/kms_oci_queue_reports.css';
+  $output['#attached']['library'][] = array('beautytips', 'beautytips-module');
+  $output['#attached']['library'][] = array('beautytips', 'excanvas_r3');
+  if (variable_get('beautytips_ltr', FALSE)) {
+    $output['#attached']['library'][] = array('beautytips', 'beautytips-ltr');
+  }
 
   return $output;
 }
@@ -359,9 +384,10 @@ function kms_oci_queue_admin_page_jobs($jids, $title = '') {
     $job = KmsOciQueueJobFactory::get($jid);
     $conn = KmsOciQueueJobDb::getConnectionSettings($job->cid);
     $job_action = sprintf(
-      '<strong>%s</strong> | %s [<a href="#" class="more">%s</a>]',
+      '<strong>%s</strong> | %s [<a href="#" title="%s" class="more">%s</a>]',
       $job->action,
       $conn['user'],
+      $job->actionDetails,
       t('info')
     );
     $rows[] = array(
@@ -388,14 +414,6 @@ function kms_oci_queue_admin_page_jobs($jids, $title = '') {
       ),
     );
 
-    $options['job_info_beautytip_' . $job->jid] = array(
-      'cssSelect' => 'td[data-jid="' . $job->jid .  '"].job-info .more',
-      'trigger' => array(0 => 'mouseover', 1 => 'click'),
-      'text' => $job->actionDetails,
-      'width' => 400,
-    );
-    beautytips_add_beautytips($options);
-
     $rows[] = array(
       'class' => array('kms-oci-queue-job-log'),
       'data-jid' => $job->jid,
@@ -419,7 +437,7 @@ function kms_oci_queue_admin_page_jobs($jids, $title = '') {
     '#rows' => $rows,
   );
 
-  $table_id = "kms_oci_queue_jobs_" . md5(serialize($jids));
+  $table_id = "kms_oci_queue_jobs_" . uniqid();
   $output[$table_id] = $jobs_output;
 
   return $output;
