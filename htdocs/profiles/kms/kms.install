@@ -303,5 +303,16 @@ function kms_update_7008(&$sandbox) {
   field_delete_field('group_bundles_n_services');
 }
 
+/**
+ * Activating partner features.
+ *
+ * @author Andreas Butze <andreas@adapt.dk>
+ */
+function kms_update_7009(&$sandbox) {
+  module_enable(array(
+    'imagestyles_partner',
+    'partnerpages',
+  ));
+}
 
 
