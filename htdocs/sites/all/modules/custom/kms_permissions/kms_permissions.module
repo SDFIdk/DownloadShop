@@ -85,23 +85,6 @@ function kms_permissions_views_api() {
   );
 }
 
-
-/* Implements HOOK_cronapi() */
-//function kms_permissions_cronapi($op, $function = NULL) {
-//  switch($op) {
-//    case 'list':
-//      return array(
-//        'kms_permissions_save_permissions_callback' => 'Save permissions to Oracle',
-//      );
-//
-//    case 'rule':
-//      switch($function) {
-//        case 'kms_permissions_save_permissions_callback': return '*/5 * * * *';
-//      }
-//      break;
-//  }
-//}
-
 /**
 * Implements hook_field_widget_info().
 */
