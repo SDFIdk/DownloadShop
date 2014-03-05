@@ -387,3 +387,24 @@ function kms_test_create_demo_bundles() {
   $w->field_default_bundle->set(1);
   $w->save();
 }
+
+function kms_test_create_fake_jobs() {
+  kms_test_db_cleanup_kms_oci_mess();
+  $i = 0;
+  do {
+
+    $job_params = array(
+      'action' => 'fake_job',
+      'action_details' => format_string('fakejob'),
+      'params' => array(
+        'uid' => 1,
+        'bids' => array(),
+        'perms' => array(),
+      ),
+    );
+    $job = KmsOciQueueJob::create($job_params);
+    $job->changeStatus(KmsOciQueueJob::STATUS_DONE);
+    $i++;
+  } while($i<=110);
+
+}
