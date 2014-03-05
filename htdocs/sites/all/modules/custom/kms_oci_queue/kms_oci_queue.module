@@ -138,7 +138,9 @@ function kms_oci_queue_query_creator_run() {
   $last_gid = NULL;
 
   do {
-    $item = $creator_queue->claimItem();
+    // We set the expire time to a high number (30 days)
+    // because the task is not idempotent.
+    $item = $creator_queue->claimItem(60 * 60 * 24 * 30);
     // If no queue item found do nothing.
     if (!$item) {
       break;
@@ -173,10 +175,13 @@ function kms_oci_queue_query_creator_process_job($job, $item, $exe_queue) {
     KmsOciQueueJob::STATUS_PROCESSING,
     'Writing sql lines...'
   );
+
+  // Atodo: For debugging:
 //  $timer_name = $jid . ':' . __FUNCTION__;
 //  timer_start($timer_name);
 //  _adapt_debug('mikkel', 'Timer start: ' . $timer_name);
 //  _adapt_debug('mikkel', timer_read($timer_name));
+
   // Creator item with data to create query queue.
   $creator_item = $item->data;
   // We need parameters in order to create queries.
@@ -203,10 +208,13 @@ function kms_oci_queue_query_creator_process_job($job, $item, $exe_queue) {
       }
     }
   );
+
+  // Atodo: For debugging:
 //  _adapt_debug('mikkel', 'Timer end: ' . $timer_name);
 //  _adapt_debug('mikkel', timer_read($timer_name));
 //  timer_stop($timer_name);
 //  _adapt_debug('mikkel', str_repeat('.', 100));
+
 }
 
 /**
@@ -216,10 +224,12 @@ function kms_oci_queue_query_creator_process_job($job, $item, $exe_queue) {
  *   Queue item object.
  */
 function kms_oci_queue_query_run($item) {
+  // Atodo: For debugging:
   $timer_name = $item->jid . ':' . __FUNCTION__;
 //  timer_start($timer_name);
 //  _adapt_debug('mikkel', 'Timer start: ' . $timer_name);
 //  _adapt_debug('mikkel', timer_read($timer_name));
+
   // Load query queue executor plugins to create sql output.
   ctools_include('plugins');
   $plugins = ctools_get_plugins('kms_oci_queue', 'queue_runner');
@@ -287,6 +297,7 @@ function kms_oci_queue_query_run($item) {
 
   }
 
+  // Atodo: For debugging:
 //  _adapt_debug('mikkel', 'Timer end: ' . $timer_name);
 //  _adapt_debug('mikkel', timer_read($timer_name));
 //  timer_stop($timer_name);
