@@ -793,6 +793,18 @@ function kms_permissions_access_bundle_update($form, $form_state) {
           'bid' => $bid,
         ),
       );
+      /*
+       Atodo: Use this in the near future. Or discard if not!
+       kms_oci_queue_job_action_bundle_save(
+        $uids,
+        $bid,
+        'Bundle: "@bundle" updated. Affects @count users.',
+        array(
+          '@bundle' => $bundle->title,
+          '@count' => count($uids)
+        )
+      );
+       */
 
       // Atodo: remove this again.
       if (!KMS_OCI_QUEUE_DEBUG) {
@@ -818,11 +830,22 @@ function kms_permissions_access_bundle_update($form, $form_state) {
           'bid' => $bid,
         ),
       );
+      /*
+       Atodo: Use this in the near future. Or discard if not!
+      kms_oci_queue_job_action_bundle_save(
+        $uids,
+        $bid,
+        'Bundle: "@bundle" updated. Affects @count users.',
+        array(
+          '@bundle' => $bundle->title,
+          '@count' => count($uids)
+        )
+      );
+      */
     }
 
   }
   elseif($bundle_is_deleted) {
-    // Atodo: Create delete perms job.
     $uids = _kms_permissions_get_users_by_bid($bid);
     // Atodo: remove this again.
     if (KMS_OCI_QUEUE_DEBUG) {
@@ -837,6 +860,18 @@ function kms_permissions_access_bundle_update($form, $form_state) {
           'bid' => $bid,
         ),
       );
+      /*
+      Atodo: Use this in the near future. Or discard if not!
+      kms_oci_queue_job_action_bundle_save(
+        $uids,
+        $bid,
+        'Bundle: "@bundle" deleted. Affects @count users.',
+        array(
+          '@bundle' => $bundle->title,
+          '@count' => count($uids)
+        )
+      );
+      */
     }
   }
 
