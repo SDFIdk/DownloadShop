@@ -21,6 +21,9 @@ define('KMS_OCI_QUEUE_CRON_DELETE_JOBS_PER_RUN', 100);
 // Atodo: Remove this after testing. And remove usages!
 define('KMS_OCI_QUEUE_DEBUG', FALSE);
 
+// Atodo: Use this in near future. Otherwise discard.
+//require_once 'kms_oci_queue.actions.inc';
+
 /**
  * Implements hook_menu().
  */
