@@ -398,7 +398,7 @@ function kms_oci_queue_admin_page_jobs($jids, $title = '') {
       '<strong>%s</strong> | %s [<a href="#" title="%s" class="more">%s</a>]',
       $job->action,
       $conn['user'],
-      $job->actionDetails,
+      htmlentities($job->actionDetails),
       t('info')
     );
     $rows[] = array(
