@@ -148,24 +148,6 @@ function kms_user_ctools_plugin_directory($module, $plugin) {
   }
 }
 
-//function kms_user_user_insert(&$edit, $account, $category) {
-//  global $user;
-//  _adapt_debug('mikkel', $user);
-////  $user = user_load($account->uid);
-////  _adapt_debug('mikkel', kms_subuser_is_subuser($user));
-//  $user_roles = !empty($account->roles) ? $account->roles : array();
-//  // Atodo: Create oci job as well.
-//  if($account->is_new && in_array(KMS_SUBUSER_ROLE_NAME, $user_roles)) {
-//    kms_permissions_clone_perms($user, $account);
-//  }
-////  _adapt_debug('mikkel', in_array(KMS_SUBUSER_ROLE_NAME, $user_roles));
-////  _adapt_debug('mikkel', relation_get_related_entity('user', $account->uid));
-//  // If user has 'subuser' role and has a related entity.
-////  var_dump(relation_get_related_entity('user', $account->uid));
-////  return in_array(KMS_SUBUSER_ROLE_NAME, $user_roles)
-////  && relation_get_related_entity('user', $account->uid);
-//}
-
 /**
  * Implements hook_form_alter().
  */
@@ -943,9 +925,13 @@ function kms_user_vbo_add_access_bundles_form($context) {
  * @return array
  */
 function kms_user_vbo_add_access_bundles_submit($form, $form_state) {
+  $uids = array_filter($form_state['selection']);
+  if ($form_state['select_all_pages']) {
+    $uids = _kms_permissions_get_all_users();
+  }
   return array(
     'access_bundle' => array_filter($form_state['values']['access_bundle']),
-    'uids' => array_filter($form_state['selection']),
+    'uids' => $uids,
   );
 }
 
@@ -990,8 +976,12 @@ function kms_user_vbo_clear_access_bundles_form($context) {
  * @return array
  */
 function kms_user_vbo_clear_access_bundles_submit($form, $form_state) {
+  $uids = array_filter($form_state['selection']);
+  if ($form_state['select_all_pages']) {
+    $uids = _kms_permissions_get_all_users();
+  }
   return array(
-    'uids' => array_filter($form_state['selection']),
+    'uids' =>$uids,
   );
 }
 
@@ -1054,6 +1044,19 @@ function kms_user_vbo_access_bundle_finished($op, $context) {
 
       KmsOciQueueJob::create($job_params);
       KmsOciQueueJob::create($job_params, 'kms_permissions');
+      /*
+       Atodo: Maybe used in near future. Otherwise discard!
+       $bundle = node_load($bid);
+      kms_oci_queue_job_action_bundle_save(
+        $uids,
+        $bid,
+        $message,
+        array(
+          '@bundle' => $bundle->title,
+          '@count' => count($uids),
+        )
+      );
+       */
     }
   }
 
@@ -1430,6 +1433,19 @@ function _kms_user_user_update_oci_queue_bundles_attach($account, $user, $data =
     );
     KmsOciQueueJob::create($job_params);
     KmsOciQueueJob::create($job_params, 'kms_permissions');
+    /*
+     Atodo: Maybe use this in near future? Otherwise discard!
+     kms_oci_queue_job_action_bundles_attach(
+      $subuser->uid,
+      $bids,
+      $perms,
+      'Attaching bundles: @bundles to subuser: @subuser.',
+      array(
+        '@bundles' => implode(', ', $bids),
+        '@subuser' => $subuser->name,
+      )
+    );
+     */
   }
 
 }
