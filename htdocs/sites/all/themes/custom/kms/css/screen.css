@@ -1858,8 +1858,9 @@ ul.controlToggle li.reset a {
 .node-type-partner .partner-cases-references {
   padding-bottom: 20px;
   overflow: auto;
+  clear: both;
 }
-/* line 1613, ../sass/screen.scss */
+/* line 1614, ../sass/screen.scss */
 .node-type-partner .partner-cases-references .field-item {
   width: 235px;
   float: left;
@@ -1868,24 +1869,24 @@ ul.controlToggle li.reset a {
   color: #787878;
   margin-bottom: 20px;
 }
-/* line 1620, ../sass/screen.scss */
+/* line 1621, ../sass/screen.scss */
 .node-type-partner .partner-cases-references .field-item h2 {
   font-size: 15px;
   font-weight: normal;
   padding-bottom: 10px;
   padding-top: 10px;
 }
-/* line 1627, ../sass/screen.scss */
+/* line 1628, ../sass/screen.scss */
 .node-type-partner .partner-cases-references .field-item:first-child {
   margin-left: 0px;
 }
-/* line 1631, ../sass/screen.scss */
+/* line 1632, ../sass/screen.scss */
 .node-type-partner .partner-contact {
   clear: both;
   line-height: 21px;
   color: #787878;
 }
-/* line 1636, ../sass/screen.scss */
+/* line 1637, ../sass/screen.scss */
 .node-type-partner .panel-pane > h2.pane-title {
   font-size: 16px;
   color: #333;
