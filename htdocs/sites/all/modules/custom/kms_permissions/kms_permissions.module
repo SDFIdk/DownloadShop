@@ -1432,7 +1432,7 @@ function kms_permissions_vbo_copy_user_services(&$account, $context = array()) {
   }
   $target_account = $context['user'];
   kms_permissions_clone_perms($source_account, $context['user']);
-  _kms_user_user_update_oci_queue_bundles_attach($target_account, $target_account);
+//  _kms_user_user_update_oci_queue_bundles_attach($target_account, $target_account);
 }
 
 /**
