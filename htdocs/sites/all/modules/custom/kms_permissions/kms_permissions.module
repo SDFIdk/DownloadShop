@@ -1266,55 +1266,54 @@ function kms_permissions_ajax_get_services_by_bids() {
 /**
 * Implementation of hook_node_access_records().
 */
-//function kms_permissions_node_access_records($node) {
-//  // Should this code be here?
-//  if ($node->type == 'access_bundle') {
-//    $wnode = entity_metadata_wrapper('node', $node);
-//    if ($wnode->field_predefined_datacollections->value()) {
-//      foreach ($wnode->field_predefined_datacollections->value() as $prod) {
-//        // Update node access for all related products
-//        node_access_acquire_grants($prod, TRUE);
-//      }
-//    }
-//    return array();
-//  }
-//
-//  if ($node->type == 'product_display') {
-//    $grants[] = array(
-//      'realm' => 'kms_permissions_access',
-//      'gid' => $node->nid,
-//      'grant_view' => $node->status,
-//      'grant_update' => 0,
-//      'grant_delete' => 0,
-//      'priority' => 1,
-//    );
-//  }
-//
-//  return $grants;
-//}
+function kms_permissions_node_access_records($node) {
+  // Should this code be here?
+  if ($node->type == 'access_bundle') {
+    $wnode = entity_metadata_wrapper('node', $node);
+    if ($wnode->field_predefined_datacollections->value()) {
+      foreach ($wnode->field_predefined_datacollections->value() as $prod) {
+        // Update node access for all related products
+        node_access_acquire_grants($prod, TRUE);
+      }
+    }
+    return array();
+  }
+
+  if ($node->type == 'product_display') {
+    $grants[] = array(
+      'realm' => 'kms_permissions_access',
+      'gid' => $node->nid,
+      'grant_view' => $node->status,
+      'grant_update' => 0,
+      'grant_delete' => 0,
+      'priority' => 1,
+    );
+  }
+
+  return $grants;
+}
 
 /**
 * Implements hook_node_grants().
 */
-//function kms_permissions_node_grants($account, $op) {
-//  // Find all products for a user
-//  $permissions = array();
-//  _kms_permissions_get_permissions_by_uid($account->uid, $permissions);
-//
-//  $grants = array();
-//  if (isset($permissions['predefined_datacollections'])) {
-//    $prods = array();
-//    foreach ($permissions['predefined_datacollections'] as $perm) {
-//      $prods[] = $perm['id'];
-//    }
-//
-//    $grants['kms_permissions_access'] = $prods;
-//  }
-//  if (count($grants)) {
-//    return $grants;
-//  }
-//}
+function kms_permissions_node_grants($account, $op) {
+  // Find all products for a user
+  $permissions = array();
+  _kms_permissions_get_permissions_by_uid($account->uid, $permissions);
 
+  $grants = array();
+  if (isset($permissions['predefined_datacollections'])) {
+    $prods = array();
+    foreach ($permissions['predefined_datacollections'] as $perm) {
+      $prods[] = $perm['id'];
+    }
+
+    $grants['kms_permissions_access'] = $prods;
+  }
+  if (!empty($grants)) {
+    return $grants;
+  }
+}
 
 /**
  * Compare fields.
@@ -1376,48 +1375,6 @@ function _kms_permissions_extra_service_fields() {
 
   return $fields;
 }
-
-/**
- * Batch definition
- */
-// function kms_permissions_batch($uids) {
-//   $batch = array(
-//     'operations' => array(
-//       array('kms_permissions_batch_update_permissions', array($uids)),
-//       ),
-//     'finished' => 'kms_permissions_batch_update_permissions_finished',
-//     'title' => t('Processing Batch Update of Permissions'),
-//     'init_message' => t('Batch Update of Permissions is starting.'),
-//     'progress_message' => t('Processed @current out of @total.'),
-//     'error_message' => t('Batch Update of Permissions has encountered an error.'),
-//     'file' => drupal_get_path('module', 'kms_permissions') . '/kms_permissions.batch.inc',
-//   );
-//   batch_set($batch);
-
-//   // Process batch job in background
-//   //background_batch_process_batch();
-//   watchdog('kms_permissons', 'Starting batchjob for updating permissions in Oracle', array(), WATCHDOG_INFO);
-// }
-
-
-//function kms_permissions_batch($uid, $permissions) {
-//  $batch = array(
-//    'operations' => array(
-//      array('kms_permissions_batch_save_temp_permissions', array($uid, $permissions)),
-//      ),
-//    'finished' => 'kms_permissions_batch_finish',
-//    'title' => t('Processing Batch Update of Permissions'),
-//    'init_message' => t('Batch Update of Permissions is starting.'),
-//    'progress_message' => t('Processed @current out of @total.'),
-//    'error_message' => t('Batch Update of Permissions has encountered an error.'),
-//    'file' => drupal_get_path('module', 'kms_permissions') . '/kms_permissions.batch.inc',
-//  );
-//  batch_set($batch);
-//
-//  // Process batch job in background
-//  //background_batch_process_batch();
-//  watchdog('kms_permissons', 'Starting batchjob for updating permissions in Oracle', array(), WATCHDOG_INFO);
-//}
 
 /**
  * VBO add access bundle form.
