@@ -603,7 +603,8 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
   $user_data = $data['user_data'];
 
   // Populate user tables in oracle.
-  KmsOciQueueJob::create(array(
+  $jobs = array();
+  $jobs[] = KmsOciQueueJob::create(array(
     'action' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
     'action_details' => format_string(
       'Updating user: @user_details.',
@@ -725,16 +726,9 @@ function kms_user_smuser_delete($user) {
   }
   $kms_userid = kms_user_get_userid($user);
   if (!empty($kms_userid)) {
-//    $result = kms_oci_query(
-//      'DELETE FROM smuser WHERE userid = :userid',
-//      array(':userid' => $kms_userid)
-//    );
-//    $result = kms_oci_query(
-//      'DELETE FROM smuser_extra WHERE userid = :userid',
-//      array(':userid' => $kms_userid)
-//    );
     // Delete all oracle rows belonging to user.
-    KmsOciQueueJob::create(array(
+    $jobs = array();
+    $jobs[] = KmsOciQueueJob::create(array(
       'action' => KMS_OCI_QUEUE_ACTION_USER_DELETE,
       'action_details' => format_string(
         'Deleting user: @user.',
@@ -746,7 +740,7 @@ function kms_user_smuser_delete($user) {
         'kms_id' => $kms_userid,
       )
     ));
-    KmsOciQueueJob::create(array(
+    $jobs[] = KmsOciQueueJob::create(array(
       'action' => KMS_OCI_QUEUE_ACTION_USER_DELETE,
       'action_details' => format_string(
         'Deleting user: @user.',
@@ -758,6 +752,8 @@ function kms_user_smuser_delete($user) {
         'kms_id' => $kms_userid,
       )
     ), 'kms_permissions');
+    $job_group = new KmsOciQueueJobGroup();
+    $job_group->add($jobs);
   }
 }
 
@@ -1041,9 +1037,11 @@ function kms_user_vbo_access_bundle_finished($op, $context) {
           '@count' => count($uids)
         )
       );
-
-      KmsOciQueueJob::create($job_params);
-      KmsOciQueueJob::create($job_params, 'kms_permissions');
+      $jobs = array();
+      $jobs[] = KmsOciQueueJob::create($job_params);
+      $jobs[] = KmsOciQueueJob::create($job_params, 'kms_permissions');
+      $job_group = new KmsOciQueueJobGroup();
+      $job_group->add($jobs);
       /*
        Atodo: Maybe used in near future. Otherwise discard!
        $bundle = node_load($bid);
@@ -1394,6 +1392,7 @@ function _kms_user_user_update_oci_queue_bundles_attach($account, $user, $data =
   $perms = array();
   _kms_permissions_get_separate_perms_by_uid($account->uid, $perms);
 
+  $jobs = array();
   $job_params = array(
     'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
     'action_details' => format_string(
@@ -1409,8 +1408,10 @@ function _kms_user_user_update_oci_queue_bundles_attach($account, $user, $data =
       'perms' => $perms,
     ),
   );
-  KmsOciQueueJob::create($job_params);
-  KmsOciQueueJob::create($job_params, 'kms_permissions');
+  $jobs[] = KmsOciQueueJob::create($job_params);
+  $jobs[] = KmsOciQueueJob::create($job_params, 'kms_permissions');
+  $job_group = new KmsOciQueueJobGroup();
+  $job_group->add($jobs);
 
   // Atodo: Update all subusers with the same bundles perms as their master.
   $subusers = subuser_load_all($user);
@@ -1431,8 +1432,11 @@ function _kms_user_user_update_oci_queue_bundles_attach($account, $user, $data =
         'perms' => $perms,
       ),
     );
-    KmsOciQueueJob::create($job_params);
-    KmsOciQueueJob::create($job_params, 'kms_permissions');
+    $jobs = array();
+    $jobs[] = KmsOciQueueJob::create($job_params);
+    $jobs[] =  KmsOciQueueJob::create($job_params, 'kms_permissions');
+    $job_group = new KmsOciQueueJobGroup();
+    $job_group->add($jobs);
     /*
      Atodo: Maybe use this in near future? Otherwise discard!
      kms_oci_queue_job_action_bundles_attach(

@@ -718,54 +718,57 @@ function kms_subuser_insert_account_oracle($user, $account) {
   // Set master user id.
   $data['user_extra'][':master_userid'] = $user->uid;
   // Insert oracle user data.
-  if (module_exists('kms_oci')) {
+  if (!module_exists('kms_oci')) {
+    return;
+  }
 //    kms_oci_insert($data['user_extra'], 'smuser_extra');
 //    kms_oci_insert($data['user'], 'smuser');
-    KmsOciQueueJob::create(array(
-      'action' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
-      'action_details' => format_string(
-        'Inserting new subuser: @subuser_details.',
-        array(
-          '@subuser_details' => json_encode($data),
-        )
-      ),
-      'params' => array(
-        array($data['user'], 'smuser'),
-        array($data['user_extra'], 'smuser_extra'),
-      ),
-    ));
-    // Populate user permission tables of the user in Oracle
-    // with permissions from the source user bundles.
-    $bids = array();
-    if (!empty($user->field_access_bundles[LANGUAGE_NONE][0]['nid'])) {
-      $bids = array_map(function ($v){
-        return !empty($v['nid']) ? $v['nid'] : '';
-      }, $user->field_access_bundles[LANGUAGE_NONE]);
-    }
-
-    // Get separate source user permissions and add them to $perms array.
-    $perms = array();
-    _kms_permissions_get_separate_perms_by_uid($user->uid, $perms);
-
-    $job_params = array(
-      'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
-      'action_details' => format_string(
-        'Attaching bundles: @bundles to subuser: @subuser.',
-        array(
-          '@bundles' => implode(', ', $bids),
-          '@subuser' => $account->uid,
-        )
-      ),
-      'params' => array(
-        'uid' => $account->uid,
-        'bids' => $bids,
-        'perms' => $perms,
-      ),
-    );
-    KmsOciQueueJob::create($job_params);
-    KmsOciQueueJob::create($job_params, 'kms_permissions');
-
+  $jobs = array();
+  $jobs[] = KmsOciQueueJob::create(array(
+    'action' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
+    'action_details' => format_string(
+      'Inserting new subuser: @subuser_details.',
+      array(
+        '@subuser_details' => json_encode($data),
+      )
+    ),
+    'params' => array(
+      array($data['user'], 'smuser'),
+      array($data['user_extra'], 'smuser_extra'),
+    ),
+  ));
+  // Populate user permission tables of the user in Oracle
+  // with permissions from the source user bundles.
+  $bids = array();
+  if (!empty($user->field_access_bundles[LANGUAGE_NONE][0]['nid'])) {
+    $bids = array_map(function ($v){
+      return !empty($v['nid']) ? $v['nid'] : '';
+    }, $user->field_access_bundles[LANGUAGE_NONE]);
   }
+
+  // Get separate source user permissions and add them to $perms array.
+  $perms = array();
+  _kms_permissions_get_separate_perms_by_uid($user->uid, $perms);
+
+  $job_params = array(
+    'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+    'action_details' => format_string(
+      'Attaching bundles: @bundles to subuser: @subuser.',
+      array(
+        '@bundles' => implode(', ', $bids),
+        '@subuser' => $account->uid,
+      )
+    ),
+    'params' => array(
+      'uid' => $account->uid,
+      'bids' => $bids,
+      'perms' => $perms,
+    ),
+  );
+  $jobs[] = KmsOciQueueJob::create($job_params);
+  $jobs[] = KmsOciQueueJob::create($job_params, 'kms_permissions');
+  $job_group = new KmsOciQueueJobGroup();
+  $job_group->add($jobs);
 }
 
 /**
