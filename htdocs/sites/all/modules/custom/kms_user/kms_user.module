@@ -5,6 +5,7 @@ define('KMS_USER_ROLES_SUPERUSER_ID', 4);
 define('KMS_USER_PAGE_CONTACT', 'node/7');
 define('KMS_USER_VIEW_NAME_ADMIN_VIEWS_USER', 'admin_views_user');
 define('KMS_USER_VIEW_DISPLAY_ADMIN_VIEWS_USER', 'system_1');
+define('KMS_USER_CACHE_ID_ADMIN_VIEWS_PEOPLE_PERMS_FORM', 'kms_user:admin_views_people_perms_form');
 
 /**
  * Implements hook_init().
@@ -1250,11 +1251,11 @@ function kms_user_filter_admin_views_people_perms($js = FALSE) {
 function kms_user_filter_admin_views_people_perms_form ($form, &$form_state) {
   $form = &drupal_static(__FUNCTION__);
   if (!isset($form)) {
-    $cache_id = 'kms_user_filter_admin_views_people_perms_form';
-    if ($cache = cache_get($cache_id)) {
+
+    if ($cache = cache_get(KMS_USER_CACHE_ID_ADMIN_VIEWS_PEOPLE_PERMS_FORM)) {
       $form = $cache->data;
     }
-  else {
+    else {
       module_load_include('inc', 'user', 'user.pages');
       $user_form = drupal_get_form('user_profile_form');
       $ws_fields = _kms_permissions_webservice_fields();
@@ -1272,7 +1273,7 @@ function kms_user_filter_admin_views_people_perms_form ($form, &$form_state) {
         '#weight' => 500
       );
 
-      cache_set($cache_id, $form, 'cache');
+      cache_set(KMS_USER_CACHE_ID_ADMIN_VIEWS_PEOPLE_PERMS_FORM, $form, 'cache');
     }
   }
 
@@ -1296,7 +1297,7 @@ function kms_user_views_pre_render(&$view) {
   if (
     $view->name == KMS_USER_VIEW_NAME_ADMIN_VIEWS_USER
     && $view->current_display == KMS_USER_VIEW_DISPLAY_ADMIN_VIEWS_USER
-    && (is_null($_SERVER['CONTENT_LENGTH']) || strlen($_SERVER['CONTENT_LENGTH']) > 3)
+    && (empty($_SERVER['CONTENT_LENGTH']) || strlen($_SERVER['CONTENT_LENGTH']) > 3)
   ) {
     ctools_include('modal');
     ctools_modal_add_js();

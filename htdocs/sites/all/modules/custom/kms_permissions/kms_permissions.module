@@ -768,10 +768,7 @@ function kms_permissions_access_bundle_update($form, $form_state) {
   if ($default_bundle_is_updated) {
     // If a bundle is set as a default bundle or WAS set as a default bundle, update all users.
     $uids = _kms_permissions_get_all_users();
-    // Atodo: remove this again.
-    if (KMS_OCI_QUEUE_DEBUG) {
-      array_splice($uids, 30);
-    }
+
     if(!empty($uids)) {
       $job_params = array(
         'action' => KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE,
@@ -793,10 +790,7 @@ function kms_permissions_access_bundle_update($form, $form_state) {
       );
        */
 
-      // Atodo: remove this again.
-      if (!KMS_OCI_QUEUE_DEBUG) {
-        kms_permissions_run_batch('default_bundle_update_users', $bid, $uids);
-      }
+      kms_permissions_run_batch('default_bundle_update_users', $bid, $uids);
 
     }
 
@@ -804,10 +798,6 @@ function kms_permissions_access_bundle_update($form, $form_state) {
   else if ($bundle_is_updated) {
     // When a bundle get updated, find all users related to that bundle, and queue them for updating.
     $uids = _kms_permissions_get_users_by_bid($bid);
-    // Atodo: remove this again.
-    if (KMS_OCI_QUEUE_DEBUG) {
-      array_splice($uids, 30);
-    }
 
     if(!empty($uids)) {
       $job_params = array(
@@ -831,13 +821,12 @@ function kms_permissions_access_bundle_update($form, $form_state) {
       */
     }
 
+    // Clear cached perm filter form at admin/people.
+    cache_clear_all(KMS_USER_CACHE_ID_ADMIN_VIEWS_PEOPLE_PERMS_FORM, 'cache');
+
   }
   elseif($bundle_is_deleted) {
     $uids = _kms_permissions_get_users_by_bid($bid);
-    // Atodo: remove this again.
-    if (KMS_OCI_QUEUE_DEBUG) {
-      array_splice($uids, 30);
-    }
 
     if(!empty($uids)) {
       $job_params = array(
