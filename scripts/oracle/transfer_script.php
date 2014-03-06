@@ -129,7 +129,7 @@ function get_drupal_uid($kms_user_id){
       } else {
        return null;
       }
-   }
+    }
   }
 }
 
