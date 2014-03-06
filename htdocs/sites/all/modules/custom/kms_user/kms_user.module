@@ -1151,6 +1151,7 @@ function kms_user_form_views_exposed_form_alter(&$form, &$form_state, $form_id) 
     && $view->current_display == KMS_USER_VIEW_DISPLAY_ADMIN_VIEWS_USER
   ) {
     $form_state['redirect'] = 'admin/people';
+    $form['#action'] = '/admin/people';
   }
 
 }
@@ -1195,6 +1196,7 @@ function kms_user_filter_admin_views_people_perms($js = FALSE) {
     $uids = _kms_user_get_users_from_services($form_state['filter']);
     // If no users are presnet create an array with a very high uid so that the views get no matches.
     $uids = !empty($uids) ? $uids : array(99999999999);
+//    _adapt_debug('mikkel', $uids);_
     // Maybe use session in the future?
 //    $_SESSION['views']['admin_views_user']['kms_user_filter']['uids'] = $uids;
 
@@ -1294,7 +1296,7 @@ function kms_user_views_pre_render(&$view) {
   if (
     $view->name == KMS_USER_VIEW_NAME_ADMIN_VIEWS_USER
     && $view->current_display == KMS_USER_VIEW_DISPLAY_ADMIN_VIEWS_USER
-    && $_SERVER['REQUEST_METHOD'] == 'GET'
+    && (is_null($_SERVER['CONTENT_LENGTH']) || strlen($_SERVER['CONTENT_LENGTH']) > 3)
   ) {
     ctools_include('modal');
     ctools_modal_add_js();
