@@ -16,6 +16,7 @@ define('KMS_OCI_QUEUE_ACTION_USER_DELETE', 'user_delete');
 define('KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH', 'bundles_attach');
 define('KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE', 'bundle_save');
 define('KMS_OCI_QUEUE_ACTION_BUNDLE_DELETE', 'bundle_delete');
+define('KMS_OCI_QUEUE_ACTION_CLONE_USER_PERMS', 'clone_user_perms');
 define('KMS_OCI_QUEUE_CRON_DELETE_JOBS_KEEP', 25);
 define('KMS_OCI_QUEUE_CRON_DELETE_JOBS_PER_RUN', 100);
 // Atodo: Remove this after testing. And remove usages!
@@ -194,7 +195,7 @@ function kms_oci_queue_query_creator_process_job($job, $item, $exe_queue) {
   // Create executor queue items via ctools plugins.
   ctools_include('plugins');
   $plugins = ctools_get_plugins('kms_oci_queue', 'queue_runner');
-  
+
   array_walk(
     $plugins,
     function($plugin) use ($jid, $creator_item, $exe_queue) {

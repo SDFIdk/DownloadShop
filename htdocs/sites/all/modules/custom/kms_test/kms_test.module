@@ -408,3 +408,24 @@ function kms_test_create_fake_jobs() {
   } while($i<=110);
 
 }
+
+/**
+ * Useful for testing clone_user_perms jobs.
+ */
+function kms_test_clone_perms() {
+  $job_params = array (
+    'action' => 'clone_user_perms',
+    'action_details' => 'Cloning user permissions from: TW2. Affects 2.',
+    'params' =>
+      array (
+        'source_uid' => '7524',
+        'uids' =>
+          array (
+            9 => '19827',
+            10 => '10465',
+          ),
+      ),
+  );
+  KmsOciQueueJob::create($job_params);
+  KmsOciQueueJob::create($job_params, 'kms_permissions');
+}

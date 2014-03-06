@@ -610,6 +610,10 @@ function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
         'class' => array('description'),
       ),
     ),
+    'legend' => array(
+      '#type' => 'markup',
+      '#markup' => views_embed_view('bundle_legend_header', 'default'),
+    )
   );
 
   $form['field_access_bundles'][LANGUAGE_NONE]['#suffix'] = render($services_description);
@@ -1409,8 +1413,13 @@ function kms_permissions_vbo_copy_user_services_form($context) {
  * @return array
  */
 function kms_permissions_vbo_copy_user_services_submit($form, $form_state) {
+  $uids = array_filter($form_state['selection']);
+  if ($form_state['select_all_pages']) {
+    $uids = _kms_permissions_get_all_users();
+  }
   return array(
     'source_username' => $form_state['values']['source_username'],
+    'uids' => $uids,
   );
 }
 
@@ -1430,9 +1439,38 @@ function kms_permissions_vbo_copy_user_services(&$account, $context = array()) {
   if(!$source_account) {
     return;
   }
-  $target_account = $context['user'];
   kms_permissions_clone_perms($source_account, $context['user']);
-//  _kms_user_user_update_oci_queue_bundles_attach($target_account, $target_account);
+  if ($context['progress']['current'] == $context['progress']['total']) {
+    kms_permissions_vbo_copy_user_services_finished($source_account, $context);
+  }
+}
+
+/**
+ * @param object $source_account
+ *   Drupal user object to clone from.
+ * @param array $context
+ *   VBO context. We pass uids through that.
+ */
+function kms_permissions_vbo_copy_user_services_finished($source_account, $context) {
+  // Atodo: Test this.
+  $job_params = array(
+    'action' => KMS_OCI_QUEUE_ACTION_CLONE_USER_PERMS,
+    'action_details' => format_string(
+      'Cloning user permissions from: @source_user. Affects @user_count.',
+      array(
+        '@source_user' => $source_account->name,
+        '@user_count' => count($context['uids']),
+      )
+    ),
+    'params' => array(
+      'source_uid' => $source_account->uid,
+      'uids' => $context['uids'],
+    ),
+  );
+//  _adapt_debug('mikkel', var_export($job_params, TRUE));
+  KmsOciQueueJob::create($job_params);
+  KmsOciQueueJob::create($job_params, 'kms_permissions');
+
 }
 
 /**

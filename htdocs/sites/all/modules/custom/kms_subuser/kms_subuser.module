@@ -721,8 +721,7 @@ function kms_subuser_insert_account_oracle($user, $account) {
   if (!module_exists('kms_oci')) {
     return;
   }
-//    kms_oci_insert($data['user_extra'], 'smuser_extra');
-//    kms_oci_insert($data['user'], 'smuser');
+
   $jobs = array();
   $jobs[] = KmsOciQueueJob::create(array(
     'action' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
