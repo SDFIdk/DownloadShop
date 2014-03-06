@@ -1,10 +1,22 @@
 /* line 2, ../sass/edit_bundles_and_services.scss */
 .field-widget-kms-services
+.form-type-checkbox.disabled label.option,
+.field-widget-kms-applications
+.form-type-checkbox.disabled label.option,
+.field-name-field-predefined-datacollections
+.form-type-checkbox.disabled label.option,
+.field-widget-kms-ftp-permissions
 .form-type-checkbox.disabled label.option {
   padding-left: 17px;
 }
 /* line 4, ../sass/edit_bundles_and_services.scss */
 .field-widget-kms-services
+.form-type-checkbox.disabled .form-checkbox,
+.field-widget-kms-applications
+.form-type-checkbox.disabled .form-checkbox,
+.field-name-field-predefined-datacollections
+.form-type-checkbox.disabled .form-checkbox,
+.field-widget-kms-ftp-permissions
 .form-type-checkbox.disabled .form-checkbox {
   display: none;
 }

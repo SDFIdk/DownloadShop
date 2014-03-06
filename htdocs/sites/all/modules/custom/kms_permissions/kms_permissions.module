@@ -679,8 +679,15 @@ function _kms_permissions_common_form_alter(&$form) {
         '#attributes' => array('onclick' => 'Drupal.behaviors.kms_perms_checkboxes.checkUncheckAll(this, "field-name-field-applications");'),
     );
 
+    $form['select_all_field_ftp'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Select / Unselect all'),
+        '#attributes' => array('onclick' => 'Drupal.behaviors.kms_perms_checkboxes.checkUncheckAll(this, "field-name-field-ftp-permissions");'),
+    );
+
     $form['#group_children']['select_all_field_predefined'] = 'group_tab_predefined';
     $form['#group_children']['select_all_field_applications'] = 'group_tab_applications';
+    $form['#group_children']['select_all_field_ftp'] = 'group_tab_ftp';
   }
 }
 
@@ -1221,7 +1228,6 @@ function _kms_permissions_get_bundles_by_item_id($id, $item_type) {
     break;
 
     case 'predefined':
-//      print_r($get_bundle_ids($id, 'predefined', 'custom'));
       $nid_sid_arr = $get_bundle_ids($id, 'predefined', 'custom');
     break;
   }
@@ -1230,10 +1236,28 @@ function _kms_permissions_get_bundles_by_item_id($id, $item_type) {
 }
 
 function _kms_permissions_get_services_by_bid($bid) {
-  $permissions = $sids = array();
+  $permissions = $ftp_permissions = $sids = array();
    _kms_permissions_get_permissions_by_bid($bid, $permissions);
+   _kms_permissions_ftp_get_permissions_by_bid($bid, $ftp_permissions);
   if(!empty($permissions['services']) && is_array($permissions['services'])) {
     array_walk($permissions['services'], function($v) use(&$sids) {
+      $sids[$v['id']] = $v['id'];
+    });
+  }
+  if(!empty($permissions['applications']) && is_array($permissions['applications'])) {
+    array_walk($permissions['applications'], function($v) use(&$sids) {
+      $sids[$v['id']] = $v['id'];
+    });
+  }
+
+  if(!empty($permissions['predefined_datacollections']) && is_array($permissions['predefined_datacollections'])) {
+    array_walk($permissions['predefined_datacollections'], function($v) use(&$sids) {
+      $sids[$v['id']] = 'pre_'.$v['id'];
+    });
+  }
+
+  if(!empty($ftp_permissions['ftp']) && is_array($ftp_permissions['ftp'])) {
+    array_walk($ftp_permissions['ftp'], function($v) use(&$sids) {
       $sids[$v['id']] = $v['id'];
     });
   }

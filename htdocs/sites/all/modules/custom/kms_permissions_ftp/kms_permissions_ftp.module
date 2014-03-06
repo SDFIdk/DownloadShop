@@ -7,7 +7,9 @@
  * @author Linas Balke <linas@adapt.dk>
  */
 
-define('KMS_FTP_STRUCTURE_DIR', '/data3/Statsaftalen');
+define('KMS_FTP_STRUCTURE_DIR', '/tmp');
+define('KMS_FTP_SCRIPT_CALL1', 'ssh -i  $HOME/.ssh/updateftpservers loadftp1.kmsext.dk');
+define('KMS_FTP_SCRIPT_CALL2', 'ssh -i  $HOME/.ssh/updateftpservers loadftp2.kmsext.dk');
 
 /**
  * Implements hook_menu().
@@ -51,7 +53,7 @@ function kms_permissions_ftp_field_widget_form(&$form, &$form_state, $field, $in
   $required = $element['#required'];
   $has_value = isset($items[0][$value_key]);
   $properties = _options_properties($type, $multiple, $required, $has_value);
-  $instance_settings = $instance['widget']['settings'];  
+  $instance_settings = $instance['widget']['settings'];
 
       $default_value = array();
 
@@ -61,7 +63,7 @@ function kms_permissions_ftp_field_widget_form(&$form, &$form_state, $field, $in
           $default_value[] = $item['value'];
         }
       }
-      
+
       $options = kms_permissions_ftp_widget_options($instance_settings);
 
       $element += array(
@@ -71,12 +73,11 @@ function kms_permissions_ftp_field_widget_form(&$form, &$form_state, $field, $in
         '#options' => $options
       );
 
-
   $element += array(
     '#value_key' => $value_key,
     '#element_validate' => array('options_field_widget_validate'),
     '#properties' => $properties,
-  );  
+  );
 
   return $element;
 }
@@ -94,20 +95,20 @@ function kms_permissions_ftp_field_widget_error($element, $error) {
  */
 function kms_permissions_ftp_widget_options($instance_settings) {
 
-  $options = array();    
+  $options = array();
   static $options;
-      
+
   $rows = kms_permissions_ftp_scan_structure();
 
   if (!empty($rows)) {
     sort($rows);
-    
+
     foreach($rows as $k=>$value) {
       $html = _kms_permissions_format_item_list_item($k, $value, 'ftp');
       $options[$k] = $html;
     }
   }
-  
+
   return $options;
 }
 
@@ -115,18 +116,18 @@ function kms_permissions_ftp_widget_options($instance_settings) {
  * Store the structure of the folders.
  */
 function kms_permissions_ftp_scan_store_structure() {
-  
+
   $rows = kms_permissions_ftp_scan_structure();
-  
   sort($rows);
 
   if (!empty($rows)) {
+    db_query("DELETE from kms_permissions_ftp_folders;");
     foreach($rows as $k=>$value) {
       $data = array(
         'fid' => $k,
         'name' => $value
       );
-      
+
       drupal_write_record('kms_permissions_ftp_folders', $data);
     }
   }
@@ -139,64 +140,54 @@ function kms_permissions_ftp_scan_store_structure() {
 function kms_permissions_ftp_scan_structure() {
   // Set the dir to read from
   is_dir(KMS_FTP_STRUCTURE_DIR) ? $folders = scandir(KMS_FTP_STRUCTURE_DIR): $folders = array();
- 
+
   return $folders;
+}
 
-  /* FTP settings, initial version of the script was supposed to use ftp connection
-  $settings['username'] = variable_get('kms_csv_ftp_username','linas.fox-snieglente');
-  $settings['password'] = variable_get('kms_csv_ftp_password','linas');
-  $settings['advanced']['hostname']= variable_get('kms_csv_ftp_hostname','fox.lt');
-  $settings['advanced']['port']= variable_get('kms_csv_ftp_port','21');
- 
-  $ftp_server = variable_get('kms_csv_ftp_hostname','fox.lt');
-  $ftp_user_name = variable_get('kms_csv_ftp_username','linas.fox-snieglente');
-  $ftp_user_pass = variable_get('kms_csv_ftp_password','linas');
+/**
+ * Implements hook_user_presave().
+ */
+function kms_permissions_ftp_entity_presave($entity) {
+  $lang = field_language('user', $entity, 'field_ftp_permissions');
 
-  // set up basic connection
-  $conn_id = ftp_connect($ftp_server);
-
-  if(is_resource($conn_id)) {
-    // login with username and password
-    $login_result = ftp_login($conn_id, $ftp_user_name, $ftp_user_pass);
-  
-    //Enable passive mode, Vagrant specific
-    ftp_pasv( $conn_id, true );
-    // get contents of the current directory
-  
-    ftp_chdir($conn_id, 'kms');
-    return kms_permissions_ftp_xdir('.', $conn_id);
+  if(!empty($entity->field_ftp_permissions)) {
+    if($entity->field_ftp_permissions[$lang] !== $entity->original->field_ftp_permissions[$lang]){
+      watchdog('Permissions FTP', 'Change has been triggered in FTP permissions for individual user', array(), WATCHDOG_NOTICE);
+      variable_set('kms_ftp_perm_change', TRUE);
+    }
   }
-  */
 }
 
-/*
-*  Deprecated functions, to be deleted if FTP connection will never be used
-*/
-function kms_permissions_ftp_is_dir($folder, $conn_id) {
-  if (ftp_chdir($conn_id, $folder)) {
-      ftp_chdir($conn_id, '..');
-      return true;
-   } else {
-      return false;
-   }
+/**
+ * Cron hook
+ */
+function kms_permissions_ftp_cron(){
+  kms_permissions_ftp_scan_store_structure();
+
+  if (variable_get('kms_ftp_perm_change')){
+    //Trigger external script
+    shell_exec(KMS_FTP_SCRIPT_CALL1);
+    shell_exec(KMS_FTP_SCRIPT_CALL2);
+    // Set variable to false, as script should revisit the view and update things accordingly
+    variable_set('kms_ftp_perm_change', FALSE);
+    watchdog('Permissions FTP', 'External bash script initiated by cron run', array(), WATCHDOG_NOTICE);
+  }
 }
 
-/*
-*  Deprecated functions, to be deleted if FTP connection will never be used
-*/
-function kms_permissions_ftp_xdir($path, $conn_id) {
-   $contents = ftp_nlist($conn_id, $path);
-   $folders = array();
+/**
+ * Return nicely formatted array of ftp permissions associated with a bundle.
+ */
+function _kms_permissions_ftp_get_permissions_by_bid($bid, &$permissions = array()) {
+  $bundle = node_load($bid);
+  // FTP permissions
+  $field_ftp_permissions = field_get_items('node', $bundle, 'field_ftp_permissions');
+  if (!empty($field_ftp_permissions)) {
+    foreach ($field_ftp_permissions as $ftp_permissions) {
+      $permissions['ftp']['a' . $ftp_permissions['value']] = array(
+        'id' => 'ftp_'.$ftp_permissions['value'],
+      );
+    }
+  }
 
-   foreach($contents as $file) {
-      if ($file!='.'&&$file!='..') {
-         if (kms_permissions_ftp_is_dir($file, $conn_id)) {
-            array_push($folders, $file);
-         } else {
-            //echo $file . ' is a file<br>';
-         }
-      }
-   }
-
-   return $folders;
+  return $permissions;
 }
