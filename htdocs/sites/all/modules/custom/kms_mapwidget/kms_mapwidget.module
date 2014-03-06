@@ -671,7 +671,7 @@ function kms_mapwidget_form_step_3(&$form, $form_state, $nw) {
           'selection_type_title' => $selection_type->name->value(),
           'dataformat_title' => $dataformat->name->value(),
           'koordinatsystem_title' => $koordinatsystem->name->value(),
-          'max_area' => variable_get('kms_mapwidget_max_area', 0)
+          'max_area' => kms_mapwidget_get_user_defined_max_download_area($nw),
         ),
       ),
       array('type' => 'setting')
@@ -1041,4 +1041,32 @@ function kms_mapwidget_fme_log($event,$order_id,$job_id, $data, $user = false) {
   } catch(Exception $e) {
     watchdog('kms_mapwidget', 'Could not write to log table');
   }
+}
+
+/**
+ * Get the maximum download area of a user defined map.
+ *
+ * @param object $nw
+ *   Entity metadata wrapper for a product display.
+ * @return integer
+ *   Max download area square meters.
+ */
+function kms_mapwidget_get_user_defined_max_download_area($nw) {
+  global $user;
+  $uw = entity_metadata_wrapper('user', $user);
+  $max_areas = array();
+  // Iterate over user bundles.
+  foreach ($uw->field_access_bundles->getIterator() as $bundle) {
+    // If product display exists in field_predefined_datacollections
+    // of a bundle then get the max download size of the bundle.
+    if (in_array(
+      $nw->getIdentifier(),
+      $bundle->field_predefined_datacollections->raw()
+    )) {
+      $max_areas[] = $bundle->field_max_download_size->value();
+    }
+  }
+  // If max areas were found pick largest area.
+  // Otherwise fallback to the global max area.
+  return max($max_areas) ? max($max_areas) : variable_get('kms_mapwidget_max_area', 0);
 }
