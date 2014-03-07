@@ -67,6 +67,16 @@ if (!$job) {
   qe_error($message, $vars);
 }
 
+// Only process job if it has an valid status.
+if (!qe_job_has_valid_status($job)) {
+  exit(1);
+}
+
+// If there are undone jobs before this one do not import it yet.
+if (qe_undone_jobs_before_current_exists($job)) {
+  exit(1);
+}
+
 // If the job file could not be loaded change job status and exit.
 if (!file_exists($args['filepath'])) {
   $message = 'Query engine: File: %file does not exist';
@@ -75,16 +85,11 @@ if (!file_exists($args['filepath'])) {
   qe_error($message, $vars, TRUE);
 }
 
-// If there are undone jobs before this one do not import it yet.
-if (qe_undone_jobs_before_current_exists($job)) {
-  exit(1);
-}
-
 // Db connection settings.
 $db_conf = KmsOciQueueJobDb::getConnectionSettings($job->cid);
 
 // Get job info from job action if not specified.
-$args['info'] = $opt['i'] ? $opt['i'] : $job->action;
+$args['info'] = !empty($opt['i']) ? $opt['i'] : $job->action . ' | ' . $job->actionDetails;
 
 // Generate sql string.
 $sql = qe_generate_sql($db_conf, $args);

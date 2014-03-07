@@ -138,7 +138,7 @@ SELECT 'Oracle import END. Jid: $jid, file: $filename',to_char(sysdate,'YYYYMMDD
 EXIT COMMIT
 !!
 EOD;
-  
+
   return $sql;
 
 }
@@ -242,4 +242,21 @@ function qe_undone_jobs_before_current_exists($job) {
   });
 
   return (bool) count($undone_jobs_b4);
+}
+
+/**
+ * Does current job has a valid status for processing?
+ *
+ * @param object $job
+ *   Kms oci queue job.
+ *
+ * @return bool
+ */
+function qe_job_has_valid_status($job) {
+  $valid_statuses = array(
+    KmsOciQueueJob::STATUS_FILE_READY,
+    KmsOciQueueJob::STATUS_FAILED,
+  );
+
+  return in_array($job->status->status, $valid_statuses);
 }
