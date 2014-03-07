@@ -633,6 +633,32 @@ function kms_permissions_form_user_register_form_alter(&$form, &$form_state) {
   $form['#attached']['js'][] = drupal_get_path('module', 'kms_permissions') .'/js/kms_perms_checkboxes.js';
   $form['#attached']['css'][] = drupal_get_path('module', 'kms_permissions') .'/css/edit_bundles_and_services.css';
 
+  $services_description = array(
+    'title' => array(
+      '#theme' => 'html_tag',
+      '#tag' => 'h3',
+      '#value' => t('Services'),
+      '#attributes' => array(
+        'class' => array('fieldset-title'),
+      ),
+    ),
+    'description' => array(
+      '#theme' => 'html_tag',
+      '#tag' => 'div',
+      '#value' => t('Services that are dependant on the bundles chosen.'),
+      '#attributes' => array(
+        'class' => array('description'),
+      ),
+    ),
+    'legend' => array(
+      '#type' => 'markup',
+      '#markup' => views_embed_view('bundle_legend_header', 'default'),
+    )
+  );
+
+  $form['field_access_bundles'][LANGUAGE_NONE]['#suffix'] = render($services_description);
+  $form['field_access_bundles'][LANGUAGE_NONE]['#pre_render'][] = 'kms_permissions_process_access_bundles_register_form_element';
+
   _kms_permissions_common_form_alter($form);
 }
 
@@ -692,16 +718,33 @@ function _kms_permissions_common_form_alter(&$form) {
 
 function kms_permissions_process_access_bundles_form_element($element) {
   $bids = _kms_permissions_get_access_bundles('default');
-
   foreach (element_children($element) as $bid) {
     if(in_array($bid, $bids)) {
       $element[$bid]['#attributes']['class'][] = 'default-bundle';
       $element[$bid]['#weight'] = $element[$bid]['#weight'] - 200;
     }
+    if($checked) {
+      $element[$bid]['#attributes']['checked'][] = 'checked';
+    }
   }
 
   return $element;
 }
+
+
+function kms_permissions_process_access_bundles_register_form_element($element) {
+  $bids = _kms_permissions_get_access_bundles('default');
+  foreach (element_children($element) as $bid) {
+    if(in_array($bid, $bids)) {
+      $element[$bid]['#attributes']['class'][] = 'default-bundle';
+      $element[$bid]['#weight'] = $element[$bid]['#weight'] - 200;
+      $element[$bid]['#attributes']['checked'][] = 'checked';
+    }
+  }
+
+  return $element;
+}
+
 
 /**
  * Implements hook_node_presave().
