@@ -184,7 +184,7 @@ function _kms_permissions_ftp_get_permissions_by_bid($bid, &$permissions = array
   if (!empty($field_ftp_permissions)) {
     foreach ($field_ftp_permissions as $ftp_permissions) {
       $permissions['ftp']['a' . $ftp_permissions['value']] = array(
-        'id' => 'ftp_'.$ftp_permissions['value'],
+        'id' => $ftp_permissions['value'],
       );
     }
   }

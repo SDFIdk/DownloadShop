@@ -38,34 +38,19 @@
           });
           // Populate sids with sids returned by request.
           sids = xhr.sids;
-          // Iterate over returned sids. Check corresponding checkboxes and hijack click event.
-          for (var i=0; i < sids.length; i++){
-            var sid = xhr.sids[i];
 
-            if(!isNaN(sid)){
-              var selector = '.group-webservices .form-type-checkbox input[id^="edit-field-bundle-webservices-"][id$=-' + sid + ']';
+          var selector_fields= new Array();
+          selector_fields['webservices'] = 'bundle-webservices';
+          selector_fields['tab-predefined'] = 'predefined-datacollections-und';
+          selector_fields['tab-ftp'] = 'ftp-permissions-und';
+          selector_fields['tab-applications'] = 'applications-und';
+
+          // Iterate over returned sids. Check corresponding checkboxes and hijack click event.
+          for (var i in sids){
+            for (var j in sids[i]){
+              var selector = '.group-'+ i +' .form-type-checkbox input[id^="edit-field-' + selector_fields[i] + '-"][id$=-' + sids[i][j].toLowerCase() + ']';
               $(selector, context).parent().addClass('disabled');
             }
-
-            if(sid.substring(0,3) == 'pre')
-            {
-              var pre_selector = '.group-tab-predefined .form-type-checkbox input[id^="edit-field-predefined-datacollections-und-"][id$=-' + sid.substring(4,7) + ']';
-              $(pre_selector, context).parent().addClass('disabled');
-            }
-
-            if(sid.substring(0,3) == 'ftp')
-            {
-              var ftp_selector = '.group-tab-ftp .form-type-checkbox input[id^="edit-field-ftp-permissions-und-"][id$=-' + sid.substring(4,7) + ']';
-              $(ftp_selector, context).parent().addClass('disabled');
-            }
-
-            if(sid.length == 32)
-            {
-              var app_selector = '.group-tab-applications .form-type-checkbox input[id^="edit-field-applications-und-"][id$=-' + sid.toLowerCase()+ ']';
-              $(app_selector, context).parent().addClass('disabled');
-            }
-
-
           }
 
         }

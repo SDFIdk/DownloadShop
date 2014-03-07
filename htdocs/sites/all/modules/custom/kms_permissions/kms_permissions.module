@@ -1239,24 +1239,24 @@ function _kms_permissions_get_services_by_bid($bid) {
    _kms_permissions_ftp_get_permissions_by_bid($bid, $ftp_permissions);
   if(!empty($permissions['services']) && is_array($permissions['services'])) {
     array_walk($permissions['services'], function($v) use(&$sids) {
-      $sids[$v['id']] = $v['id'];
+      $sids['webservices'][] = $v['id'];
     });
   }
   if(!empty($permissions['applications']) && is_array($permissions['applications'])) {
     array_walk($permissions['applications'], function($v) use(&$sids) {
-      $sids[$v['id']] = $v['id'];
+      $sids['tab-applications'][] = $v['id'];
     });
   }
 
   if(!empty($permissions['predefined_datacollections']) && is_array($permissions['predefined_datacollections'])) {
     array_walk($permissions['predefined_datacollections'], function($v) use(&$sids) {
-      $sids[$v['id']] = 'pre_'.$v['id'];
+      $sids['tab-predefined'][] = $v['id'];
     });
   }
 
   if(!empty($ftp_permissions['ftp']) && is_array($ftp_permissions['ftp'])) {
     array_walk($ftp_permissions['ftp'], function($v) use(&$sids) {
-      $sids[$v['id']] = $v['id'];
+      $sids['tab-ftp'][] = $v['id'];
     });
   }
   return $sids;
@@ -1273,7 +1273,7 @@ function _kms_permissions_get_services_by_bids($bids) {
 
 function kms_permissions_ajax_get_services_by_bids() {
   $bids = !empty($_POST['bids']) ? $_POST['bids'] : array();
-  $json = array('sids' => array_values(_kms_permissions_get_services_by_bids($bids)));
+  $json = array('sids' => _kms_permissions_get_services_by_bids($bids));
   drupal_json_output($json);
   exit;
 }
