@@ -558,7 +558,7 @@ function kms_permissions_form_access_bundle_node_form_alter(&$form, &$form_state
   );
   $form['#attached']['js'][] = drupal_get_path('module', 'kms_permissions') .'/js/kms_perms_checkboxes.js';
   $form['#attached']['css'][] = drupal_get_path('module', 'kms_permissions') .'/css/edit_bundles_and_services.css';
-  $form['#attached']['library'][] = array('kms_permissions', 'jquery.foggy');
+//  $form['#attached']['library'][] = array('kms_permissions', 'jquery.foggy');
 
   $form['actions']['submit']['#submit'][] = 'kms_permissions_access_bundle_update';
   $form['actions']['delete']['#submit'][] = 'kms_permissions_access_bundle_update';
@@ -583,7 +583,6 @@ function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
   );
   $form['#attached']['js'][] = drupal_get_path('module', 'kms_permissions') .'/js/kms_perms_checkboxes.js';
   $form['#attached']['css'][] = drupal_get_path('module', 'kms_permissions') .'/css/edit_bundles_and_services.css';
-  $form['#attached']['library'][] = array('kms_permissions', 'jquery.foggy');
 
   foreach(_kms_permissions_get_access_bundles('default') as $bid) {
 
@@ -633,7 +632,6 @@ function kms_permissions_form_user_register_form_alter(&$form, &$form_state) {
 
   $form['#attached']['js'][] = drupal_get_path('module', 'kms_permissions') .'/js/kms_perms_checkboxes.js';
   $form['#attached']['css'][] = drupal_get_path('module', 'kms_permissions') .'/css/edit_bundles_and_services.css';
-  $form['#attached']['library'][] = array('kms_permissions', 'jquery.foggy');
 
   _kms_permissions_common_form_alter($form);
 }

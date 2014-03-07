@@ -25,8 +25,6 @@
 
     },
     servicesFromBundles: function(bids, context) {
-      // Blur service checkboxes while fetching service ids from ajax request.
-      $('.group-webservices').foggy();
       // Load service ids by bundle ids.
       $.ajax({
         url: '/kms-permissions/ajax/load-sids-by-bid',
@@ -70,11 +68,6 @@
 
           }
 
-          $('.group-webservices').foggy(false);
-        },
-        complete: function() {
-          // Unblur service checkboxes when request is done.
-          $('.group-webservices').foggy(false);
         }
       });
     },
