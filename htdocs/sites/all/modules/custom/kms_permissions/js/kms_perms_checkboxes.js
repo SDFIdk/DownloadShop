@@ -5,7 +5,7 @@
   Drupal.behaviors.kms_perms_checkboxes = {
     attach: function(context, settings) {
 
-      if (settings.kms_permissions.form_id == 'user_profile_form') {
+      if (settings.kms_permissions.form_id == 'user_profile_form' || settings.kms_permissions.form_id == 'user_register_form') {
         // Prevent click on default bundles.
         $('#edit-field-access-bundles-und .default-bundle', context).bind('click', function(event){
           event.stopPropagation();

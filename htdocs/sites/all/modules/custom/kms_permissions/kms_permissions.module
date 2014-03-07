@@ -1265,8 +1265,7 @@ function _kms_permissions_get_services_by_bid($bid) {
 function _kms_permissions_get_services_by_bids($bids) {
   $sids = array();
   array_walk($bids, function($bid) use (&$sids){
-    $sids += _kms_permissions_get_services_by_bid($bid);
-
+    $sids = array_merge_recursive($sids, _kms_permissions_get_services_by_bid($bid));
   });
   return $sids;
 }
