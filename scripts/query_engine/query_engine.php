@@ -62,9 +62,7 @@ $job = KmsOciQueueJobFactory::get($args['jid']);
 
 // If job could not be loaded then exit.
 if (!$job) {
-  $message = 'No jobs existing with id: %jid';
-  $vars = array('%jid' => $args['jid']);
-  qe_error($message, $vars);
+  qe_error('No jobs existing with id: %jid', array('%jid' => $args['jid']));
 }
 
 // Only process job if it has an valid status.
