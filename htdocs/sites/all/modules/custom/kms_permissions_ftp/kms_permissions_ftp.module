@@ -7,7 +7,7 @@
  * @author Linas Balke <linas@adapt.dk>
  */
 
-define('KMS_FTP_STRUCTURE_DIR', '/tmp');
+define('KMS_FTP_STRUCTURE_DIR', '/data3/Statsaftalen');
 define('KMS_FTP_SCRIPT_CALL1', 'ssh -i  $HOME/.ssh/updateftpservers loadftp1.kmsext.dk');
 define('KMS_FTP_SCRIPT_CALL2', 'ssh -i  $HOME/.ssh/updateftpservers loadftp2.kmsext.dk');
 
