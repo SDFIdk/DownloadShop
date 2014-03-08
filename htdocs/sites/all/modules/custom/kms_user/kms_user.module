@@ -1193,11 +1193,6 @@ function kms_user_filter_admin_views_people_perms($js = FALSE) {
 
   if (!empty($form_state['executed'])) {
     $output = array();
-    // Get all user ids from chosen services.
-    $uids = _kms_user_get_users_from_services($form_state['filter']);
-    // If no users are presnet create an array with a very high uid so that the views get no matches.
-    $uids = !empty($uids) ? $uids : array(99999999999);
-//    _adapt_debug('mikkel', $uids);_
     // Maybe use session in the future?
 //    $_SESSION['views']['admin_views_user']['kms_user_filter']['uids'] = $uids;
 
@@ -1205,8 +1200,45 @@ function kms_user_filter_admin_views_people_perms($js = FALSE) {
     $view = views_get_view(KMS_USER_VIEW_NAME_ADMIN_VIEWS_USER);
     $view->set_display(KMS_USER_VIEW_DISPLAY_ADMIN_VIEWS_USER);
     $view->is_cacheable = FALSE;
-    $views_arg_str = implode('+', $uids);
-    $view->set_arguments(array($views_arg_str));
+
+    // Set uids depending on filter status.
+    $filter = $form_state['filter'];
+    foreach($filter as $service_group) {
+      foreach($service_group[LANGUAGE_NONE] as $sid) {
+        if (kms_permissions_is_service_in_default_bundle($sid)) {
+          $filter = 'all';
+          break 2;
+        }
+      }
+    }
+
+    $uids = $args = array();
+    // If the filter is not set to all users get uids.
+    if ($filter != 'all') {
+      // Get all user ids from chosen services.
+      $uids = _kms_user_get_users_from_services($filter);
+      // If no users are presnet create an array with a very high uid so that the views get no matches.
+      $uids = !empty($uids) ? $uids : array(99999999999);
+    }
+    // If uids have been found then set views argument(s).
+    if (!empty($uids)) {
+      $uids_all = _kms_permissions_get_all_users();
+      // If filter uid count is bigger than half of all user count
+      // then filter excluding uids rather than including uids.
+      if (count($uids) > (count($uids_all) / 2)) {
+        $args = array(
+          'all',
+          implode('+', array_diff($uids_all, $uids)),
+        );
+      }
+    else {
+        // Otherwise just narrow result down with fuilter uids.
+        $args = array(implode('+', $uids));
+      }
+    }
+    // Set uid argument(s).
+    $view->set_arguments($args);
+    // Render view.
     $output[] = ajax_command_html('.view-admin-views-user', $view->render());
 
     // Get all available services.
@@ -1280,15 +1312,20 @@ function kms_user_filter_admin_views_people_perms_form ($form, &$form_state) {
   return $form;
 }
 
+/**
+ * Form used for filtering user list by services.
+ *
+ * @param array $form
+ *   Drupal form array.
+ * @param array $form_state
+ *   Drupal form state array.
+ */
 function kms_user_filter_admin_views_people_perms_form_submit($form, &$form_state) {
-  $form_state['filter'] = array_intersect_key($_REQUEST, array_flip(_kms_permissions_webservice_fields()));
+  $form_state['filter'] = array_intersect_key(
+    $_REQUEST,
+    array_flip(_kms_permissions_webservice_fields())
+  );
 }
-
-//function kms_user_filter_admin_views_people_perms_filter_fields() {
-//  return array_merge(
-//    _kms_permissions_webservice_fields()
-//  );
-//}
 
 /**
  * Implements hook_views_pre_render().

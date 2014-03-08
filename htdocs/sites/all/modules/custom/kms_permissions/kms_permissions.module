@@ -1123,15 +1123,21 @@ function _kms_permissions_get_users_by_bid($bid) {
 }
 
 /**
- * Find all active users.
- * Doing an entity load would be too heavy
+ * Find all users.
+ *
+ * @param bool $only_active
+ *   Only retrieve active users.
+ *
+ * @return array
  */
-function  _kms_permissions_get_all_users() {
-  $uids = &drupal_static(__FUNCTION__);
+function  _kms_permissions_get_all_users($only_active = FALSE) {
+  $uids = &drupal_static(__FUNCTION__ . (int) $only_active);
   if (!isset($uids)) {
     $query = db_select('users', 'u')
-      ->fields('u', array('uid'))
-      ->condition('status', 1, '=');
+      ->fields('u', array('uid'));
+    if ($only_active) {
+      $query->condition('status', 1, '=');
+    }
     // For debugging purposes.
   //    ->range(0, 5);
     $result = $query->execute()->fetchCol();
@@ -2024,4 +2030,19 @@ function _kms_permissions_attach_default_bundles_to_user($uid, $bids) {
       }
     });
   }
+}
+
+/**
+ * Lookup service in default bundles.
+ *
+ * @param integer $sid
+ *   Service id.
+ * @return bool
+ *   Is service in a default bundle.
+ */
+function kms_permissions_is_service_in_default_bundle($sid) {
+  $bids = _kms_permissions_get_bundles_by_sids(array($sid));
+  $bids_default = _kms_permissions_get_default_bundles();
+  $matches = array_intersect($bids_default, $bids);
+  return !empty($matches);
 }
