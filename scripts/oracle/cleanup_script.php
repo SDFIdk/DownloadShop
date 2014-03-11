@@ -1,5 +1,6 @@
 <?php
 
+ini_set('memory_limit', '1024M');
 //drush -d scr --uri=kms.dev cleanup_script.php
 
 /**

@@ -1,5 +1,6 @@
 <?php
 
+ini_set('memory_limit', '1024M');
 //drush -d scr --uri=kms.dev transfer_script.php
 
 $settings = array(
@@ -68,7 +69,7 @@ if (kms_oci_get_conn()) {
   if (!empty($rows)) {
     foreach ($rows as $row) {
       $userid = get_drupal_uid($row['USERID']);
-      print('User id '.$userid.' will be altered with permissions from application '.$row['GROUPID'].' \n');
+      //print('User id '.$userid.' will be altered with permissions from application '.$row['GROUPID'].' \n');
       if(!is_null($userid)){
 
         remove_application_duplicate($userid,$row['GROUPID']);
