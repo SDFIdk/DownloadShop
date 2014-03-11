@@ -816,102 +816,61 @@ function kms_permissions_access_bundle_update($form, $form_state) {
   if ($default_bundle_is_updated) {
     // If a bundle is set as a default bundle or WAS set as a default bundle, update all users.
     $uids = _kms_permissions_get_all_users();
-
+    $action = KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE;
     if(!empty($uids)) {
-      $job_params = array(
-        'action' => KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE,
-        'params' => array(
-          'uids' => $uids,
-          'bid' => $bid,
-        ),
-      );
-      /*
-       Atodo: Use this in the near future. Or discard if not!
-       kms_oci_queue_job_action_bundle_save(
-        $uids,
-        $bid,
-        'Bundle: "@bundle" updated. Affects @count users.',
-        array(
-          '@bundle' => $bundle->title,
-          '@count' => count($uids)
-        )
-      );
-       */
-
-      kms_permissions_run_batch('default_bundle_update_users', $bid, $uids);
-
+      kms_permissions_run_batch('default_bundle_attach_users', $bid, $uids);
     }
-
   }
   else if ($bundle_is_updated) {
     // When a bundle get updated, find all users related to that bundle, and queue them for updating.
     $uids = _kms_permissions_get_users_by_bid($bid);
-
-    if(!empty($uids)) {
-      $job_params = array(
-        'action' => KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE,
-        'params' => array(
-          'uids' => $uids,
-          'bid' => $bid,
-        ),
-      );
-      /*
-       Atodo: Use this in the near future. Or discard if not!
-      kms_oci_queue_job_action_bundle_save(
-        $uids,
-        $bid,
-        'Bundle: "@bundle" updated. Affects @count users.',
-        array(
-          '@bundle' => $bundle->title,
-          '@count' => count($uids)
-        )
-      );
-      */
-    }
-
+    $action = KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE;
     // Clear cached perm filter form at admin/people.
     cache_clear_all(KMS_USER_CACHE_ID_ADMIN_VIEWS_PEOPLE_PERMS_FORM, 'cache');
-
   }
   elseif($bundle_is_deleted) {
     $uids = _kms_permissions_get_users_by_bid($bid);
-
-    if(!empty($uids)) {
-      $job_params = array(
-        'action' => KMS_OCI_QUEUE_ACTION_BUNDLE_DELETE,
-        'params' => array(
-          'uids' => $uids,
-          'bid' => $bid,
-        ),
-      );
-      /*
-      Atodo: Use this in the near future. Or discard if not!
-      kms_oci_queue_job_action_bundle_save(
-        $uids,
-        $bid,
-        'Bundle: "@bundle" deleted. Affects @count users.',
-        array(
-          '@bundle' => $bundle->title,
-          '@count' => count($uids)
-        )
-      );
-      */
-    }
+    $action = KMS_OCI_QUEUE_ACTION_BUNDLE_DELETE;
   }
 
   // Only create a job if there are any users using the bundle.
   if (!empty($uids)) {
-    // Atodo: Figure out if all the cases above can be solved with the same job type.
-    $job_params['action_details'] = format_string(
-      'Bundle: "@bundle" saved. Affects @count users.',
-      array(
-        '@bundle' => $bundle->title,
-        '@count' => count($uids)
-      )
-    );
+    $uid_chunks = array_chunk($uids, 4000);
+    $delta = 1;
+    foreach($uid_chunks as $uid_chunk) {
+      $job_params = array(
+        'action' => $action,
+        'params' => array(
+          'uids' => $uid_chunk,
+          'bid' => $bid,
+        ),
+      );
+      if (count($uid_chunks) > 1) {
+        $job_params['action_details'] = format_string(
+          'Bundle: "@bundle" saved. Affects @count users out of @total. Delta: @delta.',
+          array(
+            '@bundle' => $bundle->title,
+            '@count' => count($uid_chunk),
+            '@total' => count($uids),
+            '@delta' => $delta,
+          )
+        );
+      }
+      else {
+        $job_params['action_details'] = format_string(
+          'Bundle: "@bundle" saved. Affects @count users.',
+          array(
+            '@bundle' => $bundle->title,
+            '@count' => count($uid_chunk),
+            '@delta' => $delta,
+          )
+        );
+      }
 
-    KmsOciQueueJob::create($job_params);
-    KmsOciQueueJob::create($job_params, 'kms_permissions');
+      KmsOciQueueJob::create($job_params);
+      KmsOciQueueJob::create($job_params, 'kms_permissions');
+      $delta++;
+    }
   }
 
 
@@ -1526,7 +1485,7 @@ function kms_permissions_vbo_copy_user_services_finished($source_account, $conte
       'uids' => $context['uids'],
     ),
   );
-//  _adapt_debug('mikkel', var_export($job_params, TRUE));
+
   KmsOciQueueJob::create($job_params);
   KmsOciQueueJob::create($job_params, 'kms_permissions');
 
@@ -1600,14 +1559,18 @@ function kms_permissions_form_views_exposed_form_alter(&$form, &$form_state, $fo
   }
 }
 
-
+/**
+ * A simple batch execution wrapper.
+ *
+ * @param string $type
+ */
 function kms_permissions_run_batch($type) {
   $args = func_get_args();
   unset($args[0]);
   $args = array_values($args);
 
   switch($type) {
-    case 'default_bundle_update_users':
+    case 'default_bundle_attach_users':
       list($bid, $uids) = $args;
       $operations = array();
       $user_count = count($uids);
@@ -1616,7 +1579,7 @@ function kms_permissions_run_batch($type) {
 
       array_walk($chunks, function($uids) use (&$operations, $bid, $user_count, $chunk_size){
         $operations[] = array(
-          'kms_permissions_batch_default_bundle_update_users',
+          'kms_permissions_batch_default_bundle_attach_users',
           array($bid, $uids, $user_count, $chunk_size)
         );
       });
@@ -1627,9 +1590,9 @@ function kms_permissions_run_batch($type) {
         'init_message' => t('Starting process...'),
 //      'progress_message' => t('Processed @current out of @total.'),
         'error_message' => t('An error occurred during processing'),
-        'finished' => "kms_permissions_batch_default_bundle_update_users_finished",
-        'file' => drupal_get_path('module', 'kms_permissions') . '/bundle_update_user_perms.batch.inc',
-        // 'progressive' => FALSE
+        'finished' => "kms_permissions_batch_default_bundle_attach_users_finished",
+        'file' => drupal_get_path('module', 'kms_permissions') . '/kms_permissions.batch.inc',
+         'progressive' => FALSE
       );
       break;
   }

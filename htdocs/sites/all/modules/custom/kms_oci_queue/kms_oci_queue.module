@@ -142,30 +142,38 @@ function kms_oci_queue_query_creator_run() {
     $item = $creator_queue->claimItem(60 * 60 * 24 * 30);
     // If no queue item found do nothing.
     if (!$item) {
+//      _adapt_debug('mikkel', __LINE__);
       break;
     }
     // Find job id.
     $jid = $item->item_id;
+//    _adapt_debug('mikkel', __LINE__);
+//    _adapt_debug('mikkel', $jid);
     $job = KmsOciQueueJobFactory::get($jid);
 
     if ($job->gid && $job->gid !== $last_gid && !is_null($last_gid)) {
       $creator_queue->releaseItem($item);
       $last_gid = NULL;
+//      _adapt_debug('mikkel', __LINE__);
     }
     elseif ($job->gid && ($job->gid === $last_gid || is_null($last_gid))) {
+//      _adapt_debug('mikkel', __LINE__);
       kms_oci_queue_query_creator_process_job($job, $item, $exe_queue);
       $last_gid = $job->gid;
     }
-    elseif(!$job->gid) {
+    elseif (!$job->gid) {
+//      _adapt_debug('mikkel', __LINE__);
       kms_oci_queue_query_creator_process_job($job, $item, $exe_queue);
       $last_gid = NULL;
+
     }
-    else{
+    else {
+//      _adapt_debug('mikkel', __LINE__);
       $last_gid = NULL;
     }
 
-  } while($job && $job->gid === $last_gid);
-
+  } while ($job && $job->gid === $last_gid);
+//  _adapt_debug('mikkel', __LINE__);
 }
 
 function kms_oci_queue_query_creator_process_job($job, $item, $exe_queue) {
@@ -213,6 +221,7 @@ function kms_oci_queue_query_creator_process_job($job, $item, $exe_queue) {
 //  _adapt_debug('mikkel', timer_read($timer_name));
 //  timer_stop($timer_name);
 //  _adapt_debug('mikkel', str_repeat('.', 100));
+//  _adapt_debug('mikkel', __LINE__);
 
 }
 
@@ -235,6 +244,9 @@ function kms_oci_queue_query_run($item) {
   $output = '';
   array_walk($plugins, function($plugin) use ($item, &$output) {
     // Only load plugins corresponding to the queue item action.
+//    _adapt_debug('mikkel', $item->jid);
+//    _adapt_debug('mikkel', __LINE__);
+
     if ($plugin['type'] != $item->action) {
       return;
     }
@@ -256,6 +268,9 @@ function kms_oci_queue_query_run($item) {
       $filename,
     )
   );
+//  _adapt_debug('mikkel', __LINE__);
+//  _adapt_debug('mikkel', $item->is_last_item);
+
   // If no output return (do nothing).
   if (empty($output) && $item->is_last_item && !file_exists($tmp_filename)) {
     $job->changeStatus(
