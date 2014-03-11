@@ -1474,7 +1474,7 @@ function _kms_user_user_update_oci_queue_bundles_attach($account, $user, $data =
     );
     $jobs = array();
     $jobs[] = KmsOciQueueJob::create($job_params);
-    $jobs[] =  KmsOciQueueJob::create($job_params, 'kms_permissions');
+    $jobs[] = KmsOciQueueJob::create($job_params, 'kms_permissions');
     $job_group = new KmsOciQueueJobGroup();
     $job_group->add($jobs);
     /*
