@@ -364,6 +364,16 @@ $handler->display->display_options['arguments']['uid']['summary']['number_of_rec
 $handler->display->display_options['arguments']['uid']['summary']['format'] = 'default_summary';
 $handler->display->display_options['arguments']['uid']['summary_options']['items_per_page'] = '25';
 $handler->display->display_options['arguments']['uid']['break_phrase'] = TRUE;
+/* Contextual filter: User: Uid */
+$handler->display->display_options['arguments']['uid_1']['id'] = 'uid_1';
+$handler->display->display_options['arguments']['uid_1']['table'] = 'users';
+$handler->display->display_options['arguments']['uid_1']['field'] = 'uid';
+$handler->display->display_options['arguments']['uid_1']['default_argument_type'] = 'fixed';
+$handler->display->display_options['arguments']['uid_1']['summary']['number_of_records'] = '0';
+$handler->display->display_options['arguments']['uid_1']['summary']['format'] = 'default_summary';
+$handler->display->display_options['arguments']['uid_1']['summary_options']['items_per_page'] = '25';
+$handler->display->display_options['arguments']['uid_1']['break_phrase'] = TRUE;
+$handler->display->display_options['arguments']['uid_1']['not'] = TRUE;
 /* Filter criterion: User: Name */
 $handler->display->display_options['filters']['uid']['id'] = 'uid';
 $handler->display->display_options['filters']['uid']['table'] = 'users';
@@ -671,7 +681,7 @@ $handler->display->display_options['fields']['field_access_bundles']['field'] = 
 $handler->display->display_options['fields']['field_access_bundles']['type'] = 'kms_permissions_bundles_reference';
 $handler->display->display_options['fields']['field_access_bundles']['delta_offset'] = '0';
 $handler->display->display_options['fields']['field_access_bundles']['multi_type'] = 'ul';
-/* Field: Global: Separate services */
+/* Field: Global: Seperat Permission */
 $handler->display->display_options['fields']['has_separate_services']['id'] = 'has_separate_services';
 $handler->display->display_options['fields']['has_separate_services']['table'] = 'views';
 $handler->display->display_options['fields']['has_separate_services']['field'] = 'has_separate_services';
@@ -809,7 +819,7 @@ $translatables['admin_views_user'] = array(
   t('Active'),
   t('Nyhedsbrev'),
   t('System'),
-  t('Separate services'),
+  t('Seperate Permission'),
   t('Webservices (GEO)'),
   t('Webservices (PLOT)'),
   t('Webservices (WCS)'),
