@@ -315,4 +315,12 @@ function kms_update_7009(&$sandbox) {
   ));
 }
 
+/**
+ * Activating permission feature (kms_permissions_feature).
+ *
+ * @author Mikkel Jakobsen <mikkel@adapt.dk>
+ */
+function kms_update_7010(&$sandbox) {
+//  module_enable(array('kms_permissions_feature'));
+}
 
