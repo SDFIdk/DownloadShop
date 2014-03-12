@@ -1488,7 +1488,36 @@ function kms_permissions_vbo_copy_user_services_finished($source_account, $conte
 
   KmsOciQueueJob::create($job_params);
   KmsOciQueueJob::create($job_params, 'kms_permissions');
-
+  
+  foreach ($context['uids'] as $uid) {
+    $user = user_load($uid);
+    $subusers = subuser_load_all($user);
+    foreach ($subusers as $subuser_uid) {
+      $perms = array();
+      _kms_permissions_get_separate_perms_by_uid($user->uid, $perms);
+      $subuser = user_load($subuser_uid);
+      $job_params = array(
+        'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+        'action_details' => format_string(
+          'Attaching bundles: @bundles to subuser: @subuser.',
+          array(
+            '@bundles' => implode(', ', $bids),
+            '@subuser' => $subuser->name,
+          )
+        ),
+        'params' => array(
+          'uid' => $subuser->uid,
+          'bids' => $bids,
+          'perms' => $perms,
+        ),
+      );
+      $jobs = array();
+      $jobs[] = KmsOciQueueJob::create($job_params);
+      $jobs[] = KmsOciQueueJob::create($job_params, 'kms_permissions');
+      $job_group = new KmsOciQueueJobGroup();
+      $job_group->add($jobs);
+    }
+  }
 }
 
 /**
