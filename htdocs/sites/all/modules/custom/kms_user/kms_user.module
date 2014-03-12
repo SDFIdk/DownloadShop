@@ -1043,19 +1043,35 @@ function kms_user_vbo_access_bundle_finished($op, $context) {
       $jobs[] = KmsOciQueueJob::create($job_params, 'kms_permissions');
       $job_group = new KmsOciQueueJobGroup();
       $job_group->add($jobs);
-      /*
-       Atodo: Maybe used in near future. Otherwise discard!
-       $bundle = node_load($bid);
-      kms_oci_queue_job_action_bundle_save(
-        $uids,
-        $bid,
-        $message,
-        array(
-          '@bundle' => $bundle->title,
-          '@count' => count($uids),
-        )
-      );
-       */
+    }
+    foreach ($uids as $uid) {
+      $user = user_load($uid);
+      $subusers = subuser_load_all($user);
+      foreach ($subusers as $subuser_uid) {
+        $perms = array();
+        _kms_permissions_get_separate_perms_by_uid($user->uid, $perms);
+        $subuser = user_load($subuser_uid);
+        $job_params = array(
+          'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+          'action_details' => format_string(
+            'Attaching bundles: @bundles to subuser: @subuser.',
+            array(
+              '@bundles' => implode(', ', $bids),
+              '@subuser' => $subuser->name,
+            )
+          ),
+          'params' => array(
+            'uid' => $subuser->uid,
+            'bids' => $bids,
+            'perms' => $perms,
+          ),
+        );
+        $jobs = array();
+        $jobs[] = KmsOciQueueJob::create($job_params);
+        $jobs[] = KmsOciQueueJob::create($job_params, 'kms_permissions');
+        $job_group = new KmsOciQueueJobGroup();
+        $job_group->add($jobs);
+      }
     }
   }
 
