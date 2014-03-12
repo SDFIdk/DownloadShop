@@ -66,7 +66,7 @@ function kms_user_menu() {
     'type' => MENU_CALLBACK,
   );
   $items['admin/kms-user/%ctools_js/filter-admin-views-people-perms'] = array(
-    'title' =>'Filter users by permissions',
+    'title' => 'Filter users by permissions',
     'description' => 'Select permissions to filter by',
     'access arguments' => array('access content'),
     'page callback' => 'kms_user_filter_admin_views_people_perms',
@@ -1203,15 +1203,19 @@ function kms_user_filter_admin_views_people_perms($js = FALSE) {
 
     // Set uids depending on filter status.
     $filter = $form_state['filter'];
+    $service_count = $in_default_bundle_count = 0;
     foreach($filter as $service_group) {
+      $service_count += count($service_group[LANGUAGE_NONE]);
       foreach($service_group[LANGUAGE_NONE] as $sid) {
         if (kms_permissions_is_service_in_default_bundle($sid)) {
-          $filter = 'all';
-          break 2;
+          $in_default_bundle_count++;
         }
       }
     }
-
+    // If all of the choosen services are in a default bundle select all users.
+    if ($in_default_bundle_count == $service_count) {
+      $filter = 'all';
+    }
     $uids = $args = array();
     // If the filter is not set to all users get uids.
     if ($filter != 'all') {
