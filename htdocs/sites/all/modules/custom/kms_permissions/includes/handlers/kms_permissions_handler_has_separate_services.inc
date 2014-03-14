@@ -16,7 +16,9 @@ class kms_permissions_handler_has_separate_services extends views_handler_field 
 
     $options['combined_fields'] = array('default' => array());
     $options['separator'] = array('default' => '');
-    $options['separator_allowed_tags'] = array('default' => array('a', 'em', 'strong', 'span'));
+    $options['separator_allowed_tags'] = array(
+      'default' => array('a', 'em', 'strong', 'span'),
+    );
     $options['hide_empty'] = array('default' => FALSE);
 
     return $options;
@@ -53,28 +55,18 @@ class kms_permissions_handler_has_separate_services extends views_handler_field 
     );
   }
 
-//  function click_sort($order) {
-//    if (isset($this->field_alias)) {
-//      $combined_fields = array_filter($this->options['combined_fields']);
-//      $fields = $this->view->display_handler->get_handlers('field');
-//      foreach (array_intersect_key($fields, $combined_fields) as $handler) {
-//
-//      }
-//    }
-//  }
-
   function render($values) {
     $combined_fields = array_filter($this->options['combined_fields']);
 
     foreach ($combined_fields as $name) {
       $value_key = 'field_' . $name;
-      if(!property_exists($values, $value_key)) {
+      if (!property_exists($values, $value_key)) {
         continue;
       }
-      if(!empty($values->$value_key)) {
+      if (!empty($values->$value_key)) {
         return array(
           '#type' => 'markup',
-          '#markup' => t('Separat Permission'),
+          '#markup' => t('Separate Permissions'),
           '#prefix' => '<span class="separate-services">',
           '#suffix' => '</span>',
         );
