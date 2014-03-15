@@ -591,7 +591,7 @@ $handler->display->display_options['fields']['views_bulk_operations']['vbo_opera
     'override_label' => 0,
     'label' => '',
   ),
-  'action::kms_permissions_vbo_copy_user_services' => array(
+  'action::kms_permissions_vbo_clone_user_perms' => array(
     'selected' => 1,
     'use_queue' => 0,
     'skip_confirmation' => 0,
@@ -819,7 +819,7 @@ $translatables['admin_views_user'] = array(
   t('Active'),
   t('Nyhedsbrev'),
   t('System'),
-  t('Seperate Permission'),
+  t('Seperate Permissions'),
   t('Webservices (GEO)'),
   t('Webservices (PLOT)'),
   t('Webservices (WCS)'),

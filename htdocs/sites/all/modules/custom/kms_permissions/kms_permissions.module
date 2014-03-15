@@ -66,7 +66,7 @@ function kms_permissions_library() {
  */
 function kms_permissions_action_info() {
   return array(
-    'kms_permissions_vbo_copy_user_services' => array(
+    'kms_permissions_vbo_clone_user_perms' => array(
       'label' => t('Clone permissions (choose target users)'),
       'type' => 'user',
       'configurable' => TRUE,
@@ -812,6 +812,7 @@ function kms_permissions_access_bundle_update($form, $form_state) {
   $bundle_is_deleted = $form_state['clicked_button']['#id'] == 'edit-delete';
   $bundle = $form['#node'];
   $bid = $bundle->nid;
+  $action = '';
 
   if ($default_bundle_is_updated) {
     // If a bundle is set as a default bundle or WAS set as a default bundle, update all users.
@@ -834,7 +835,7 @@ function kms_permissions_access_bundle_update($form, $form_state) {
   }
 
   // Only create a job if there are any users using the bundle.
-  if (!empty($uids)) {
+  if (!empty($uids) && !empty($action)) {
     $uid_chunks = array_chunk($uids, 4000);
     $delta = 1;
     foreach($uid_chunks as $uid_chunk) {
@@ -872,7 +873,6 @@ function kms_permissions_access_bundle_update($form, $form_state) {
       $delta++;
     }
   }
-
 
 }
 
@@ -1407,7 +1407,7 @@ function _kms_permissions_extra_service_fields() {
  *
  * @return [type]
 */
-function kms_permissions_vbo_copy_user_services_form($context) {
+function kms_permissions_vbo_clone_user_perms_form($context) {
   $form['source_username'] = array(
     '#type' => 'textfield',
     '#title' => t('Choose source user.'),
@@ -1430,7 +1430,7 @@ function kms_permissions_vbo_copy_user_services_form($context) {
  *
  * @return array
  */
-function kms_permissions_vbo_copy_user_services_submit($form, $form_state) {
+function kms_permissions_vbo_clone_user_perms_submit($form, $form_state) {
   $uids = array_filter($form_state['selection']);
   if ($form_state['select_all_pages']) {
     $uids = _kms_permissions_get_all_users();
@@ -1452,14 +1452,14 @@ function kms_permissions_vbo_copy_user_services_submit($form, $form_state) {
  *
  * @return void
  */
-function kms_permissions_vbo_copy_user_services(&$account, $context = array()) {
+function kms_permissions_vbo_clone_user_perms(&$account, $context = array()) {
   $source_account = user_load_by_name(check_plain($context['source_username']));
   if(!$source_account) {
     return;
   }
   kms_permissions_clone_perms($source_account, $context['user']);
   if ($context['progress']['current'] == $context['progress']['total']) {
-    kms_permissions_vbo_copy_user_services_finished($source_account, $context);
+    kms_permissions_vbo_clone_user_perms_finished($source_account, $context);
   }
 }
 
@@ -1469,55 +1469,32 @@ function kms_permissions_vbo_copy_user_services(&$account, $context = array()) {
  * @param array $context
  *   VBO context. We pass uids through that.
  */
-function kms_permissions_vbo_copy_user_services_finished($source_account, $context) {
-  // Atodo: Test this.
+function kms_permissions_vbo_clone_user_perms_finished($source_account, $context) {
+  $uids = $context['uids'];
+  kms_subuser_uids_add_subuser_uids($uids);
   $job_params = array(
     'action' => KMS_OCI_QUEUE_ACTION_CLONE_USER_PERMS,
     'action_details' => format_string(
       'Cloning user permissions from: @source_user. Affects @user_count.',
       array(
         '@source_user' => $source_account->name,
-        '@user_count' => count($context['uids']),
+        '@user_count' => count($uids),
       )
     ),
     'params' => array(
       'source_uid' => $source_account->uid,
-      'uids' => $context['uids'],
+      'uids' => $uids,
     ),
   );
 
-  KmsOciQueueJob::create($job_params);
-  KmsOciQueueJob::create($job_params, 'kms_permissions');
-  // Atodo: fix this:
-//  foreach ($context['uids'] as $uid) {
-//    $user = user_load($uid);
-//    $subusers = subuser_load_all($user);
-//    foreach ($subusers as $subuser_uid) {
-//      $perms = array();
-//      _kms_permissions_get_separate_perms_by_uid($user->uid, $perms);
-//      $subuser = user_load($subuser_uid);
-//      $job_params = array(
-//        'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
-//        'action_details' => format_string(
-//          'Attaching bundles: @bundles to subuser: @subuser.',
-//          array(
-//            '@bundles' => implode(', ', $bids),
-//            '@subuser' => $subuser->name,
-//          )
-//        ),
-//        'params' => array(
-//          'uid' => $subuser->uid,
-//          'bids' => $bids,
-//          'perms' => $perms,
-//        ),
-//      );
-//      $jobs = array();
-//      $jobs[] = KmsOciQueueJob::create($job_params);
-//      $jobs[] = KmsOciQueueJob::create($job_params, 'kms_permissions');
-//      $job_group = new KmsOciQueueJobGroup();
-//      $job_group->add($jobs);
-//    }
-//  }
+  $jobs[] = KmsOciQueueJob::create($job_params);
+  $jobs[] = KmsOciQueueJob::create($job_params, 'kms_permissions');
+  // If we are processing under fifty users use a job group.
+  if (count($uids) < 300) {
+    $job_group = new KmsOciQueueJobGroup();
+    $job_group->add($jobs);
+  }
+
 }
 
 /**
@@ -2037,4 +2014,19 @@ function kms_permissions_is_service_in_default_bundle($sid) {
   $bids_default = _kms_permissions_get_default_bundles();
   $matches = array_intersect($bids_default, $bids);
   return !empty($matches);
+}
+
+/**
+ * Get the ids of the bundles attached to a user.
+ *
+ * @param integer $uid
+ * @return array
+ *   Bundle ids.
+ */
+function kms_permissions_get_bids_by_uid($uid) {
+  $query = db_select('field_data_field_access_bundles', 'fab')
+    ->fields('fab', array('field_access_bundles_nid'))
+    ->condition('entity_id', $uid, '=');
+  $result = $query->execute()->fetchCol();
+  return !empty($result) ? $result : array();
 }

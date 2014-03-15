@@ -738,12 +738,7 @@ function kms_subuser_insert_account_oracle($user, $account) {
   ));
   // Populate user permission tables of the user in Oracle
   // with permissions from the source user bundles.
-  $bids = array();
-  if (!empty($user->field_access_bundles[LANGUAGE_NONE][0]['nid'])) {
-    $bids = array_map(function ($v){
-      return !empty($v['nid']) ? $v['nid'] : '';
-    }, $user->field_access_bundles[LANGUAGE_NONE]);
-  }
+  $bids = kms_permissions_get_bids_by_uid($user->uid);
 
   // Get separate source user permissions and add them to $perms array.
   $perms = array();
@@ -1259,4 +1254,29 @@ function kms_subuser_user_update(&$edit, $account, $category) {
     $user = user_load($uid);
     kms_permissions_clone_perms($account, $user);
   }
+}
+
+/**
+ * Populate user id array with uids of the belonging subusers.
+ *
+ * @param array $uids
+ *   User ids.
+ */
+function kms_subuser_uids_add_subuser_uids(&$uids) {
+  if (empty($uids)) {
+    return;
+  }
+  $uids_subusers = array();
+  array_walk($uids, function($uid) use (&$uids_subusers) {
+    $user = user_load($uid);
+    $subusers = subuser_load_all($user);
+    if (!empty($subusers)) {
+      $uids_subusers  = array_merge($uids_subusers, $subusers);
+    }
+  });
+
+  if (!empty($uids_subusers)) {
+    $uids = array_unique(array_merge($uids_subusers, $uids));
+  }
+
 }

@@ -352,15 +352,19 @@ function kms_oci_queue_get_job_ids($job_statuses = array()) {
  */
 function kms_oci_queue_admin_page() {
 
-  $jobs_not_done = kms_oci_queue_get_job_ids(
-    array('exclude' => array(KmsOciQueueJob::STATUS_DONE))
-  );
-  $jobs_done = kms_oci_queue_get_job_ids(
-    array('include' => array(KmsOciQueueJob::STATUS_DONE))
-  );
-  rsort($jobs_done);
-  $output['queues'] = kms_oci_queue_admin_page_jobs($jobs_not_done);
-  $output['queues'] += kms_oci_queue_admin_page_jobs($jobs_done, t('Jobs done'));
+//  $jobs_not_done = kms_oci_queue_get_job_ids(
+//    array('exclude' => array(KmsOciQueueJob::STATUS_DONE))
+//  );
+//  $jobs_done = kms_oci_queue_get_job_ids(
+//    array('include' => array(KmsOciQueueJob::STATUS_DONE))
+//  );
+//  rsort($jobs_done);
+//  $output['queues'] = kms_oci_queue_admin_page_jobs($jobs_not_done);
+//  $output['queues'] += kms_oci_queue_admin_page_jobs($jobs_done, t('Jobs done'));
+
+  $output['queues'] = kms_oci_queue_admin_page_jobs('jobs_waiting');
+  $output['queues'] += kms_oci_queue_admin_page_jobs('jobs_done');
+
 
   $module_path = drupal_get_path('module', 'kms_oci_queue');
   $output['#attached']['js'][] = $module_path .'/js/kms_oci_queue_reports.js';
@@ -385,7 +389,22 @@ function kms_oci_queue_admin_page() {
  * @return array
  *   Drupal render array.
  */
-function kms_oci_queue_admin_page_jobs($jids, $title = '') {
+function kms_oci_queue_admin_page_jobs($type) {
+  switch ($type) {
+    case 'jobs_waiting':
+      $jids = kms_oci_queue_get_job_ids(
+        array('exclude' => array(KmsOciQueueJob::STATUS_DONE))
+      );
+      $title = t('Jobs');
+      break;
+    case 'jobs_done':
+      $jids = kms_oci_queue_get_job_ids(
+        array('include' => array(KmsOciQueueJob::STATUS_DONE))
+      );
+      rsort($jids);
+      $title = t('Jobs done');
+      break;
+  }
   $output = array(
     '#type' => 'container',
     '#attributes' => array(
@@ -402,7 +421,7 @@ function kms_oci_queue_admin_page_jobs($jids, $title = '') {
   $jobs_output["job_queue_title"] = array(
     '#type' => 'html_tag',
     '#tag' => 'h2',
-    '#value' => !empty($title) ? $title : t('Jobs'),
+    '#value' => $title,
   );
   $rows = array();
   foreach ($jids as $jid) {
@@ -437,6 +456,9 @@ function kms_oci_queue_admin_page_jobs($jids, $title = '') {
         ),
         array('data' => format_date($job->created)),
       ),
+      'class' => array(
+        KmsOciQueueJobGroup::cssClassJobGroup($job, $type),
+      )
     );
 
     $rows[] = array(
@@ -464,7 +486,6 @@ function kms_oci_queue_admin_page_jobs($jids, $title = '') {
 
   $table_id = "kms_oci_queue_jobs_" . uniqid();
   $output[$table_id] = $jobs_output;
-
   return $output;
 }
 
@@ -523,15 +544,8 @@ function kms_oci_queue_admin_page_ajax_jobs() {
   $html = '';
   $state_changed = _kms_oci_queue_jobs_state_changed();
   if ($state_changed) {
-    $jobs_not_done = kms_oci_queue_get_job_ids(
-      array('exclude' => array(KmsOciQueueJob::STATUS_DONE))
-    );
-    $jobs_done = kms_oci_queue_get_job_ids(
-      array('include' => array(KmsOciQueueJob::STATUS_DONE))
-    );
-    rsort($jobs_done);
-    $output['queues'] = kms_oci_queue_admin_page_jobs($jobs_not_done);
-    $output['queues'] += kms_oci_queue_admin_page_jobs($jobs_done, t('Jobs done'));
+    $output['queues'] = kms_oci_queue_admin_page_jobs('jobs_waiting');
+    $output['queues'] += kms_oci_queue_admin_page_jobs('jobs_done');
     $html = render($output);
   }
 
@@ -892,4 +906,10 @@ function _kms_oci_queue_jobs_state_changed() {
     return FALSE;
   }
 
+}
+
+function asdjasdjadkj() {
+  $job = KmsOciQueueJobFactory::get(1257265);
+  var_dump(KmsOciQueueJobGroup::cssClassJobGroup($job));
+//  var_dump(KmsOciQueueJobGroup::getJobWeight($job));
 }

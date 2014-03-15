@@ -307,7 +307,6 @@ class KmsOciQueueJobGroup {
   protected $gid = 0;
 
   public function __construct() {
-//    $this->gid = $this->insertGroup();
     $this->gid = uniqid();
   }
 
@@ -317,13 +316,6 @@ class KmsOciQueueJobGroup {
       $this->insertJob($job);
     }
   }
-
-//  protected function insertGroup(){
-//    $group = new stdClass();
-//    $group->created = time();
-//    drupal_write_record('kms_oci_queue_job_group', $group);
-//    return $group->gid;
-//  }
 
   protected function insertJob($job){
     $group_job = new stdClass();
@@ -339,6 +331,55 @@ class KmsOciQueueJobGroup {
     $query->condition('g.jid', $jid, '=');
     $result = $query->execute()->fetchField();
     return $result;
+  }
+
+  public static function getJidsFromGid($gid) {
+    $query = db_select('kms_oci_queue_job_group', 'g');
+    $query->fields('g', array('jid'));
+    $query->condition('g.gid', $gid, '=');
+    return $query->execute()->fetchCol();
+  }
+
+  public static function getJobWeight($job) {
+    if (!$job->gid) {
+      return FALSE;
+    }
+    $jids = KmsOciQueueJobGroup::getJidsFromGid($job->gid);
+    if (!$jids) {
+      return FALSE;
+    }
+    $gids = array_flip($jids);
+    return is_int($gids[$job->jid]) ? $gids[$job->jid] : FALSE;
+  }
+
+  public static function cssClassJobGroup($job, $type) {
+    $class = '';
+    if ($job->gid) {
+      $class = 'kms-oci-queue-job-group';
+      $job_count = count(self::getJidsFromGid($job->gid));
+      $job_weight = self::getJobWeight($job);
+      if ($job_weight !== FALSE) {
+        switch ($type) {
+          case 'jobs_waiting':
+            if ($job_weight == 0) {
+              $class .= '-first';
+            }
+            elseif ($job_weight == ($job_count - 1)) {
+              $class .= '-last';
+            }
+            break;
+          case 'jobs_done':
+            if ($job_weight == 0) {
+              $class .= '-last';
+            }
+            elseif ($job_weight == ($job_count - 1)) {
+              $class .= '-first';
+            }
+            break;
+        }
+      }
+    }
+    return $class;
   }
 
 }

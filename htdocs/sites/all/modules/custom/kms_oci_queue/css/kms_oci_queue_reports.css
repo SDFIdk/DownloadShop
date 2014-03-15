@@ -1,57 +1,33 @@
-/* line 2, ../sass/kms_oci_queue_reports.scss */
 .kms-oci-queue-jobs-overview .kms-oci-queue-status-waiting {
-  color: cornflowerblue;
-}
-/* line 5, ../sass/kms_oci_queue_reports.scss */
+  color: cornflowerblue; }
 .kms-oci-queue-jobs-overview .kms-oci-queue-status-processing {
-  color: darkblue;
-}
-/* line 8, ../sass/kms_oci_queue_reports.scss */
+  color: darkblue; }
 .kms-oci-queue-jobs-overview .kms-oci-queue-status-file-ready {
-  color: hotpink;
-}
-/* line 11, ../sass/kms_oci_queue_reports.scss */
+  color: hotpink; }
 .kms-oci-queue-jobs-overview .kms-oci-queue-status-done {
-  color: green;
-}
-/* line 15, ../sass/kms_oci_queue_reports.scss */
+  color: green; }
 .kms-oci-queue-jobs-overview .kms-oci-queue-severity-error,
 .kms-oci-queue-jobs-overview .kms-oci-queue-status-failed {
-  color: red;
-}
-/* line 18, ../sass/kms_oci_queue_reports.scss */
+  color: red; }
 .kms-oci-queue-jobs-overview tr.kms-oci-queue-job-log {
   display: none;
-  border-style: none;
-}
-/* line 21, ../sass/kms_oci_queue_reports.scss */
-.kms-oci-queue-jobs-overview tr.kms-oci-queue-job-log table {
-  border: 0;
-}
-/* line 23, ../sass/kms_oci_queue_reports.scss */
-.kms-oci-queue-jobs-overview tr.kms-oci-queue-job-log table tr {
-  background: transparent;
-  border: 0;
-}
-/* line 26, ../sass/kms_oci_queue_reports.scss */
-.kms-oci-queue-jobs-overview tr.kms-oci-queue-job-log table tr td {
-  border: 0;
-}
-/* line 32, ../sass/kms_oci_queue_reports.scss */
+  border-style: none; }
+  .kms-oci-queue-jobs-overview tr.kms-oci-queue-job-log table {
+    border: 0; }
+    .kms-oci-queue-jobs-overview tr.kms-oci-queue-job-log table tr {
+      background: transparent;
+      border: 0; }
+      .kms-oci-queue-jobs-overview tr.kms-oci-queue-job-log table tr td {
+        border: 0; }
+.kms-oci-queue-jobs-overview tr.kms-oci-queue-job-group td, .kms-oci-queue-jobs-overview tr.kms-oci-queue-job-group-first td {
+  border-bottom: 0; }
 .kms-oci-queue-jobs-overview td {
-  border-bottom: 1px solid #bebfb9;
-}
-/* line 34, ../sass/kms_oci_queue_reports.scss */
-.kms-oci-queue-jobs-overview td.job-log-trigger {
-  padding-left: 25px;
-  cursor: pointer;
-  background: url(/misc/arrow-desc.png) no-repeat 5px 10px;
-}
-/* line 38, ../sass/kms_oci_queue_reports.scss */
-.kms-oci-queue-jobs-overview td.job-log-trigger.active {
-  background: url(/misc/arrow-asc.png) no-repeat 5px 10px;
-}
-/* line 41, ../sass/kms_oci_queue_reports.scss */
-.kms-oci-queue-jobs-overview td.job-log-trigger.loading {
-  background: url(../images/ajax-loader.gif) no-repeat 5px 10px;
-}
+  border-bottom: 1px solid #bebfb9; }
+  .kms-oci-queue-jobs-overview td.job-log-trigger {
+    padding-left: 25px;
+    cursor: pointer;
+    background: url(/misc/arrow-desc.png) no-repeat 5px 10px; }
+    .kms-oci-queue-jobs-overview td.job-log-trigger.active {
+      background: url(/misc/arrow-asc.png) no-repeat 5px 10px; }
+    .kms-oci-queue-jobs-overview td.job-log-trigger.loading {
+      background: url(../images/ajax-loader.gif) no-repeat 5px 10px; }

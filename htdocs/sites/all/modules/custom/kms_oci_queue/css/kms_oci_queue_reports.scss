@@ -15,20 +15,29 @@
   .kms-oci-queue-status-failed {
     color: red;
   }
-  tr.kms-oci-queue-job-log {
-    display: none;
-    border-style: none;
-    table {
-      border: 0;
-      tr {
-        background: transparent;
+  tr{
+    &.kms-oci-queue-job-log {
+      display: none;
+      border-style: none;
+      table {
         border: 0;
-        td {
+        tr {
+          background: transparent;
           border: 0;
+          td {
+            border: 0;
+          }
         }
       }
     }
+    &.kms-oci-queue-job-group,
+    &.kms-oci-queue-job-group-first {
+      td {
+        border-bottom: 0;
+      }
+    }
   }
+
   td {
     border-bottom: 1px solid #bebfb9;
     &.job-log-trigger {

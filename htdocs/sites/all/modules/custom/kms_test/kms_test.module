@@ -39,6 +39,7 @@ EOD;
 function kms_test_db_cleanup_kms_oci_mess() {
   $query = <<<EOD
 DELETE FROM {kms_oci_queue_job};
+DELETE FROM {kms_oci_queue_job_group};
 DELETE FROM {kms_oci_queue_log};
 EOD;
   db_query($query);
