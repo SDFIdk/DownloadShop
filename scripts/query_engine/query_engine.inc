@@ -245,12 +245,13 @@ function qe_undone_jobs_before_current_exists($job) {
 }
 
 /**
- * Does current job has a valid status for processing?
+ * Does current job has a valid status for processing.
  *
  * @param object $job
  *   Kms oci queue job.
  *
  * @return bool
+ *   Is the status valid.
  */
 function qe_job_has_valid_status($job) {
   $valid_statuses = array(
@@ -259,4 +260,100 @@ function qe_job_has_valid_status($job) {
   );
 
   return in_array($job->status->status, $valid_statuses);
+}
+
+/**
+ * Import the kms oci queue job file.
+ *
+ * @param object $job
+ *   Kms oci queue job.
+ * @param array $args
+ *   Array of arguments depending on the script options given ($opt).
+ * @param array $opt
+ *   Array of script options.
+ */
+function qe_process_job($job, $args, $opt) {
+  var_dump($job->jid);
+  // If the job file could not be loaded change job status and exit.
+  if (!file_exists($args['filepath'])) {
+    $message = 'Query engine: File: %file does not exist';
+    $vars = array('%file' => $args['filepath']);
+    $job->changeStatus(KmsOciQueueJob::STATUS_FAILED, $message, $vars);
+    qe_error($message, $vars, TRUE);
+  }
+
+  // Db connection settings.
+  $db_conf = KmsOciQueueJobDb::getConnectionSettings($job->cid);
+
+  // Get job info from job action if not specified.
+  $args['info'] = !empty($opt['i']) ? $opt['i'] : $job->action . ' | ' . $job->actionDetails;
+
+  // Generate sql string.
+  $sql = qe_generate_sql($db_conf, $args);
+
+  // Report sql execution.
+  $job->changeStatus(
+    KmsOciQueueJob::STATUS_PROCESSING,
+    'Query engine: %jid is being processed',
+    array('%jid' => $job->jid)
+  );
+  // Execute generated sql and get result of it.
+  $result = qe_execute_sql($sql, $args);
+
+  // Move file to processed folder upon success.
+  if ($result['exit_code'] === 0) {
+    // Move file.
+    rename(
+      qe_absolute_filepath($args['filename'], KMS_OCI_QUEUE_ENGINE_DIR_JOBS),
+      qe_absolute_filepath($args['filename'], KMS_OCI_QUEUE_ENGINE_DIR_JOBS_PROCESSED)
+    );
+    // Report everything well and change status to 'done'.
+    $job_status = KmsOciQueueJob::STATUS_DONE;
+    $message = implode('; ', $result['message']);
+  }
+  else {
+    $job_status = KmsOciQueueJob::STATUS_FAILED;
+    if (!empty($result['message'])) {
+      $message = implode('; ', $result['message']);
+      $message_vars = array();
+    }
+    else {
+      $message = 'Something went wrong with exit code: @exit_code.';
+      $message_vars = array('@exit_code' => $result['exit_code']);
+    }
+  }
+
+  // Change job status depending on exit code.
+  $job->changeStatus(
+    $job_status,
+    'Query engine: ' . $message,
+    $message_vars
+  );
+}
+
+/**
+ * Validate if the job exists, has the right status etc.
+ *
+ * @param object $job
+ *   Kms oci queue job.
+ * @param array $args
+ *   Array of arguments depending on the script options given ($opt).
+ */
+function qe_job_validate_state($job, $args) {
+  // If job could not be loaded then exit.
+  if (!$job) {
+    qe_error('No jobs existing with id: %jid', array('%jid' => $args['jid']));
+  }
+
+  if (QUERY_ENGINE_RUN_MODE == 'cron') {
+    // Only process job if it has an valid status.
+    if (!qe_job_has_valid_status($job)) {
+      exit(1);
+    }
+
+    // If there are undone jobs before this one do not import it yet.
+    if (qe_undone_jobs_before_current_exists($job)) {
+      exit(1);
+    }
+  }
 }
