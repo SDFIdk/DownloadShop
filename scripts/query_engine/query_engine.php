@@ -13,12 +13,12 @@ define('QUERY_ENGINE_ROOT', dirname(__FILE__));
 define('QUERY_ENGINE_RUN_MODE', 'cron');
 define('DRUPAL_ROOT', realpath(QUERY_ENGINE_ROOT . '/../../htdocs'));
 
-$_SERVER['HTTP_HOST']       = 'default';
-$_SERVER['REMOTE_ADDR']     = '127.0.0.1';
+$_SERVER['HTTP_HOST'] = 'default';
+$_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 $_SERVER['SERVER_SOFTWARE'] = NULL;
-$_SERVER['REQUEST_METHOD']  = 'GET';
-$_SERVER['QUERY_STRING']    = '';
-$_SERVER['PHP_SELF']        = $_SERVER['REQUEST_URI'] = '/';
+$_SERVER['REQUEST_METHOD'] = 'GET';
+$_SERVER['QUERY_STRING'] = '';
+$_SERVER['PHP_SELF'] = $_SERVER['REQUEST_URI'] = '/';
 $_SERVER['HTTP_USER_AGENT'] = 'console';
 
 require_once DRUPAL_ROOT . '/includes/bootstrap.inc';
@@ -52,6 +52,9 @@ switch (QUERY_ENGINE_RUN_MODE) {
     $opt = qe_set_options_from_cli();
     break;
 }
+
+// Create arguments from given script options.
+$args = qe_resolve_arguments($opt);
 
 // Get the current job.
 $job = KmsOciQueueJobFactory::get($args['jid']);
