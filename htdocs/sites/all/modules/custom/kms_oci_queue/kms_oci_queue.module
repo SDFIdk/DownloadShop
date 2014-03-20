@@ -13,6 +13,7 @@ define('KMS_OCI_QUEUE_ENGINE_DIR_JOBS', 'jobs');
 define('KMS_OCI_QUEUE_ENGINE_DIR_JOBS_PROCESSED', 'jobs_processed');
 define('KMS_OCI_QUEUE_ACTION_USER_SAVE', 'user_save');
 define('KMS_OCI_QUEUE_ACTION_USER_DELETE', 'user_delete');
+define('KMS_OCI_QUEUE_ACTION_DEF_BUNDLES_ATTACH', 'def_bundles_attach');
 define('KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH', 'bundles_attach');
 define('KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE', 'bundle_save');
 define('KMS_OCI_QUEUE_ACTION_BUNDLE_DELETE', 'bundle_delete');
@@ -46,7 +47,6 @@ function kms_oci_queue_menu() {
     'title' => 'Show job log',
     'page callback' => 'kms_oci_queue_admin_page_ajax_jobs',
     'access arguments' => array('administer kms oci queue'),
-//    'page arguments' => array(3),
     'type' => MENU_CALLBACK,
   );
   return $items;
@@ -352,16 +352,6 @@ function kms_oci_queue_get_job_ids($job_statuses = array()) {
  */
 function kms_oci_queue_admin_page() {
 
-//  $jobs_not_done = kms_oci_queue_get_job_ids(
-//    array('exclude' => array(KmsOciQueueJob::STATUS_DONE))
-//  );
-//  $jobs_done = kms_oci_queue_get_job_ids(
-//    array('include' => array(KmsOciQueueJob::STATUS_DONE))
-//  );
-//  rsort($jobs_done);
-//  $output['queues'] = kms_oci_queue_admin_page_jobs($jobs_not_done);
-//  $output['queues'] += kms_oci_queue_admin_page_jobs($jobs_done, t('Jobs done'));
-
   $output['queues'] = kms_oci_queue_admin_page_jobs('jobs_waiting');
   $output['queues'] += kms_oci_queue_admin_page_jobs('jobs_done');
 
@@ -597,68 +587,51 @@ function _kms_oci_queue_sql_generate_line($type, $data, $table) {
  *   Sql output.
  */
 function _kms_oci_queue_process_perms_query_creator_queue_item($item) {
-  $output = $last_perm_name = '';
-  array_walk(
-    $item->perms,
-    function($perms, $perm_name) use ($item, &$output) {
-      $perms_oracle_rel = _kms_permissions_perms_oracle_relations();
-      // Only handle permissions mentioned in in oracle relations.
-      if (empty($perms_oracle_rel[$perm_name])) {
-        return;
-      }
-
-      $job = KmsOciQueueJobFactory::get($item->jid);
-      $perm_conf = $perms_oracle_rel[$perm_name];
-      // If the connection id of the job does not match the one in $perm_conf
-      // do nothing.
-      if ($job->cid != $perm_conf['cid']) {
-        return;
-      }
-      // Create sql line that deletes all data from table owned by current user.
-      $output .= sprintf(
-        "DELETE FROM %s WHERE USERID = '%s'",
-        $perm_conf['table'],
-        $item->kms_id
-      );
-      $output .= ";\n";
-
-      // Create data for insert query line.
-      foreach ($perms as $perm) {
-        $perm += $perm_conf['default_values'];
-        switch ($perm_name) {
-          case 'services':
-            $data = array(
-              ':USERID' => $item->kms_id,
-              ':SERVICEID' => $perm['id'],
-              ':MINX' => $perm['MINX'],
-              ':MINY' => $perm['MINY'],
-              ':MAXX' => $perm['MAXX'],
-              ':MAXY' => $perm['MAXY'],
-              ':MAXPIXELWIDTH' => $perm['MAXPIXELWIDTH'],
-              ':MAXPIXELHEIGHT' => $perm['MAXPIXELHEIGHT'],
-              ':FEATUREINFO' => $perm['FEATUREINFO'],
-            );
-            break;
-
-          case 'applications':
-            $data = array(
-              ':USERID' => $item->kms_id,
-              ':GROUPID' => $perm['id'],
-            );
-            break;
+//  _adapt_debug('mikkel', $item);
+  $output = array();
+  foreach ($item->diff as $perm_type => $diff) {
+    $data = array(
+      'userid' => $item->kms_id,
+    );
+    switch ($perm_type) {
+      case 'services':
+        $data['featureinfo'] = 0;
+        foreach ($diff['add'] as $sid => $service_values) {
+          if (!empty($service_values)) {
+            $data['serviceid'] = $sid;
+            $data += $service_values;
+            $sql = new KmsOciQueueSql('services', $data);
+            $output[] = $sql->generate('upsert');
+          }
         }
-        // Create insert query line.
-        $output .= _kms_oci_queue_sql_generate_line(
-          'insert',
-          $data,
-          $perm_conf['table']
-        );
-      }
+        foreach ($diff['remove'] as $sid) {
+          $data['serviceid'] = $sid;
+          $sql = new KmsOciQueueSql('services', $data);
+          $output[] = $sql->generate('delete');
+        }
+        break;
 
+      case 'applications':
+        foreach ($diff['add'] as $gid) {
+          $data['groupid'] = $gid;
+          $sql = new KmsOciQueueSql('applications', $data);
+          $output[] = $sql->generate('upsert');
+        }
+        foreach ($diff['remove'] as $gid) {
+          $data['groupid'] = $gid;
+          $sql = new KmsOciQueueSql('applications', $data);
+          $output[] = $sql->generate('delete');
+        }
+        break;
     }
-  );
+  }
+
+  if (!empty($output)) {
+    array_unshift($output, $sql->generateHeader());
+  }
+//  _adapt_debug('mikkel', implode("\n", $output));
   // Return all created query lines.
-  return $output;
+  return implode("\n", $output);
 }
 
 /**
@@ -786,6 +759,9 @@ function _kms_oci_queue_create_update_smuser_data($account, $user = FALSE) {
     $data['user_extra'][':usertype_info']
       = $account->field_user_type_info[LANGUAGE_NONE][0]['value'];
   }
+  else {
+    $data['user_extra'][':usertype_info'] = '';
+  }
   if (isset($account->field_newsletter[LANGUAGE_NONE][0]['value'])) {
     $data['user_extra'][':receive_newsletter']
       = $account->field_newsletter[LANGUAGE_NONE][0]['value'];
@@ -908,8 +884,15 @@ function _kms_oci_queue_jobs_state_changed() {
 
 }
 
-function asdjasdjadkj() {
-  $job = KmsOciQueueJobFactory::get(1257265);
-  var_dump(KmsOciQueueJobGroup::cssClassJobGroup($job));
-//  var_dump(KmsOciQueueJobGroup::getJobWeight($job));
+function kms_oci_queue_user_presave(&$edit, $account, $category) {
+  $account_new = (object)$edit;
+  $account_new->uid = $account->uid;
+
+  $data = _kms_user_user_update_oci_queue_prepare_data($account_new, $account);
+  $data_hash = md5(json_encode($data['user_data']));
+//  $data_hash = $data['user_data'];
+//  _adapt_debug('mikkel', __FILE__);
+//  _adapt_debug('mikkel', $data);
+//  _adapt_debug('mikkel', str_repeat('+', 100));
+  $edit['data']['kms_oci_queue_user_data_hash'] = $data_hash;
 }

@@ -717,16 +717,16 @@ function _kms_permissions_common_form_alter(&$form) {
 
 
 function kms_permissions_process_access_bundles_form_element($element) {
-  $bids = _kms_permissions_get_access_bundles('default');
-  foreach (element_children($element) as $bid) {
-    if(in_array($bid, $bids)) {
-      $element[$bid]['#attributes']['class'][] = 'default-bundle';
-      $element[$bid]['#weight'] = $element[$bid]['#weight'] - 200;
-    }
-    if($checked) {
-      $element[$bid]['#attributes']['checked'][] = 'checked';
-    }
-  }
+//  $bids = _kms_permissions_get_access_bundles('default');
+//  foreach (element_children($element) as $bid) {
+//    if(in_array($bid, $bids)) {
+//      $element[$bid]['#attributes']['class'][] = 'default-bundle';
+//      $element[$bid]['#weight'] = $element[$bid]['#weight'] - 200;
+//    }
+//    if($checked) {
+//      $element[$bid]['#attributes']['checked'][] = 'checked';
+//    }
+//  }
 
   return $element;
 }
@@ -753,6 +753,17 @@ function kms_permissions_node_presave($node) {
   if($node->type != 'access_bundle') {
     return;
   }
+
+  // If the access bundle is being updated set diff property.
+  if (!$node->is_new) {
+    $w_original = entity_metadata_wrapper('node', $node->original);
+    $w_new = entity_metadata_wrapper('node', $node);
+    $node->kms_permissions_diff = kms_permissions_diff_separate_perms(
+      $w_original,
+      $w_new
+    );
+  }
+
   $node->update_default_bundle = FALSE;
   $node->update_bundle = FALSE;
 
@@ -836,7 +847,12 @@ function kms_permissions_access_bundle_update($form, $form_state) {
 
   // Only create a job if there are any users using the bundle.
   if (!empty($uids) && !empty($action)) {
-    $uid_chunks = array_chunk($uids, 4000);
+    $uid_chunks = array_chunk($uids, 2000);
+    $chunck_count = count($uid_chunks);
+    _adapt_debug('mikkel', $bundle->kms_permissions_diff);
+//    _adapt_debug('mikkel', $chunck_count);
+//    _adapt_debug('mikkel', count($uids));
+
     $delta = 1;
     foreach($uid_chunks as $uid_chunk) {
       $job_params = array(
@@ -846,7 +862,7 @@ function kms_permissions_access_bundle_update($form, $form_state) {
           'bid' => $bid,
         ),
       );
-      if (count($uid_chunks) > 1) {
+      if ($chunck_count > 1) {
         $job_params['action_details'] = format_string(
           'Bundle: "@bundle" saved. Affects @count users out of @total. Delta: @delta.',
           array(
@@ -867,9 +883,10 @@ function kms_permissions_access_bundle_update($form, $form_state) {
           )
         );
       }
-
-      KmsOciQueueJob::create($job_params);
-      KmsOciQueueJob::create($job_params, 'kms_permissions');
+//      _adapt_debug('mikkel', $bundle->kms_permissions_diff);
+// Atodo: enable this again!!!
+//      KmsOciQueueJob::create($job_params);
+//      KmsOciQueueJob::create($job_params, 'kms_permissions');
       $delta++;
     }
   }
@@ -877,13 +894,14 @@ function kms_permissions_access_bundle_update($form, $form_state) {
 }
 
 
-/**
- * Get all permissions for a given user
- * @param object $uid - the user id
- * @param array $permissions - a permissions array
- * @atodo Get separate perms as well.
- */
-function _kms_permissions_get_permissions_by_uid($uid, &$permissions = array()) {
+function _kms_permissions_get_permissions_by_uid($uid, &$permissions = array(), $options = array()) {
+  $options += array(
+    'key_prefix' => TRUE,
+    'flattened' => FALSE,
+  );
+  $key_prefix = $options['key_prefix'];
+  $flattened = $options['flattened'];
+
   $user = user_load($uid);
   // Get default bundles
   $default = _kms_permissions_get_access_bundles('default');
@@ -914,7 +932,14 @@ function _kms_permissions_get_permissions_by_uid($uid, &$permissions = array()) 
 /**
  * Return nicely formatted array for oracle inserting.
  */
-function _kms_permissions_get_permissions_by_bid($bid, &$permissions = array()) {
+function _kms_permissions_get_permissions_by_bid($bid, &$permissions = array(), $options = array()) {
+  $options += array(
+    'key_prefix' => TRUE,
+    'flattened' => FALSE,
+  );
+  $key_prefix = $options['key_prefix'];
+  $flattened = $options['flattened'];
+
   $bundle = node_load($bid);
 
   $field_access_userdefined_ranges = field_get_items('node', $bundle, 'field_access_userdefined_ranges');
@@ -935,11 +960,10 @@ function _kms_permissions_get_permissions_by_bid($bid, &$permissions = array()) 
   }
 
   // Predefined datacollections
-
   $field_predefined_datacollections = field_get_items('node', $bundle, 'field_predefined_datacollections');
   if (!empty($field_predefined_datacollections)) {
     foreach ($field_predefined_datacollections as $predefined) {
-      $pd_key = 'pd' . $predefined['target_id'];
+      $pd_key = $key_prefix ? 'pd' . $predefined['target_id'] : $predefined['target_id'];
       // If a user has access to userdefined ranges on a product on one bundle, there is always access
       if (isset($permissions['predefined_datacollections'][$pd_key])) {
         $access_userdefined_ranges = ($permissions['predefined_datacollections'][$pd_key]['access_userdefined_ranges'] + $field_access_userdefined_ranges['value'] > 0 ? 1 : 0);
@@ -950,53 +974,62 @@ function _kms_permissions_get_permissions_by_bid($bid, &$permissions = array()) 
 
       // Only select min/max value if key exists to avoid notices
       if (isset($permissions['predefined_datacollections']) && isset($permissions['predefined_datacollections'][$pd_key])) {
-        $permissions['predefined_datacollections'][$pd_key] = array(
-          'access_userdefined_ranges' => $access_userdefined_ranges,
-          'max_download_size' => max(
-            $permissions['predefined_datacollections'][$pd_key]['max_download_size'],
-            $field_max_download_size['value']
-          ),
-          'id' => $predefined['target_id'],
-          'MINX' => min($permissions['predefined_datacollections'][$pd_key]['MINX'], $bounding_box['field_bundle_minx']),
-          'MINY' => min($permissions['predefined_datacollections'][$pd_key]['MINY'], $bounding_box['field_bundle_miny']),
-          'MAXX' => max($permissions['predefined_datacollections'][$pd_key]['MAXX'], $bounding_box['field_bundle_maxx']),
-          'MAXY' => max($permissions['predefined_datacollections'][$pd_key]['MAXY'], $bounding_box['field_bundle_maxy']),
-          'MAXPIXELWIDTH' => max(
-            $permissions['predefined_datacollections'][$pd_key]['MAXPIXELWIDTH'],
-            $bounding_box['field_bundle_maxpixelwidth']
-          ),
-          'MAXPIXELHEIGHT' => max(
-            $permissions['predefined_datacollections'][$pd_key]['MAXPIXELHEIGHT'],
-            $bounding_box['field_bundle_maxpixelheight']
-          ),
-          'FEATUREINFO' => '1',
-        );
+        if ($flattened) {
+          $permissions['predefined_datacollections'][$pd_key] = $predefined['target_id'];
+        }
+        else {
+          $permissions['predefined_datacollections'][$pd_key] = array(
+            'access_userdefined_ranges' => $access_userdefined_ranges,
+            'max_download_size' => max(
+              $permissions['predefined_datacollections'][$pd_key]['max_download_size'],
+              $field_max_download_size['value']
+            ),
+            'id' => $predefined['target_id'],
+            'MINX' => min($permissions['predefined_datacollections'][$pd_key]['MINX'], $bounding_box['field_bundle_minx']),
+            'MINY' => min($permissions['predefined_datacollections'][$pd_key]['MINY'], $bounding_box['field_bundle_miny']),
+            'MAXX' => max($permissions['predefined_datacollections'][$pd_key]['MAXX'], $bounding_box['field_bundle_maxx']),
+            'MAXY' => max($permissions['predefined_datacollections'][$pd_key]['MAXY'], $bounding_box['field_bundle_maxy']),
+            'MAXPIXELWIDTH' => max(
+              $permissions['predefined_datacollections'][$pd_key]['MAXPIXELWIDTH'],
+              $bounding_box['field_bundle_maxpixelwidth']
+            ),
+            'MAXPIXELHEIGHT' => max(
+              $permissions['predefined_datacollections'][$pd_key]['MAXPIXELHEIGHT'],
+              $bounding_box['field_bundle_maxpixelheight']
+            ),
+            'FEATUREINFO' => '1',
+          );
+        }
       }
       else {
-        $permissions['predefined_datacollections'][$pd_key] = array(
-          'access_userdefined_ranges' => $access_userdefined_ranges,
-          'max_download_size' => $field_max_download_size['value'],
-          'id' => $predefined['target_id'],
-          'MINX' => $bounding_box['field_bundle_minx'],
-          'MINY' => $bounding_box['field_bundle_miny'],
-          'MAXX' => $bounding_box['field_bundle_maxx'],
-          'MAXY' => $bounding_box['field_bundle_maxy'],
-          'MAXPIXELWIDTH' => $bounding_box['field_bundle_maxpixelwidth'],
-          'MAXPIXELHEIGHT' => $bounding_box['field_bundle_maxpixelheight'],
-          'FEATUREINFO' => '1',
-        );
+        if ($flattened) {
+          $permissions['predefined_datacollections'][$pd_key] = $predefined['target_id'];
+        }
+        else {
+          $permissions['predefined_datacollections'][$pd_key] = array(
+            'access_userdefined_ranges' => $access_userdefined_ranges,
+            'max_download_size' => $field_max_download_size['value'],
+            'id' => $predefined['target_id'],
+            'MINX' => $bounding_box['field_bundle_minx'],
+            'MINY' => $bounding_box['field_bundle_miny'],
+            'MAXX' => $bounding_box['field_bundle_maxx'],
+            'MAXY' => $bounding_box['field_bundle_maxy'],
+            'MAXPIXELWIDTH' => $bounding_box['field_bundle_maxpixelwidth'],
+            'MAXPIXELHEIGHT' => $bounding_box['field_bundle_maxpixelheight'],
+            'FEATUREINFO' => '1',
+          );
+        }
       }
     }
   }
 
   // Webservices
-
   $webservice_fields = _kms_permissions_webservice_fields();
   foreach ($webservice_fields as $webservice_field) {
     $field_services = field_get_items('node', $bundle,  $webservice_field);
     if (!empty($field_services)) {
       foreach ($field_services as $services) {
-        $service_key = 's' . $services['value'];
+        $service_key = $key_prefix ? 's' . $services['value'] : $services['value'];
         // If a user has access to userdefined ranges on a product on one bundle, there is always access
         if (isset($permissions['services'][$service_key])) {
           $access_userdefined_ranges = ($permissions['services'][$service_key]['access_userdefined_ranges'] + $field_access_userdefined_ranges['value'] > 0 ? 1 : 0);
@@ -1007,39 +1040,51 @@ function _kms_permissions_get_permissions_by_bid($bid, &$permissions = array()) 
 
         // Only select min/max value if key exists to avoid notices
         if (isset($permissions['services']) && isset($permissions['services'][$service_key])) {
-          $permissions['services'][$service_key] = array(
-            'access_userdefined_ranges' => $access_userdefined_ranges,
-            'id' => $services['value'],
-            'MINX' => min($permissions['services'][$service_key]['MINX'], $bounding_box['field_bundle_minx']),
-            'MINY' => min($permissions['services'][$service_key]['MINY'], $bounding_box['field_bundle_miny']),
-            'MAXX' => max($permissions['services'][$service_key]['MAXX'], $bounding_box['field_bundle_maxx']),
-            'MAXY' => max($permissions['services'][$service_key]['MAXY'], $bounding_box['field_bundle_maxy']),
-            'MAXPIXELWIDTH' => max($permissions['services'][$service_key]['MAXPIXELWIDTH'], $bounding_box['field_bundle_maxpixelwidth']),
-            'MAXPIXELHEIGHT' => max($permissions['services'][$service_key]['MAXPIXELHEIGHT'], $bounding_box['field_bundle_maxpixelheight']),
-            'FEATUREINFO' => '1',
-          );
+          if ($flattened) {
+            $permissions['services'][$service_key] = $services['value'];
+          }
+          else {
+            $permissions['services'][$service_key] = array(
+              'access_userdefined_ranges' => $access_userdefined_ranges,
+              'id' => $services['value'],
+              'MINX' => min($permissions['services'][$service_key]['MINX'], $bounding_box['field_bundle_minx']),
+              'MINY' => min($permissions['services'][$service_key]['MINY'], $bounding_box['field_bundle_miny']),
+              'MAXX' => max($permissions['services'][$service_key]['MAXX'], $bounding_box['field_bundle_maxx']),
+              'MAXY' => max($permissions['services'][$service_key]['MAXY'], $bounding_box['field_bundle_maxy']),
+              'MAXPIXELWIDTH' => max($permissions['services'][$service_key]['MAXPIXELWIDTH'], $bounding_box['field_bundle_maxpixelwidth']),
+              'MAXPIXELHEIGHT' => max($permissions['services'][$service_key]['MAXPIXELHEIGHT'], $bounding_box['field_bundle_maxpixelheight']),
+              'FEATUREINFO' => '1',
+            );
+          }
         }
         else {
-          $permissions['services'][$service_key] = array(
-            'access_userdefined_ranges' => $access_userdefined_ranges,
-            'id' => $services['value'],
-            'MINX' => $bounding_box['field_bundle_minx'],
-            'MINY' => $bounding_box['field_bundle_miny'],
-            'MAXX' => $bounding_box['field_bundle_maxx'],
-            'MAXY' => $bounding_box['field_bundle_maxy'],
-            'MAXPIXELWIDTH' => $bounding_box['field_bundle_maxpixelwidth'],
-            'MAXPIXELHEIGHT' => $bounding_box['field_bundle_maxpixelheight'],
-            'FEATUREINFO' => '1',
-          );
+          if ($flattened) {
+            $permissions['services'][$service_key] = $services['value'];
+          }
+          else {
+            $permissions['services'][$service_key] = array(
+              'access_userdefined_ranges' => $access_userdefined_ranges,
+              'id' => $services['value'],
+              'MINX' => $bounding_box['field_bundle_minx'],
+              'MINY' => $bounding_box['field_bundle_miny'],
+              'MAXX' => $bounding_box['field_bundle_maxx'],
+              'MAXY' => $bounding_box['field_bundle_maxy'],
+              'MAXPIXELWIDTH' => $bounding_box['field_bundle_maxpixelwidth'],
+              'MAXPIXELHEIGHT' => $bounding_box['field_bundle_maxpixelheight'],
+              'FEATUREINFO' => '1',
+            );
+          }
+
         }
-        // We want to know which field the service belongs to in drupal.
-        $permissions['services'][$service_key]['field'] = $webservice_field;
+        if (!$flattened) {
+          // We want to know which field the service belongs to in drupal.
+          $permissions['services'][$service_key]['field'] = $webservice_field;
+        }
       }
     }
   }
 
   // Applications
-
   $field_applications = field_get_items('node', $bundle, 'field_applications');
   if (!empty($field_applications)) {
     foreach ($field_applications as $applications) {
@@ -1050,11 +1095,16 @@ function _kms_permissions_get_permissions_by_bid($bid, &$permissions = array()) 
       else {
         $access_userdefined_ranges = $field_access_userdefined_ranges['value'];
       }
-
-      $permissions['applications']['a' . $applications['value']] = array(
-        'access_userdefined_ranges' => $access_userdefined_ranges,
-        'id' => $applications['value'],
-      );
+      $ap_key = $key_prefix ? 'a' . $applications['value'] : $applications['value'];
+      if ($flattened) {
+        $permissions['applications'][$ap_key] = $applications['value'];
+      }
+      else {
+        $permissions['applications'][$ap_key] = array(
+          'access_userdefined_ranges' => $access_userdefined_ranges,
+          'id' => $applications['value'],
+        );
+      }
     }
   }
 
@@ -2023,10 +2073,174 @@ function kms_permissions_is_service_in_default_bundle($sid) {
  * @return array
  *   Bundle ids.
  */
-function kms_permissions_get_bids_by_uid($uid) {
+function kms_permissions_get_bids_by_uid($uid, $ignore_def_bundles = FALSE) {
   $query = db_select('field_data_field_access_bundles', 'fab')
     ->fields('fab', array('field_access_bundles_nid'))
     ->condition('entity_id', $uid, '=');
   $result = $query->execute()->fetchCol();
-  return !empty($result) ? $result : array();
+  if ($result) {
+    if ($ignore_def_bundles) {
+      return array_diff($result, _kms_permissions_get_default_bundles());
+    }
+    return $result;
+  }
+  return array();
+}
+
+function kms_permissions_diff_separate_perms(EntityMetadataWrapper $w_original, EntityMetadataWrapper $w_new) {
+  $perms_original = $perms_new = array(
+    'services' => array(),
+    'applications' => array(),
+  );
+  foreach(_kms_permissions_webservice_fields() as $field) {
+    $value_original = $w_original->$field->raw();
+    $value_new = $w_new->$field->raw();
+
+    if (!empty($value_original[0])) {
+      $perms_original['services'] = array_merge(
+        $value_original,
+        $perms_original['services']
+      );
+    }
+    if (!empty($value_new[0])) {
+      $perms_new['services'] = array_merge(
+        $value_new,
+        $perms_new['services']
+      );
+    }
+  }
+
+  $perms_original['applications'] = $w_original->field_applications->raw();
+  $perms_new['applications'] = $w_new->field_applications->raw();
+  // We do not trust entity meta data wrapper data
+  // and add empty arrays if empty first value.
+  if (empty($perms_original['applications'][0])) {
+    $perms_original['applications'] = array();
+  }
+  if (empty($perms_new['applications'][0])) {
+    $perms_new['applications'] = array();
+  }
+  return kms_permissions_diff_perms_array($perms_original, $perms_new);
+}
+
+function kms_permissions_diff_bundle_perms(EntityMetadataWrapper $w_original, EntityMetadataWrapper $w_new) {
+  $bundle_perms = array(
+    'services' => array('add' => array(), 'remove' => array()),
+    'applications' => array('add' => array(), 'remove' => array()),
+  );
+
+  $bundle_diff = kms_permissions_diff(
+    $w_original->field_access_bundles->raw(),
+    $w_new->field_access_bundles->raw()
+  );
+
+  $perm_options = array('key_prefix' => FALSE, 'flattened' => TRUE);
+  foreach($bundle_diff['add'] as $bid) {
+    $perms = array();
+    _kms_permissions_get_permissions_by_bid($bid, $perms, $perm_options);
+    if (!empty($perms['services'])) {
+      $bundle_perms['services']['add'] = $perms['services'];
+    }
+    if (!empty($perms['applications'])) {
+      $bundle_perms['applications']['add'] = $perms['applications'];
+    }
+  }
+  foreach($bundle_diff['remove'] as $bid) {
+    $perms = array();
+    _kms_permissions_get_permissions_by_bid($bid, $perms, $perm_options);
+    if (!empty($perms['services'])) {
+      $bundle_perms['services']['remove'] = $perms['services'];
+    }
+    if (!empty($perms['applications'])) {
+      $bundle_perms['applications']['remove'] = $perms['applications'];
+    }
+  }
+
+  return $bundle_perms;
+}
+
+function kms_permissions_diff($original, $new) {
+  // Get the difference between new and old array.
+  $add = array_diff($new, $original);
+  $remove = array_diff($original, $new);
+  // Make sure that the keys are the same as the values.
+//  _adapt_debug('mikkel', array_values($add));
+//  _adapt_debug('mikkel', $add);
+//  _adapt_debug('mikkel', array_values($remove));
+//  _adapt_debug('mikkel', $remove);
+//  _adapt_debug('mikkel', str_repeat('.', 20));
+  if (!empty($add)) {
+    $add = array_combine(array_values($add), $add);
+  }
+  if (!empty($remove)) {
+    $remove = array_combine(array_values($remove), $remove);
+  }
+  // Return diff add/remove array.
+  return array(
+    'add' => $add ? $add : array(),
+    'remove' => $remove ? $remove : array(),
+  );
+}
+
+function kms_permissions_diff_perms_array($perms_original, $perms_new) {
+  return array(
+    'services' => kms_permissions_diff(
+      $perms_original['services'],
+      $perms_new['services']
+    ),
+    'applications' => kms_permissions_diff(
+      $perms_original['applications'],
+      $perms_new['applications']
+    ),
+  );
+}
+
+function kms_permissions_diff_is_empty($diff) {
+  foreach($diff as $add_remove) {
+    if (!empty($add_remove['add']) || !empty($add_remove['remove'])) {
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
+
+function kms_permissions_get_service_bounding_box($sid) {
+  $bundles = _kms_permissions_get_bundles_by_service_item($sid);
+  // If no bundle matches use default bundle(s).
+  if (empty($bundles)) {
+    $def_bundles = _kms_permissions_get_default_bundles();
+    $bundles = array(
+      'default' => array_combine($def_bundles, $def_bundles),
+    );
+  }
+  $min_max_def = array(
+    'minx' => 'min',
+    'miny' => 'min',
+    'maxx' => 'max',
+    'maxy' => 'max',
+    'maxpixelwidth' => 'max',
+    'maxpixelheight' => 'max',
+  );
+  // Get all bounding box info
+  $bounding_box = $last_values = array();
+  array_walk($bundles, function($bundle_ids) use ($min_max_def, &$bounding_box, &$last_values) {
+    foreach(array_keys($bundle_ids) as $bid) {
+      $bundle_node = node_load($bid);
+      foreach (_kms_permissions_bounding_box_fields() as $field) {
+        $box_field = field_get_items('node', $bundle_node, $field);
+        $field = str_replace('field_bundle_', '', $field);
+        $value = (int) $box_field[0]['value'];
+        if (
+          empty($last_values[$field])
+          || ($min_max_def[$field] == 'min' && $value < $last_values[$field])
+          || ($min_max_def[$field] == 'max' && $value > $last_values[$field])
+        ) {
+          $bounding_box[$field] = $value;
+        }
+        $last_values[$field] = $value;
+      }
+    }
+
+  });
+  return $bounding_box;
 }

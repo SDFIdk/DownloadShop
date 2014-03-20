@@ -8,3 +8,4 @@ dependencies[] = beautytips
 files[] = includes/query_queue.inc
 files[] = includes/query_creator_queue.inc
 files[] = includes/kms_oci_queue_job.inc
+files[] = includes/kms_oci_queue_sql.inc
