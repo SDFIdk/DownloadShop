@@ -171,3 +171,13 @@ projects[kmsadmin_theme][download][url] = "svn+ssh://svnhost/data/subversion/dru
 projects[kmsadmin_theme][type] = "theme"
 projects[kmsadmin_theme][directory_name] = "kmsadmin"
 projects[kmsadmin_theme][subdir] = "custom"
+
+
+;Remove after live
+projects[node_export][subdir] = "contrib"
+projects[node_export][version] = "7.x-3.0"
+projects[node_export][type] = "module"
+
+projects[uuid][subdir] = "contrib"
+projects[uuid][version] = "7.x-1.0-alpha5"
+projects[uuid][type] = "module"

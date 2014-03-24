@@ -325,3 +325,12 @@ function kms_update_7010(&$sandbox) {
   module_enable(array('kms_permissions_feature'));
 }
 
+/**
+ * Activating permission feature (kms_permissions_feature).
+ *
+ * @author Andreas Butze <mikkel@adapt.dk>
+ */
+function kms_update_7011(&$sandbox) {
+  include kms_partner.node_export.inc;
+  node_export_import($export);
+}
