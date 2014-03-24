@@ -326,11 +326,17 @@ function kms_update_7010(&$sandbox) {
 }
 
 /**
- * Activating permission feature (kms_permissions_feature).
+ * Enabling "partner side" demo.
  *
- * @author Andreas Butze <mikkel@adapt.dk>
+ * @author Andreas Butze <andreas@adapt.dk>
  */
 function kms_update_7011(&$sandbox) {
+  module_enable(array(
+    'node_export',
+    'uuid',
+  ));
+
   include kms_partner.node_export.inc;
+
   node_export_import($export);
 }
