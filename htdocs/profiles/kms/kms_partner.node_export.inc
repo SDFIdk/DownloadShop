@@ -1,5 +1,4 @@
-<?php
-$export = array(
+array(
   (object) array(
       'vid' => '121',
       'uid' => '1',
@@ -1416,4 +1415,4 @@ $export = array(
       ),
       'node_export_drupal_version' => '7',
     ),
-);
+)

@@ -335,8 +335,14 @@ function kms_update_7011(&$sandbox) {
     'node_export',
     'uuid',
   ));
-
-  include kms_partner.node_export.inc;
-
+  $filename = sprintf(
+    "%s/%s/%s",
+    DRUPAL_ROOT,
+    drupal_get_path('profile', 'kms'),
+    'kms_partner.node_export.inc'
+  );
+  $handle = fopen($filename, "r");
+  $export = fread($handle, filesize($filename));
+  fclose($handle);
   node_export_import($export);
 }
