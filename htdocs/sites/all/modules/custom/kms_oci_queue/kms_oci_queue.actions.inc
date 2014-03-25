@@ -29,7 +29,7 @@ function kms_oci_queue_job_action_bundle_save($uids, $bid, $message, $vars = arr
 
 function kms_oci_queue_job_action_bundles_attach($uid, $bids, $perms, $message, $vars = array()) {
   $job_params = array(
-    'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+    'action' => KMS_OCI_QUEUE_ACTION_PERMS_ATTACH,
     'action_details' => format_string(
       $message,
       $vars

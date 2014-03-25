@@ -693,6 +693,7 @@ $handler->display->display_options['fields']['has_separate_services']['combined_
   'field_bundle_webservices_wfs' => 'field_bundle_webservices_wfs',
   'field_bundle_webservices_wms' => 'field_bundle_webservices_wms',
   'field_bundle_webservices_wmts' => 'field_bundle_webservices_wmts',
+  'field_applications' => 'field_applications',
   'views_bulk_operations' => 0,
   'name' => 0,
   'field_access_bundles' => 0,
@@ -701,7 +702,7 @@ $handler->display->display_options['fields']['has_separate_services']['combined_
   'rid' => 0,
   'created' => 0,
   'access' => 0,
-  'edit_node' => 0,
+  'kms_edit_node' => 0,
   'cancel_node' => 0,
 );
 /* Field: User: E-mail */
@@ -781,6 +782,12 @@ $handler->display->display_options['fields']['field_bundle_webservices_wmts']['t
 $handler->display->display_options['fields']['field_bundle_webservices_wmts']['field'] = 'field_bundle_webservices_wmts';
 $handler->display->display_options['fields']['field_bundle_webservices_wmts']['exclude'] = TRUE;
 $handler->display->display_options['fields']['field_bundle_webservices_wmts']['delta_offset'] = '0';
+/* Field: Field: Applications */
+$handler->display->display_options['fields']['field_applications']['id'] = 'field_applications';
+$handler->display->display_options['fields']['field_applications']['table'] = 'field_data_field_applications';
+$handler->display->display_options['fields']['field_applications']['field'] = 'field_applications';
+$handler->display->display_options['fields']['field_applications']['exclude'] = TRUE;
+$handler->display->display_options['fields']['field_applications']['delta_offset'] = '0';
 $handler->display->display_options['path'] = 'admin/people';
 
 /* Display: Data export */
@@ -814,7 +821,7 @@ $translatables['admin_views_user'] = array(
   t('Username'),
   t('E-mail'),
   t('Role'),
-  t('Brugertype (field_user_type)'),
+  t('Brugertype'),
   t('Created date'),
   t('Active'),
   t('Nyhedsbrev'),
@@ -826,5 +833,6 @@ $translatables['admin_views_user'] = array(
   t('Webservices (WFS)'),
   t('Webservices (WMS)'),
   t('Webservices (WMTS)'),
+  t('Applications'),
   t('Data export'),
 );

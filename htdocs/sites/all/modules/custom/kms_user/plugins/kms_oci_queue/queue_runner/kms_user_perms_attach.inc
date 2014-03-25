@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * kms_user_bundles_attach.inc
+ * kms_user_perms_attach.inc
  *
  * Provides callback functions run by the queue handling functions.
  * Attaches specified bundles to a given user.
@@ -9,12 +9,12 @@
 
 
 $plugin = array(
-  'type' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+  'type' => KMS_OCI_QUEUE_ACTION_PERMS_ATTACH,
   'query_creator_run' => array(
-    'function' => 'kms_user_bundles_attach_query_creator_run',
+    'function' => 'kms_user_perms_attach_query_creator_run',
   ),
   'query_run' => array(
-    'function' => 'kms_user_bundles_attach_query_run',
+    'function' => 'kms_user_perms_attach_query_run',
   ),
 );
 
@@ -31,7 +31,7 @@ $plugin = array(
  * @return int
  *   Number of query lines to be written.
  */
-function kms_user_bundles_attach_query_creator_run($jid, $creator_item, $exe_queue) {
+function kms_user_perms_attach_query_creator_run($jid, $creator_item, $exe_queue) {
   $job = KmsOciQueueJobFactory::get($jid);
   $uid = $creator_item->params['uid'];
   $bids = $creator_item->params['bids'];
@@ -112,6 +112,7 @@ function kms_user_bundles_attach_query_creator_run($jid, $creator_item, $exe_que
  * @return string
  *   Generated oracle queries.
  */
-function kms_user_bundles_attach_query_run($item) {
-  return _kms_oci_queue_process_perms_query_creator_queue_item($item);
+function kms_user_perms_attach_query_run($item) {
+//  return kms_permisssions_create_oci_sql_from_perm_diff($item->diff, $item->kms_id);
+  return kmsPermsDiff::createOciSqlFromPermDiff($item->diff, $item->kms_id);
 }

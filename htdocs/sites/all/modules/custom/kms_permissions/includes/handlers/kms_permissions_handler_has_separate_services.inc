@@ -57,13 +57,13 @@ class kms_permissions_handler_has_separate_services extends views_handler_field 
 
   function render($values) {
     $combined_fields = array_filter($this->options['combined_fields']);
-
+    $field_data = $values->_field_data;
     foreach ($combined_fields as $name) {
-      $value_key = 'field_' . $name;
-      if (!property_exists($values, $value_key)) {
+      if (!property_exists($values, 'field_' . $name)) {
         continue;
       }
-      if (!empty($values->$value_key)) {
+      $field = $field_data['uid']['entity']->{$name};
+      if (!empty($field[LANGUAGE_NONE][0])) {
         return array(
           '#type' => 'markup',
           '#markup' => t('Separate Permissions'),

@@ -755,7 +755,11 @@ function kms_permissions_node_presave($node) {
   if (!$node->is_new) {
     $w_original = entity_metadata_wrapper('node', $node->original);
     $w_new = entity_metadata_wrapper('node', $node);
-    $node->kms_permissions_diff = kms_permissions_diff_separate_perms(
+//    $node->kms_permissions_diff = kms_permissions_diff_separate_perms(
+//      $w_original,
+//      $w_new
+//    );
+    $node->kms_permissions_diff = KmsPermsDiff::diffSeparatePerms(
       $w_original,
       $w_new
     );
@@ -844,48 +848,23 @@ function kms_permissions_access_bundle_update($form, $form_state) {
 
   // Only create a job if there are any users using the bundle.
   if (!empty($uids) && !empty($action)) {
-    $uid_chunks = array_chunk($uids, 2000);
-    $chunck_count = count($uid_chunks);
-    _adapt_debug('mikkel', $bundle->kms_permissions_diff);
-//    _adapt_debug('mikkel', $chunck_count);
-//    _adapt_debug('mikkel', count($uids));
-
-    $delta = 1;
-    foreach($uid_chunks as $uid_chunk) {
-      $job_params = array(
-        'action' => $action,
-        'params' => array(
-          'uids' => $uid_chunk,
-          'bid' => $bid,
-        ),
-      );
-      if ($chunck_count > 1) {
-        $job_params['action_details'] = format_string(
-          'Bundle: "@bundle" saved. Affects @count users out of @total. Delta: @delta.',
-          array(
-            '@bundle' => $bundle->title,
-            '@count' => count($uid_chunk),
-            '@total' => count($uids),
-            '@delta' => $delta,
-          )
-        );
-      }
-      else {
-        $job_params['action_details'] = format_string(
-          'Bundle: "@bundle" saved. Affects @count users.',
-          array(
-            '@bundle' => $bundle->title,
-            '@count' => count($uid_chunk),
-            '@delta' => $delta,
-          )
-        );
-      }
-//      _adapt_debug('mikkel', $bundle->kms_permissions_diff);
-// Atodo: enable this again!!!
-//      KmsOciQueueJob::create($job_params);
-//      KmsOciQueueJob::create($job_params, 'kms_permissions');
-      $delta++;
-    }
+    $job_params = array(
+      'action' => $action,
+      'params' => array(
+        'uids' => $uids,
+        'bid' => $bid,
+        'bundle_diff' => $bundle->kms_permissions_diff,
+      ),
+    );
+    $job_params['action_details'] = format_string(
+      'Bundle: "@bundle" saved. Affects @count users.',
+      array(
+        '@bundle' => $bundle->title,
+        '@count' => count($uids),
+      )
+    );
+    KmsOciQueueJob::create($job_params);
+    KmsOciQueueJob::create($job_params, 'kms_permissions');
   }
 
 }
@@ -896,8 +875,6 @@ function _kms_permissions_get_permissions_by_uid($uid, &$permissions = array(), 
     'key_prefix' => TRUE,
     'flattened' => FALSE,
   );
-  $key_prefix = $options['key_prefix'];
-  $flattened = $options['flattened'];
 
   $user = user_load($uid);
   // Get default bundles
@@ -917,10 +894,10 @@ function _kms_permissions_get_permissions_by_uid($uid, &$permissions = array(), 
     foreach ($bundles as $bid) {
       if (is_array($bid)) {
         // Bids from the user fields
-        _kms_permissions_get_permissions_by_bid($bid['nid'], $permissions);
+        _kms_permissions_get_permissions_by_bid($bid['nid'], $permissions, $options);
       }
       else {
-        _kms_permissions_get_permissions_by_bid($bid, $permissions);
+        _kms_permissions_get_permissions_by_bid($bid, $permissions, $options);
       }
     }
   }
@@ -1915,7 +1892,12 @@ function _kms_permissions_get_default_bundle_bounding_box_data() {
  *   The golden kms permissions permission array. Passed by ref.
  * @Atodo Implement all separate perms.
  */
-function _kms_permissions_get_separate_perms_by_uid($uid, &$perms) {
+function _kms_permissions_get_separate_perms_by_uid($uid, &$perms, $options = array()) {
+  $options += array(
+    'key_prefix' => TRUE,
+    'flattened' => FALSE,
+  );
+
   // Get all service ids.
   $separate_services = _kms_permissions_get_separate_webservices_by_uid($uid);
   // Atodo: Consider if this is the right way:
@@ -1928,12 +1910,18 @@ function _kms_permissions_get_separate_perms_by_uid($uid, &$perms) {
     }
     array_walk(
       $separate_services,
-      function($id) use (&$perms, $bounding_box_data) {
+      function($id) use (&$perms, $bounding_box_data, $options) {
+        $key = $options['key_prefix'] ? 's' . $id : $id;
         // If we do not have service id in our services array yet
         // create it and attach boundary box data.
-        if (empty($perms['services']['s' . $id])) {
-          $perms['services']['s' . $id] = array('id' => $id);
-          $perms['services']['s' . $id] += $bounding_box_data;
+        if (empty($perms['services'][$key])) {
+          if ($options['flattened']) {
+            $perms['services'][$key] = $id;
+          }
+          else {
+            $perms['services'][$key] = array('id' => $id);
+            $perms['services'][$key] += $bounding_box_data;
+          }
         }
       }
     );
@@ -1945,11 +1933,17 @@ function _kms_permissions_get_separate_perms_by_uid($uid, &$perms) {
   }
   array_walk(
     $separate_applications,
-    function($id) use (&$perms) {
+    function($id) use (&$perms, $options) {
+      $key = $options['key_prefix'] ? 'a' . $id : $id;
       // If we do not have application id
       // in our applications array yet create it.
-      if (empty($perms['applications']['a' . $id])) {
-        $perms['applications']['a' . $id] = array('id' => $id);
+      if (empty($perms['applications'][$key])) {
+        if ($options['flattened']) {
+          $perms['applications'][$key] = $id;
+        }
+        else {
+          $perms['applications'][$key] = array('id' => $id);
+        }
       }
     }
   );
@@ -2084,122 +2078,117 @@ function kms_permissions_get_bids_by_uid($uid, $ignore_def_bundles = FALSE) {
   return array();
 }
 
-function kms_permissions_diff_separate_perms(EntityMetadataWrapper $w_original, EntityMetadataWrapper $w_new) {
-  $perms_original = $perms_new = array(
-    'services' => array(),
-    'applications' => array(),
-  );
-  foreach(_kms_permissions_webservice_fields() as $field) {
-    $value_original = $w_original->$field->raw();
-    $value_new = $w_new->$field->raw();
+//function kms_permissions_diff_separate_perms(EntityMetadataWrapper $w_original, EntityMetadataWrapper $w_new) {
+//  $perms_original = $perms_new = array(
+//    'services' => array(),
+//    'applications' => array(),
+//  );
+//  foreach(_kms_permissions_webservice_fields() as $field) {
+//    $value_original = $w_original->$field->raw();
+//    $value_new = $w_new->$field->raw();
+//
+//    if (!empty($value_original[0])) {
+//      $perms_original['services'] = array_merge(
+//        $value_original,
+//        $perms_original['services']
+//      );
+//    }
+//    if (!empty($value_new[0])) {
+//      $perms_new['services'] = array_merge(
+//        $value_new,
+//        $perms_new['services']
+//      );
+//    }
+//  }
+//
+//  $perms_original['applications'] = $w_original->field_applications->raw();
+//  $perms_new['applications'] = $w_new->field_applications->raw();
+//  // We do not trust entity meta data wrapper data
+//  // and add empty arrays if empty first value.
+//  if (empty($perms_original['applications'][0])) {
+//    $perms_original['applications'] = array();
+//  }
+//  if (empty($perms_new['applications'][0])) {
+//    $perms_new['applications'] = array();
+//  }
+//  return kms_permissions_diff_perms_array($perms_original, $perms_new);
+//}
 
-    if (!empty($value_original[0])) {
-      $perms_original['services'] = array_merge(
-        $value_original,
-        $perms_original['services']
-      );
-    }
-    if (!empty($value_new[0])) {
-      $perms_new['services'] = array_merge(
-        $value_new,
-        $perms_new['services']
-      );
-    }
-  }
+//function kms_permissions_diff_bundle_perms(EntityMetadataWrapper $w_original, EntityMetadataWrapper $w_new) {
+//  $bundle_perms = array(
+//    'services' => array('add' => array(), 'remove' => array()),
+//    'applications' => array('add' => array(), 'remove' => array()),
+//  );
+//
+//  $bundle_diff = kms_permissions_diff(
+//    $w_original->field_access_bundles->raw(),
+//    $w_new->field_access_bundles->raw()
+//  );
+//
+//  $perm_options = array('key_prefix' => FALSE, 'flattened' => TRUE);
+//  foreach($bundle_diff['add'] as $bid) {
+//    $perms = array();
+//    _kms_permissions_get_permissions_by_bid($bid, $perms, $perm_options);
+//    if (!empty($perms['services'])) {
+//      $bundle_perms['services']['add'] = $perms['services'];
+//    }
+//    if (!empty($perms['applications'])) {
+//      $bundle_perms['applications']['add'] = $perms['applications'];
+//    }
+//  }
+//  foreach($bundle_diff['remove'] as $bid) {
+//    $perms = array();
+//    _kms_permissions_get_permissions_by_bid($bid, $perms, $perm_options);
+//    if (!empty($perms['services'])) {
+//      $bundle_perms['services']['remove'] = $perms['services'];
+//    }
+//    if (!empty($perms['applications'])) {
+//      $bundle_perms['applications']['remove'] = $perms['applications'];
+//    }
+//  }
+//
+//  return $bundle_perms;
+//}
 
-  $perms_original['applications'] = $w_original->field_applications->raw();
-  $perms_new['applications'] = $w_new->field_applications->raw();
-  // We do not trust entity meta data wrapper data
-  // and add empty arrays if empty first value.
-  if (empty($perms_original['applications'][0])) {
-    $perms_original['applications'] = array();
-  }
-  if (empty($perms_new['applications'][0])) {
-    $perms_new['applications'] = array();
-  }
-  return kms_permissions_diff_perms_array($perms_original, $perms_new);
-}
+//function kms_permissions_diff($original, $new) {
+//  // Get the difference between new and old array.
+//  $add = array_diff($new, $original);
+//  $remove = array_diff($original, $new);
+//  // Make sure that the keys are the same as the values.
+//  if (!empty($add)) {
+//    $add = array_combine(array_values($add), $add);
+//  }
+//  if (!empty($remove)) {
+//    $remove = array_combine(array_values($remove), $remove);
+//  }
+//  // Return diff add/remove array.
+//  return array(
+//    'add' => $add ? $add : array(),
+//    'remove' => $remove ? $remove : array(),
+//  );
+//}
 
-function kms_permissions_diff_bundle_perms(EntityMetadataWrapper $w_original, EntityMetadataWrapper $w_new) {
-  $bundle_perms = array(
-    'services' => array('add' => array(), 'remove' => array()),
-    'applications' => array('add' => array(), 'remove' => array()),
-  );
+//function kms_permissions_diff_perms_array($perms_original, $perms_new) {
+//  return array(
+//    'services' => kms_permissions_diff(
+//      $perms_original['services'],
+//      $perms_new['services']
+//    ),
+//    'applications' => kms_permissions_diff(
+//      $perms_original['applications'],
+//      $perms_new['applications']
+//    ),
+//  );
+//}
 
-  $bundle_diff = kms_permissions_diff(
-    $w_original->field_access_bundles->raw(),
-    $w_new->field_access_bundles->raw()
-  );
-
-  $perm_options = array('key_prefix' => FALSE, 'flattened' => TRUE);
-  foreach($bundle_diff['add'] as $bid) {
-    $perms = array();
-    _kms_permissions_get_permissions_by_bid($bid, $perms, $perm_options);
-    if (!empty($perms['services'])) {
-      $bundle_perms['services']['add'] = $perms['services'];
-    }
-    if (!empty($perms['applications'])) {
-      $bundle_perms['applications']['add'] = $perms['applications'];
-    }
-  }
-  foreach($bundle_diff['remove'] as $bid) {
-    $perms = array();
-    _kms_permissions_get_permissions_by_bid($bid, $perms, $perm_options);
-    if (!empty($perms['services'])) {
-      $bundle_perms['services']['remove'] = $perms['services'];
-    }
-    if (!empty($perms['applications'])) {
-      $bundle_perms['applications']['remove'] = $perms['applications'];
-    }
-  }
-
-  return $bundle_perms;
-}
-
-function kms_permissions_diff($original, $new) {
-  // Get the difference between new and old array.
-  $add = array_diff($new, $original);
-  $remove = array_diff($original, $new);
-  // Make sure that the keys are the same as the values.
-//  _adapt_debug('mikkel', array_values($add));
-//  _adapt_debug('mikkel', $add);
-//  _adapt_debug('mikkel', array_values($remove));
-//  _adapt_debug('mikkel', $remove);
-//  _adapt_debug('mikkel', str_repeat('.', 20));
-  if (!empty($add)) {
-    $add = array_combine(array_values($add), $add);
-  }
-  if (!empty($remove)) {
-    $remove = array_combine(array_values($remove), $remove);
-  }
-  // Return diff add/remove array.
-  return array(
-    'add' => $add ? $add : array(),
-    'remove' => $remove ? $remove : array(),
-  );
-}
-
-function kms_permissions_diff_perms_array($perms_original, $perms_new) {
-  return array(
-    'services' => kms_permissions_diff(
-      $perms_original['services'],
-      $perms_new['services']
-    ),
-    'applications' => kms_permissions_diff(
-      $perms_original['applications'],
-      $perms_new['applications']
-    ),
-  );
-}
-
-function kms_permissions_diff_is_empty($diff) {
-  foreach($diff as $add_remove) {
-    if (!empty($add_remove['add']) || !empty($add_remove['remove'])) {
-      return FALSE;
-    }
-  }
-  return TRUE;
-}
+//function kms_permissions_diff_is_empty($diff) {
+//  foreach($diff as $add_remove) {
+//    if (!empty($add_remove['add']) || !empty($add_remove['remove'])) {
+//      return FALSE;
+//    }
+//  }
+//  return TRUE;
+//}
 
 function kms_permissions_get_service_bounding_box($sid) {
   $bundles = _kms_permissions_get_bundles_by_service_item($sid);
@@ -2241,3 +2230,52 @@ function kms_permissions_get_service_bounding_box($sid) {
   });
   return $bounding_box;
 }
+
+//function kms_permisssions_create_oci_sql_from_perm_diff($perm_diff, $userid) {
+//  $output = array();
+//  foreach ($perm_diff as $perm_type => $perm_diff) {
+//    $data = array('userid' => $userid);
+//    switch ($perm_type) {
+//      case 'services':
+//        $data['featureinfo'] = 0;
+//        foreach ($perm_diff['add'] as $sid => $service_values) {
+//          if (!empty($service_values)) {
+//            $data['serviceid'] = $sid;
+//            $data += $service_values;
+//            $sql = new KmsOciQueueSql('services', $data);
+//            $output[] = $sql->generate('insert');
+//          }
+//        }
+//        foreach ($perm_diff['remove'] as $sid) {
+//          $data['serviceid'] = $sid;
+//          $sql = new KmsOciQueueSql('services', $data);
+//          $output[] = $sql->generate('delete');
+//        }
+//        break;
+//
+//      case 'applications':
+//        foreach ($perm_diff['add'] as $gid) {
+//          $data['groupid'] = $gid;
+//          $sql = new KmsOciQueueSql('applications', $data);
+//          $output[] = $sql->generate('insert');
+//        }
+//        foreach ($perm_diff['remove'] as $gid) {
+//          $data['groupid'] = $gid;
+//          $sql = new KmsOciQueueSql('applications', $data);
+//          $output[] = $sql->generate('delete');
+//        }
+//        break;
+//    }
+//  }
+//
+//  if (!empty($output)) {
+//    array_unshift($output, $sql->generateHeader());
+//  }
+//
+//  // Return all created query lines.
+//  return implode("\n", $output);
+//}
+//
+//function kms_permisssions_diff_is_empty($diff) {
+//  return empty($diff['add']) && empty($diff['remove']);
+//}

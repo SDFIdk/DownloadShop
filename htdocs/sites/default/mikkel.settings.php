@@ -205,9 +205,9 @@ $databases = array (
   array (
     'default' => 
     array (
-      'database' => 'gst',
-      'username' => 'vagrant',
-      'password' => 'vagrant',
+      'database' => 'kms_test',
+      'username' => 'kms_test',
+      'password' => 'kms_test',
       'host' => 'localhost',
       'port' => '',
       'driver' => 'pgsql',
@@ -560,3 +560,10 @@ $conf['kms_permissions_conn_user'] = 'weblog_test';
 $conf['kms_permissions_conn_pass'] = 'weblog_test';
 $conf['kms_permissions_conn_host'] = '192.168.50.5:1521';
 $conf['kms_permissions_conn_db'] = 'XE';
+
+
+// Preproccesing of js/css OFF
+$conf['preprocess_css'] = 0;
+$conf['preprocess_js'] = 0;
+
+$conf['ultimate_cron_poorman'] = 0;

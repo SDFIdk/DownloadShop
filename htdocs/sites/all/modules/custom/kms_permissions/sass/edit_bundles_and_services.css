@@ -1,0 +1,9 @@
+.field-widget-kms-services
+.form-type-checkbox.disabled {
+  padding-left: 17px; }
+  .field-widget-kms-services
+  .form-type-checkbox.disabled .form-checkbox {
+    display: none; }
+  .field-widget-kms-services
+  .form-type-checkbox.disabled .form-checkbox.disabled {
+    display: none; }

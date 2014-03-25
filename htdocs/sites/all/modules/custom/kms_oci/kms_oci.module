@@ -37,20 +37,23 @@ function kms_oci_boot() {
   $oci = kms_oci_set_conn();
 
   // Set if connection is up.
-  kms_oci_conection_is_up($oci);
+  kms_oci_connection_is_up($oci);
 
 }
 
 /**
  * Set Oracle connection.
  *
- * @return void.
+ * @param array $settings
+ *
+ * @return bool|resource
  */
 function kms_oci_set_conn($settings = array()) {
+  $oci = FALSE;
   if (!kms_oci_extension_is_loaded()) {
-    return FALSE;
+    return $oci;
   }
-  
+
   if (!empty($settings)) {
     $user = $settings['kms_oci_conn_user'];
     $pass = $settings['kms_oci_conn_pass'];
@@ -58,7 +61,7 @@ function kms_oci_set_conn($settings = array()) {
     $db = $settings['kms_oci_conn_db'];
   }
   else {
-    // Default
+    // Default.
     $user = variable_get('kms_oci_conn_user');
     $pass = variable_get('kms_oci_conn_pass');
     $host = variable_get('kms_oci_conn_host');
@@ -68,8 +71,7 @@ function kms_oci_set_conn($settings = array()) {
   // Check connection vars. Return if FALSE;
   foreach (array($user, $pass, $host, $db) as $var) {
     if (empty($var)) {
-      $oci = FALSE;
-      return;
+      return $oci;
     }
   }
 
@@ -88,8 +90,15 @@ function kms_oci_set_conn($settings = array()) {
 
 /**
  * Get Oracle connection.
- * @param int $cid - unique identifier for this transaction
- * @return void.
+ *
+ * @param bool|array $cid
+ *   Connection id.
+ *
+ * @param array $settings
+ *   Connection settings
+ *
+ * @return bool|resource
+ *   Connection resource or FALSE if failure.
  */
 function kms_oci_get_conn($cid = FALSE, $settings = array()) {
   if (!kms_oci_extension_is_loaded()) {
@@ -100,7 +109,7 @@ function kms_oci_get_conn($cid = FALSE, $settings = array()) {
     if ($oci_cid[$cid]) {
       return $oci_cid[$cid];
     }
-    else if ($settings) {
+    elseif ($settings) {
       $oci_cid[$cid] = kms_oci_set_conn($settings);
       return $oci_cid[$cid];
     }
@@ -113,8 +122,12 @@ function kms_oci_get_conn($cid = FALSE, $settings = array()) {
 
 /**
  * Close Oracle connection.
- * @param int $cid - unique identifier for the transaction to close
- * @return void.
+ *
+ * @param string|bool $cid
+ *   Connection id.
+ *
+ * @return void
+ *   Nothing to return.
  */
 function kms_oci_close_conn($cid = FALSE) {
   if (!kms_oci_extension_is_loaded()) {
@@ -122,15 +135,15 @@ function kms_oci_close_conn($cid = FALSE) {
   }
 
   if ($cid) {
-    $oci =  kms_oci_get_conn($cid);
+    $oci = kms_oci_get_conn($cid);
     oci_close($oci);
   }
   else {
     global $oci;
-    if (kms_oci_conection_is_up()) {
+    if (kms_oci_connection_is_up()) {
       oci_close($oci);
     }
-    else{
+    else {
       $error = kms_oci_conection_error();
       if (!empty($error)) {
         watchdog(KMS_OCI_WD_KEY, $error, array(), WATCHDOG_ALERT);
@@ -147,20 +160,21 @@ function kms_oci_close_conn($cid = FALSE) {
  *   Ex.: array(':name' => 'miksan', ':userid' => "9999999999")
  * @param string $table
  *   Which table should be used.
- * @param string $cid
+ * @param string|bool $cid
  *   The id of the oracle connection.
  *
- * @return void.
+ * @return void
+ *   Nothing to return.
  */
 function kms_oci_insert($data, $table, $cid = FALSE) {
-  if(!kms_oci_extension_is_loaded()) {
+  if (!kms_oci_extension_is_loaded()) {
     return;
   }
 
   kms_oci_filter_query_data($data);
 
   $query = kms_oci_generate_query('insert', $data, array('table' => $table));
-  
+
   kms_oci_query($query, $data, $cid);
 
 }
@@ -173,12 +187,12 @@ function kms_oci_filter_query_data(&$data) {
 }
 
 function kms_oci_generate_query($type, $data, $conf = array()) {
-  if(empty($type) || empty($data)) {
+  if (empty($type) || empty($data)) {
     return;
   }
-  switch($type) {
+  switch ($type) {
     case 'insert':
-      if(empty($conf['table'])) {
+      if (empty($conf['table'])) {
         return;
       }
       $table = $conf['table'];
@@ -186,7 +200,6 @@ function kms_oci_generate_query($type, $data, $conf = array()) {
       $pholders = implode(', ', $keys);
       $cols = str_replace(':', '', $pholders);
       return "INSERT INTO $table ($cols) VALUES ($pholders)";
-      break;
   }
 }
 
@@ -200,10 +213,11 @@ function kms_oci_generate_query($type, $data, $conf = array()) {
  * @param string $kms_userid
  *   KMS user id.
  *
- * @return void.
+ * @return void
+ *   Nothing to return.
  */
 function kms_oci_update_user($data, $table, $kms_userid) {
-  if(!kms_oci_extension_is_loaded()) {
+  if (!kms_oci_extension_is_loaded()) {
     return;
   }
   // Only use variables with values.
@@ -289,8 +303,24 @@ function kms_oci_select_one($query, $data = array(), $type = 'assoc', $cid = FAL
  *
  * @return void.
  */
+
+
+/**
+ * Perform an query based on a query and a pholder/value array.
+ *
+ * @param string $query
+ *   Query string with placeholders.
+ * @param array $data
+ *   Placeholders and values.
+ *   Ex.: array(':name' => 'miksan', ':userid' => "9999999999").
+ * @param string|bool $cid
+ *   The id of the oracle connection.
+ *
+ * @return void
+ *   Nothing to return.
+ */
 function kms_oci_query($query, $data = array(), $cid = FALSE) {
-  if(!kms_oci_extension_is_loaded()) {
+  if (!kms_oci_extension_is_loaded()) {
     return;
   }
   global $base_url;
@@ -335,7 +365,7 @@ function kms_oci_exit($destination = NULL) {
   }
   global $oci;
 
-  if (kms_oci_conection_is_up()) {
+  if (kms_oci_connection_is_up()) {
     oci_close($oci);
   }
   else{
@@ -367,7 +397,7 @@ function kms_oci_send_mail_error($error, $query = '', $data = array()) {
   $current_path = $_SERVER['HTTP_HOST'] . '/' . drupal_get_path_alias();
   // Add environment data. $_SERVER etc.
   $data += kms_oci_environment_data();
-  
+
   // Debug info.
   ob_start();
   if(!empty($query) || !empty($data)) {
@@ -530,7 +560,7 @@ function kms_oci_extension_is_loaded(){
  *
  * @return boolean $is_up
  */
-function kms_oci_conection_is_up($conn_succes = NULL) {
+function kms_oci_connection_is_up($conn_succes = NULL) {
   $is_up = &drupal_static(__FUNCTION__);
   if($conn_succes !== NULL && is_bool($conn_succes)) {
     $is_up = $conn_succes;

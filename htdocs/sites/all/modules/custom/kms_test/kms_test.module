@@ -174,12 +174,12 @@ function kms_test_insert_user_test() {
     )
   );
   KmsOciQueueJob::create(array(
-    'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+    'action' => KMS_OCI_QUEUE_ACTION_PERMS_ATTACH,
     'action_details' => $bundles_attach_action_details,
     'params' => $job_params,
   ));
   KmsOciQueueJob::create(array(
-    'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+    'action' => KMS_OCI_QUEUE_ACTION_PERMS_ATTACH,
     'action_details' => $bundles_attach_action_details,
     'params' => $job_params,
   ),
@@ -246,7 +246,7 @@ function kms_test_update_user($uid) {
     }, $user->field_access_bundles[LANGUAGE_NONE]);
 
     $job_params = array(
-      'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+      'action' => KMS_OCI_QUEUE_ACTION_PERMS_ATTACH,
       'action_details' => format_string(
         'Attaching default bundles: @bundles to user: @user.',
         array(
@@ -338,7 +338,7 @@ function kms_test_insert_new_user_test($clone_uid = 0) {
     // with permissions from the default bundles.
     $bids = _kms_permissions_get_default_bundles();
     $job_params = array(
-      'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+      'action' => KMS_OCI_QUEUE_ACTION_PERMS_ATTACH,
       'action_details' => format_string(
         'Attaching default bundles: @bundles to new user: @user.',
         array(

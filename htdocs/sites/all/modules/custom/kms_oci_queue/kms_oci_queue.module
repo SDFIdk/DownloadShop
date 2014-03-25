@@ -13,8 +13,7 @@ define('KMS_OCI_QUEUE_ENGINE_DIR_JOBS', 'jobs');
 define('KMS_OCI_QUEUE_ENGINE_DIR_JOBS_PROCESSED', 'jobs_processed');
 define('KMS_OCI_QUEUE_ACTION_USER_SAVE', 'user_save');
 define('KMS_OCI_QUEUE_ACTION_USER_DELETE', 'user_delete');
-define('KMS_OCI_QUEUE_ACTION_DEF_BUNDLES_ATTACH', 'def_bundles_attach');
-define('KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH', 'bundles_attach');
+define('KMS_OCI_QUEUE_ACTION_PERMS_ATTACH', 'permissions_attach');
 define('KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE', 'bundle_save');
 define('KMS_OCI_QUEUE_ACTION_BUNDLE_DELETE', 'bundle_delete');
 define('KMS_OCI_QUEUE_ACTION_CLONE_USER_PERMS', 'clone_user_perms');
@@ -209,6 +208,8 @@ function kms_oci_queue_query_creator_process_job($job, $item, $exe_queue) {
       if ($plugin['type'] != $creator_item->action) {
         return;
       }
+      // Because Drupal auto loading is flaky we have to do it ourselves, sigh.
+      module_load_include('inc', 'kms_permissions', 'includes/kms_perms_diff');
       // Get proper plugin function in order to create executor items.
       if ($function = ctools_plugin_get_function($plugin, 'query_creator_run')) {
         $function($jid, $creator_item, $exe_queue);
@@ -233,7 +234,7 @@ function kms_oci_queue_query_creator_process_job($job, $item, $exe_queue) {
  */
 function kms_oci_queue_query_run($item) {
   // Atodo: For debugging:
-  $timer_name = $item->jid . ':' . __FUNCTION__;
+//  $timer_name = $item->jid . ':' . __FUNCTION__;
 //  timer_start($timer_name);
 //  _adapt_debug('mikkel', 'Timer start: ' . $timer_name);
 //  _adapt_debug('mikkel', timer_read($timer_name));
@@ -243,9 +244,9 @@ function kms_oci_queue_query_run($item) {
   $plugins = ctools_get_plugins('kms_oci_queue', 'queue_runner');
   $output = '';
   array_walk($plugins, function($plugin) use ($item, &$output) {
+    // Because Drupal auto loading is flaky we have to do it ourselves, sigh.
+    module_load_include('inc', 'kms_permissions', 'includes/kms_perms_diff');
     // Only load plugins corresponding to the queue item action.
-//    _adapt_debug('mikkel', $item->jid);
-//    _adapt_debug('mikkel', __LINE__);
 
     if ($plugin['type'] != $item->action) {
       return;
@@ -268,8 +269,6 @@ function kms_oci_queue_query_run($item) {
       $filename,
     )
   );
-//  _adapt_debug('mikkel', __LINE__);
-//  _adapt_debug('mikkel', $item->is_last_item);
 
   // If no output return (do nothing).
   if (empty($output) && $item->is_last_item && !file_exists($tmp_filename)) {
@@ -277,7 +276,8 @@ function kms_oci_queue_query_run($item) {
       KmsOciQueueJob::STATUS_DONE,
       'No lines to process in this job'
     );
-    $job->finishQueue();
+    // Delete job if no sql lines are present.
+    $job->delete();
     return;
   }
   elseif (empty($output)) {
@@ -351,7 +351,18 @@ function kms_oci_queue_get_job_ids($job_statuses = array()) {
  *   Render array.
  */
 function kms_oci_queue_admin_page() {
-
+  $options = array('query' => array('destination' => 'admin/reports/kms-oci-queue'));
+  $prefix[] = l(
+    'Creator queue',
+    'admin/ultimate-cron/service/start/kms_oci_queue_query_creator_run',
+    $options
+  );
+  $prefix[] = l(
+    'Query queue',
+    'admin/ultimate-cron/service/start/ultimate_cron_queue_kms_oci_queue_query',
+    $options
+  );
+  $output['#prefix'] = implode(' - ', $prefix);
   $output['queues'] = kms_oci_queue_admin_page_jobs('jobs_waiting');
   $output['queues'] += kms_oci_queue_admin_page_jobs('jobs_done');
 
@@ -587,7 +598,6 @@ function _kms_oci_queue_sql_generate_line($type, $data, $table) {
  *   Sql output.
  */
 function _kms_oci_queue_process_perms_query_creator_queue_item($item) {
-//  _adapt_debug('mikkel', $item);
   $output = array();
   foreach ($item->diff as $perm_type => $diff) {
     $data = array(
@@ -629,7 +639,7 @@ function _kms_oci_queue_process_perms_query_creator_queue_item($item) {
   if (!empty($output)) {
     array_unshift($output, $sql->generateHeader());
   }
-//  _adapt_debug('mikkel', implode("\n", $output));
+
   // Return all created query lines.
   return implode("\n", $output);
 }
@@ -730,48 +740,48 @@ function kms_oci_queue_json_pretty($json, $options = array()) {
  */
 function _kms_oci_queue_create_update_smuser_data($account, $user = FALSE) {
   $data = _kms_user_oracle_default_user_data($account, 'update');
-  unset($data['user_extra'][':usertype']);
-  unset($data['user_extra'][':usertype_info']);
+  unset($data['user_extra']['usertype']);
+  unset($data['user_extra']['usertype_info']);
 
-  $data['user'][':disabled'] = (integer)!$account->status;
+  $data['user']['disabled'] = (integer)!$account->status;
   if (isset($account->field_address[LANGUAGE_NONE][0]['first_name'])) {
-    $data['user'][':firstname']
+    $data['user']['firstname']
       = $account->field_address[LANGUAGE_NONE][0]['first_name'];
   }
   if (isset($account->field_address[LANGUAGE_NONE][0]['last_name'])) {
-    $data['user'][':lastname']
+    $data['user']['lastname']
       = $account->field_address[LANGUAGE_NONE][0]['last_name'];
   }
   if (isset($account->field_phone[LANGUAGE_NONE][0]['value'])) {
-    $data['user'][':telephonenumber']
+    $data['user']['telephonenumber']
       = $account->field_phone[LANGUAGE_NONE][0]['value'];
   }
   if (isset($account->field_debtor_nr[LANGUAGE_NONE][0]['value'])) {
-    $data['user'][':debitorno']
+    $data['user']['debitorno']
       = $account->field_debtor_nr[LANGUAGE_NONE][0]['value'];
   }
   // smuser_extra.
   if (isset($account->field_user_type[LANGUAGE_NONE][0]['tid'])) {
-    $data['user_extra'][':usertype']
+    $data['user_extra']['usertype']
       = $account->field_user_type[LANGUAGE_NONE][0]['tid'];
   }
   if (isset($account->field_user_type_info[LANGUAGE_NONE][0]['value'])) {
-    $data['user_extra'][':usertype_info']
+    $data['user_extra']['usertype_info']
       = $account->field_user_type_info[LANGUAGE_NONE][0]['value'];
   }
   else {
-    $data['user_extra'][':usertype_info'] = '';
+    $data['user_extra']['usertype_info'] = '';
   }
   if (isset($account->field_newsletter[LANGUAGE_NONE][0]['value'])) {
-    $data['user_extra'][':receive_newsletter']
+    $data['user_extra']['receive_newsletter']
       = $account->field_newsletter[LANGUAGE_NONE][0]['value'];
   }
   if (isset($account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'])) {
-    $data['user_extra'][':accept_terms'] =
+    $data['user_extra']['accept_terms'] =
       $account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'];
   }
   if (isset($account->field_contact_me[LANGUAGE_NONE][0]['value'])) {
-    $data['user_extra'][':contact_me'] =
+    $data['user_extra']['contact_me'] =
       $account->field_contact_me[LANGUAGE_NONE][0]['value'];
   }
 
@@ -790,23 +800,23 @@ function _kms_oci_queue_create_insert_smuser_data($account) {
   $data = _kms_user_oracle_default_user_data($account, 'insert');
 
   if (isset($account->field_user_type[LANGUAGE_NONE][0]['tid'])) {
-    $data['user_extra'][':usertype']
+    $data['user_extra']['usertype']
       = $account->field_user_type[LANGUAGE_NONE][0]['tid'];
   }
   if (isset($account->field_user_type_info[LANGUAGE_NONE][0]['value'])) {
-    $data['user_extra'][':usertype_info']
+    $data['user_extra']['usertype_info']
       = $account->field_user_type_info[LANGUAGE_NONE][0]['value'];
   }
   if (isset($account->field_newsletter[LANGUAGE_NONE][0]['value'])) {
-    $data['user_extra'][':receive_newsletter']
+    $data['user_extra']['receive_newsletter']
       = $account->field_newsletter[LANGUAGE_NONE][0]['value'];
   }
   if (isset($account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'])) {
-    $data['user_extra'][':accept_terms']
+    $data['user_extra']['accept_terms']
       = $account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'];
   }
   if (isset($account->field_contact_me[LANGUAGE_NONE][0]['value'])) {
-    $data['user_extra'][':contact_me']
+    $data['user_extra']['contact_me']
       = $account->field_contact_me[LANGUAGE_NONE][0]['value'];
   }
 
@@ -884,15 +894,14 @@ function _kms_oci_queue_jobs_state_changed() {
 
 }
 
+/**
+ * Implements hook_user_presave().
+ */
 function kms_oci_queue_user_presave(&$edit, $account, $category) {
   $account_new = (object)$edit;
   $account_new->uid = $account->uid;
-
   $data = _kms_user_user_update_oci_queue_prepare_data($account_new, $account);
   $data_hash = md5(json_encode($data['user_data']));
-//  $data_hash = $data['user_data'];
-//  _adapt_debug('mikkel', __FILE__);
-//  _adapt_debug('mikkel', $data);
-//  _adapt_debug('mikkel', str_repeat('+', 100));
+  // We save the hash in the user object so we can detect user data changes.
   $edit['data']['kms_oci_queue_user_data_hash'] = $data_hash;
 }

@@ -35,23 +35,18 @@ function kms_user_user_save_query_creator_run($jid, $creator_item, $exe_queue) {
   $line_num = 0;
   array_walk(
     $creator_item->params,
-    function ($user_query) use ($jid, $num_exe_items, $creator_item, &$exe_queue, &$line_num){
+    function ($query_data) use ($jid, $num_exe_items, $creator_item, &$exe_queue, &$line_num){
       $line_num++;
-      list($data, $table) = $user_query;
+      list($data, $table, $is_new) = $query_data;
       kms_oci_filter_query_data($data);
-      $query = kms_oci_generate_query(
-        'insert',
-        $data,
-        array('table' => $table)
-      );
       // Queue the item.
       $exe_queue_item = (object) array(
         'jid' => $jid,
         'action' => $creator_item->action,
-        'query' => $query,
         'data' => $data,
         'table' => $table,
-        'kms_id' => $data[':userid'],
+        'kms_id' => $data['userid'],
+        'is_new' => $is_new,
         'is_last_item' => $line_num == $num_exe_items,
       );
       $exe_queue->createItem($exe_queue_item);
@@ -73,12 +68,12 @@ function kms_user_user_save_query_creator_run($jid, $creator_item, $exe_queue) {
  *   Generated oracle queries.
  */
 function kms_user_user_save_query_run($item) {
-  $output = sprintf("DELETE FROM %s WHERE USERID = '%s'", $item->table, $item->kms_id);
-  $output .= ";\n";
-  $output .= _kms_oci_queue_sql_generate_line(
-    'insert',
-    $item->data,
-    $item->table
-  );
-  return $output;
+  $sql = new KmsOciQueueSql('user', $item->data);
+  $output = array();
+  $statement_type = $item->is_new ? 'insert' : 'upsert';
+  $output[] = $sql->generate($statement_type, $item->table);
+  if (!$item->is_last_item) {
+    array_unshift($output, $sql->generateHeader());
+  }
+  return implode("\n", $output);
 }

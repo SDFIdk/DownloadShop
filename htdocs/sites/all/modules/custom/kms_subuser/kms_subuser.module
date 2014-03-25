@@ -732,8 +732,8 @@ function kms_subuser_insert_account_oracle($user, $account) {
       )
     ),
     'params' => array(
-      array($data['user'], 'smuser'),
-      array($data['user_extra'], 'smuser_extra'),
+      array($data['user'], 'smuser', TRUE),
+      array($data['user_extra'], 'smuser_extra', TRUE),
     ),
   ));
   // Populate user permission tables of the user in Oracle
@@ -745,7 +745,7 @@ function kms_subuser_insert_account_oracle($user, $account) {
   _kms_permissions_get_separate_perms_by_uid($user->uid, $perms);
 
   $job_params = array(
-    'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+    'action' => KMS_OCI_QUEUE_ACTION_PERMS_ATTACH,
     'action_details' => format_string(
       'Attaching bundles: @bundles to subuser: @subuser.',
       array(
@@ -794,8 +794,8 @@ function kms_subuser_update_account_oracle($user, $account) {
         )
       ),
       'params' => array(
-        array($data['user'], 'smuser'),
-        array($data['user_extra'], 'smuser_extra'),
+        array($data['user'], 'smuser', FALSE),
+        array($data['user_extra'], 'smuser_extra', FALSE),
       ),
     ));
   }
