@@ -717,16 +717,13 @@ function _kms_permissions_common_form_alter(&$form) {
 
 
 function kms_permissions_process_access_bundles_form_element($element) {
-//  $bids = _kms_permissions_get_access_bundles('default');
-//  foreach (element_children($element) as $bid) {
-//    if(in_array($bid, $bids)) {
-//      $element[$bid]['#attributes']['class'][] = 'default-bundle';
-//      $element[$bid]['#weight'] = $element[$bid]['#weight'] - 200;
-//    }
-//    if($checked) {
-//      $element[$bid]['#attributes']['checked'][] = 'checked';
-//    }
-//  }
+  $bids = _kms_permissions_get_access_bundles('default');
+  foreach (element_children($element) as $bid) {
+    if(in_array($bid, $bids)) {
+      $element[$bid]['#attributes']['class'][] = 'default-bundle';
+      $element[$bid]['#weight'] = $element[$bid]['#weight'] - 200;
+    }
+  }
 
   return $element;
 }

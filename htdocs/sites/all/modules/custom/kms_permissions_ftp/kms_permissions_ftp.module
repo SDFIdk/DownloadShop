@@ -7,7 +7,7 @@
  * @author Linas Balke <linas@adapt.dk>
  */
 
-define('KMS_FTP_STRUCTURE_DIR', '/data3/Statsaftalen');
+define('KMS_FTP_STRUCTURE_DIR', '/data3/Statsaftalen'); //data3/Statsaftalen
 define('KMS_FTP_SCRIPT_CALL1', 'ssh -i  $HOME/.ssh/updateftpservers loadftp1.kmsext.dk');
 define('KMS_FTP_SCRIPT_CALL2', 'ssh -i  $HOME/.ssh/updateftpservers loadftp2.kmsext.dk');
 
@@ -140,7 +140,8 @@ function kms_permissions_ftp_scan_store_structure() {
 function kms_permissions_ftp_scan_structure() {
   // Set the dir to read from
   is_dir(KMS_FTP_STRUCTURE_DIR) ? $folders = scandir(KMS_FTP_STRUCTURE_DIR): $folders = array();
-
+  $skip_folders = array('.', '..');
+  //print_r($folders);
   return $folders;
 }
 
@@ -151,9 +152,14 @@ function kms_permissions_ftp_entity_presave($entity) {
   $lang = field_language('user', $entity, 'field_ftp_permissions');
 
   if(!empty($entity->field_ftp_permissions)) {
-    if($entity->field_ftp_permissions[$lang] !== $entity->original->field_ftp_permissions[$lang]){
+    if(empty($entity->original->field_ftp_permissions)) {
       watchdog('Permissions FTP', 'Change has been triggered in FTP permissions for individual user', array(), WATCHDOG_NOTICE);
       variable_set('kms_ftp_perm_change', TRUE);
+    } else {
+      if($entity->field_ftp_permissions[$lang] !== $entity->original->field_ftp_permissions[$lang]){
+        watchdog('Permissions FTP', 'Change has been triggered in FTP permissions for individual user', array(), WATCHDOG_NOTICE);
+        variable_set('kms_ftp_perm_change', TRUE);
+      }
     }
   }
 }
