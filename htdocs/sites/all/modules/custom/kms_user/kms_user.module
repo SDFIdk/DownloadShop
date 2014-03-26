@@ -881,7 +881,6 @@ function kms_user_smuser_deactivate($account) {
   $data['user']['disabled'] = 1;
   $data['user']['userid'] = kms_user_get_userid($account);
 
-  // Atodo: Create kms oci queue job here.
   KmsOciQueueJob::create(array(
     'action' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
     'action_details' => format_string(

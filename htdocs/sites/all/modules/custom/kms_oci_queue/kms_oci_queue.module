@@ -20,7 +20,6 @@ define('KMS_OCI_QUEUE_ACTION_CLONE_USER_PERMS', 'clone_user_perms');
 define('KMS_OCI_QUEUE_CRON_DELETE_JOBS_KEEP', 25);
 define('KMS_OCI_QUEUE_CRON_DELETE_JOBS_PER_RUN', 100);
 
-// Atodo: Use this in near future. Otherwise discard.
 require_once 'kms_oci_queue.actions.inc';
 
 /**
