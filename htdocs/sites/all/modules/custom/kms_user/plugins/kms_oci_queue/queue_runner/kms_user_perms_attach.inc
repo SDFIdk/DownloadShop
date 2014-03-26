@@ -36,6 +36,9 @@ function kms_user_perms_attach_query_creator_run($jid, $creator_item, $exe_queue
   $uid = $creator_item->params['uid'];
   $bids = $creator_item->params['bids'];
   $perms_diff = $creator_item->params['perms_diff'];
+//  _adapt_debug('mikkel', __LINE__);
+//  _adapt_debug('mikkel', $bids);
+//  _adapt_debug('mikkel', $perms_diff);
   $line_num = 0;
 
   $bundle_perms = array();
@@ -87,7 +90,8 @@ function kms_user_perms_attach_query_creator_run($jid, $creator_item, $exe_queue
       $type_diff['remove'] = array_diff($perm_diff['remove'], $bundle_perms[$perm_type]);
     }
   }
-
+//  _adapt_debug('mikkel', __LINE__);
+//  _adapt_debug('mikkel', $diff);
   // Queue the item.
   $exe_queue_item = array(
     'jid' => $jid,
@@ -113,6 +117,5 @@ function kms_user_perms_attach_query_creator_run($jid, $creator_item, $exe_queue
  *   Generated oracle queries.
  */
 function kms_user_perms_attach_query_run($item) {
-//  return kms_permisssions_create_oci_sql_from_perm_diff($item->diff, $item->kms_id);
   return kmsPermsDiff::createOciSqlFromPermDiff($item->diff, $item->kms_id);
 }

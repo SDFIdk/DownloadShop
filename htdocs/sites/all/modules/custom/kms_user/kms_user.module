@@ -539,58 +539,86 @@ function kms_user_render_username($user) {
 EOD;
 }
 
+/**
+ * Submit handler that creates oci queue jobs.
+ *
+ * @param array $form
+ * @param array $form_state
+ */
 function _kms_user_submit_insert_user_oracle($form, &$form_state) {
+  if (!module_exists('kms_oci_queue')) {
+    return;
+  }
+  global $user;
   $account = (object)$form_state['values'];
-  $user = $form['#user'];
-  if (empty($user->uid)) {
+
+  if (empty($account->uid)) {
     return;
   }
 
-  // Insert oracle user data.
-  if (module_exists('kms_oci_queue')) {
-//      kms_oci_insert($data['user_extra'], 'smuser_extra');
-//      kms_oci_insert($data['user'], 'smuser');
-    $data = _kms_oci_queue_create_insert_smuser_data($account);
-    // Populate user tables in oracle.
-    $jobs = array();
-    $jobs[] = KmsOciQueueJob::create(array(
-      'action' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
-      'action_details' => format_string(
-        'Inserting new user: @user_details.',
-        array(
-          '@user_details' => json_encode($data),
-        )
-      ),
-      'params' => array(
-        array($data['user'], 'SMUSER', TRUE),
-        array($data['user_extra'], 'SMUSER_EXTRA', TRUE),
-      )
-    ));
-    // Populate user permission tables of the new user in Oracle
-    // with permissions from the default bundles.
-    $bids = _kms_permissions_get_default_bundles();
-    $job_params = array(
-      'action' => KMS_OCI_QUEUE_ACTION_PERMS_ATTACH,
-      'action_details' => format_string(
-        'Attaching default bundles: @bundles to new user: @user.',
-        array(
-          '@bundles' => implode(', ', $bids),
-          '@user' => $account->uid,
-        )
-      ),
-      'params' => array(
-        'uid' => $account->uid,
-        'bids' => $bids,
-      ),
+  $perm_options = array('key_prefix' => FALSE, 'flattened' => TRUE);
+  // If an account is being created by an logged in user then user bundles
+  // and separate perms.
+  if ($user->uid) {
+    $perms = array();
+    foreach (kms_permissions_get_bids_by_uid($account->uid) as $bid) {
+      _kms_permissions_get_permissions_by_bid($bid, $perms, $perm_options);
+    }
+    _kms_permissions_get_separate_perms_by_uid($account->uid, $perms, $perm_options);
+  }
+  // Otherwise it is a simple register form
+  // with no separate permissions and bundle options.
+  else {
+    $perms = array();
+    foreach (_kms_permissions_get_default_bundles() as $def_bid) {
+      _kms_permissions_get_permissions_by_bid(
+        $def_bid,
+        $perms,
+        $perm_options
+      );
+    }
+  }
+
+  $jobs = array();
+  $data = _kms_oci_queue_create_insert_smuser_data($account);
+  // Write user data.
+  kms_oci_queue_job_action_user_insert(
+    $jobs,
+    $data,
+    'Inserting user: @user_details.',
+    array('@user_details' => json_encode($data['user']))
+  );
+
+  // Handle user permissions.
+  if (!empty($perms['services']) || !empty($perms['applications'])) {
+    $perms_diff['services']['add'] = $perms['services'];
+    $perms_diff['services']['remove'] = array();
+    $perms_diff['applications']['add'] = $perms['applications'];
+    $perms_diff['applications']['remove'] = array();
+    kms_oci_queue_job_action_perms_attach(
+      $jobs,
+      $account->uid,
+      array(),
+      $perms_diff,
+      '',
+      array('@user' => $account->name)
     );
-    $jobs[] = KmsOciQueueJob::create($job_params);
-    $jobs[] = KmsOciQueueJob::create($job_params, 'kms_permissions');
+  }
+
+  // Do we have any jobs to be done then group them.
+  if (!empty($jobs)) {
     $job_group = new KmsOciQueueJobGroup();
     $job_group->add($jobs);
   }
 
 }
 
+/**
+ * Submit handler that creates oci queue jobs.
+ *
+ * @param array $form
+ * @param array $form_state
+ */
 function _kms_user_submit_update_user_oracle($form, &$form_state) {
   // Update Oracle tables if Oracle connection is available.
   if (!module_exists('kms_oci')) {
@@ -632,7 +660,7 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
   ) {
     // Only consider bundle id's that is not a part of the diff array.
     $bids = array_diff(
-      kms_permissions_get_bids_by_uid($user_original->uid, TRUE),
+      kms_permissions_get_bids_by_uid($user_original->uids),
       $bundle_diff['add']
     );
     // Handle user permissions.
@@ -661,7 +689,7 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
  * @return array $data
  *   Default user data.
  */
-function _kms_user_oracle_default_user_data($account, $mode) {
+function _kms_user_oracle_default_user_data($account) {
   $data = array();
   $data['user'] = array(
     'userid' => $account->uid,

@@ -739,7 +739,7 @@ function kms_oci_queue_json_pretty($json, $options = array()) {
  *   Oracle user data.
  */
 function _kms_oci_queue_create_update_smuser_data($account, $user = FALSE) {
-  $data = _kms_user_oracle_default_user_data($account, 'update');
+  $data = _kms_user_oracle_default_user_data($account);
   unset($data['user_extra']['usertype']);
   unset($data['user_extra']['usertype_info']);
 
@@ -797,7 +797,7 @@ function _kms_oci_queue_create_update_smuser_data($account, $user = FALSE) {
  * @return array
  */
 function _kms_oci_queue_create_insert_smuser_data($account) {
-  $data = _kms_user_oracle_default_user_data($account, 'insert');
+  $data = _kms_user_oracle_default_user_data($account);
 
   if (isset($account->field_user_type[LANGUAGE_NONE][0]['tid'])) {
     $data['user_extra']['usertype']
