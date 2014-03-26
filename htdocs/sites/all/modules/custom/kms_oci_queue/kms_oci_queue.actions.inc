@@ -84,23 +84,24 @@ function kms_oci_queue_job_action_user_update(&$jobs, $data, $message = '', $var
  */
 function kms_oci_queue_job_action_perms_attach(&$jobs, $uid, $bids, $perms_diff, $message = '', $vars = array()) {
   if (empty($message)) {
-    $message =<<<EOD
-Administer permissions on user: @user.
-Permissions:
-&nbsp;&nbsp;Services
-&nbsp;&nbsp;&nbsp;&nbsp;Add: @add_services
-&nbsp;&nbsp;&nbsp;&nbsp;Remove: @remove_services
-&nbsp;&nbsp;Applications
-&nbsp;&nbsp;&nbsp;&nbsp;Add: @add_applications
-&nbsp;&nbsp;&nbsp;&nbsp;Remove: @remove_applications
-EOD;
+    $message = 'Administer permissions on user: @user.';
+//    $message =<<<EOD
+//Administer permissions on user: @user.
+//Permissions:
+//&nbsp;&nbsp;Services
+//&nbsp;&nbsp;&nbsp;&nbsp;Add: @add_services
+//&nbsp;&nbsp;&nbsp;&nbsp;Remove: @remove_services
+//&nbsp;&nbsp;Applications
+//&nbsp;&nbsp;&nbsp;&nbsp;Add: @add_applications
+//&nbsp;&nbsp;&nbsp;&nbsp;Remove: @remove_applications
+//EOD;
   }
-  $vars += array(
-    '@add_services' => implode(', ', $perms_diff['services']['add']),
-    '@remove_services' => implode(', ', $perms_diff['services']['remove']),
-    '@add_applications' => implode(', ', $perms_diff['applications']['add']),
-    '@remove_applications' => implode(', ', $perms_diff['applications']['remove']),
-  );
+//  $vars += array(
+//    '@add_services' => implode(', ', $perms_diff['services']['add']),
+//    '@remove_services' => implode(', ', $perms_diff['services']['remove']),
+//    '@add_applications' => implode(', ', $perms_diff['applications']['add']),
+//    '@remove_applications' => implode(', ', $perms_diff['applications']['remove']),
+//  );
   $job_params = array(
     'action' => KMS_OCI_QUEUE_ACTION_PERMS_ATTACH,
     'action_details' => format_string(
