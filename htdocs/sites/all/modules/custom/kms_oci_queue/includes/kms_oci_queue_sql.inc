@@ -27,14 +27,8 @@ class KmsOciQueueSql {
     $callback = array($this->sqlClass, $query_type);
     if (is_callable($callback)) {
       $args = func_get_args();
-//      _adapt_debug('mikkel', 'args 1:');
-//      _adapt_debug('mikkel', $args);
       $args = array_slice($args, 1);
-//      _adapt_debug('mikkel', 'args 2:');
-//      _adapt_debug('mikkel', $args);
-//      _adapt_debug('mikkel', $callback);
       $sql = call_user_func_array($callback, $args);
-//      _adapt_debug('mikkel', $sql);
       $sql = $this->replacePlaceholders($sql, $this->data);
       return !empty($sql) ? sprintf("%s\n", $sql) : FALSE;
     }
@@ -50,9 +44,6 @@ class KmsOciQueueSql {
   }
 
   protected function replacePlaceholders($sql, $data) {
-//    _adapt_debug('mikkel', __METHOD__);
-//    _adapt_debug('mikkel', $sql);
-//    _adapt_debug('mikkel', $data);
     $patterns = $replacements = array();
     array_walk($data, function($v, $k) use(&$patterns, &$replacements){
       $patterns[] = '#\\*' . $k . '\\*#';
@@ -152,7 +143,7 @@ EOD;
   public static function insert() {
     $table = self::$conf['table'];
     return <<<EOD
-  INSERT INTO $table (ID, GROUPID, USERID) VALUES (:userid, *groupid*, :userid);
+INSERT INTO $table (ID, GROUPID, USERID) VALUES (:userid, *groupid*, :userid);
 EOD;
   }
 
@@ -180,6 +171,7 @@ class KmsOciQueueSqlUser {
         'LASTNAME' => '',
         'TELEPHONENUMBER' => '',
         'DEBITORNO' => '',
+        'PASSWORD' => '',
       ),
       'SMUSER_EXTRA' => array(
         'USERID' => '',
@@ -201,8 +193,6 @@ EOD;
   }
 
   public static function upsert($table = '') {
-//    _adapt_debug('mikkel', __METHOD__);
-//    _adapt_debug('mikkel', $table);
     $sql = array();
     $tables = self::$conf['default_values'];
     foreach ($tables as $table_name => $conf) {
@@ -230,8 +220,6 @@ EOD;
   }
 
   public static function insert($table = '') {
-//    _adapt_debug('mikkel', 'hello:');
-//    _adapt_debug('mikkel', $table);
     $sql = array();
     $tables = self::$conf['default_values'];
     foreach ($tables as $table_name => $conf) {
@@ -243,7 +231,25 @@ EOD;
       $insert_cols = implode(', ', $cols);
       $insert_placeholders = implode(', ', $sql_data['insert']);
       $sql[] = <<<EOD
-  INSERT INTO $table ($insert_cols) VALUES ($insert_placeholders);
+INSERT INTO $table ($insert_cols) VALUES ($insert_placeholders);
+EOD;
+    }
+    $output = implode("\n", $sql);
+    return $output ? $output : '';
+  }
+
+  public static function update($table = '') {
+    $sql = array();
+    $tables = self::$conf['default_values'];
+    foreach ($tables as $table_name => $conf) {
+      if (!empty($table) && strtoupper($table) != $table_name) {
+        continue;
+      }
+      $cols = array_keys($conf);
+      $sql_data = self::sqlData($cols);
+      $update_placeholders = implode(', ', $sql_data['update']);
+      $sql[] = <<<EOD
+UPDATE $table t SET $update_placeholders WHERE t.userid = :userid;
 EOD;
     }
     $output = implode("\n", $sql);

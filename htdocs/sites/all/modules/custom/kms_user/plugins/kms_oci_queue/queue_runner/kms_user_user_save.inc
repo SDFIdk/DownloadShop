@@ -70,7 +70,7 @@ function kms_user_user_save_query_creator_run($jid, $creator_item, $exe_queue) {
 function kms_user_user_save_query_run($item) {
   $sql = new KmsOciQueueSql('user', $item->data);
   $output = array();
-  $statement_type = $item->is_new ? 'insert' : 'upsert';
+  $statement_type = $item->is_new ? 'insert' : 'update';
   $output[] = $sql->generate($statement_type, $item->table);
   if (!$item->is_last_item) {
     array_unshift($output, $sql->generateHeader());

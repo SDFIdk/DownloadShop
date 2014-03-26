@@ -16,7 +16,7 @@ define('KMS_SUBUSER_ROLE_NAME', 'subuser');
  * Implements hook_ctools_plugin_directory
  */
 function kms_subuser_ctools_plugin_directory($module, $plugin) {
-  // we'll be nice and limit scandir() calls
+  // We'll be nice and limit scandir() calls.
   if ($module == 'ctools') {
     return "plugins/$plugin";
   }
@@ -53,7 +53,7 @@ function kms_subuser_menu() {
     'type' => MENU_CALLBACK,
   );
   $items['admin/kms-subuser/%ctools_js/%user/%'] = array(
-    'title' =>'Administer subuser',
+    'title' => 'Administer subuser',
     'description' => 'Change values or cancel account',
     'access callback' => 'kms_subuser_administer_access',
     'access arguments' => array(3),
@@ -77,7 +77,7 @@ function kms_subuser_theme($existing, $type, $theme, $path) {
       'variables' => array('master_user' => NULL),
     ),
   );
-} 
+}
 
 /**
  * Drupal form.
@@ -95,31 +95,15 @@ function kms_subuser_theme($existing, $type, $theme, $path) {
  */
 function kms_subuser_form($form, &$form_state, $master_user, $mode = 'insert') {
   global $user;
-  
+
   $ajax_wrapper = 'kms-subuser-' . $mode . '-form-wrapper';
 
   $form['#user'] = $user;
   $form['#prefix'] = '<div id="' . $ajax_wrapper . '">';
   $form['#suffix'] = '<div class="clear-both">&nbsp;</div></div>';
-  // $form['#submit'][] = '_kms_user_submit_insert_user_oracle';
-  
+
   $form['master_uid'] = array('#type' => 'hidden', '#value' => $master_user->uid);
 
-  // $add_subuser_btn = theme(
-  //   'image',
-  //   array('path' => drupal_get_path('module', 'kms_subuser') . '/images/checkbutton.jpg')
-  // );
-
-  // $form['add_subuser'] = array(
-  //   '#type' => 'radios',
-  //   '#options' => array(1 => $add_subuser_btn),
-  // );
-
-  // $states_add_subuser = array(
-  //   'visible' => array(
-  //     ':input[name="add_subuser"]' => array('checked' => TRUE),
-  //   ),
-  // );
   $form['user_pass'] = array(
     '#type' => 'container',
     '#attributes' => array(
@@ -127,12 +111,11 @@ function kms_subuser_form($form, &$form_state, $master_user, $mode = 'insert') {
     ),
   );
   $form['user_pass']['name'] = array(
-    '#type' => 'textfield', 
-    '#title' => t('Username'), 
-    '#size' => 16, 
+    '#type' => 'textfield',
+    '#title' => t('Username'),
+    '#size' => 16,
     '#maxlength' => 128,
     '#required' => TRUE,
-    // '#states' => $states_add_subuser,
     '#element_validate' => array('_kms_user_validate_username'),
   );
   $form['user_pass']['pass'] = array(
@@ -141,7 +124,6 @@ function kms_subuser_form($form, &$form_state, $master_user, $mode = 'insert') {
     '#maxlength' => 128,
     '#title' => t('Password'),
     '#required' => TRUE,
-    // '#states' => $states_add_subuser,
   );
   $form['user_expire'] = array(
     '#title' => t('Expire date'),
@@ -150,13 +132,11 @@ function kms_subuser_form($form, &$form_state, $master_user, $mode = 'insert') {
     '#size' => 16,
     '#description' => t('(optional) Select when user expires. Leave empty for never.'),
     '#date_format' => 'd.m.Y',
-    // '#states' => $states_add_subuser,
   );
   $form['user_remark'] = array(
     '#title' => t('User remark'),
     '#type' => 'textarea',
     '#description' => t('Optional remarks about the user.'),
-    // '#states' => $states_add_subuser,
   );
   $form['submit'] = array(
     '#type' => 'submit',
@@ -166,7 +146,6 @@ function kms_subuser_form($form, &$form_state, $master_user, $mode = 'insert') {
       'wrapper' => $ajax_wrapper,
       'callback' => 'kms_subuser_ajax_callback',
     ),
-    // '#states' => $states_add_subuser,
   );
 
   return $form;
@@ -200,13 +179,13 @@ function kms_subuser_insert_form_submit(&$form, &$form_state) {
   );
 
   $uwrapper = entity_metadata_wrapper('user', $user);
-  // $account returns user object
-  $account = user_save(null, $subuser);
+  // $account returns user object.
+  $account = user_save(NULL, $subuser);
   $suwrapper = entity_metadata_wrapper('user', $account);
   // Save user remark.
   $suwrapper->field_user_remark->set($values['user_remark']);
   // Save expire.
-  if(!empty($values['user_expire'])){
+  if (!empty($values['user_expire'])) {
     $suwrapper->field_expire_date->set(strtotime($values['user_expire']));
   }
   // Save cleartext passwd.
@@ -222,12 +201,11 @@ function kms_subuser_insert_form_submit(&$form, &$form_state) {
   // Insert user data into oracle.
   $account->pass = $pass;
   kms_subuser_insert_account_oracle($user, $account);
-  
   $subuser = kms_subuser_load($account->uid);
   if ($subuser) {
     kms_subuser_send_mail('register_subuser', $subuser);
   }
-  else{
+  else {
     drupal_set_message(t('There was a problem creating the subuser.'), 'error');
   }
 }
@@ -253,38 +231,43 @@ function kms_subuser_update_form_submit(&$form, &$form_state) {
 
   $suwrapper = entity_metadata_wrapper('user', $subuser);
   // Set name.
-  if(!empty($values['name'])){
+  if (!empty($values['name'])) {
     $suwrapper->name->set($values['name']);
-    $data['user'][':name'] = $values['name'];
+    $data['user']['name'] = $values['name'];
   }
   // Set user remark.
-  if(!empty($values['user_remark'])){
+  if (!empty($values['user_remark'])) {
     $suwrapper->field_user_remark->set($values['user_remark']);
-    $data['user'][':password'] = $values['pass'];
+    $data['user']['password'] = $values['pass'];
   }
   // Set expire.
-  if(!empty($values['user_expire'])){
+  if (!empty($values['user_expire'])) {
     $suwrapper->field_expire_date->set(strtotime($values['user_expire']));
     if (strtotime($values['user_expire']) > time()) {
       $suwrapper->status = 1;
-      $data['user'][':disabled'] = '0';
+      $data['user']['disabled'] = '0';
     } 
   }
   // Set password and cleartext passwd.
-  if(!empty($values['pass'])){
+  if (!empty($values['pass'])) {
     $suwrapper->field_pass_clear->set($values['pass']);
-    $data['user'][':password'] = $values['pass'];
+    $data['user']['password'] = $values['pass'];
   }
   // Save subuser entity.
   $suwrapper->save();
   // Save password.
-  if(!empty($values['pass'])){
+  if (!empty($values['pass'])) {
     $saved_subuser = user_load($subuser->uid);
     $edit['pass'] = $values['pass'];
     user_save($saved_subuser, $edit);
   }
   // Update Oracle.
-  kms_oci_update_user($data['user'], 'smuser', kms_user_get_userid($subuser));
+  $data['user']['userid'] = $subuser->uid;
+  unset($data['user_extra']);
+//  $data['user'] = array_filter($data['user'], function($v) {
+//    return isset($v[0]);
+//  });
+  kms_oci_queue_job_action_user_update($jobs, $data);
 }
 
 /**
@@ -713,54 +696,18 @@ function kms_subuser_profile_submit($form, &$form_state) {
  * @return void
  */
 function kms_subuser_insert_account_oracle($user, $account) {
+  if (!module_exists('kms_oci')) {
+    return;
+  }
   // Get default data.
   $data = _kms_user_oracle_default_user_data($account, 'insert');
   // Set master user id.
   $data['user_extra'][':master_userid'] = $user->uid;
   // Insert oracle user data.
-  if (!module_exists('kms_oci')) {
-    return;
-  }
 
   $jobs = array();
-  $jobs[] = KmsOciQueueJob::create(array(
-    'action' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
-    'action_details' => format_string(
-      'Inserting new subuser: @subuser_details.',
-      array(
-        '@subuser_details' => json_encode($data),
-      )
-    ),
-    'params' => array(
-      array($data['user'], 'smuser', TRUE),
-      array($data['user_extra'], 'smuser_extra', TRUE),
-    ),
-  ));
-  // Populate user permission tables of the user in Oracle
-  // with permissions from the source user bundles.
-  $bids = kms_permissions_get_bids_by_uid($user->uid);
-
-  // Get separate source user permissions and add them to $perms array.
-  $perms = array();
-  _kms_permissions_get_separate_perms_by_uid($user->uid, $perms);
-
-  $job_params = array(
-    'action' => KMS_OCI_QUEUE_ACTION_PERMS_ATTACH,
-    'action_details' => format_string(
-      'Attaching bundles: @bundles to subuser: @subuser.',
-      array(
-        '@bundles' => implode(', ', $bids),
-        '@subuser' => $account->uid,
-      )
-    ),
-    'params' => array(
-      'uid' => $account->uid,
-      'bids' => $bids,
-      'perms' => $perms,
-    ),
-  );
-  $jobs[] = KmsOciQueueJob::create($job_params);
-  $jobs[] = KmsOciQueueJob::create($job_params, 'kms_permissions');
+  kms_oci_queue_job_action_user_insert($jobs, $data);
+  kms_oci_queue_job_action_clone_user_perms($jobs, $user, array($account->uid));
   $job_group = new KmsOciQueueJobGroup();
   $job_group->add($jobs);
 }
@@ -776,29 +723,20 @@ function kms_subuser_insert_account_oracle($user, $account) {
  * @return void
  */
 function kms_subuser_update_account_oracle($user, $account) {
+  if (!module_exists('kms_oci')) {
+    return;
+  }
   // Get default data.
   $data = _kms_user_oracle_default_user_data($account, 'update');
   // Set master user id.
   $data['user_extra'][':master_userid'] = $user->uid;
   // Update oracle user data.
-  if (module_exists('kms_oci')) {
-//    $kms_userid = kms_user_get_userid($account);
-//    kms_oci_update_user($data['user_extra'], 'smuser_extra', $kms_userid);
-//    kms_oci_update_user($data['user'], 'smuser', $kms_userid);
-    KmsOciQueueJob::create(array(
-      'action' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
-      'action_details' => format_string(
-        'Updating subuser: @subuser_details.',
-        array(
-          '@subuser_details' => json_encode($data),
-        )
-      ),
-      'params' => array(
-        array($data['user'], 'smuser', FALSE),
-        array($data['user_extra'], 'smuser_extra', FALSE),
-      ),
-    ));
-  }
+  kms_oci_queue_job_action_user_update(
+    $jobs,
+    $data,
+    'Updating subuser: @subuser_details.',
+    array('@subuser_details' => json_encode($data))
+  );
 }
 
 /**
