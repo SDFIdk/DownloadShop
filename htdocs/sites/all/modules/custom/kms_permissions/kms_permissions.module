@@ -813,6 +813,8 @@ function kms_permissions_node_presave($node) {
 }
 
 function kms_permissions_node_load($nodes, $types) {
+  // Atodo skip this until it is fully implemented.
+  return;
   // Decide whether any of $types are relevant to our purposes.
   if (in_array('access_bundle', $types)) {
     // Gather our extra data for each of these nodes.
