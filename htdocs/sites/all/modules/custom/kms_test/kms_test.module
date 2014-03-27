@@ -447,3 +447,19 @@ function kms_test_test_user_subuser_array() {
   kms_subuser_uids_add_subuser_uids($uids);
   var_dump($uids);
 }
+
+
+function kms_test_delete_job($jid) {
+  $job = KmsOciQueueJobFactory::get($jid);
+  if ($job) {
+    $job->delete();
+  }
+}
+
+function kms_test_delete_job_range() {
+  $i = 1311107;
+  do {
+    kms_test_delete_job($i);
+    $i++;
+  } while ($i <= 1311242);
+}

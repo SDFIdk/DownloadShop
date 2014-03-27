@@ -238,7 +238,7 @@ EOD;
     return $output ? $output : '';
   }
 
-  public static function update($table = '') {
+  public static function update($table = '', $data) {
     $sql = array();
     $tables = self::$conf['default_values'];
     foreach ($tables as $table_name => $conf) {
@@ -246,10 +246,13 @@ EOD;
         continue;
       }
       $cols = array_keys($conf);
-      $sql_data = self::sqlData($cols);
-      $update_placeholders = implode(', ', $sql_data['update']);
+      $col_values = array();
+      foreach ($data as $col => $val) {
+        $col_values[] = sprintf("t.%s = '%s'", $col, $val);
+      }
+      $values = implode(', ', $col_values);
       $sql[] = <<<EOD
-UPDATE $table t SET $update_placeholders WHERE t.userid = :userid;
+UPDATE $table t SET $values WHERE t.userid = :userid;
 EOD;
     }
     $output = implode("\n", $sql);
