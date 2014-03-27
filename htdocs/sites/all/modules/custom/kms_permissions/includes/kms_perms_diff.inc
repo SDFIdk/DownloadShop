@@ -8,6 +8,19 @@
 
 class KmsPermsDiff {
 
+  public static function defaultDiff() {
+    return array(
+      'services' => array(
+        'add' => array(),
+        'remove' => array(),
+      ),
+      'applications' => array(
+        'add' => array(),
+        'remove' => array(),
+      ),
+    );
+  }
+
   public static function diffSeparatePerms(EntityMetadataWrapper $w_original, EntityMetadataWrapper $w_new) {
     $perms_original = $perms_new = array(
       'services' => array(),
@@ -161,6 +174,85 @@ class KmsPermsDiff {
 
     // Return all created query lines.
     return implode("\n", $output);
+  }
+
+}
+
+class KmsPermsDiffDb {
+
+  protected static function constructSchemaName($type) {
+    return "kms_permissions_diff_$type";
+  }
+
+  protected static function constructIdentifier($type) {
+    switch ($type) {
+      case 'user':
+        $id = 'uid';
+        break;
+
+      case 'node':
+        $id = 'nid';
+        break;
+    }
+    return !empty($id) ? $id : FALSE;
+  }
+
+  public static function save($id, $diff_data, $type) {
+    $id_field = self::constructIdentifier($type);
+    if ($id_field) {
+      $diff = array(
+        $id_field => $id,
+        'diff' => $diff_data,
+      );
+      if (self::loadDiff($id, $type)) {
+        self::update((object) $diff, $type);
+      }
+      else {
+        self::insert((object) $diff, $type);
+      }
+    }
+
+  }
+
+  public static function insert($diff, $type){
+    $diff->timestamp = time();
+    $schema = self::constructSchemaName($type);
+    if (drupal_get_schema($schema)) {
+      return drupal_write_record($schema, $diff);
+    }
+    return FALSE;
+  }
+
+  public static function update($diff, $type){
+    $diff->timestamp = time();
+    $schema = self::constructSchemaName($type);
+    $id_field = self::constructIdentifier($type);
+    if (drupal_get_schema($schema)) {
+      return drupal_write_record($schema, $diff, $id_field);
+    }
+    return FALSE;
+  }
+
+  public static function loadDiff($id, $type){
+    $schema = self::constructSchemaName($type);
+    $id_field = self::constructIdentifier($type);
+    $query = db_select($schema, 'pd');
+    $query->fields('pd');
+    $query->condition('pd.' . $id_field, $id, '=');
+    $result = $query->execute()->fetchObject();
+    if (is_object($result)) {
+      return unserialize($result->diff);
+    }
+    return FALSE;
+  }
+
+  public static function deleteDiff($id, $type){
+    $schema = self::constructSchemaName($type);
+    $id_field = self::constructIdentifier($type);
+    $num_deleted = db_delete($schema)
+      ->condition($id_field, $id)
+      ->execute();
+    return (bool) $num_deleted;
   }
 
 }

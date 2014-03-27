@@ -68,15 +68,14 @@ function kms_permissions_bundle_save_query_creator_run($jid, $creator_item, $exe
  *   Generated oracle queries.
  */
 function kms_permissions_bundle_save_query_run($item) {
-  //  _adapt_debug('mikkel', $item);
   $bid = $item->bid;
   $kms_userid = kms_user_get_userid(user_load($item->uid));
   $job = KmsOciQueueJobFactory::get($item->jid);
-
+//  _adapt_debug('mikkel', __LINE__);
+//  _adapt_debug('mikkel', $kms_userid);
   // Get permissions from a user and add them to $user_perms array.
-  $user_perms = array();
+  $user_perms = array('services' => array(), 'applications' => array());
   $perms_options = array('key_prefix' => FALSE, 'flattened' => TRUE);
-//  _kms_permissions_get_permissions_by_uid($item->uid, $user_perms, $perms_options);
   $bids = kms_permissions_get_bids_by_uid($item->uid);
   // Do not include current bundle id.
   $bids = array_diff($bids, array($bid));
@@ -148,6 +147,7 @@ function kms_permissions_bundle_save_query_run($item) {
 //      var_dump($type_diff['remove']);
     }
   }
+//  _adapt_debug('mikkel', __LINE__);
 //  _adapt_debug('mikkel', $diff);
 //  _adapt_debug('mikkel', $kms_userid);
 //  _adapt_debug('mikkel', str_repeat('=', 100));

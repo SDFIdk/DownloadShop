@@ -9,84 +9,69 @@
  * Implementation of hook_schema().
  */
 function kms_permissions_schema() {
-  $schema['temp_service_perm_user'] = array(
-    'description' => t('Used to temporary store user service permissions before sending them to Oracle'),
+  $schema['kms_permissions_diff_node'] = array(
+    'description' => 'Used to store last permission diff on a node.',
     'fields' => array(
-      'id' => array(
-        'type' => 'serial',
+      'nid' => array(
+        'description' => 'The node id',
+        'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'description' => 'Primary Key: Unique item ID.',
+        'default' => 0,
       ),
-      'USERID' => array(
-        'type' => 'text',
-        'unsigned' => FALSE,
-        'description' => t('User id'),
+      'diff' => array(
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => 'A serialized array of kms permissions changes.',
       ),
-      'SERVICEID' => array(
-        'type' => 'text',
-        'unsigned' => FALSE,
-        'description' => t('Service id'),
-      ),
-      'MINX' => array(
-        'type' => 'text',
-        'unsigned' => FALSE,
-        'description' => t('Minimum X'),
-      ),
-      'MINY' => array(
-        'type' => 'text',
-        'unsigned' => FALSE,
-        'description' => t('Minimum Y'),
-      ),
-      'MAXX' => array(
-        'type' => 'text',
-        'unsigned' => FALSE,
-        'description' => t('Maximum X'),
-      ),
-      'MAXY' => array(
-        'type' => 'text',
-        'unsigned' => FALSE,
-        'description' => t('Maximum Y'),
-      ),
-      'MAXPIXELWIDTH' => array(
-        'type' => 'text',
-        'unsigned' => FALSE,
-        'description' => t('Maximum pixel width'),
-      ),
-      'MAXPIXELHEIGHT' => array(
-        'type' => 'text',
-        'unsigned' => FALSE,
-        'description' => t('Maximum pixel height'),
-      ),
-      'FEATUREINFO' => array(
-        'type' => 'text',
-        'unsigned' => FALSE,
-        'description' => t('Date and time of the vote.'),
+      'timestamp' => array(
+        'description' => 'The Unix timestamp when the diff was stored.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
       ),
     ),
-    'primary key' => array('id'),
+    'primary key' => array('nid'),
+    'foreign keys' => array(
+      'affected_node' => array(
+        'table' => 'node',
+        'columns' => array('nid' => 'nid'),
+      ),
+    ),
   );
-  $schema['temp_application_perm_user'] = array(
-    'description' => t('Used to temporary store user application permissions before sending them to Oracle'),
+  $schema['kms_permissions_diff_user'] = array(
+    'description' => 'Used to store last permission diff on a user.',
     'fields' => array(
-      'id' => array(
-        'type' => 'serial',
+      'uid' => array(
+        'description' => 'The user id',
+        'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'description' => 'Primary Key: Unique item ID.',
+        'default' => 0,
       ),
-      'USERID' => array(
-        'type' => 'text',
-        'unsigned' => FALSE,
-        'description' => t('User id'),
+      'diff' => array(
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => 'A serialized array of kms permissions changes.',
       ),
-      'GROUPID' => array(
-        'type' => 'text',
-        'unsigned' => FALSE,
-        'description' => t('Group id'),
+      'timestamp' => array(
+        'description' => 'The Unix timestamp when the diff was stored.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
       ),
     ),
-    'primary key' => array('id'),
+    'primary key' => array('uid'),
+    'foreign keys' => array(
+      'affected_node' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
   );
 
   return $schema;

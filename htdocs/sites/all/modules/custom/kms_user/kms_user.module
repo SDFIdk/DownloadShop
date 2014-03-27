@@ -1077,7 +1077,7 @@ function kms_user_vbo_access_bundle_finished($op, $context) {
       break;
     case 'clear':
       $message = 'VBO: All bundles (except default) are cleared from users. Affects @count users.';
-      $bids = _kms_permissions_get_default_bundles();
+      $bids = _kms_permissions_get_non_default_bundles();
       break;
     }
 
@@ -1086,18 +1086,42 @@ function kms_user_vbo_access_bundle_finished($op, $context) {
     kms_subuser_uids_add_subuser_uids($uids);
 
     foreach ($bids as $bid) {
+      $bundle_diff = KmsPermsDiff::defaultDiff();
+//      _adapt_debug('mikkel', $bundle_diff);
+      $perms_options = array('key_prefix' => FALSE, 'flattened' => TRUE);
+      switch ($op) {
+        case 'add':
+          _kms_permissions_get_permissions_by_bid($bid, $perms, $perms_options);
+          if (!empty($perms['services'])) {
+            $bundle_diff['services']['add'] = $perms['services'];
+          }
+          if (!empty($perms['applications'])) {
+            $bundle_diff['applications']['add'] = $perms['applications'];
+          }
+          break;
+        case 'clear':
+          _kms_permissions_get_permissions_by_bid($bid, $perms, $perms_options);
+          if (!empty($perms['services'])) {
+            $bundle_diff['services']['remove'] = $perms['services'];
+          }
+          if (!empty($perms['applications'])) {
+            $bundle_diff['applications']['remove'] = $perms['applications'];
+          }
+          break;
+      }
+//      _adapt_debug('mikkel', __LINE__);
+//      _adapt_debug('mikkel', $bundle_diff);
       $job_params = array(
         'action' => KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE,
         'params' => array(
           'uids' => $uids,
           'bid' => $bid,
+          'bundle_diff' => $bundle_diff,
         ),
       );
-      $bundle = node_load($bid);
       $job_params['action_details'] = format_string(
         $message,
         array(
-          '@bundle' => $bundle->title,
           '@count' => count($uids)
         )
       );
