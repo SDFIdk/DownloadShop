@@ -572,7 +572,6 @@ function kms_permissions_form_access_bundle_node_form_alter(&$form, &$form_state
   _kms_permissions_common_form_alter($form);
 }
 
-
 /**
  * Implements hook_form_FORM_ID_alter().
  */
@@ -1254,7 +1253,10 @@ function _kms_permissions_get_bundles_by_item_id($id, $item_type) {
     break;
 
     case 'application':
-      $nid_sid_arr = $get_bundle_ids($id, 'application', 'custom');
+      $nid_sid_arr = array_merge(
+        $get_bundle_ids($id, 'application', 'default'),
+        $get_bundle_ids($id, 'application', 'custom')
+      );
     break;
 
     case 'predefined':
