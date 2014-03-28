@@ -660,11 +660,18 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
   ) {
     // Only consider bundle id's that is not a part of the diff array.
     $bids = array_diff(
-      kms_permissions_get_bids_by_uid($user_original->uids),
+      kms_permissions_get_bids_by_uid($user_original->uid),
       $bundle_diff['add']
     );
     // Handle user permissions.
-    kms_oci_queue_job_action_perms_attach($jobs, $userids['old'], $bids, $perms_diff);
+    kms_oci_queue_job_action_perms_attach(
+      $jobs,
+      $userids['old'],
+      $bids,
+      $perms_diff,
+      '',
+      array('@user' => $user_new->name)
+    );
     // If the user has any subuser clone permissions to them.
     $subusers = subuser_load_all($user_original);
     if (!empty($subusers)) {
