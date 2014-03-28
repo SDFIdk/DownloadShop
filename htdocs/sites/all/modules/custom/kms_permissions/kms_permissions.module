@@ -812,22 +812,22 @@ function kms_permissions_node_presave($node) {
 
 }
 
-function kms_permissions_node_load($nodes, $types) {
-  // Atodo skip this until it is fully implemented.
-  return;
-  // Decide whether any of $types are relevant to our purposes.
-  if (in_array('access_bundle', $types)) {
-    // Gather our extra data for each of these nodes.
-    $result = db_query(
-      'SELECT nid, diff FROM {kms_permissions_diff_node} WHERE nid IN(:nids)',
-      array(':nids' => array_keys($nodes))
-    );
-    // Add our extra data to the node objects.
-    foreach ($result as $record) {
-      $nodes[$record->nid]->kms_permissions_diff = unserialize($record->diff);
-    }
-  }
-}
+//function kms_permissions_node_load($nodes, $types) {
+//  // Atodo skip this until it is fully implemented.
+//  return;
+//  // Decide whether any of $types are relevant to our purposes.
+//  if (in_array('access_bundle', $types)) {
+//    // Gather our extra data for each of these nodes.
+//    $result = db_query(
+//      'SELECT nid, diff FROM {kms_permissions_diff_node} WHERE nid IN(:nids)',
+//      array(':nids' => array_keys($nodes))
+//    );
+//    // Add our extra data to the node objects.
+//    foreach ($result as $record) {
+//      $nodes[$record->nid]->kms_permissions_diff = unserialize($record->diff);
+//    }
+//  }
+//}
 
 /**
  * Submit callback for bundle update or delete
