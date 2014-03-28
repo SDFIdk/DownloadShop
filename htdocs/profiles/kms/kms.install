@@ -154,10 +154,25 @@ function kms_update_7000(&$sandbox) {
  * @author Julien <julien@adapt.dk>
  */
 function kms_update_7001(&$sandbox) {
+  // Make sure that t is available.
+  $t = get_t();
+  // Including views module to be sure.
   module_load_include('module', 'views');
-  module_load_include('inc', 'views', 'drush/views.drush');
   $view = views_get_view('admin_views_user');
-  views_revert_view($view);
+//  views_revert_view($view);
+  // check anyway just in case
+  if ($view->type == $t('Overridden')) {
+    // Revert the view.
+    $view->delete();
+    // Clear its cache.
+    ctools_include('object-cache');
+    ctools_object_cache_clear('view', $view->name);
+    // Give feedback.
+    return $t("Reverted the view '@viewname'", array('@viewname' => $view->name));
+  }
+  else {
+    return $t("The view '@viewname' is not overridden.", array('@viewname' => $view->name));
+  }
 }
 
 /**
