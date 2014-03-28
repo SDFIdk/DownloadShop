@@ -352,6 +352,8 @@ function kms_update_7011(&$sandbox) {
     'node_export',
     'uuid',
   ));
+  // This breaks for some reason. Import the node export manually instead.
+  /*
   $filename = sprintf(
     "%s/%s/%s",
     DRUPAL_ROOT,
@@ -362,4 +364,5 @@ function kms_update_7011(&$sandbox) {
   $export = fread($handle, filesize($filename));
   fclose($handle);
   node_export_import($export);
+  */
 }
