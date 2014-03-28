@@ -154,6 +154,8 @@ function kms_update_7000(&$sandbox) {
  * @author Julien <julien@adapt.dk>
  */
 function kms_update_7001(&$sandbox) {
+  module_load_include('module', 'views');
+  module_load_include('inc', 'views', 'drush/views.drush');
   $view = views_get_view('admin_views_user');
   views_revert_view($view);
 }
