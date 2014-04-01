@@ -71,6 +71,7 @@ function kms_permissions_bundle_save_query_run($item) {
   $bid = $item->bid;
   $kms_userid = kms_user_get_userid(user_load($item->uid));
   $job = KmsOciQueueJobFactory::get($item->jid);
+  $bundle_diff = !empty($item->bundle_diff) ? $item->bundle_diff : KmsPermsDiff::defaultDiff();
 //  _adapt_debug('mikkel', __LINE__);
 //  _adapt_debug('mikkel', $kms_userid);
   // Get permissions from a user and add them to $user_perms array.
@@ -115,7 +116,7 @@ function kms_permissions_bundle_save_query_run($item) {
   $perms_oracle_rel = _kms_permissions_perms_oracle_relations();
 //  _adapt_debug('mikkel', $user_perms);
 //  _adapt_debug('mikkel', $item->bundle_diff);
-  foreach ($item->bundle_diff as $perm_type => $perm_diff) {
+  foreach ($bundle_diff as $perm_type => $perm_diff) {
     $perm_conf = $perms_oracle_rel[$perm_type];
     // If the connection id of the job does not match the one in $perm_conf
     // do nothing.
