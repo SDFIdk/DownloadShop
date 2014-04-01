@@ -133,20 +133,31 @@ class KmsPermsDiff {
 
   public static function createOciSqlFromPermDiff($perm_diff, $userid) {
     $output = array();
+    $wms_ids = kms_permissions_get_service_ids_by_type('wms');
     foreach ($perm_diff as $perm_type => $perm_diff) {
-      $data = array('userid' => $userid);
       switch ($perm_type) {
         case 'services':
-          $data['featureinfo'] = 0;
           foreach ($perm_diff['add'] as $sid => $service_values) {
-            if (!empty($service_values)) {
-              $data['serviceid'] = $sid;
-              $data += $service_values;
-              $sql = new KmsOciQueueSql('services', $data);
-              $output[] = $sql->generate('insert');
+            if (empty($service_values)) {
+              continue;
             }
+            $data = array(
+              'userid' => $userid,
+              'serviceid' => $sid,
+              'featureinfo' => 0,
+            );
+
+            $data += $service_values;
+            // If a service is a wms service then set feature info to 1.
+            if (in_array($sid, $wms_ids)) {
+              $data['featureinfo'] = 1;
+            }
+
+            $sql = new KmsOciQueueSql('services', $data);
+            $output[] = $sql->generate('insert');
           }
           foreach ($perm_diff['remove'] as $sid) {
+            $data = array('userid' => $userid);
             $data['serviceid'] = $sid;
             $sql = new KmsOciQueueSql('services', $data);
             $output[] = $sql->generate('delete');
@@ -155,12 +166,18 @@ class KmsPermsDiff {
 
         case 'applications':
           foreach ($perm_diff['add'] as $gid) {
-            $data['groupid'] = $gid;
+            $data = array(
+              'userid' => $userid,
+              'groupid' => $gid,
+            );
             $sql = new KmsOciQueueSql('applications', $data);
             $output[] = $sql->generate('insert');
           }
           foreach ($perm_diff['remove'] as $gid) {
-            $data['groupid'] = $gid;
+            $data = array(
+              'userid' => $userid,
+              'groupid' => $gid,
+            );
             $sql = new KmsOciQueueSql('applications', $data);
             $output[] = $sql->generate('delete');
           }
