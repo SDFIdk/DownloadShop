@@ -947,13 +947,11 @@ function kms_user_action_info() {
       'label' => t('Add Access Bundles'),
       'type' => 'user',
       'configurable' => TRUE,
-      'hooks' => array(),
     ),
     'kms_user_vbo_clear_access_bundles' => array(
       'label' => t('Clear Access Bundles'),
       'type' => 'user',
-      'configurable' => TRUE,
-      'hooks' => array(),
+      'configurable' => FALSE,
     ),
  );
 }
@@ -989,13 +987,8 @@ function kms_user_vbo_add_access_bundles_form($context) {
  * @return array
  */
 function kms_user_vbo_add_access_bundles_submit($form, $form_state) {
-  $uids = array_filter($form_state['selection']);
-  if ($form_state['select_all_pages']) {
-    $uids = _kms_permissions_get_all_users();
-  }
   return array(
     'access_bundle' => array_filter($form_state['values']['access_bundle']),
-    'uids' => $uids,
   );
 }
 
@@ -1010,44 +1003,39 @@ function kms_user_vbo_add_access_bundles_submit($form, $form_state) {
  * @return void
  */
 function kms_user_vbo_add_access_bundles(&$account, $context = array()) {
+  $uid = $context['user']->uid;
+  // If it is the first user make sure that the uids variable is deleted.
+  if ($context['progress']['current'] == 1) {
+    variable_del('kms_user_vbo_access_bundle_add_uids');
+  }
+  // Get processed uids.
+  $uids = variable_get('kms_user_vbo_access_bundle_add_uids', array());
+  // Get user permissions.
+  $user_perms = array();
+  $perms_options = array('key_prefix' => FALSE, 'flattened' => TRUE);
+  _kms_permissions_get_permissions_by_uid($uid, $user_perms, $perms_options);
+  _kms_permissions_get_separate_perms_by_uid($uid, $user_perms, $perms_options);
+  $user_diff = KmsPermsDiff::defaultDiff();
+  if (!empty($user_perms['services'])) {
+    $user_diff['services']['add'] = $user_perms['services'];
+  }
+  if (!empty($user_perms['applications'])) {
+    $user_diff['applications']['add'] = $user_perms['applications'];
+  }
+  // Store user permissions as a diff in the diff table.
+  KmsPermsDiffDb::save($uid, $user_diff, 'user');
+  // Add current uid to uids variable.
+  $uids[] = $uid;
+  variable_set('kms_user_vbo_access_bundle_add_uids', $uids);
+  // Do the user permissions update on the Drupal side.
   kms_user_access_bundle_administer('add', $account, $context['access_bundle']);
+  // If we are finished use the finished callback
+  // that initiates a kms oci queue job.
   if ($context['progress']['current'] == $context['progress']['total']) {
     kms_user_vbo_access_bundle_finished('add', $context);
   }
 }
 
-/**
- * VBO clear access bundle form.
- * Empty form is for being able to access $form_state['selection'] in submit handler.
- *
- * @param array $context
- *   VBO context.
- *
- * @return array
- */
-function kms_user_vbo_clear_access_bundles_form($context) {
-  return array();
-}
-
-/**
- * VBO clear access bundle form submit.
- *
- * @param array $form
- *   Drupal form array.
- * @param array $form_state
- *   Drupal form state array.
- *
- * @return array
- */
-function kms_user_vbo_clear_access_bundles_submit($form, $form_state) {
-  $uids = array_filter($form_state['selection']);
-  if ($form_state['select_all_pages']) {
-    $uids = _kms_permissions_get_all_users();
-  }
-  return array(
-    'uids' =>$uids,
-  );
-}
 
 /**
  * Clear all access bundles from a user.
@@ -1060,7 +1048,19 @@ function kms_user_vbo_clear_access_bundles_submit($form, $form_state) {
  * @return void
  */
 function kms_user_vbo_clear_access_bundles(&$account, $context = array()) {
+  // If it is the first user make sure that the uids variable is deleted.
+  if ($context['progress']['current'] == 1) {
+    variable_del('kms_user_vbo_access_bundle_clear_uids');
+  }
+  // Get processed uids.
+  $uids = variable_get('kms_user_vbo_access_bundle_clear_uids', array());
+  // Add current uid to uids variable.
+  $uids[] = $context['user']->uid;
+  variable_set('kms_user_vbo_access_bundle_clear_uids', $uids);
+  // Do the user permissions update on the Drupal side.
   kms_user_access_bundle_administer('clear', $account);
+  // If we are finished use the finished callback
+  // that initiates a kms oci queue job.
   if ($context['progress']['current'] == $context['progress']['total']) {
     kms_user_vbo_access_bundle_finished('clear', $context);
   }
@@ -1075,73 +1075,70 @@ function kms_user_vbo_clear_access_bundles(&$account, $context = array()) {
  *   VBO context array.
  */
 function kms_user_vbo_access_bundle_finished($op, $context) {
-  $uids = !empty($context['uids']) ? $context['uids'] : FALSE;
+  $uids = variable_get(
+    sprintf('kms_user_vbo_access_bundle_%s_uids', $op),
+    array()
+  );
+  if (empty($uids)) {
+    return;
+  }
+  $user_count = count($uids);
 
   switch ($op) {
     case 'add':
-      $message = 'VBO: Bundle added to users. Affects @count users.';
-      $bids = !empty($context['access_bundle']) ? $context['access_bundle'] : FALSE;
-      break;
-    case 'clear':
-      $message = 'VBO: All bundles (except default) are cleared from users. Affects @count users.';
-      $bids = _kms_permissions_get_non_default_bundles();
-      break;
-    }
-
-  if ($uids && $bids) {
-    // Add subusers to uid array so that they will be processed as well.
-    kms_subuser_uids_add_subuser_uids($uids);
-
-    foreach ($bids as $bid) {
-      $bundle_diff = KmsPermsDiff::defaultDiff();
-//      _adapt_debug('mikkel', $bundle_diff);
-      $perms_options = array('key_prefix' => FALSE, 'flattened' => TRUE);
-      switch ($op) {
-        case 'add':
-          _kms_permissions_get_permissions_by_bid($bid, $perms, $perms_options);
-          if (!empty($perms['services'])) {
-            $bundle_diff['services']['add'] = $perms['services'];
-          }
-          if (!empty($perms['applications'])) {
-            $bundle_diff['applications']['add'] = $perms['applications'];
-          }
-          break;
-        case 'clear':
-          _kms_permissions_get_permissions_by_bid($bid, $perms, $perms_options);
-          if (!empty($perms['services'])) {
-            $bundle_diff['services']['remove'] = $perms['services'];
-          }
-          if (!empty($perms['applications'])) {
-            $bundle_diff['applications']['remove'] = $perms['applications'];
-          }
-          break;
+      $bids = $context['access_bundle'];
+      // If no bids chosen do nothing.
+      if (empty($bids)) {
+        return;
       }
-//      _adapt_debug('mikkel', __LINE__);
-//      _adapt_debug('mikkel', $bundle_diff);
-      $job_params = array(
-        'action' => KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE,
-        'params' => array(
-          'uids' => $uids,
-          'bid' => $bid,
-          'bundle_diff' => $bundle_diff,
-        ),
-      );
-      $job_params['action_details'] = format_string(
-        $message,
+      // Create bundle diff array.
+      $perms = array();
+      $bundle_diff = KmsPermsDiff::defaultDiff();
+      foreach($bids as $bid) {
+        _kms_permissions_get_permissions_by_bid(
+          $bid,
+          $perms,
+          array('key_prefix' => FALSE, 'flattened' => TRUE)
+        );
+        if (!empty($perms['services'])) {
+          $bundle_diff['services']['add'] = $perms['services'];
+        }
+        if (!empty($perms['applications'])) {
+          $bundle_diff['applications']['add'] = $perms['applications'];
+        }
+      }
+      // Create kms oci queue job that attaches bundle permissions to users.
+      $jobs = array();
+      $job_group = new KmsOciQueueJobGroup();
+      kms_oci_queue_job_action_bundles_attach(
+        $jobs,
+        $bids,
+        $uids,
+        'VBO: Bundles (@bids) added to users. Affects @count users.',
         array(
-          '@count' => count($uids)
+          '@bids' => implode(', ', $bids),
+          '@count' => $user_count,
         )
       );
-      $jobs = array();
-      $jobs[] = KmsOciQueueJob::create($job_params);
-      $jobs[] = KmsOciQueueJob::create($job_params, 'kms_permissions');
-      if (count($uids) < 300) {
-        $job_group = new KmsOciQueueJobGroup();
+      if ($user_count < 300) {
         $job_group->add($jobs);
       }
-    }
-  }
+      break;
 
+    case 'clear':
+      // Kms oci queue job. Remove all bundles except default
+      // and keep separate permissions.
+      $jobs = array();
+      $job_group = new KmsOciQueueJobGroup();
+      kms_oci_queue_job_action_remove_all_bundles(
+        $jobs,
+        $uids,
+        'VBO: All bundles (except default) are cleared from users. Affects @count users.',
+        array('@count' => $user_count)
+      );
+      $job_group->add($jobs);
+      break;
+  }
 }
 
 /**

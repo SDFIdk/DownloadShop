@@ -150,3 +150,90 @@ function kms_oci_queue_job_action_clone_user_perms(&$jobs, $source_user, $uids) 
   $jobs[] = KmsOciQueueJob::create($job_params);
   $jobs[] = KmsOciQueueJob::create($job_params, 'kms_permissions');
 }
+
+/**
+ * Job wrapper.
+ *
+ * Removes all bundles from users except default.
+ *
+ * @param array $jobs
+ *   An array with kms oci queue jobs.
+ * @param array $uids
+ *   Drupal user ids.
+ * @param string $message
+ *   Message for reporting.
+ * @param array $vars
+ *   Message placeholders.
+ */
+function kms_oci_queue_job_action_remove_all_bundles(&$jobs, $uids, $message = '', $vars = array()) {
+  $job_params = array(
+    'action' => KMS_OCI_QUEUE_ACTION_REMOVE_ALL_BUNDLES,
+    'action_details' => format_string($message, $vars),
+    'params' => array(
+      'uids' => $uids,
+    ),
+  );
+  $jobs[] = KmsOciQueueJob::create($job_params);
+  $jobs[] = KmsOciQueueJob::create($job_params, 'kms_permissions');
+}
+
+/**
+ * Job wrapper.
+ *
+ * Attaches bundle permissions to users that has the bundle.
+ *
+ * @param array $jobs
+ *   An array with kms oci queue jobs.
+ * @param array $uids
+ *   Drupal user ids.
+ * @param int $bid
+ *   Bundle being saved.
+ * @param array $bundle_diff
+ *   Add/remove array of the bundle.
+ * @param string $message
+ *   Message for reporting.
+ * @param array $vars
+ *   Message placeholders.
+ */
+function kms_oci_queue_job_action_bundle_save(&$jobs, $uids, $bid, $bundle_diff, $message = '', $vars = array()) {
+  $job_params = array(
+    'action' => KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE,
+    'action_details' => format_string($message, $vars),
+    'params' => array(
+      'uids' => $uids,
+      'bid' => $bid,
+      'bundle_diff' => $bundle_diff,
+    ),
+  );
+  $jobs[] = KmsOciQueueJob::create($job_params);
+  $jobs[] = KmsOciQueueJob::create($job_params, 'kms_permissions');
+}
+
+/**
+ * Job wrapper.
+ *
+ * Attaches bundle permissions to users that has the bundles.
+ *
+ * @param array $jobs
+ *   An array of kms oci queue jobs.
+ * @param array $bids
+ *   Bundles to attach to the users.
+ * @param array $uids
+ *   Druapl user ids.
+ * @param string $message
+ *   Message for reporting.
+ * @param array $vars
+ *   Message placeholders.
+ */
+function kms_oci_queue_job_action_bundles_attach(&$jobs, $bids, $uids, $message = '', $vars = array()) {
+  $job_params = array(
+    'action' => KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH,
+    'action_details' => format_string($message, $vars),
+    'params' => array(
+      'uids' => $uids,
+      'bids' => $bids,
+    ),
+  );
+  $jobs[] = KmsOciQueueJob::create($job_params);
+  $jobs[] = KmsOciQueueJob::create($job_params, 'kms_permissions');
+}

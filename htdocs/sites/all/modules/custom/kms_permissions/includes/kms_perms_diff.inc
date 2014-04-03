@@ -131,7 +131,7 @@ class KmsPermsDiff {
     return TRUE;
   }
 
-  public static function createOciSqlFromPermDiff($perm_diff, $userid) {
+  public static function createOciSqlFromPermDiff($perm_diff, $userid, $ignore_header = FALSE) {
     $output = array();
     $wms_ids = kms_permissions_get_service_ids_by_type('wms');
     foreach ($perm_diff as $perm_type => $perm_diff) {
@@ -185,7 +185,7 @@ class KmsPermsDiff {
       }
     }
 
-    if (!empty($output)) {
+    if (!empty($output) && !$ignore_header) {
       array_unshift($output, $sql->generateHeader());
     }
 

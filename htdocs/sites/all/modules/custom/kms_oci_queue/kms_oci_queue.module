@@ -17,6 +17,8 @@ define('KMS_OCI_QUEUE_ACTION_PERMS_ATTACH', 'permissions_attach');
 define('KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE', 'bundle_save');
 define('KMS_OCI_QUEUE_ACTION_BUNDLE_DELETE', 'bundle_delete');
 define('KMS_OCI_QUEUE_ACTION_CLONE_USER_PERMS', 'clone_user_perms');
+define('KMS_OCI_QUEUE_ACTION_REMOVE_ALL_BUNDLES', 'remove_all_bundles');
+define('KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH', 'attach_bundles_users');
 define('KMS_OCI_QUEUE_CRON_DELETE_JOBS_KEEP', 25);
 define('KMS_OCI_QUEUE_CRON_DELETE_JOBS_PER_RUN', 100);
 
@@ -276,7 +278,7 @@ function kms_oci_queue_query_run($item) {
       'No lines to process in this job'
     );
     // Delete job if no sql lines are present.
-    $job->delete();
+    $job->delete(FALSE);
     return;
   }
   elseif (empty($output)) {
