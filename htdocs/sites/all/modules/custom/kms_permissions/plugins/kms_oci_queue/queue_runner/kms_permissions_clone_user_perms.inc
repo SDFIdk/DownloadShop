@@ -33,6 +33,8 @@ $plugin = array(
 function kms_permissions_clone_user_perms_query_creator_run($jid, $creator_item, $exe_queue) {
   $source_uid = $creator_item->params['source_uid'];
   $uids = $creator_item->params['uids'];
+  // Add subusers.
+  kms_subuser_uids_add_subuser_uids($uids);
   $user_count = count($uids);
   $line_num = 0;
   $perms = array();
@@ -119,7 +121,7 @@ function kms_permissions_clone_user_perms_query_run($item) {
           'userid' => $item->kms_id,
         );
         $sql = new KmsOciQueueSql('services', $data);
-        $delete = sprintf('DELETE FROM %s WHERE userid = :userid', $conf['table']);
+        $delete = sprintf('DELETE FROM %s WHERE userid = :userid;', $conf['table']);
         array_unshift($output, $delete);
         array_unshift($output, $sql->generateHeader());
 
@@ -134,7 +136,7 @@ function kms_permissions_clone_user_perms_query_run($item) {
         $sql = new KmsOciQueueSql('applications', $data);
         $output[] = $sql->generateHeader();
         $conf = KmsOciQueueSqlApplications::$conf;
-        $output[] = sprintf('DELETE FROM %s WHERE userid = :userid', $conf['table']);
+        $output[] = sprintf('DELETE FROM %s WHERE userid = :userid;', $conf['table']);
         array_walk($ids, function($gid) use ($data, &$output) {
           $data['groupid'] = $gid;
 //          _adapt_debug('mikkel', __FUNCTION__);

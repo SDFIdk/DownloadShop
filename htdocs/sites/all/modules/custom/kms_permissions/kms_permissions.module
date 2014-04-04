@@ -1512,7 +1512,6 @@ function kms_permissions_vbo_clone_user_perms(&$account, $context = array()) {
  */
 function kms_permissions_vbo_clone_user_perms_finished($source_account, $context) {
   $uids = $context['uids'];
-  kms_subuser_uids_add_subuser_uids($uids);
   $job_params = array(
     'action' => KMS_OCI_QUEUE_ACTION_CLONE_USER_PERMS,
     'action_details' => format_string(
