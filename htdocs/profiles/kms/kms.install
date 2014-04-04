@@ -279,7 +279,7 @@ function kms_update_7005(&$sandbox) {
     CREATE VIEW external_ftp_users AS
     SELECT u.name as username, array_to_string( array_agg( distinct folders.name ), ',') as directories
     FROM field_data_field_ftp_permissions as ftp
-    RIGHT JOIN field_data_field_access_bundles as bundle ON ftp.entity_id =  bundle.field_access_bundles_nid
+    LEFT JOIN field_data_field_access_bundles as bundle ON ftp.entity_id =  bundle.field_access_bundles_nid
     LEFT JOIN users as u ON u.uid = ftp.entity_id OR u.uid = bundle.entity_id
     LEFT JOIN kms_permissions_ftp_folders as folders ON ftp.field_ftp_permissions_value::integer = folders.fid
     WHERE bundle.bundle = 'user' OR ftp.bundle = 'user'
