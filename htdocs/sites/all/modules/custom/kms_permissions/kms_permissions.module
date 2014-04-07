@@ -1472,13 +1472,13 @@ function kms_permissions_vbo_clone_user_perms_form($context) {
  * @return array
  */
 function kms_permissions_vbo_clone_user_perms_submit($form, $form_state) {
-  $uids = array_filter($form_state['selection']);
-  if ($form_state['select_all_pages']) {
-    $uids = _kms_permissions_get_all_users();
-  }
+//  $uids = array_filter($form_state['selection']);
+//  if ($form_state['select_all_pages']) {
+//    $uids = _kms_permissions_get_all_users();
+//  }
   return array(
     'source_username' => $form_state['values']['source_username'],
-    'uids' => $uids,
+//    'uids' => $uids,
   );
 }
 
@@ -1494,10 +1494,22 @@ function kms_permissions_vbo_clone_user_perms_submit($form, $form_state) {
  * @return void
  */
 function kms_permissions_vbo_clone_user_perms(&$account, $context = array()) {
+  $uids_var_key = 'kms_permissions_vbo_clone_user_perms_uids';
   $source_account = user_load_by_name(check_plain($context['source_username']));
   if(!$source_account) {
     return;
   }
+
+  if ($context['progress']['current'] == 1) {
+    variable_del($uids_var_key);
+  }
+
+  // Get processed uids.
+  $uids = variable_get($uids_var_key, array());
+  // Add current uid to uids variable.
+  $uids[] = $context['user']->uid;
+  variable_set($uids_var_key, $uids);
+
   kms_permissions_clone_perms($source_account, $context['user']);
   if ($context['progress']['current'] == $context['progress']['total']) {
     kms_permissions_vbo_clone_user_perms_finished($source_account, $context);
@@ -1511,14 +1523,21 @@ function kms_permissions_vbo_clone_user_perms(&$account, $context = array()) {
  *   VBO context. We pass uids through that.
  */
 function kms_permissions_vbo_clone_user_perms_finished($source_account, $context) {
-  $uids = $context['uids'];
+  $uids = variable_get('kms_permissions_vbo_clone_user_perms_uids', array());
+
+  if (empty($uids)) {
+    return;
+  }
+
+  $user_count = count($uids);
+
   $job_params = array(
     'action' => KMS_OCI_QUEUE_ACTION_CLONE_USER_PERMS,
     'action_details' => format_string(
       'Cloning user permissions from: @source_user. Affects @user_count.',
       array(
         '@source_user' => $source_account->name,
-        '@user_count' => count($uids),
+        '@user_count' => $user_count,
       )
     ),
     'params' => array(
