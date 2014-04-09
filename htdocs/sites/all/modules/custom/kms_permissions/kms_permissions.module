@@ -2131,8 +2131,16 @@ function kms_permissions_get_bids_by_uid($uid, $ignore_def_bundles = FALSE) {
   return array();
 }
 
-function kms_permissions_get_service_bounding_box($sid) {
-  $bundles = _kms_permissions_get_bundles_by_service_item($sid);
+/**
+ * Get bounding box data of a given service id.
+ *
+ * @param mixed $sid
+ *   Service id. Integer or FALSE.
+ * @return array
+ *   Bounding box data.
+ */
+function kms_permissions_get_service_bounding_box($sid = FALSE) {
+  $bundles = $sid ? _kms_permissions_get_bundles_by_service_item($sid) : array();
   // If no bundle matches use default bundle(s).
   if (empty($bundles)) {
     $def_bundles = _kms_permissions_get_default_bundles();
@@ -2195,5 +2203,5 @@ function kms_permissions_get_service_ids_by_type($type) {
       $ids[$type][] = $service['SERVICEID'];
     }
   });
-  return $ids;
+  return $ids[$type];
 }

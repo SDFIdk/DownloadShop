@@ -12,3 +12,4 @@ files[] = includes/handlers/kms_permissions_handler_has_separate_services.inc
 stylesheets[all][] = css/kms_perm_styles.css
 
 files[] = includes/kms_perms_diff.inc
+files[] = includes/kms_perms_extract.inc

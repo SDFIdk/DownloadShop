@@ -4,6 +4,22 @@
  * Install file for dismissable panel pane.
  */
 
+/**
+ * Implements hook_install().
+ */
+function kms_permissions_install() {
+  $file = sprintf(
+    "%s/%s/%s/%s",
+    DRUPAL_ROOT,
+    drupal_get_path('module', 'kms_permissions'),
+    'includes',
+    'db_views_n_functions.sql'
+  );
+  $handle = fopen($file, "r");
+  $sql = fread($handle, filesize($file));
+  fclose($handle);
+  db_query($sql);
+}
 
 /**
  * Implementation of hook_schema().
