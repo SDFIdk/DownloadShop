@@ -114,7 +114,7 @@ CREATE VIEW smuser AS
 -- smuser_extra view.
 CREATE VIEW smuser_extra AS
 SELECT
-  DISTINCT u.uid,
+  DISTINCT u.uid AS duid,
   CASE
   WHEN fdf_kui.field_kms_user_id_value IS NULL THEN u.uid::character varying(32)
   ELSE fdf_kui.field_kms_user_id_value

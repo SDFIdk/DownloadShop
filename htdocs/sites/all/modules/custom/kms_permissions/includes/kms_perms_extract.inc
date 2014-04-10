@@ -12,8 +12,12 @@
 abstract class KmsPermsExtract {
 
   protected $table = '';
+  protected $mode = '';
   protected $ignoreCols = array();
-  protected $tmpFilename = '';
+  protected $workingDir = '';
+  protected $filePathDatTmp = '';
+  protected $filePathDat = '';
+  protected $filePathCtl = '';
   protected $dbResult = FALSE;
 
   /**
@@ -21,30 +25,65 @@ abstract class KmsPermsExtract {
    *
    * @param string $table
    *   Table (postgres view) name.
+   * @param string $working_dir
+   *   Current working directory.
+   * @param string $mode
+   *   Drush or web.
    * @param array $ignore_cols
    *   Columns to ignore in extraction.
    */
-  public function __construct($table, $ignore_cols = array('uid')) {
+  public function __construct($table, $working_dir = '.', $mode = 'drush', $ignore_cols = array('uid')) {
     $this->table = $table;
+    $this->mode = $mode;
     $this->ignoreCols = $ignore_cols;
-    $this->tmpFilename = $this->constructTmpFilename($table);
+    $this->workingDir = $working_dir;
+    $this->filePathDatTmp = $this->constructTmpFilename($table);
+    $this->filePathDat = $this->constructFilePath($table, '.dat');
+    $this->filePathCtl = $this->constructFilePath($table, '.ctl');
     $this->dbResult = $this->dbResult($table);
   }
 
   /**
    * Extract data and write an Oracle PL/SQL script file.
    */
-  public function writeFile() {
-    $header = $this->constructHeader();
-    $this->writeLines($header);
-
+  public function writeFiles() {
+    $this->writeFilesInit();
+    $this->writeLines($this->constructCtl(), $this->filePathCtl, FILE_EXISTS_REPLACE);
+    $row_count = 0;
     while ($row = $this->dbResult->fetchAssoc()) {
       $fields = array_diff_key($row, array_combine($this->ignoreCols, $this->ignoreCols));
-      array_push($fields, "\n");
-      $this->writeLines(implode('|', $fields));
+      $this->encloseFields($fields);
+      array_push($fields, "~\n");
+      $this->writeLines(implode('|', $fields), $this->filePathDatTmp);
+      $row_count++;
     }
 
-    echo "$this->table: data extracted...\n";
+    $this->writeFilesFinalize($row_count);
+  }
+
+  protected function writeFilesInit() {
+    if ($this->mode == 'drush') {
+      drush_print(dt('Extracing data from: @table...', array('@table' => $this->table)));
+    }
+  }
+
+  protected function writeFilesFinalize($row_count) {
+    $move = file_unmanaged_move(
+      $this->filePathDatTmp,
+      $this->filePathDat,
+      FILE_EXISTS_REPLACE
+    );
+
+    if ($move) {
+      if ($this->mode == 'drush') {
+        drush_print(dt('Data extracted. Rows processed: @row_count.', array('@row_count' => $row_count)));
+      };
+    }
+    else {
+      if ($this->mode == 'drush') {
+        drush_set_error('file_permissions', dt('Could not create sql file'));
+      }
+    }
   }
 
   /**
@@ -67,26 +106,24 @@ abstract class KmsPermsExtract {
    *
    * @param array $additional_fields
    *   Additional fields to put in header.
-   * @param bool $wipe_data
-   *   Should data be deleted first?
    *
    * @return string
    *   Sql.
    */
-  protected function constructHeader($additional_fields = array(), $wipe_data = TRUE) {
+  protected function constructCtl($additional_fields = array()) {
     $record = $this->dbResult->fetchAssoc();
     $columns = array_diff(array_keys($record), $this->ignoreCols);
     $columns += $additional_fields;
     $fields = implode(', ', $columns);
-    $wipe = $wipe_data ? sprintf("DELETE FROM %s;", $this->table) : '';
+    $dat_file = $this->filePathDat;
     return <<<EOD
-$wipe
 LOAD DATA
-INFILE *
+INFILE '$dat_file' "str X'7E'"
+REPLACE
 INTO TABLE $this->table
-FIELDS TERMINATED BY '|'
+FIELDS TERMINATED BY '|'  ENCLOSED BY '§'
+TRAILING NULLCOLS
 ($fields)
-BEGINDATA
 
 EOD;
   }
@@ -105,15 +142,53 @@ EOD;
   }
 
   /**
+   * Construct filename.
+   *
+   * @param string $table
+   *   Table to extract data from.
+   *
+   * @param string $ext
+   *   File extension.
+   *
+   * @return string
+   *   Name of temporary file.
+   */
+  protected function constructFilePath($table, $ext = '') {
+    return sprintf('%s/%s.%s%s', $this->workingDir, 'kms_perms_extract', $table, $ext);
+  }
+
+  /**
    * Write sql lines.
    *
    * @param string $data
    *   Sql lines.
+   * @param string $filepath
+   *   Path to file.
+   * @param string $write_method
+   *   Append or replace?
+   *
+   * @throws Exception
+   *   Throw exception if problems updating tmp file.
    */
-  protected function writeLines($data) {
-    if (file_put_contents($this->tmpFilename, $data, FILE_APPEND) === FALSE) {
-      die('something went wrong');
+  protected function writeLines($data, $filepath, $write_method = FILE_APPEND) {
+    try {
+      file_put_contents($filepath, $data, $write_method);
     }
+    catch (Exception $e) {
+      throw new Exception('Something went wrong saving ' . $this->filePathDatTmp, 0, $e);
+    }
+  }
+
+  /**
+   * Wrap fields with enclosure character.
+   *
+   * @param array $fields
+   *   The fields to wrap.
+   */
+  protected function encloseFields(&$fields) {
+    array_walk($fields, function(&$v){
+      $v = sprintf('§%s§', $v);
+    });
   }
 
 }
@@ -125,8 +200,8 @@ class KmsPermsExtractSmuser extends KmsPermsExtract {
   /**
    * Extract smuser data.
    */
-  public function __construct() {
-    parent::__construct('smuser');
+  public function __construct($working_dir = '.', $mode = 'drush', $ignore_cols = array('uid')) {
+    parent::__construct('smuser', $working_dir, $mode, $ignore_cols);
   }
 
 }
@@ -137,8 +212,8 @@ class KmsPermsExtractSmuserExtra extends KmsPermsExtract {
   /**
    * Extract smuser_extra data.
    */
-  public function __construct() {
-    parent::__construct('smuser_extra');
+  public function __construct($working_dir = '.', $mode = 'drush', $ignore_cols = array('uid')) {
+    parent::__construct('smuser_extra', $working_dir, $mode, $ignore_cols);
   }
 
 }
@@ -149,8 +224,8 @@ class KmsPermsExtractApplications extends KmsPermsExtract {
   /**
    * Extract smusergroup data.
    */
-  public function __construct() {
-    parent::__construct('smusergroup');
+  public function __construct($working_dir = '.', $mode = 'drush', $ignore_cols = array('uid')) {
+    parent::__construct('smusergroup', $working_dir, $mode, $ignore_cols);
   }
 
 }
@@ -161,8 +236,8 @@ class KmsPermsExtractServices extends KmsPermsExtract {
   /**
    * Extract userrestrictions2 data.
    */
-  public function __construct() {
-    parent::__construct('userrestrictions2');
+  public function __construct($working_dir = '.', $mode = 'drush', $ignore_cols = array('uid')) {
+    parent::__construct('userrestrictions2', $working_dir, $mode, $ignore_cols);
   }
 
   /**
@@ -170,14 +245,15 @@ class KmsPermsExtractServices extends KmsPermsExtract {
    *
    * We need bounding box data and featureinfo attached.
    */
-  public function writeFile() {
+  public function writeFiles() {
+    $this->writeFilesInit();
     $default_bounding_box = kms_permissions_get_service_bounding_box();
     $additional_fields = array_merge(array_keys($default_bounding_box), array('featureinfo'));
     $wms_ids = kms_permissions_get_service_ids_by_type('wms');
 
-    $header = $this->constructHeader($additional_fields);
-    $this->writeLines($header);
+    $this->writeLines($this->constructCtl(), $this->filePathCtl, FILE_EXISTS_REPLACE);
 
+    $row_count = 0;
     while ($row = $this->dbResult->fetchAssoc()) {
       // If service is of the type: 'wms' then set it to 1 else 0;
       $featureinfo = (int) in_array($row['serviceid'], $wms_ids);
@@ -188,12 +264,14 @@ class KmsPermsExtractServices extends KmsPermsExtract {
       $fields += kms_permissions_get_service_bounding_box($row['serviceid']);
       // Last featureinfo.
       $fields += array('featureinfo' => $featureinfo);
-      // And a beautiful new line character.
-      array_push($fields, "\n");
-      $this->writeLines(implode('|', $fields));
+      $this->encloseFields($fields);
+      // And a beautiful new line character plus row delimiter.
+      array_push($fields, "~\n");
+      $this->writeLines(implode('|', $fields), $this->filePathDatTmp);
+      $row_count++;
     }
 
-    echo "$this->table: data extracted...\n";
+    $this->writeFilesFinalize($row_count);
   }
 
 }
