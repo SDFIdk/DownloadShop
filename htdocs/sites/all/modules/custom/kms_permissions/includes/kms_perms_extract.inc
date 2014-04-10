@@ -113,7 +113,9 @@ abstract class KmsPermsExtract {
   protected function constructCtl($additional_fields = array()) {
     $record = $this->dbResult->fetchAssoc();
     $columns = array_diff(array_keys($record), $this->ignoreCols);
-    $columns += $additional_fields;
+    if (!empty($additional_fields)) {
+      $columns = array_merge($columns, $additional_fields);
+    }
     $fields = implode(', ', $columns);
     $dat_file = $this->filePathDat;
     return <<<EOD
@@ -250,8 +252,11 @@ class KmsPermsExtractServices extends KmsPermsExtract {
     $default_bounding_box = kms_permissions_get_service_bounding_box();
     $additional_fields = array_merge(array_keys($default_bounding_box), array('featureinfo'));
     $wms_ids = kms_permissions_get_service_ids_by_type('wms');
-
-    $this->writeLines($this->constructCtl(), $this->filePathCtl, FILE_EXISTS_REPLACE);
+    $this->writeLines(
+      $this->constructCtl($additional_fields),
+      $this->filePathCtl,
+      FILE_EXISTS_REPLACE
+    );
 
     $row_count = 0;
     while ($row = $this->dbResult->fetchAssoc()) {

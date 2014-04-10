@@ -2,7 +2,7 @@
 #!/usr/bin/env drush
 
 // Example of execution:
-// drush scr /vagrant_sites/kms.dev/scripts/oracle/create_ctl_file.php --class=KmsPermsExtractServices --working_dir=$(pwd)
+// drush scr /vagrant_sites/kms.dev/scripts/oracle/create_sqlldr_files.php --class=KmsPermsExtractServices --working_dir=$(pwd)
 
 
 // check if we can bootstrap
