@@ -2,7 +2,7 @@
 #!/usr/bin/env drush
 
 // Example of execution:
-// drush scr /vagrant_sites/kms.dev/scripts/oracle/create_sqlldr_files.php --class=KmsPermsExtractServices --working_dir=$(pwd)
+// drush scr /vagrant_sites/kms.dev/scripts/oracle/create_sqlldr_files.php --class=KmsPermsExtractServices --working-dir=$(pwd)
 
 
 // check if we can bootstrap
@@ -13,7 +13,7 @@ if (empty($self)) {
 
 if (drush_get_option('class') && class_exists(drush_get_option('class'))) {
   $class = drush_get_option('class');
-  $working_dir = drush_get_option('working_dir') ? drush_get_option('working_dir') : '.';
+  $working_dir = drush_get_option('working_dir') ? drush_get_option('working-dir') : '.';
   $extractor = new $class($working_dir);
   $extractor->writeFiles();
 }
