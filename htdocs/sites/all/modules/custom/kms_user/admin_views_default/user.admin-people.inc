@@ -299,7 +299,7 @@ $handler->display->display_options['fields']['views_bulk_operations']['vbo_opera
     'label' => 'Send e-mail',
   ),
 );
-/* Field: User: Name */
+/* Field: User: Username */
 $handler->display->display_options['fields']['name']['id'] = 'name';
 $handler->display->display_options['fields']['name']['table'] = 'users';
 $handler->display->display_options['fields']['name']['field'] = 'name';
@@ -355,6 +355,7 @@ $handler->display->display_options['sorts']['created']['id'] = 'created';
 $handler->display->display_options['sorts']['created']['table'] = 'users';
 $handler->display->display_options['sorts']['created']['field'] = 'created';
 $handler->display->display_options['sorts']['created']['order'] = 'DESC';
+$handler->display->display_options['sorts']['created']['granularity'] = 'day';
 /* Contextual filter: User: Uid */
 $handler->display->display_options['arguments']['uid']['id'] = 'uid';
 $handler->display->display_options['arguments']['uid']['table'] = 'users';
@@ -374,7 +375,7 @@ $handler->display->display_options['arguments']['uid_1']['summary']['format'] = 
 $handler->display->display_options['arguments']['uid_1']['summary_options']['items_per_page'] = '25';
 $handler->display->display_options['arguments']['uid_1']['break_phrase'] = TRUE;
 $handler->display->display_options['arguments']['uid_1']['not'] = TRUE;
-/* Filter criterion: User: Name */
+/* Filter criterion: User: Username */
 $handler->display->display_options['filters']['uid']['id'] = 'uid';
 $handler->display->display_options['filters']['uid']['table'] = 'users';
 $handler->display->display_options['filters']['uid']['field'] = 'uid';
@@ -435,7 +436,7 @@ $handler->display->display_options['filters']['field_user_type_tid']['field'] = 
 $handler->display->display_options['filters']['field_user_type_tid']['group'] = 1;
 $handler->display->display_options['filters']['field_user_type_tid']['exposed'] = TRUE;
 $handler->display->display_options['filters']['field_user_type_tid']['expose']['operator_id'] = 'field_user_type_tid_op';
-$handler->display->display_options['filters']['field_user_type_tid']['expose']['label'] = 'Brugertype (field_user_type)';
+$handler->display->display_options['filters']['field_user_type_tid']['expose']['label'] = 'User type';
 $handler->display->display_options['filters']['field_user_type_tid']['expose']['operator'] = 'field_user_type_tid_op';
 $handler->display->display_options['filters']['field_user_type_tid']['expose']['identifier'] = 'field_user_type_tid';
 $handler->display->display_options['filters']['field_user_type_tid']['expose']['remember'] = TRUE;
@@ -448,6 +449,7 @@ $handler->display->display_options['filters']['field_user_type_tid']['expose']['
   7 => 0,
   8 => 0,
   9 => 0,
+  10 => 0,
 );
 $handler->display->display_options['filters']['field_user_type_tid']['group_info']['label'] = 'Brugertype (field_user_type)';
 $handler->display->display_options['filters']['field_user_type_tid']['group_info']['identifier'] = 'field_user_type_tid';
@@ -468,7 +470,7 @@ $handler->display->display_options['filters']['created']['operator'] = 'between'
 $handler->display->display_options['filters']['created']['group'] = 1;
 $handler->display->display_options['filters']['created']['exposed'] = TRUE;
 $handler->display->display_options['filters']['created']['expose']['operator_id'] = 'created_op';
-$handler->display->display_options['filters']['created']['expose']['label'] = 'Created date';
+$handler->display->display_options['filters']['created']['expose']['label'] = 'Created';
 $handler->display->display_options['filters']['created']['expose']['operator'] = 'created_op';
 $handler->display->display_options['filters']['created']['expose']['identifier'] = 'created';
 $handler->display->display_options['filters']['created']['expose']['remember'] = TRUE;
@@ -481,6 +483,7 @@ $handler->display->display_options['filters']['created']['expose']['remember_rol
   7 => 0,
   8 => 0,
   9 => 0,
+  10 => 0,
 );
 $handler->display->display_options['filters']['created']['group_info']['label'] = 'Created date';
 $handler->display->display_options['filters']['created']['group_info']['identifier'] = 'created';
@@ -506,9 +509,13 @@ $handler->display->display_options['filters']['status']['expose']['remember'] = 
 $handler->display->display_options['filters']['field_newsletter_value']['id'] = 'field_newsletter_value';
 $handler->display->display_options['filters']['field_newsletter_value']['table'] = 'field_data_field_newsletter';
 $handler->display->display_options['filters']['field_newsletter_value']['field'] = 'field_newsletter_value';
+$handler->display->display_options['filters']['field_newsletter_value']['value'] = array(
+  0 => '0',
+  1 => '1',
+);
 $handler->display->display_options['filters']['field_newsletter_value']['exposed'] = TRUE;
 $handler->display->display_options['filters']['field_newsletter_value']['expose']['operator_id'] = 'field_newsletter_value_op';
-$handler->display->display_options['filters']['field_newsletter_value']['expose']['label'] = 'Nyhedsbrev';
+$handler->display->display_options['filters']['field_newsletter_value']['expose']['label'] = 'Newsletter';
 $handler->display->display_options['filters']['field_newsletter_value']['expose']['operator'] = 'field_newsletter_value_op';
 $handler->display->display_options['filters']['field_newsletter_value']['expose']['identifier'] = 'field_newsletter_value';
 $handler->display->display_options['filters']['field_newsletter_value']['expose']['remember'] = TRUE;
@@ -521,7 +528,9 @@ $handler->display->display_options['filters']['field_newsletter_value']['expose'
   7 => 0,
   8 => 0,
   9 => 0,
+  10 => 0,
 );
+$handler->display->display_options['filters']['field_newsletter_value']['expose']['reduce'] = TRUE;
 /* Filter criterion: User: Bundles (field_access_bundles) */
 $handler->display->display_options['filters']['field_access_bundles_nid']['id'] = 'field_access_bundles_nid';
 $handler->display->display_options['filters']['field_access_bundles_nid']['table'] = 'field_data_field_access_bundles';
@@ -529,7 +538,6 @@ $handler->display->display_options['filters']['field_access_bundles_nid']['field
 $handler->display->display_options['filters']['field_access_bundles_nid']['exposed'] = TRUE;
 $handler->display->display_options['filters']['field_access_bundles_nid']['expose']['operator_id'] = 'field_access_bundles_nid_op';
 $handler->display->display_options['filters']['field_access_bundles_nid']['expose']['label'] = 'Bundles';
-$handler->display->display_options['filters']['field_access_bundles_nid']['expose']['use_operator'] = TRUE;
 $handler->display->display_options['filters']['field_access_bundles_nid']['expose']['operator'] = 'field_access_bundles_nid_op';
 $handler->display->display_options['filters']['field_access_bundles_nid']['expose']['identifier'] = 'field_access_bundles_nid';
 $handler->display->display_options['filters']['field_access_bundles_nid']['expose']['remember'] = TRUE;
@@ -543,6 +551,7 @@ $handler->display->display_options['filters']['field_access_bundles_nid']['expos
   7 => 0,
   8 => 0,
   9 => 0,
+  10 => 0,
 );
 
 /* Display: System */
@@ -599,7 +608,7 @@ $handler->display->display_options['fields']['views_bulk_operations']['vbo_opera
     'label' => '',
   ),
   'action::views_bulk_operations_delete_item' => array(
-    'selected' => 1,
+    'selected' => 0,
     'use_queue' => 0,
     'skip_confirmation' => 0,
     'override_label' => 1,
@@ -620,7 +629,7 @@ $handler->display->display_options['fields']['views_bulk_operations']['vbo_opera
     'label' => '',
   ),
   'action::views_bulk_operations_modify_action' => array(
-    'selected' => 1,
+    'selected' => 0,
     'use_queue' => 0,
     'skip_confirmation' => 1,
     'override_label' => 1,
@@ -670,10 +679,12 @@ $handler->display->display_options['fields']['views_bulk_operations']['vbo_opera
     'label' => '',
   ),
 );
-/* Field: User: Name */
+/* Field: User: Username */
 $handler->display->display_options['fields']['name']['id'] = 'name';
 $handler->display->display_options['fields']['name']['table'] = 'users';
 $handler->display->display_options['fields']['name']['field'] = 'name';
+$handler->display->display_options['fields']['name']['label'] = 'Username';
+$handler->display->display_options['fields']['name']['element_label_colon'] = FALSE;
 /* Field: User: Bundles */
 $handler->display->display_options['fields']['field_access_bundles']['id'] = 'field_access_bundles';
 $handler->display->display_options['fields']['field_access_bundles']['table'] = 'field_data_field_access_bundles';
@@ -685,6 +696,7 @@ $handler->display->display_options['fields']['field_access_bundles']['multi_type
 $handler->display->display_options['fields']['has_separate_services']['id'] = 'has_separate_services';
 $handler->display->display_options['fields']['has_separate_services']['table'] = 'views';
 $handler->display->display_options['fields']['has_separate_services']['field'] = 'has_separate_services';
+$handler->display->display_options['fields']['has_separate_services']['label'] = 'Seperate Permissions';
 $handler->display->display_options['fields']['has_separate_services']['hide_empty'] = 0;
 $handler->display->display_options['fields']['has_separate_services']['combined_fields'] = array(
   'field_bundle_webservices_geo' => 'field_bundle_webservices_geo',
@@ -811,7 +823,6 @@ $translatables['admin_views_user'] = array(
   t('Bunde legend label'),
   t('Bundle legend'),
   t('No users available.'),
-  t('Name'),
   t('Bundles'),
   t('Aktiv'),
   t('Roles'),
@@ -821,10 +832,11 @@ $translatables['admin_views_user'] = array(
   t('Username'),
   t('E-mail'),
   t('Role'),
-  t('Brugertype'),
+  t('User type'),
+  t('Created'),
   t('Created date'),
   t('Active'),
-  t('Nyhedsbrev'),
+  t('Newsletter'),
   t('System'),
   t('Seperate Permissions'),
   t('Webservices (GEO)'),
