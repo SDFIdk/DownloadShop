@@ -327,6 +327,7 @@ function kms_permissions_get_application_list() {
  */
 function _kms_permissions_format_item_list_item($item_id, $item_name, $item_type) {
   $html = '';
+  $item_name = _kms_permissions_perm_name_render($item_id, $item_name);
   // Get the bundle attached to the item id.
   $nid_sid_arr = _kms_permissions_get_bundles_by_item_id($item_id, $item_type);
   // If the service is not part of a bundle.
@@ -458,7 +459,10 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
           foreach ($service_data as $service) {
             foreach ($items as $item) {
               if($item['value']==$service['SERVICEID']) {
-                $element[$item['value']]['#markup']  = $service['SERVICENAME'];
+                $element[$item['value']]['#markup']  = _kms_permissions_perm_name_render(
+                  $service['SERVICEID'],
+                  $service['SERVICENAME']
+                );
               }
             }
           }
@@ -473,8 +477,11 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
           foreach ($application_data as $application) {
             foreach ($items as $item) {
 
-              if($item['value']==$application['GROUPID']) {
-                $element[]['#markup']  = $application['NAME'];
+              if ($item['value'] == $application['GROUPID']) {
+                $element[]['#markup'] = _kms_permissions_perm_name_render(
+                  $application['GROUPID'],
+                  $application['NAME']
+                );
               }
             }
           }
@@ -2204,4 +2211,17 @@ function kms_permissions_get_service_ids_by_type($type) {
     }
   });
   return $ids[$type];
+}
+
+/**
+ * Render permission name.
+ *
+ * @param string $perm_id
+ *   The identifier of the permission.
+ * @param string $perm_name
+ *   The name of the permis
+ * @return string
+ */
+function _kms_permissions_perm_name_render($perm_id, $perm_name) {
+  return sprintf('<span title="%s">%s</span>', $perm_id, $perm_name);
 }
