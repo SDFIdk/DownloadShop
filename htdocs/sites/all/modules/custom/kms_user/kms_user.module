@@ -1475,9 +1475,12 @@ function _kms_user_calculate_permissions_diff(EntityMetadataWrapper $w_new, Enti
     // Merge bundle and separate perms.
     $perms_diff[$perm_type]['add'] = $diff_bundle_perms[$perm_type]['add'] + $diff_separate_perms[$perm_type]['add'];
     $perms_diff[$perm_type]['remove'] = $diff_bundle_perms[$perm_type]['remove'] + $diff_separate_perms[$perm_type]['remove'];
-    // Make sure that 'remove' only contains items that does not belong 'add'.
-    // We don't want to remove items that also are being added.
-    $perms_diff[$perm_type]['remove'] = array_diff($perms_diff[$perm_type]['remove'], $perms_diff[$perm_type]['add']);
+    // Make sure that 'remove' and 'add' are unique compared to each other.
+    // 1. We don't want to remove items that also are being added.
+    // 2. We don't want to add items that already is attached to user.
+    $add_remove_dupes = array_intersect($perms_diff[$perm_type]['add'], $perms_diff[$perm_type]['remove']);
+    $perms_diff[$perm_type]['remove'] = array_diff($perms_diff[$perm_type]['remove'], $add_remove_dupes);
+    $perms_diff[$perm_type]['add'] = array_diff($perms_diff[$perm_type]['add'], $add_remove_dupes);
   }
   return $perms_diff;
 }
