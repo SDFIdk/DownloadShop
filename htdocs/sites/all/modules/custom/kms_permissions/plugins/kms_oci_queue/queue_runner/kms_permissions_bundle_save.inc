@@ -97,7 +97,7 @@ function kms_permissions_bundle_save_query_run($item) {
       $perms_options
     );
   }
-  // Get separate perms and add then to $user_perms array.
+  // Get separate perms and add them to $user_perms array.
   _kms_permissions_get_separate_perms_by_uid(
     $item->uid,
     $user_perms,

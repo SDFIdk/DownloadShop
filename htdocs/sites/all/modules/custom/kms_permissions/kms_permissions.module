@@ -951,6 +951,10 @@ function _kms_permissions_get_permissions_by_bid($bid, &$permissions = array(), 
   $flattened = $options['flattened'];
 
   $bundle = node_load($bid);
+  // If the bundle does not exist. Do nothing.
+  if (!$bundle) {
+    return;
+  }
 
   $field_access_userdefined_ranges = field_get_items('node', $bundle, 'field_access_userdefined_ranges');
   if (!empty($field_access_userdefined_ranges)) {
