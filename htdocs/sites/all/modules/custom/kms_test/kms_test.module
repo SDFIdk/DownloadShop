@@ -468,15 +468,19 @@ function kms_test_delete_job_range() {
  * Implements hook_preprocess_HOOK().
  */
 function kms_test_preprocess_page(&$variables) {
-  // Append build tag to page content.
-  array_push($variables['page']['content'], array(
-    'build_tag' => array(
-      '#type' => 'markup',
-      '#markup' => kms_test_build_tag(),
-      '#prefix' => '<div id="kms-test-build-tag">Build: ',
-      '#suffix' => '</div>',
-    ),
-  ));
+  // Append build tag to page content
+  // for users that can access admin area
+  // (just to make some kind of restriction).
+  if (user_access('access administration pages')) {
+    array_push($variables['page']['content'], array(
+      'build_tag' => array(
+        '#type' => 'markup',
+        '#markup' => kms_test_build_tag(),
+        '#prefix' => '<div id="kms-test-build-tag">Build: ',
+        '#suffix' => '</div>',
+      ),
+    ));
+  }
 }
 
 /**
