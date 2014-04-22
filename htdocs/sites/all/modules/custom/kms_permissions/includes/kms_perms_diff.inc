@@ -22,39 +22,49 @@ class KmsPermsDiff {
   }
 
   public static function diffSeparatePerms(EntityMetadataWrapper $w_original, EntityMetadataWrapper $w_new) {
-    $perms_original = $perms_new = array(
+    $perms = self::constructSeparatePerms($w_original, $w_new);
+    return self::diffPermsArray($perms['original'], $perms['new']);
+  }
+  
+  public static function constructSeparatePerms(EntityMetadataWrapper $w_original, EntityMetadataWrapper $w_new) {
+    $perms_template = array(
       'services' => array(),
       'applications' => array(),
+    );
+    $perms = array(
+      'original' => $perms_template,
+      'new' => $perms_template,
     );
     foreach (_kms_permissions_webservice_fields() as $field) {
       $value_original = $w_original->$field->raw();
       $value_new = $w_new->$field->raw();
 
       if (!empty($value_original[0])) {
-        $perms_original['services'] = array_merge(
+        $perms['original']['services'] = array_merge(
           $value_original,
-          $perms_original['services']
+          $perms['original']['services']
         );
       }
       if (!empty($value_new[0])) {
-        $perms_new['services'] = array_merge(
+        $perms['new']['services'] = array_merge(
           $value_new,
-          $perms_new['services']
+          $perms['new']['services']
         );
       }
     }
 
-    $perms_original['applications'] = $w_original->field_applications->raw();
-    $perms_new['applications'] = $w_new->field_applications->raw();
+    $perms['original']['applications'] = $w_original->field_applications->raw();
+    $perms['new']['applications'] = $w_new->field_applications->raw();
     // We do not trust entity meta data wrapper data
     // and add empty arrays if empty first value.
-    if (empty($perms_original['applications'][0])) {
-      $perms_original['applications'] = array();
+    if (empty($perms['original']['applications'][0])) {
+      $perms['original']['applications'] = array();
     }
-    if (empty($perms_new['applications'][0])) {
-      $perms_new['applications'] = array();
+    if (empty($perms['new']['applications'][0])) {
+      $perms['new']['applications'] = array();
     }
-    return self::diffPermsArray($perms_original, $perms_new);
+
+    return $perms;
   }
 
   public static function diffPermsArray($perms_original, $perms_new) {

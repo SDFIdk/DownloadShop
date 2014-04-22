@@ -757,17 +757,32 @@ function kms_permissions_node_presave($node) {
     return;
   }
 
+  // If the access bundle is new create 'diff' array
+  // with all attached permissions.
+  if ($node->is_new) {
+    $w_new = entity_metadata_wrapper('node', $node);
+    $perms = KmsPermsDiff::constructSeparatePerms(
+      $w_new,
+      $w_new
+    );
+    // Format permissions in diff array that kms oci queue understands.
+    array_walk($perms['new'], function($ids, $type) use (&$diff){
+      foreach($ids as $id) {
+        $diff[$type]['add'][$id] = $id;
+      }
+    });
+  }
   // If the access bundle is being updated set diff property.
-  if (!$node->is_new) {
+  else {
     $w_original = entity_metadata_wrapper('node', $node->original);
     $w_new = entity_metadata_wrapper('node', $node);
     $diff = KmsPermsDiff::diffSeparatePerms(
       $w_original,
       $w_new
     );
-    $node->kms_permissions_diff = $diff;
-//    KmsPermsDiffDb::save($node->nid, $diff, 'node');
   }
+  // Set permission diff property on access bundle node.
+  $node->kms_permissions_diff = $diff;
 
   $node->update_default_bundle = FALSE;
   $node->update_bundle = FALSE;
