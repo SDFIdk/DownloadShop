@@ -1,0 +1,8 @@
+$build-tag-color: #686868 ;
+
+#kms-test-build-tag {
+  color: $build-tag-color;
+  border: 2px solid $build-tag-color;
+  width: 200px;
+  padding: 5px;
+}

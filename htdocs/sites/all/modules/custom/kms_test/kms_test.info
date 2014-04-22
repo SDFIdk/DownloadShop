@@ -2,3 +2,5 @@ name = "KMS Test"
 package = KMS
 description = "Test functions to test application"
 core = 7.x
+
+stylesheets[all][] = css/kms_test.css
