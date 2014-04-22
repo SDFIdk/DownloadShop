@@ -74,6 +74,11 @@ function kms_permissions_bundle_save_query_creator_run($jid, $creator_item, $exe
  *   Generated oracle queries.
  */
 function kms_permissions_bundle_save_query_run($item) {
+  // This function is depending on bundle_diff.
+  // If not present return empty query string.
+  if (empty($item->bundle_diff)) {
+    return '';
+  }
   $bid = $item->bid;
   $kms_userid = kms_user_get_userid(user_load($item->uid));
   $job = KmsOciQueueJobFactory::get($item->jid);
