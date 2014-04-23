@@ -1,0 +1,113 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function kms_perms_live_menu() {
+  $items = array();
+
+  $items['admin/config/kms-perms-live-settings'] = array(
+    'title' => 'Kms permissions goes live',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('kms_perms_live_settings_form'),
+    'access arguments' => array('administer kms oci queue'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
+/**
+ * Admin settings form for when kms oci queue goes live.
+ * 
+ * @param array $form
+ *   Drupal form array.
+ * @param array $form_state
+ *   Drupal form array.
+ *
+ * @return array
+ *   Drupal form array.
+ */
+function kms_perms_live_settings_form($form, &$form_state) {
+
+  $form['kms_perms_live_jobs'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Kms oci queue jobs'),
+  );
+  $kms_perms_live_jobs = &$form['kms_perms_live_jobs'];
+  $kms_perms_live_jobs['kms_perms_live_limit_jobs'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Limit active kms oci queue jobs.'),
+    '#default_value' => variable_get('kms_perms_live_limit_jobs', 0),
+  );
+  $kms_perms_live_jobs['kms_perms_live_active_jobs'] = array(
+    '#title' => t('Active jobs'),
+    '#type' => 'checkboxes',
+    '#options' => kms_perms_live_get_active_jobs('options'),
+    '#states' => array(
+      'visible' => array(
+        'input[name="kms_perms_live_limit_jobs"]' => array('checked' => TRUE),
+      ),
+    ),
+    '#default_value' => kms_perms_live_get_active_jobs('values'),
+  );
+  // Atodo: Make functionality work before you activate it:
+//  $form['access_control'] = array(
+//    '#type' => 'fieldset',
+//    '#title' => t('Access control'),
+//    'kms_perms_live_access_bypass_anon_user_products' => array(
+//      '#type' => 'checkbox',
+//      '#title' => t('Bypass product access control for anonymous users.'),
+//      '#default_value' => variable_get('kms_perms_live_access_bypass_anon_user_products', ''),
+//    ),
+//  );
+
+  return system_settings_form($form);
+}
+
+/**
+ * This function can be used for various purposes.
+ *
+ * But is mainly created to be used in FAPI context.
+ *
+ * @param string $op
+ *   Do we want options or values?
+ *
+ * @return array
+ *   Either jobs values or options.
+ */
+function kms_perms_live_get_active_jobs($op) {
+  static $options;
+
+  if (empty($options)) {
+    ctools_include('plugins');
+    $plugins = ctools_get_plugins('kms_oci_queue', 'queue_runner');
+    $options = array();
+    array_walk($plugins, function($plugin) use (&$options) {
+      $options[$plugin['type']] = $plugin['type'];
+    });
+    ksort($options);
+  }
+
+  switch ($op) {
+    case 'options':
+      return $options;
+
+    case 'values':
+      return variable_get(
+        'kms_perms_live_active_jobs',
+        array_map(function() {return 0;}, $options)
+      );
+  }
+
+}
+
+/**
+ * Implements hook_kms_oci_queue_job_access().
+ */
+function kms_perms_live_kms_oci_queue_job_access($action) {
+  if (variable_get('kms_perms_live_limit_jobs', FALSE)) {
+    $active_jobs = kms_perms_live_get_active_jobs('values');
+    return !empty($active_jobs[$action]);
+  }
+  return TRUE;
+}

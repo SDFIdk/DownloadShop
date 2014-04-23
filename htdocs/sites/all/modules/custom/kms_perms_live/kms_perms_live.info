@@ -1,0 +1,6 @@
+name = "KMS permissions live"
+package = KMS
+description = "Handles roll out of permission system in april/may 2014."
+core = 7.x
+
+dependencies[] = kms_oci_queue

@@ -150,6 +150,10 @@ class KmsOciQueueJob {
       'action' => '',
       'action_details' => '',
     );
+    // If any hooks are blocking access do not create job.
+    if (!kms_oci_queue_job_is_accesible($params['action'])) {
+      return;
+    }
     $queue = DrupalQueue::get(self::$queues['creator']['name'], TRUE);
     $job = new stdClass();
     $job->jid = $queue->createItem((object) $params);
@@ -312,6 +316,8 @@ class KmsOciQueueJobGroup {
 
   public function add($job) {
     $jobs = is_array($job) ? $job : array($job);
+    // We only want jobs that actually are jobs :).
+    $jobs = array_filter($jobs);
     foreach ($jobs as $job) {
       $this->insertJob($job);
     }

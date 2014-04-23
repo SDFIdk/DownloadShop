@@ -906,3 +906,17 @@ function kms_oci_queue_user_presave(&$edit, $account, $category) {
   // We save the hash in the user object so we can detect user data changes.
   $edit['data']['kms_oci_queue_user_data_hash'] = $data_hash;
 }
+
+/**
+ * Check if a job is accessible.
+ *
+ * @param string $action
+ *
+ * @return bool
+ *   Access to job?
+ */
+function kms_oci_queue_job_is_accesible($action) {
+  $access_values = module_invoke_all('kms_oci_queue_job_access', $action);
+  $restrictions = array_filter($access_values, function($v) { return !$v; });
+  return empty($restrictions);
+}
