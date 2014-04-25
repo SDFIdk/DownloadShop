@@ -32,7 +32,6 @@ $plugin = array(
  *   Number of query lines to be written.
  */
 function kms_user_perms_attach_query_creator_run($jid, $creator_item, $exe_queue) {
-  _adapt_debug('mikkel', str_repeat('+', 100));
   $job = KmsOciQueueJobFactory::get($jid);
   $kms_id = $creator_item->params['kms_id'];
   $user_original = $creator_item->params['user_original'];
