@@ -915,7 +915,7 @@ function kms_oci_queue_user_presave(&$edit, $account, $category) {
  * @return bool
  *   Access to job?
  */
-function kms_oci_queue_job_is_accesible($action) {
+function kms_oci_queue_job_is_accessible($action) {
   $access_values = module_invoke_all('kms_oci_queue_job_access', $action);
   $restrictions = array_filter($access_values, function($v) { return !$v; });
   return empty($restrictions);

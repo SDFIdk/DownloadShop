@@ -151,7 +151,7 @@ class KmsOciQueueJob {
       'action_details' => '',
     );
     // If any hooks are blocking access do not create job.
-    if (!kms_oci_queue_job_is_accesible($params['action'])) {
+    if (!kms_oci_queue_job_is_accessible($params['action'])) {
       return;
     }
     $queue = DrupalQueue::get(self::$queues['creator']['name'], TRUE);

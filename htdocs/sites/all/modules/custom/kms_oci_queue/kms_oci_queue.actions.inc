@@ -71,10 +71,10 @@ function kms_oci_queue_job_action_user_update(&$jobs, $data, $message = '', $var
  *
  * @param array $jobs
  *   Job array for eventual grouping of jobs.
- * @param int $uid
+ * @param int $kms_id
  *   User being processed.
- * @param array $bids
- *   Bundle ids. Used for calculating permission diff.
+ * @param object $user_original
+ *   User being processed with properties before changes.
  * @param array $perms_diff
  *   Permissions diff.
  * @param string $message
@@ -82,26 +82,10 @@ function kms_oci_queue_job_action_user_update(&$jobs, $data, $message = '', $var
  * @param array $vars
  *   Message placeholders.
  */
-function kms_oci_queue_job_action_perms_attach(&$jobs, $uid, $bids, $perms_diff, $message = '', $vars = array()) {
+function kms_oci_queue_job_action_perms_attach(&$jobs, $kms_id, $user_original, $perms_diff, $message = '', $vars = array()) {
   if (empty($message)) {
     $message = 'Administer permissions on user: @user.';
-//    $message =<<<EOD
-//Administer permissions on user: @user.
-//Permissions:
-//&nbsp;&nbsp;Services
-//&nbsp;&nbsp;&nbsp;&nbsp;Add: @add_services
-//&nbsp;&nbsp;&nbsp;&nbsp;Remove: @remove_services
-//&nbsp;&nbsp;Applications
-//&nbsp;&nbsp;&nbsp;&nbsp;Add: @add_applications
-//&nbsp;&nbsp;&nbsp;&nbsp;Remove: @remove_applications
-//EOD;
   }
-//  $vars += array(
-//    '@add_services' => implode(', ', $perms_diff['services']['add']),
-//    '@remove_services' => implode(', ', $perms_diff['services']['remove']),
-//    '@add_applications' => implode(', ', $perms_diff['applications']['add']),
-//    '@remove_applications' => implode(', ', $perms_diff['applications']['remove']),
-//  );
   $job_params = array(
     'action' => KMS_OCI_QUEUE_ACTION_PERMS_ATTACH,
     'action_details' => format_string(
@@ -109,8 +93,8 @@ function kms_oci_queue_job_action_perms_attach(&$jobs, $uid, $bids, $perms_diff,
       $vars
     ),
     'params' => array(
-      'uid' => $uid,
-      'bids' => $bids,
+      'kms_id' => $kms_id,
+      'user_original' => $user_original,
       'perms_diff' => $perms_diff,
     ),
   );

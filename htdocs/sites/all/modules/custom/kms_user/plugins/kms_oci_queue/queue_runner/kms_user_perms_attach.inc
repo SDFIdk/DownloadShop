@@ -32,25 +32,46 @@ $plugin = array(
  *   Number of query lines to be written.
  */
 function kms_user_perms_attach_query_creator_run($jid, $creator_item, $exe_queue) {
+  _adapt_debug('mikkel', str_repeat('+', 100));
   $job = KmsOciQueueJobFactory::get($jid);
-  $uid = $creator_item->params['uid'];
-  $bids = $creator_item->params['bids'];
+  $kms_id = $creator_item->params['kms_id'];
+  $user_original = $creator_item->params['user_original'];
   $perms_diff = $creator_item->params['perms_diff'];
+
+  $w_original = entity_metadata_wrapper('user', $user_original);
   $line_num = 0;
 
-  $bundle_perms = array();
-  foreach ($bids as $bid) {
-    // Get permissions from a bundle and add them to $bundle_perms array.
-    _kms_permissions_get_permissions_by_bid(
-      $bid,
-      $bundle_perms,
-      array('key_prefix' => FALSE, 'flattened' => TRUE)
-    );
-  }
-  $bundle_perms += array(
+  $perm_options = array('key_prefix' => FALSE, 'flattened' => TRUE);
+
+  $original_perms['bundles'] = $original_perms['separate'] = array(
     'services' => array(),
     'applications' => array(),
   );
+
+  $bundles = $w_original->field_access_bundles->raw();
+  $bundles = array_unique(array_merge($bundles, _kms_permissions_get_default_bundles()));
+  foreach ($bundles as $bid) {
+    _kms_permissions_get_permissions_by_bid($bid, $original_perms['bundles'], $perm_options);
+  }
+
+  // Separate services (before changes).
+  foreach (_kms_permissions_webservice_fields() as $field) {
+    $service_values = $w_original->$field->raw();
+    if (!empty($service_values[0])) {
+      $original_perms['separate']['services'] = array_merge(
+        $original_perms['separate']['services'],
+        $service_values
+      );
+    }
+  }
+  // Separate applications (before changes).
+  $application_values = $w_original->field_applications->raw();
+  if (!empty($application_values[0])) {
+    $original_perms['separate']['applications'] = array_merge(
+      $original_perms['separate']['applications'],
+      $application_values
+    );
+  }
 
   $diff = array(
     'services' => array(
@@ -62,37 +83,35 @@ function kms_user_perms_attach_query_creator_run($jid, $creator_item, $exe_queue
       'remove' => array(),
     ),
   );
-  $perms_oracle_rel = _kms_permissions_perms_oracle_relations();
 
-  foreach ($perms_diff as $perm_type => $perm_diff) {
+  $diff_bundle = kms_user_perms_attach_create_diff(
+    $perms_diff['bundles'],
+    $original_perms['separate'],
+    $job
+  );
+  $diff_sep_perms = kms_user_perms_attach_create_diff(
+    $perms_diff['separate'],
+    $original_perms['bundles'],
+    $job
+  );
+
+  $perms_oracle_rel = _kms_permissions_perms_oracle_relations();
+  foreach (array('services', 'applications') as $perm_type) {
     $perm_conf = $perms_oracle_rel[$perm_type];
-    // If the connection id of the job does not match the one in $perm_conf
-    // do nothing.
-    if ($job->cid != $perm_conf['cid']) {
-      continue;
-    }
-    $type_diff = &$diff[$perm_type];
-    if (!empty($perm_diff['add'])) {
-      // Only use id's in add array that is not already in the bundle perms.
-      $type_diff['add'] = array_diff($perm_diff['add'], $bundle_perms[$perm_type]);
-      // Add bounding box to services.
-      if ($perm_type == 'services') {
-        foreach ($type_diff['add'] as &$sid) {
-          $sid = kms_permissions_get_service_bounding_box($sid);
-        }
+    foreach (array('add', 'remove') as $action) {
+      $diff[$perm_type][$action] = $diff_bundle[$perm_type][$action] + $diff_sep_perms[$perm_type][$action];
+      if ($job->cid == $perm_conf['cid']) {
+        $diff[$perm_type][$action] += array_intersect($perms_diff['bundles'][$perm_type][$action], $perms_diff['separate'][$perm_type][$action]);
       }
     }
-    // Only use id's in remove array that is not already in the bundle perms.
-    if (!empty($perm_diff['remove'])) {
-      $type_diff['remove'] = array_diff($perm_diff['remove'], $bundle_perms[$perm_type]);
-    }
   }
+
   // Queue the item.
   $exe_queue_item = array(
     'jid' => $jid,
     'action' => $creator_item->action,
     'diff' => $diff,
-    'kms_id' => $uid,
+    'kms_id' => $kms_id,
     'is_last_item' => TRUE,
   );
   $exe_queue->createItem((object) $exe_queue_item);
@@ -113,4 +132,44 @@ function kms_user_perms_attach_query_creator_run($jid, $creator_item, $exe_queue
  */
 function kms_user_perms_attach_query_run($item) {
   return kmsPermsDiff::createOciSqlFromPermDiff($item->diff, $item->kms_id);
+}
+
+function kms_user_perms_attach_create_diff($perms_diff, $original_perms, $job) {
+  $diff = array(
+    'services' => array(
+      'add' => array(),
+      'remove' => array(),
+    ),
+    'applications' => array(
+      'add' => array(),
+      'remove' => array(),
+    ),
+  );
+  $perms_oracle_rel = _kms_permissions_perms_oracle_relations();
+  foreach ($perms_diff as $perm_type => $perm_diff) {
+    $perm_conf = $perms_oracle_rel[$perm_type];
+    // If the connection id of the job does not match the one in $perm_conf
+    // do nothing.
+    if ($job->cid != $perm_conf['cid']) {
+      continue;
+    }
+    $type_diff = &$diff[$perm_type];
+    if (!empty($perm_diff['add'])) {
+      // Only use id's in add array that is not already attached to the user.
+      $type_diff['add'] = array_diff($perm_diff['add'], $original_perms[$perm_type]);
+      // Add bounding box to services.
+      if ($perm_type == 'services') {
+        foreach ($type_diff['add'] as &$sid) {
+          $sid = kms_permissions_get_service_bounding_box($sid);
+        }
+      }
+    }
+    // Only use id's in remove array that exists on user.
+    if (!empty($perm_diff['remove'])) {
+      $type_diff['remove'] = array_filter($perm_diff['remove'], function($id) use ($original_perms, $perm_type){
+        return !in_array($id, $original_perms[$perm_type]);
+      });
+    }
+  }
+  return $diff;
 }

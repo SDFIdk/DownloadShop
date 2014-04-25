@@ -591,14 +591,19 @@ function _kms_user_submit_insert_user_oracle($form, &$form_state) {
 
   // Handle user permissions.
   if (!empty($perms['services']) || !empty($perms['applications'])) {
-    $perms_diff['services']['add'] = $perms['services'];
-    $perms_diff['services']['remove'] = array();
-    $perms_diff['applications']['add'] = $perms['applications'];
-    $perms_diff['applications']['remove'] = array();
+    $perms_diff['bundles']['services']['add'] = $perms['services'];
+    $perms_diff['bundles']['services']['remove'] = array();
+    $perms_diff['separate']['services']['add'] = $perms['services'];
+    $perms_diff['separate']['services']['remove'] = array();
+    $perms_diff['bundles']['applications']['add'] = $perms['applications'];
+    $perms_diff['bundles']['applications']['remove'] = array();
+    $perms_diff['separate']['applications']['add'] = $perms['applications'];
+    $perms_diff['separate']['applications']['remove'] = array();
+    // Atodo: Make sure changes work here as well.
     kms_oci_queue_job_action_perms_attach(
       $jobs,
       $account->uid,
-      array(),
+      $account,
       $perms_diff,
       '',
       array('@user' => $account->name)
@@ -646,28 +651,18 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
     );
   }
 
-  // Find bundles changes on user.
-  $bundle_diff = kmsPermsDiff::diff(
-    $w_original->field_access_bundles->raw(),
-    $w_new->field_access_bundles->raw()
-  );
-
   // If permissions has changed create jobs for them. Otherwise return.
   if (
-    !kmsPermsDiff::diffIsEmpty($bundle_diff)
-    || !kmsPermsDiff::diffIsEmpty($perms_diff['services'])
-    || !kmsPermsDiff::diffIsEmpty($perms_diff['applications'])
+    !kmsPermsDiff::diffIsEmpty($perms_diff['bundles']['services'])
+    || !kmsPermsDiff::diffIsEmpty($perms_diff['bundles']['applications'])
+    || !kmsPermsDiff::diffIsEmpty($perms_diff['separate']['services'])
+    || !kmsPermsDiff::diffIsEmpty($perms_diff['separate']['applications'])
   ) {
-    // Only consider bundle id's that is not a part of the diff array.
-    $bids = array_diff(
-      kms_permissions_get_bids_by_uid($user_original->uid),
-      $bundle_diff['add']
-    );
     // Handle user permissions.
     kms_oci_queue_job_action_perms_attach(
       $jobs,
       $userids['old'],
-      $bids,
+      $user_original,
       $perms_diff,
       '',
       array('@user' => $user_new->name)
@@ -1469,20 +1464,20 @@ function _kms_user_user_update_oci_queue_prepare_data($account, $user) {
 
 function _kms_user_calculate_permissions_diff(EntityMetadataWrapper $w_new, EntityMetadataWrapper $w_original) {
   $diff_bundle_perms = KmsPermsDiff::diffBundlePerms($w_original, $w_new);
-  $diff_separate_perms = KmsPermsDiff::diffSeparatePerms($w_original, $w_new);
-  $perms_diff = array();
+  $bundle_diff = array();
   foreach(array_keys($diff_bundle_perms) as $perm_type) {
-    // Merge bundle and separate perms.
-    $perms_diff[$perm_type]['add'] = $diff_bundle_perms[$perm_type]['add'] + $diff_separate_perms[$perm_type]['add'];
-    $perms_diff[$perm_type]['remove'] = $diff_bundle_perms[$perm_type]['remove'] + $diff_separate_perms[$perm_type]['remove'];
     // Make sure that 'remove' and 'add' are unique compared to each other.
     // 1. We don't want to remove items that also are being added.
     // 2. We don't want to add items that already is attached to user.
-    $add_remove_dupes = array_intersect($perms_diff[$perm_type]['add'], $perms_diff[$perm_type]['remove']);
-    $perms_diff[$perm_type]['remove'] = array_diff($perms_diff[$perm_type]['remove'], $add_remove_dupes);
-    $perms_diff[$perm_type]['add'] = array_diff($perms_diff[$perm_type]['add'], $add_remove_dupes);
+    $add_remove_dupes = array_intersect($diff_bundle_perms[$perm_type]['add'], $diff_bundle_perms[$perm_type]['remove']);
+    $bundle_diff[$perm_type]['remove'] = array_diff($diff_bundle_perms[$perm_type]['remove'], $add_remove_dupes);
+    $bundle_diff[$perm_type]['add'] = array_diff($diff_bundle_perms[$perm_type]['add'], $add_remove_dupes);
   }
-  return $perms_diff;
+
+  return array(
+    'bundles' => $bundle_diff,
+    'separate' => KmsPermsDiff::diffSeparatePerms($w_original, $w_new),
+  );
 }
 
 /**
