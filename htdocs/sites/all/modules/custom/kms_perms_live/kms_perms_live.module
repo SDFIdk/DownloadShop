@@ -50,16 +50,15 @@ function kms_perms_live_settings_form($form, &$form_state) {
     ),
     '#default_value' => kms_perms_live_get_active_jobs('values'),
   );
-  // Atodo: Make functionality work before you activate it:
-//  $form['access_control'] = array(
-//    '#type' => 'fieldset',
-//    '#title' => t('Access control'),
-//    'kms_perms_live_access_bypass_anon_user_products' => array(
-//      '#type' => 'checkbox',
-//      '#title' => t('Bypass product access control for anonymous users.'),
-//      '#default_value' => variable_get('kms_perms_live_access_bypass_anon_user_products', ''),
-//    ),
-//  );
+  $form['access_control'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Access control'),
+    'kms_perms_live_access_anon_all_product_displays' => array(
+      '#type' => 'checkbox',
+      '#title' => t('Allow access to all product displays for anonymous users no matter what.'),
+      '#default_value' => variable_get('kms_perms_live_access_anon_all_product_displays', ''),
+    ),
+  );
 
   return system_settings_form($form);
 }
@@ -110,4 +109,30 @@ function kms_perms_live_kms_oci_queue_job_access($action) {
     return !empty($active_jobs[$action]);
   }
   return TRUE;
+}
+
+/**
+ * Implements hook_node_grants().
+ */
+function kms_perms_live_node_grants($account, $op) {
+  $grants = &drupal_static(__FUNCTION__);
+  if (!isset($grants)) {
+    // If configuration admits it allow access
+    // to all product displays for anonymous users.
+    if (variable_get('kms_perms_live_access_anon_all_product_displays', FALSE)) {
+      // Find all product displays.
+      $query = new EntityFieldQuery();
+      $query->entityCondition('entity_type', 'node', '=')
+        ->propertyCondition('type', 'product_display')
+        ->propertyCondition('status', 1);
+      $result = $query->execute();
+      // Set grants if any results.
+      $grants = array();
+      if (isset($result['node'])) {
+        $grants['kms_permissions_access'] = array_keys($result['node']);
+      }
+    }
+  }
+
+  return $grants;
 }
