@@ -22,6 +22,7 @@ function kms_permissions_batch_default_bundle_attach_users($bid, $uids, $user_co
   // Because of a bug in ultimate cron we will have to fire finished function ourselves.
   if (count($context['results']) == ceil($user_count / $chunk_size)) {
     kms_permissions_batch_default_bundle_attach_users_finished(TRUE, $context['results'], array());
+    field_cache_clear();
   }
 }
 
