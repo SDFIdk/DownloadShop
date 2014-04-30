@@ -11,6 +11,8 @@ function kms_permissions_batch_default_bundle_attach_users($bid, $uids, $user_co
 
   foreach ($uids as $uid) {
     _kms_permissions_attach_default_bundles_to_user($uid, $bid);
+    // Clear field cache.
+    cache_clear_all('field:user:' . $uid, 'cache_field');
   }
 
   $context['results'][] = $uids;
@@ -22,7 +24,6 @@ function kms_permissions_batch_default_bundle_attach_users($bid, $uids, $user_co
   // Because of a bug in ultimate cron we will have to fire finished function ourselves.
   if (count($context['results']) == ceil($user_count / $chunk_size)) {
     kms_permissions_batch_default_bundle_attach_users_finished(TRUE, $context['results'], array());
-    field_cache_clear();
   }
 }
 
@@ -40,7 +41,6 @@ function kms_permissions_batch_default_bundle_attach_users_finished($success, $r
       WATCHDOG_INFO
     );
     _batch_finished();
-    field_cache_clear();
   }
   else {
     // An error occurred.
