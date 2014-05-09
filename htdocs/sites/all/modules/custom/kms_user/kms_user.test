@@ -80,7 +80,7 @@ class KmsOciQueueActionUserTestCase extends DrupalWebTestCase {
     $uw_original->{$perm['field']}[] = $perm['value'];
     $uw_original->save();
     $test_user = user_load($test_user->uid);
-    $this->verbose('Created user with one separate permission.');
+    $this->pass('Created user with one separate permission.');
 //    debug($test_user, '$test_user with one separate perm.');
 
     // Attach bundle to user with the same permission.
@@ -88,7 +88,7 @@ class KmsOciQueueActionUserTestCase extends DrupalWebTestCase {
     $uw_new->field_access_bundles = array($test_bundle->nid);
     $uw_new->save();
     $test_user = user_load($test_user->uid);
-    $this->verbose('Attached bundle with same permission to user.');
+    $this->pass('Attached bundle with same permission to user.');
 //    debug($test_user, '$test_user with one bundle attached.');
 
     // Determine what has changed on the user.
@@ -120,12 +120,12 @@ class KmsOciQueueActionUserTestCase extends DrupalWebTestCase {
     $uw_updated = entity_metadata_wrapper('user', $test_user);
     $uw_updated->field_access_bundles = array();
     $uw_updated->save();
-    $this->verbose('Removed bundle from user.');
+    $this->pass('Removed bundle from user.');
     $perms_diff = _kms_user_calculate_permissions_diff($uw_updated, $uw_new);
     $perms_assertion['bundles'] = $perms_assertion['separate'] = KmsPermsDiff::defaultDiff();
     $perms_assertion['bundles']['services']['remove'] = array(2979 => '2979');
-    debug($perms_diff, '$perms_diff');
-    debug($perms_assertion, '$perms_assertion');
+//    debug($perms_diff, '$perms_diff');
+//    debug($perms_assertion, '$perms_assertion');
     $this->assertEqual(
       $perms_diff,
       $perms_assertion,
