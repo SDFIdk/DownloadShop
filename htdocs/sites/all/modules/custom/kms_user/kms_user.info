@@ -4,3 +4,4 @@ description = "Handles users"
 core = 7.x
 
 files[] = includes/handlers/views_handler_field_kms_user_link_edit.inc
+files[] = kms_user.test

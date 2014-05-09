@@ -8,6 +8,13 @@
  * Implements hook_install().
  */
 function kms_permissions_install() {
+  // If a simpletest is running do nothing.
+  if (
+    strpos(Database::getConnection()->tablePrefix(), 'simpletest') === 0
+    || strpos(Database::getConnection()->tablePrefix(), 'st') === 0
+  ) {
+    return;
+  }
   $file = sprintf(
     "%s/%s/%s/%s",
     DRUPAL_ROOT,

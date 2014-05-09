@@ -1,0 +1,179 @@
+<?php
+/**
+ * @file
+ * kms_user.test
+ *
+ * User tests.
+ */
+
+/**
+ * Class KmsOciQueueActionUserTestCase
+ * Testing Kms Oci Queue functionality in the user area.
+ */
+class KmsOciQueueActionUserTestCase extends DrupalWebTestCase {
+  protected $testUser;
+
+  /**
+   * Simpletest getInfo.
+   *
+   * @return array
+   *   Info array.
+   */
+  public function getInfo() {
+    return array(
+      'name' => 'Kms User Tests - Oci Queue Actions',
+      'description' => 'Test.',
+      'group' => 'Kms Oci Queue',
+    );
+  }
+
+  /**
+   * Simpletest setUp.
+   */
+  public function setUp() {
+    global $language;
+
+    parent::setUp(array(
+      'user_fields',
+      'kms_access_bundles',
+      'entity',
+      'kms_oci_queue',
+      'kms_user',
+      'kms_test',
+      '_adapt',
+    ));
+
+    $language = (object) array(
+      'language' => 'en',
+      'name' => 'English',
+      'native' => 'English',
+      'direction' => 0,
+      'enabled' => 1,
+      'plurals' => 0,
+      'formula' => '',
+      'domain' => '',
+      'prefix' => '',
+      'weight' => 0,
+      'javascript' => '',
+    );
+
+    module_load_include('inc', 'kms_user', 'plugins/kms_oci_queue/queue_runner/kms_user_perms_attach');
+  }
+
+  /**
+   * Test method.
+   *
+   * Testing adding bundle with same permission as on a user
+   * and remove bundle again.
+   */
+  function testMeixiaAddBundleToUserWithOnePermRemoveAgain() {
+    // Add remove bundle with existing separate permission.
+    $perm = array('field' => 'field_bundle_webservices_wms', 'value' => 2979);
+    // Make sure that the test bundle has our test permission.
+    $test_bundle = $this->drupalCreateNode(array('type' => 'access_bundle'));
+    $bundle_w = entity_metadata_wrapper('node', $test_bundle);
+    $bundle_w->{$perm['field']}[] = $perm['value'];
+    $bundle_w->save();
+    // Make sure that test user has the test permission too.
+    $test_user = $this->drupalCreateUser();
+    $uw_original = entity_metadata_wrapper('user', $test_user);
+    $uw_original->{$perm['field']}[] = $perm['value'];
+    $uw_original->save();
+    $test_user = user_load($test_user->uid);
+    $this->verbose('Created user with one separate permission.');
+//    debug($test_user, '$test_user with one separate perm.');
+
+    // Attach bundle to user with the same permission.
+    $uw_new = entity_metadata_wrapper('user', $test_user);
+    $uw_new->field_access_bundles = array($test_bundle->nid);
+    $uw_new->save();
+    $test_user = user_load($test_user->uid);
+    $this->verbose('Attached bundle with same permission to user.');
+//    debug($test_user, '$test_user with one bundle attached.');
+
+    // Determine what has changed on the user.
+    $perms_diff = _kms_user_calculate_permissions_diff($uw_new, $uw_original);
+//    debug($perms_diff, '$perms_diff');
+    $this->assertEqual(
+      $perms_diff,
+      $this->permsDiffAddBundleWithOnePerm(),
+      'User update diff shows one permission in bundle[add]'
+    );
+    // Oracle diff for default connection.
+    $diff_default = kms_user_perms_attach_create_queue_item_diff(
+      $test_user,
+      $perms_diff,
+      'default'
+    );
+    // Oracle diff for kms_permissions connection.
+    $diff_kms_permissions = kms_user_perms_attach_create_queue_item_diff(
+      $test_user,
+      $perms_diff,
+      'kms_permissions'
+    );
+
+//    debug($diff_default, 'Queue item diff [default]', TRUE);
+//    debug($diff_kms_permissions, 'Queue item diff [kms_permissions]', TRUE);
+    $this->assertEqual($diff_default, KmsPermsDiff::defaultDiff(), 'diff_default is empty, because user has the permission already.');
+    $this->assertEqual($diff_kms_permissions, KmsPermsDiff::defaultDiff(), 'diff_kms_permissions is empty, because user has the permission already.');
+
+    $uw_updated = entity_metadata_wrapper('user', $test_user);
+    $uw_updated->field_access_bundles = array();
+    $uw_updated->save();
+    $this->verbose('Removed bundle from user.');
+    $perms_diff = _kms_user_calculate_permissions_diff($uw_updated, $uw_new);
+    $perms_assertion['bundles'] = $perms_assertion['separate'] = KmsPermsDiff::defaultDiff();
+    $perms_assertion['bundles']['services']['remove'] = array(2979 => '2979');
+    debug($perms_diff, '$perms_diff');
+    debug($perms_assertion, '$perms_assertion');
+    $this->assertEqual(
+      $perms_diff,
+      $perms_assertion,
+      'User update diff shows one permission in bundles[remove]'
+    );
+    $test_user = user_load($test_user->uid);
+    // Oracle diff for default connection.
+    $diff_default = kms_user_perms_attach_create_queue_item_diff(
+      $test_user,
+      $perms_diff,
+      'default'
+    );
+    // Oracle diff for kms_permissions connection.
+    $diff_kms_permissions = kms_user_perms_attach_create_queue_item_diff(
+      $test_user,
+      $perms_diff,
+      'kms_permissions'
+    );
+
+//    debug($diff_default, 'Queue item diff [default]2', TRUE);
+//    debug($diff_kms_permissions, 'Queue item diff [kms_permissions]2', TRUE);
+    $this->assertEqual($diff_default, KmsPermsDiff::defaultDiff(), 'diff_default is empty, because user already has the permission.');
+    $this->assertEqual($diff_kms_permissions, KmsPermsDiff::defaultDiff(), 'diff_kms_permissions is empty,  because user already has the permission.');
+
+  }
+
+  /**
+   * Helper method for testing.
+   *
+   * @return array
+   *   Permission diff.
+   */
+  protected function permsDiffAddBundleWithOnePerm() {
+    $perms_diff = array();
+    $perms_diff['bundles'] = $perms_diff['separate'] = KmsPermsDiff::defaultDiff();
+    $perms_diff['bundles']['services']['add'][2979] = '2979';
+    return $perms_diff;
+  }
+
+  /**
+   * Choose another prefix than standard because it breaks postgres.
+   */
+  protected function prepareDatabasePrefix() {
+    $this->databasePrefix = 'st' . mt_rand(1000, 10000);
+    db_update('simpletest_test_id')
+      ->fields(array('last_prefix' => $this->databasePrefix))
+      ->condition('test_id', $this->testId)
+      ->execute();
+  }
+
+}

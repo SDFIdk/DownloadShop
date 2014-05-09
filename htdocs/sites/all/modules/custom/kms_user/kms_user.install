@@ -1,5 +1,12 @@
 <?php
 
 function kms_user_install() {
+  // If a simpletest is running do nothing.
+  if (
+    strpos(Database::getConnection()->tablePrefix(), 'simpletest') === 0
+    || strpos(Database::getConnection()->tablePrefix(), 'st') === 0
+  ) {
+    return;
+  }
   db_query('ALTER TABLE {field_data_field_address} ADD field_address_phone_number VARCHAR');
 }

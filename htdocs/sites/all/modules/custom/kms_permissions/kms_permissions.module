@@ -1356,6 +1356,7 @@ function kms_permissions_ajax_get_services_by_bids() {
 * Implementation of hook_node_access_records().
 */
 function kms_permissions_node_access_records($node) {
+  $grants = array();
   // Should this code be here?
   if ($node->type == 'access_bundle') {
     $wnode = entity_metadata_wrapper('node', $node);
@@ -1365,7 +1366,7 @@ function kms_permissions_node_access_records($node) {
         node_access_acquire_grants($prod, TRUE);
       }
     }
-    return array();
+    return $grants;
   }
 
   if ($node->type == 'product_display') {
@@ -1919,10 +1920,12 @@ function _kms_permissions_get_default_bundles() {
       ->propertyOrderBy('nid')
       ->execute();
     $result = $query->execute();
-    $bids = isset($result['node']) ? array_keys($result['node']) : array();
+    if(!empty($result['node'])){
+      return array_keys($result['node']);
+    }
   }
 
-  return $bids;
+  return !empty($bids) ? $bids : array();
 }
 
 function _kms_permissions_get_non_default_bundles() {
@@ -2170,9 +2173,17 @@ function kms_permissions_get_service_bounding_box($sid = FALSE) {
   // If no bundle matches use default bundle(s).
   if (empty($bundles)) {
     $def_bundles = _kms_permissions_get_default_bundles();
-    $bundles = array(
-      'default' => array_combine($def_bundles, $def_bundles),
-    );
+    if (!empty($def_bundles)) {
+      $bundles = array(
+        'default' => array_combine($def_bundles, $def_bundles),
+      );
+    }
+    else {
+      $bundles = array(
+        'default' => array(),
+      );
+    }
+
   }
   $min_max_def = array(
     'minx' => 'min',

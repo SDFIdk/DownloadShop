@@ -399,6 +399,12 @@ function _kms_user_validate_chars($element, $pattern) {
  * @return void
  */
 function _kms_user_cron_expire_users() {
+  if (
+    strpos(Database::getConnection()->tablePrefix(), 'simpletest') === 0
+    || strpos(Database::getConnection()->tablePrefix(), 'st') === 0
+  ) {
+    return;
+  }
   $query = "
     SELECT u.uid FROM {field_data_field_expire_date} ed
     LEFT JOIN {users} u ON u.uid = ed.entity_id

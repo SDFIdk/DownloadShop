@@ -21,7 +21,8 @@ function kms_oci_queue_install() {
     KMS_OCI_QUEUE_ENGINE_DIR_JOBS_PROCESSED,
   );
   foreach ($subdirs as $subdir) {
-    file_prepare_directory(sprintf('%s/%s', $root_dir, $subdir), FILE_CREATE_DIRECTORY);
+    $path = sprintf('%s/%s', $root_dir, $subdir);
+    file_prepare_directory($path, FILE_CREATE_DIRECTORY);
   }
 
 }
