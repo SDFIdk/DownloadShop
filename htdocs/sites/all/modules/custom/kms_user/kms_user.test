@@ -66,7 +66,7 @@ class KmsOciQueueActionUserTestCase extends DrupalWebTestCase {
    * Testing adding bundle with same permission as on a user
    * and remove bundle again.
    */
-  function testMeixiaAddBundleToUserWithOnePermRemoveAgain() {
+  public function testMeixiaAddBundleToUserWithOnePermRemoveAgain() {
     // Add remove bundle with existing separate permission.
     $perm = array('field' => 'field_bundle_webservices_wms', 'value' => 2979);
     // Make sure that the test bundle has our test permission.
@@ -80,7 +80,7 @@ class KmsOciQueueActionUserTestCase extends DrupalWebTestCase {
     $uw_original->{$perm['field']}[] = $perm['value'];
     $uw_original->save();
     $test_user = user_load($test_user->uid);
-    $this->pass('Created user with one separate permission.');
+    $this->pass('Created user with one separate permission.', 'Info');
 //    debug($test_user, '$test_user with one separate perm.');
 
     // Attach bundle to user with the same permission.
@@ -88,7 +88,7 @@ class KmsOciQueueActionUserTestCase extends DrupalWebTestCase {
     $uw_new->field_access_bundles = array($test_bundle->nid);
     $uw_new->save();
     $test_user = user_load($test_user->uid);
-    $this->pass('Attached bundle with same permission to user.');
+    $this->pass('Attached bundle with same permission to user.', 'Info');
 //    debug($test_user, '$test_user with one bundle attached.');
 
     // Determine what has changed on the user.
@@ -97,7 +97,8 @@ class KmsOciQueueActionUserTestCase extends DrupalWebTestCase {
     $this->assertEqual(
       $perms_diff,
       $this->permsDiffAddBundleWithOnePerm(),
-      'User update diff shows one permission in bundle[add]'
+      'User update diff shows one permission in bundle[add].',
+      'Assertion'
     );
     // Oracle diff for default connection.
     $diff_default = kms_user_perms_attach_create_queue_item_diff(
@@ -114,13 +115,23 @@ class KmsOciQueueActionUserTestCase extends DrupalWebTestCase {
 
 //    debug($diff_default, 'Queue item diff [default]', TRUE);
 //    debug($diff_kms_permissions, 'Queue item diff [kms_permissions]', TRUE);
-    $this->assertEqual($diff_default, KmsPermsDiff::defaultDiff(), 'diff_default is empty, because user has the permission already.');
-    $this->assertEqual($diff_kms_permissions, KmsPermsDiff::defaultDiff(), 'diff_kms_permissions is empty, because user has the permission already.');
+    $this->assertEqual(
+      $diff_default,
+      KmsPermsDiff::defaultDiff(),
+      'diff_default is empty, because user has the permission already.',
+      'Assertion'
+    );
+    $this->assertEqual(
+      $diff_kms_permissions,
+      KmsPermsDiff::defaultDiff(),
+      'diff_kms_permissions is empty, because user has the permission already.',
+      'Assertion'
+    );
 
     $uw_updated = entity_metadata_wrapper('user', $test_user);
     $uw_updated->field_access_bundles = array();
     $uw_updated->save();
-    $this->pass('Removed bundle from user.');
+    $this->pass('Removed bundle from user.', 'Info');
     $perms_diff = _kms_user_calculate_permissions_diff($uw_updated, $uw_new);
     $perms_assertion['bundles'] = $perms_assertion['separate'] = KmsPermsDiff::defaultDiff();
     $perms_assertion['bundles']['services']['remove'] = array(2979 => '2979');
@@ -129,7 +140,8 @@ class KmsOciQueueActionUserTestCase extends DrupalWebTestCase {
     $this->assertEqual(
       $perms_diff,
       $perms_assertion,
-      'User update diff shows one permission in bundles[remove]'
+      'User update diff shows one permission in bundles[remove].',
+      'Assertion'
     );
     $test_user = user_load($test_user->uid);
     // Oracle diff for default connection.
@@ -147,8 +159,18 @@ class KmsOciQueueActionUserTestCase extends DrupalWebTestCase {
 
 //    debug($diff_default, 'Queue item diff [default]2', TRUE);
 //    debug($diff_kms_permissions, 'Queue item diff [kms_permissions]2', TRUE);
-    $this->assertEqual($diff_default, KmsPermsDiff::defaultDiff(), 'diff_default is empty, because user already has the permission.');
-    $this->assertEqual($diff_kms_permissions, KmsPermsDiff::defaultDiff(), 'diff_kms_permissions is empty,  because user already has the permission.');
+    $this->assertEqual(
+      $diff_default,
+      KmsPermsDiff::defaultDiff(),
+      'diff_default is empty, because user already has the permission.',
+      'Assertion'
+    );
+    $this->assertEqual(
+      $diff_kms_permissions,
+      KmsPermsDiff::defaultDiff(),
+      'diff_kms_permissions is empty, because user already has the permission.',
+      'Assertion'
+    );
 
   }
 
