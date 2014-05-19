@@ -7,159 +7,403 @@ define('KMS_CSV_CONCAT_SEPARATOR', '|');
  */
 function kms_csv_menu() {
 
-  $items['admin/content/csv/download'] = array(
-    'title' =>'Download CSV',
-    'description' => 'Download CSV page',
-    'page callback' => '_kms_csv_admin_page',
-    'access arguments' => array('administer users'),
+  $items['trigerdownload/%/%'] = array(
+    'title' => 'Ajax test callback',
+    'page callback' => 'kms_csv_ajax_callback',
+    'page arguments' => array(1,2),
+    'access arguments' => array('access content'),
   );
-  $items['csv/generate/%'] = array(
-    'title' => 'Generate csv file',
-    'page callback' => 'kms_csv_generate',
-    'page arguments' => array(2),
-    'type' => MENU_CALLBACK,
-    'access arguments' => array('administer users'),
-  );
-  $items['csv/download/%'] = array(
-    'title' => 'Download csv file',
-    'page callback' => 'kms_csv_download',
-    'page arguments' => array(2),
-    'type' => MENU_CALLBACK,
-    'access arguments' => array('administer users'),
+
+  $items['admin/config/system/kmscsv'] = array(
+    'title' => 'KMS CSV module settings',
+    'description' => 'Manage FTP credentials for the KMS CSV service',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('kms_csv_admin'),
+    'access arguments' => array('administer settings'),
+	  'file' => 'kms_csv.admin.inc',
+    'type' => MENU_NORMAL_ITEM,
+   );
+
+  $items['kms/csv/run'] = array(
+    'title' =>'CSV run',
+    'description' => 'run',
+    'page callback' => 'kms_csv_run',
+    'access arguments' => array('csv run'),
   );
 
   return $items;
 }
 
-/**
- * Generate csv file
- *
- * @param string $name
- *   The name of csv type. Needs supported functions.
- *
- * @return void
- */
-function kms_csv_generate($name) {
-  $function = "_kms_csv_create_batch_$name";
-  if (empty($name) || !function_exists($function)) {
-    return FALSE;
-  }
-  $batch = array(
-    'title' => t('Exporting csv ...'),
-    'operations' => array(),
-    'init_message' => t('Commencing'),
-    'progress_message' => t('Processed @current out of @total.'),
-    'error_message' => t('An error occurred during processing'),
-    'finished' => "kms_csv_batch_finished_$name",
-    // 'progressive' => FALSE
-  );
-
-  call_user_func_array($function, array(&$batch));
- 
-  batch_set($batch);
-  batch_process('admin/content/csv/download'); 
-  return '';
+function kms_csv_run() {
+  _kms_csv_create_users();
+  //_kms_csv_create_orders();
+  _kms_csv_create_downloads();
 }
 
-function _kms_csv_create_batch_users(&$batch) {
-  $query = db_select('users', 'u');
+/**
+ * Implements hook_cronapi().
+ */
+function kms_csv_cronapi($op, $job = NULL) {
+  switch ($op) {
+    case 'list':
+      return array(
+        'kms_csv_job' => 'Render CSV files',
+      );
 
-  $query
-  ->condition('u.uid', 1, '>')
-  ->fields('u', array('uid'));
+    case 'rule':
+      switch ($job) {
+        case 'kms_csv_job': return '30 2 * * *';
+          break;
+      }
+      break;
 
-  $result = $query->execute();
-  
-  // Add headers.
+    case 'execute':
+      switch ($job) {
+        case 'kms_csv_job':
+          kms_csv_job();
+          break;
+      }
+      break;
+  }
+}
+
+
+/**
+ * Cron hook
+ *
+ */
+
+function kms_csv_job(){
+  _kms_csv_create_users();
+  //  _kms_csv_create_orders();
+  _kms_csv_create_downloads();
+}
+
+
+/**
+ * Create CSV output for users.
+ *
+ */
+function _kms_csv_create_users() {
+
   $headers = _kms_csv_generate_data_users_headers();
-  kms_csv_convert_row2latin1($headers);
   $file = file_directory_temp() . '/' . uniqid();
-  $_SESSION['kms_csv_download_file_users'] = $file;
   $handle = fopen($file, 'w'); // Create the file.
   fputcsv($handle, $headers, ';'); // Write the labels to the header row.
   fclose($handle);
 
-  $max = db_query(
-    'SELECT COUNT(DISTINCT uid) FROM {users} WHERE uid > 1'
-  )->fetchField();
-  
+    // Select last
+  $last_id = db_query('SELECT MAX(uid) FROM {users}')->fetchField();
+
+  $today = _kms_csv_return_today();
+
+  $query = db_select('users', 'u')
+  ->condition('created', array($today['beginOfDay'], $today['endOfDay']), 'BETWEEN')
+  ->fields('u', array('uid'));
+
+  $result = $query->execute();
+
   while($record = $result->fetchAssoc()) {
     if(empty($record['uid'])) {
       continue;
     }
-    $batch['operations'][] = array(
-      '_kms_csv_generate_data_users_row',
-      array($record['uid'], $file, $max)
-    );
+     _kms_csv_generate_data_users_row($record['uid'], $file);
   }
+
+  _kms_csv_transfer_file($file, 'kortforsyningen_users');
+
+  // Update lastprocessed
+  db_update('kms_csv_cron_point')
+    ->condition('type', 1, '=')
+    ->fields(array('unid' => $last_id, 'updated' => time()))
+    ->execute();
+
 }
 
 /**
- * Create batch: orders.
+ * Create Downloads (essentially orders).
  *
- * @param arry $batch
- *   Drupal batch API array.
+ * @param array $settings
  *
- * @return void.
  */
-function _kms_csv_create_batch_orders(&$batch) {
+function _kms_csv_create_downloads() {
+
+  // Select last
+  $last_id = db_query('SELECT MAX(order_id) FROM {commerce_order}')->fetchField();
+
   $query = db_select('commerce_order', 'o');
+
+  $today = _kms_csv_return_today();
 
   $query
   ->condition('o.status', 'completed', '=')
+  ->condition('o.created',  array($today['beginOfDay'], $today['endOfDay']), 'BETWEEN')
   ->fields('o', array('order_id'));
 
   $result = $query->execute();
   // Add headers.
-  $headers = _kms_csv_generate_data_orders_headers();
-  kms_csv_convert_row2latin1($headers);
+  $headers = _kms_csv_generate_data_download_headers();
   // Create the file and print the labels in the header row.
   $file = file_directory_temp() . '/' . uniqid();
-  $_SESSION['kms_csv_download_file_orders'] = $file;
   $handle = fopen($file, 'w'); // Create the file.
   fputcsv($handle, $headers, ';'); // Write the labels to the header row.
   fclose($handle);
-
-  $max = db_query(
-    'SELECT COUNT(DISTINCT order_id) FROM {commerce_order} WHERE status = :status',
-    array(':status' => 'completed')
-  )->fetchField();
 
   while($record = $result->fetchAssoc()) {
     if(empty($record['order_id'])) {
       continue;
     }
-    $batch['operations'][] = array(
-      '_kms_csv_generate_data_orders_rows',
-      array($record['order_id'], $file, $max)
-    );
+      _kms_csv_generate_data_download_rows($record['order_id'], $file);
   }
-  
+
+  _kms_csv_transfer_file($file, 'shop_downloads');
+
+  // Update lastprocessed
+  db_update('kms_csv_cron_point')
+    ->condition('type', 2, '=')
+    ->fields(array('unid' => $last_id, 'updated' => time()))
+    ->execute();
+
 }
 
 /**
- * Batch create csv rows: orders.
+ * Render csv rows: Downloads.
  *
  * @param integer $oid
  *   Drupal commerce order_id.
  * @param string $file
  *   Absolute path to tmp csv file.
- * @param integer $max
- *   The amount of total rows.
- * @param array $context
- *   Drupal batch API array.
  *
- * @return void.
  */
-function _kms_csv_generate_data_orders_rows($oid, $file, $max, &$context){
+function _kms_csv_generate_data_download_rows($oid, $file){
+
   $handle = fopen($file, 'a');
-  
-  if (empty($context['sandbox'])) {
-    $context['sandbox'] = array();
-    $context['sandbox']['progress'] = 0;
-    $context['sandbox']['current_order'] = 0;
-    $context['sandbox']['line_items'] = 0;
+
+  $order_wrapper = entity_metadata_wrapper('commerce_order', commerce_order_load($oid));
+
+  $user = $order_wrapper->owner->value();
+  if (empty($user)) {
+    return;
   }
+
+  //print_r($order_wrapper);
+
+  // ORDERID
+  $orderid = $order_wrapper->order_id->value();
+  // DATETIME
+  $datetime = $order_wrapper->created->value();
+  // USERID
+  $userid = $user->uid;
+  // USERNAME
+  $username = $user->name;
+
+  // USERLEVELS
+  $uwrapper = entity_metadata_wrapper('user', user_load($userid));
+  $types = _kms_csv_user_types($uwrapper);
+  $array_key_number = 0;
+  foreach ($types as $type)
+  {
+    $type_list[$array_key_number] = $type;
+    $array_key_number++;
+  }
+
+  // $USERTYPELVL_1
+  $usertypelvl_1 = $type_list[0];
+
+  if($type_list[0] == "Forening/NGO") {
+    // User type info.
+    $user_type_info = $uwrapper->field_user_type_info->value();
+    $usertypelvl_2 = !empty($user_type_info) ? $user_type_info : '';
+  } else {
+    $usertypelvl_2 = isset($type_list[1]) ? $type_list[1] : '';
+  }
+
+  // $USERTYPELVL_3
+  $usertypelvl_3 = isset($type_list[2]) ? $type_list[2] : '';
+  // $USERTYPELVL_4
+  $usertypelvl_4 = isset($type_list[3]) ? $type_list[3] : '';
+  // Order id
+  // Get line items.
+  foreach ($order_wrapper->commerce_line_items as $delta => $line_item_wrapper) {
+
+    // Product
+      $product = $line_item_wrapper->commerce_product->title->value();
+    //Type and
+    $data = unserialize($line_item_wrapper->field_selection->value());
+    if(isset($data['product_id'])) {
+      $product_display_id = _kms_csv_get_referencing_node_id($data['product_id']);
+      $product_display_wrapper = entity_metadata_wrapper('node', node_load($product_display_id));
+
+      $product_display_title = $product_display_wrapper->title->value();
+
+      $product_display_korttype = $product_display_wrapper->field_korttype->value()->name;
+
+      $product_display_datastruktur = $product_display_wrapper->field_datastruktur->value()->name;
+
+      $product_display_aktualitet = $product_display_wrapper->field_aktualitet->value()->name;
+
+      $product_display_scheme = $product_display_wrapper->field_scheme->value()->name;
+
+    }
+
+    //DOWNLOADTYPE
+    $downloadtype = $data['type'];
+    //ITEMID
+    $itemid = $line_item_wrapper->line_item_id->value();
+    //File name
+    $remove_list = array("{", "}", "[", "]", "\"");
+      $files = str_replace($remove_list, "", $data['selection']);
+      $file_array =  explode(",", $files);
+
+    // Product data
+    $product_data = $line_item_wrapper->field_selection_text->value();
+
+    // SRS
+    $projection_term =  taxonomy_term_load($data['koordinatsystem']);
+    $srs = $projection_term->name;
+
+    // FORMAT
+    $product_something =  taxonomy_term_load($data['dataformat']);
+    $format = $product_something->name;
+
+    if($downloadtype == 'userdefined') {
+      $remove_names = array("left:", "right:", "top:", "bottom:");
+      $process_orderid = $line_item_wrapper->field_jobid->value();
+      $bbox = str_replace($remove_names, "", $files);
+      $deliverytime = $line_item_wrapper->field_finished->value();
+      $ordertime = $line_item_wrapper->created;
+      $opw = entity_metadata_wrapper('commerce_product', commerce_product_load($data['product_id']));
+      $userdefined_file = $process_orderid.'.zip';
+      $userdefined_folder = 'http://download.kortforsyningen.dk/sites/default/files/kfdownload/';
+    } else {
+      if(isset($data['product_id'])) {
+        $opw = entity_metadata_wrapper('commerce_product', commerce_product_load($data['product_id']));
+        $folder = $opw->field_folder->value();
+      }
+    }
+
+    if($downloadtype != 'userdefined'){
+      foreach ($file_array as $file) {
+        // URL
+        $url =  'http://download.kortforsyningen.dk/system/files/'.$folder.'/'.$file;
+        $row = array( $orderid,
+                      $datetime,
+                      $userid,
+                      $username,
+                      $usertypelvl_1,
+                      $usertypelvl_2,
+                      $usertypelvl_3,
+                      $usertypelvl_4,
+                      $itemid,
+                      $downloadtype,
+                      $format,
+                      $srs,
+                      '',
+                      $product_display_title,
+                      $product_display_korttype,
+                      $product_display_datastruktur,
+                      $product_display_aktualitet,
+                      $product_display_scheme,
+                      '',
+                      '',
+                      '',
+                      '',
+                      $url
+                      );
+        fputcsv($handle, $row, ';');
+      }
+    } else {
+      $url =  $userdefined_folder.$userdefined_file;
+      $row = array(   $orderid,
+                      $datetime,
+                      $userid,
+                      $username,
+                      $usertypelvl_1,
+                      $usertypelvl_2,
+                      $usertypelvl_3,
+                      $usertypelvl_4,
+                      $itemid,
+                      $downloadtype,
+                      $format,
+                      $srs,
+                      $process_orderid,
+                      $product_display_title,
+                      $product_display_korttype,
+                      $product_display_datastruktur,
+                      $product_display_aktualitet,
+                      $product_display_scheme,
+                      '',
+                      $bbox,
+                      $datetime,
+                      $deliverytime,
+                      $url
+                      );
+      fputcsv($handle, $row, ';');
+    }
+
+  }
+
+  fclose($handle);
+}
+
+
+/**
+ * Create orders.
+ *
+ * @param array $settings
+ *
+ */
+function _kms_csv_create_orders() {
+
+  // Select last
+  $last_id = db_query('SELECT MAX(order_id) FROM {commerce_order}')->fetchField();
+
+  $query = db_select('commerce_order', 'o');
+
+  $today = _kms_csv_return_today();
+
+  $query
+  ->condition('o.status', 'completed', '=')
+  ->condition('o.created',  array($today['beginOfDay'], $today['endOfDay']), 'BETWEEN')
+  ->fields('o', array('order_id'));
+
+  $result = $query->execute();
+  // Add headers.
+  $headers = _kms_csv_generate_data_orders_headers();
+  // Create the file and print the labels in the header row.
+  $file = file_directory_temp() . '/' . uniqid();
+  $handle = fopen($file, 'w'); // Create the file.
+  fputcsv($handle, $headers, ';'); // Write the labels to the header row.
+  fclose($handle);
+
+  while($record = $result->fetchAssoc()) {
+    if(empty($record['order_id'])) {
+      continue;
+    }
+      _kms_csv_generate_data_orders_rows($record['order_id'], $file);
+  }
+
+  _kms_csv_transfer_file($file, 'shop_downloads');
+
+  // Update lastprocessed
+  db_update('kms_csv_cron_point')
+    ->condition('type', 2, '=')
+    ->fields(array('unid' => $last_id, 'updated' => time()))
+    ->execute();
+
+}
+
+/**
+ * Render csv rows: orders.
+ *
+ * @param integer $oid
+ *   Drupal commerce order_id.
+ * @param string $file
+ *   Absolute path to tmp csv file.
+ *
+ */
+function _kms_csv_generate_data_orders_rows($oid, $file){
+  $handle = fopen($file, 'a');
 
   $order_wrapper = entity_metadata_wrapper('commerce_order', commerce_order_load($oid));
   $user = $order_wrapper->owner->value();
@@ -167,62 +411,86 @@ function _kms_csv_generate_data_orders_rows($oid, $file, $max, &$context){
     return;
   }
 
+  // Brugerid
+  $useruid = $user->uid;
   // Brugernavn
   $username = $user->name;
-  // Brugertype
-  $types = _kms_csv_user_types($order_wrapper->owner);
-  $usertypes = implode(KMS_CSV_CONCAT_SEPARATOR, $types);
   // Dato (created).
-  $date = kms_csv_date_unix_2_excel($order_wrapper->created->value());
+  $date = $order_wrapper->created->value();
   // Order id
   $order_id = $order_wrapper->order_id->value();
   // Get line items.
   foreach ($order_wrapper->commerce_line_items as $delta => $line_item_wrapper) {
+
+	// Product
     $product = $line_item_wrapper->commerce_product->title->value();
-    $row = array($username, $usertypes, $product, $date, $order_id);
 
-    kms_csv_convert_row2latin1($row);
+	//Type and
+	$data = unserialize($line_item_wrapper->field_selection->value());
 
-    fputcsv($handle, $row, ';', '"');
-    $context['sandbox']['line_items']++;
+	//ElementID
+	$element_id = $line_item_wrapper->line_item_id->value();
+
+	//File name
+	$remove_list = array("{", "}", "[", "]", "\"");
+    $file_name = str_replace($remove_list, "", $data['selection']);
+
+	// Product data
+	$product_data = $line_item_wrapper->field_selection_text->value();
+
+  // Projection
+  $projection_term =  taxonomy_term_load($data['koordinatsystem']);
+  $projection_name = $projection_term->name;
+
+	$row = array($useruid, $username, $order_id , $date, $data['type'], $element_id, $product_data, $file_name, $product, $projection_name);
+
+    fputcsv($handle, $row, ';');
   }
-
-  $context['sandbox']['progress']++;
-  $context['message'] = t('exporting order id: @oid', array('@oid' => $oid));
-  $context['results'][] = t(
-    'Order id: @oid. User: @user. Last product: @product',
-    array('@oid' => $oid, '@user' => $username, '@product' => $product)
-  );
-
-  $context['finished'] = TRUE;
 
   fclose($handle);
 }
 
 /**
- * Batch API 'finished' function.
+ * Transfer files to FTP server
  *
- * @param boolean $success
- * @param array $results
- * @param array $operations
+ * @param string $file
  *
- * @return void.
+ * @param string $type
+ *
  */
-function kms_csv_batch_finished_orders($success, $results, $operations) {
+function _kms_csv_transfer_file($file, $type) {
 
-  if ($success) {
-    // Here we could do something meaningful with the results.
-    // We just display the number of nodes we processed...
-    drupal_set_message(t('@count orders processed.', array('@count' => count($results))));
-    drupal_set_message(t('The final result was "%final"', array('%final' => end($results))));
-    drupal_set_message(t('Download file (one-time link): !download', array('!download' => l('orders.csv', 'csv/download/orders'))), 'warning');
+  date_default_timezone_set("Europe/Copenhagen");
+
+  $day = date("d_m_Y", strtotime("yesterday"));
+  //print_r(drupal_realpath("public://"));
+
+  if (copy($file, drupal_realpath("public://kms_csv/{$type}_{$day}.csv"))) {
+    watchdog('CSV', 'File created successfully');
+  } else {
+    watchdog('CSV', 'Error occured while trying to write the file');
   }
-  else {
-    // An error occurred.
-    // $operations contains the operations that remained unprocessed.
-    $error_operation = reset($operations);
-    drupal_set_message(t('An error occurred while processing @operation with arguments : @args', array('@operation' => $error_operation[0], '@args' => print_r($error_operation[0], TRUE))));
+
+  /* Allow upload to remote FTP server
+
+  $settings['username'] = variable_get('kms_csv_ftp_username','');
+  $settings['password'] = variable_get('kms_csv_ftp_password','');
+  $settings['advanced']['hostname']= variable_get('kms_csv_ftp_hostname','');
+  $settings['advanced']['port']= variable_get('kms_csv_ftp_port','');
+
+  $day =  format_date(time(), 'custom', 'd_m_y');
+
+  try {
+    // Copy the files.
+    $ftp = FileTransferFTP::factory($jail, $settings);
+    $ftp->connect();
+	  $ftp->copyFile($file, "file_{$type}_{$day}.csv");
   }
+  catch(Exception $e) {
+	 print($e);
+   watchdog('FTP', 'FTP failed during connect or filetransfer ');
+  }
+  */
 }
 
 /**
@@ -270,11 +538,16 @@ function kms_csv_date_unix_2_excel($timestamp, $format = '%a, %d/%m/%G') {
  */
 function _kms_csv_generate_data_orders_headers(){
   return array(
+    'Brugerid',
     'Brugernavn',
-    'Brugertype',
-    'Title',
+    'OrderID',
     'Dato',
-    'Order_id'
+    'Type',
+    'ElementID',
+    'Product Data',
+    'Fil navn',
+    'Product',
+    'Projection'
   );
 }
 
@@ -285,217 +558,118 @@ function _kms_csv_generate_data_orders_headers(){
  */
 function _kms_csv_generate_data_users_headers() {
   return array(
-    'Brugernavn',
-    'Brugertype',
-    'Brugertype info',
-    'E-mail',
-    'Oprettet',
-    'Aktiv',
-    'Roller',
-    'Fornavn',
-    'Efternavn',
-    'Virksomhed',
-    'Land',
-    'Adresse 1',
-    'Adresse 2',
-    'Post nr.',
-    'By',
-    'Telefon',
-    'Fakt. Adresse 1',
-    'Fakt. Adresse 2',
-    'Fakt. Post nr.',
-    'Fakt. By',
-    'KMS User ID',
-    'Debitor nr',
-    'Udløbsdato',
-    'Brugerbemærkning',
-    'Rettigheder',
-    'Nyhedsbrev',
-    'Kontakt',
+    'USERID',
+    'USERNAME',
+    'USERTYPELVL_1',
+    'USERTYPELVL_2',
+    'USERTYPELVL_3',
+    'USERTYPELVL_4',
+    'CREATIONDATE',
+    'MAIL',
+    'NEWSLETTER',
+    'SURVEY',
   );
 }
 
 /**
- * Generate user row
+ * Csv header: downloads.
+ *
+ * @return array
+ */
+function _kms_csv_generate_data_download_headers() {
+  return array(
+    'ORDERID',
+    'DATETIME',
+    'USERID',
+    'USERNAME',
+    'USERTYPELVL_1',
+    'USERTYPELVL_2',
+    'USERTYPELVL_3',
+    'USERTYPELVL_4',
+    'ITEMID',
+    'DOWNLOADTYPE',
+    'FORMAT',
+    'SRS',
+    'ORDERID',
+    'PRODUCT',
+    'KORTTYPE',
+    'DATASTRUKTUR',
+    'AKTUALITET',
+    'DATASKEMA',
+    'SQUAREKM',
+    'BBOX',
+    'ORDERTIME',
+    'DELIVERYTIME',
+    'URL',
+  );
+}
+
+/* Generate user row
  *
  * @param integer $uid
  * @param string $file
- *   Absolute path to file.
- * @param integer $max
- *   Total amount of users.
- * @param array $context
- *   Drupal batch API array.
  *
- * @return void.
  */
-function _kms_csv_generate_data_users_row($uid, $file, $max, &$context){
+function _kms_csv_generate_data_users_row($uid, $file){
   $handle = fopen($file, 'a');
-  
-  if (empty($context['sandbox'])) {
-    $context['sandbox'] = array();
-    $context['sandbox']['progress'] = 0;
-    $context['sandbox']['current_user'] = 0;
-  }
+
+  $yes_no = array(0 => 'NO', 1 => 'YES');
 
   $uwrapper = entity_metadata_wrapper('user', user_load($uid));
   $row = array();
 
   // Brugernavn
+  $row[] = $uid;
+  // Brugernavn
+
   $username = $uwrapper->name->value();
-  $row[] = $username; 
+  $row[] = $username;
 
   // Brugertype.
-  $row[] = implode(KMS_CSV_CONCAT_SEPARATOR, _kms_csv_user_types($uwrapper));
-
-  // User type info.
-  $user_type_info = $uwrapper->field_user_type_info->value();
-  $row[] = !empty($user_type_info) ? $user_type_info : '';
-
-  // E-mail
-  $row[] = $uwrapper->mail->value();
-
-  // Oprettet
-  $row[] = kms_csv_date_unix_2_excel($uwrapper->created->value());
-
-  // Aktiv
-  $row[] = $uwrapper->status->value();
-  // Roller
-  $row[] = implode(KMS_CSV_CONCAT_SEPARATOR, _kms_csv_user_roles($uwrapper));
-  // Address
-  $address_check = $uwrapper->field_address->value();
-  if (!empty($address_check)) {
-    // Fornavn
-    $row[] = $uwrapper->field_address->first_name->value();
-    // Efternavn
-    $row[] = $uwrapper->field_address->last_name->value();
-    // Virksomhed
-    $row[] = $uwrapper->field_address->organisation_name->value();
-    // Land
-    $row[] = $uwrapper->field_address->country->value();
-    // Adresse 1
-    $row[] = $uwrapper->field_address->thoroughfare->value();
-    // Adresse 2
-    $row[] = $uwrapper->field_address->premise->value();
-    // Post nr.
-    $row[] = $uwrapper->field_address->postal_code->value();
-    // By
-    $row[] = $uwrapper->field_address->locality->value();
+  $types = _kms_csv_user_types($uwrapper);
+  $array_key_number = 0;
+  foreach ($types as $type)
+  {
+    $type_list[$array_key_number] = $type;
+    $array_key_number++;
   }
-  // Telefon
-  $row[] = $uwrapper->field_phone->value();
-  // Billing address
-  $baddress_check = $uwrapper->field_address->value();
-  if (!empty($baddress_check)) {
-    // Fakt. Adresse 1
-    $row[] = $uwrapper->field_billing_address->thoroughfare->value();
-    // Fakt. Adresse 2
-    $row[] = $uwrapper->field_billing_address->premise->value();
-    // Fakt. Post nr.
-    $row[] = $uwrapper->field_billing_address->postal_code->value();
-    // Fakt. By
-    $row[] = $uwrapper->field_billing_address->locality->value();
-  }
-  // KMS User ID
-  $row[] = $uwrapper->field_kms_user_id->value();
-  // Debitor nr.
-  $row[] = $uwrapper->field_debtor_nr->value();
-  // Udløbs dato
-  $expire = $uwrapper->field_expire_date->value();
-  if (!empty($expire)) {
-    $row[] = kms_csv_date_unix_2_excel($uwrapper->field_expire_date->value());
-  }
-  else {
-    $row[] = '';
-  }
-  // Brugerbemærkning
-  $row[] = $uwrapper->field_user_remark->value();
-  // Rettigheder
-  $row[] = _kms_csv_one_zero($uwrapper->field_terms_and_conditions->value());
-  // Nyhedsbrev
-  $row[] = _kms_csv_one_zero($uwrapper->field_newsletter->value());
-  // Kontakt
-  $row[] = _kms_csv_one_zero($uwrapper->field_contact_me->value());
-  
-  kms_csv_convert_row2latin1($row);
 
-  fputcsv($handle, $row, ';', '"');
+  // Brugertype. level 1
+  $row[] = $type_list[0];
+  if($type_list[0] == "Forening/NGO") {
+    // User type info.
+    $user_type_info = $uwrapper->field_user_type_info->value();
+    $row[] = !empty($user_type_info) ? $user_type_info : '';
+  } else {
+    $row[] = isset($type_list[1]) ? $type_list[1] : '';
+  }
 
-  $context['sandbox']['progress']++;
-  $context['message'] = t('Exporting user: %user', array('%user' => $username));
-  $context['results'][] = t('User: !user', array('!user' => $username));
+  // Brugertype. level 2
+  // Brugertype. level 3
+  $row[] = isset($type_list[2]) ? $type_list[2] : '';
+  // Brugertype. level 4
+  $row[] = isset($type_list[3]) ? $type_list[3] : '';
 
-  $context['finished'] = TRUE;
+   // Oprettet
+  $row[] = date($uwrapper->created->value());
+
+  // Email
+  $row[] =  $uwrapper->mail->value();
+
+  //Newsletter
+  $row[] = $yes_no[$uwrapper->field_newsletter->value()];
+
+  //Survey
+  $row[] = $yes_no[$uwrapper->field_contact_me->value()];
+
+  //Deprecated function to convert from utf to latin1, no longer used by new system
+  //kms_csv_convert_row2latin1($row);
+
+  fputcsv($handle, $row, ';');
 
   fclose($handle);
 }
 
-/**
- * Batch API 'finished' function.
- *
- * @param boolean $success
- * @param array $results
- * @param array $operations
- *
- * @return void.
- */
-function kms_csv_batch_finished_users($success, $results, $operations) {
-
-  if ($success) {
-    // Here we could do something meaningful with the results.
-    // We just display the number of nodes we processed...
-    drupal_set_message(t('@count users processed.', array('@count' => count($results))));
-    drupal_set_message(t('The final result was "%final"', array('%final' => end($results))));
-    drupal_set_message(t('Download file (one-time link): !download', array('!download' => l('users.csv', 'csv/download/users'))), 'warning');
-
-  }
-  else {
-    // An error occurred.
-    // $operations contains the operations that remained unprocessed.
-    $error_operation = reset($operations);
-    drupal_set_message(t('An error occurred while processing @operation with arguments : @args', array('@operation' => $error_operation[0], '@args' => print_r($error_operation[0], TRUE))));
-  }
-}
-
-/**
- * Download csv file.
- *
- * @param string $name
- *   Csv file data type (users/orders etc.)
- *
- * @return void.
- */
-function kms_csv_download($name) {
-  // For added security, make sure the beginning of the path is the same as that
-  // returned by file_directory_temp() (to prevent users from gaining access to
-  // arbitrary files on the server).
-  $session_key = "kms_csv_download_file_$name";
-  if (empty($_SESSION[$session_key])) {
-    drupal_set_message(
-      t(
-        'The file: !file is either outdated or you do not have permission to download it',
-        array('!file' => "$name.csv")
-      ),
-      'error'
-    );
-    drupal_goto('admin/content/csv/download');
-  }
-  $file = $_SESSION[$session_key];
-  unset($_SESSION[$session_key]);
-  // Add HTTP headers for CSV file download.
-  drupal_add_http_header('Content-Type', 'text/csv; iso-8859-1');
-  drupal_add_http_header(
-    'Content-Disposition', "attachment; filename=$name.csv",
-    TRUE
-  );
-
-  // Allow caching, otherwise IE users can't dl over SSL (see issue #294).
-  drupal_add_http_header('Cache-Control', 'max-age=300; must-revalidate');
-
-  // Read the file to the output buffer and exit.
-  echo @file_get_contents($file);
-  unlink($file);
-  exit;
-}
 
 /**
  * Convert UTF-8 to single byte latin 1.
@@ -555,4 +729,166 @@ function _kms_csv_user_roles($uwrapper) {
   }
   ksort($roles);
   return $roles;
+}
+
+function kms_csv_ajax_callback($order_id, $element_id) {
+  // Do any database queries, processing, etc.
+
+  $fields = array(
+    'order_id' => $order_id,
+	'element_id' => $element_id,
+    'download_on' => time(),
+  );
+
+  db_insert('kms_download_count')
+    ->fields($fields)
+    ->execute();
+
+  $result =  array('status' => $order_id);
+  drupal_json_output($result);
+}
+
+/**
+ * Calculate timestamp values for begining and end of yesterday.
+ * @return array $today
+ */
+function _kms_csv_return_today() {
+
+  date_default_timezone_set("Europe/Copenhagen");
+
+  $beginOfDay = strtotime("midnight - 1 day", time());
+  $endOfDay   = strtotime("tomorrow", $beginOfDay) - 1;
+
+  return array('beginOfDay'=>$beginOfDay, 'endOfDay'=>$endOfDay);
+}
+
+
+
+/**
+ * Implements theme_file_link().
+ */
+function kms_csv_file_link($variables) {
+  $file = $variables['file'];
+  $order_id  = $variables['order_id'];
+
+  $icon_directory = $variables['icon_directory'];
+
+  $url = file_create_url($file->uri);
+  $icon = theme('file_icon', array('file' => $file, 'icon_directory' =>     $icon_directory));
+
+  // Set options as per anchor format described at
+  // http://microformats.org/wiki/file-format-examples
+  $options = array(
+    'attributes' => array(
+      'type' => $file->filemime . '; length=' . $file->filesize,
+    ),
+  );
+
+  // Updating 'html' to TRUE so that the html code to display the icon is     printed
+  $options += array(
+    'html' => TRUE,
+  );
+
+  $options['attributes']['target'] = "filetargetframe";
+  $options['attributes']['id'] = $order_id;
+  $options['attributes']['rel'] = $variables['element_id'];
+  // Use the description as the link text if available.
+  if (empty($file->description)) {
+    $link_text = $file->filename;
+  }
+  else {
+    $link_text = $file->description;
+    $options['attributes']['title'] = check_plain($file->filename);
+  }
+
+  return '<span class="file">' . l($icon, $url, $options) . ' ' .     l($link_text, $url, $options) . '</span>';
+}
+
+
+
+/**
+ * Create CSV output for downloads (OLD).
+ *
+ */
+function _kms_csv_create_downloads_deprecated() {
+
+  $headers = _kms_csv_generate_data_download_headers();
+  $file = file_directory_temp() . '/' . uniqid();
+  $handle = fopen($file, 'w'); // Create the file.
+  fputcsv($handle, $headers, ';'); // Write the labels to the header r
+
+  $today = _kms_csv_return_today();
+
+  // Select last
+  $last_id = db_query('SELECT MAX(counter_id) FROM {kms_download_count}')->fetchField();
+
+  $result = db_query('SELECT element_id, COUNT(counter_id) as download_count
+              FROM {kms_download_count}
+            WHERE download_on > :beginOfDay AND download_on < :endOfDay
+            GROUP BY element_id', array(':beginOfDay' => $today['beginOfDay'], ':endOfDay' => $today['endOfDay']));
+  foreach ($result as $record) {
+
+    $row = array();
+
+    $query = db_select('kms_download_count', 'd')
+      ->condition('d.element_id', $record->element_id, '=')
+        ->fields('d');
+      $result_od = $query->execute();
+
+    while($od = $result_od->fetchAssoc()) {
+        $last_download = $od['download_on'];
+    $order_id = $od['order_id'];
+    }
+
+    // OrderID
+    $row[] = $order_id;
+
+    // ElementID
+    $row[] = $record->element_id;
+
+    // Last download
+    $row[] = $last_download;
+
+    // Count
+    $row[] = $record->download_count;
+
+    fputcsv($handle, $row, ';');
+
+  }
+
+  fclose($handle);
+
+  _kms_csv_transfer_file($file, 'downloads');
+
+  if(!isset($last_id)) $last_id = 0;
+  // Update lastprocessed
+  db_update('kms_csv_cron_point')
+    ->condition('type', 3, '=')
+    ->fields(array('unid' => $last_id, 'updated' => time()))
+    ->execute();
+
+}
+
+function _kms_csv_get_referencing_node_id($product) {
+  global $language;
+
+  // Itterate thhrough fields which refer to products.
+  foreach (commerce_info_fields('commerce_product_reference') as $field['field_name']) {
+    // Build query.
+    if(isset($field['field_name']))
+    {
+      $query = new EntityFieldQuery;
+      $query->entityCondition('entity_type', 'node', '=')
+        ->fieldCondition($field['field_name'], 'product_id', $product, '=')
+        ->propertyCondition('language', $language->language, '=')
+        ->range(0, 1);
+
+      if ($result = $query->execute()) {
+        // Return node id.
+        return array_shift(array_keys($result['node']));
+      }
+    }
+  }
+
+  return false;
 }

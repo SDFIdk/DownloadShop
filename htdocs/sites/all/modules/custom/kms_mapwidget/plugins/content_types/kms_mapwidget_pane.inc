@@ -21,7 +21,7 @@ function kms_mapwidget_pane_render($subtype, $conf, $panel_args, $context) {
     $domain = $_SERVER['HTTP_HOST'];
     if (preg_match("/^(.+):/", $_SERVER['HTTP_HOST'], $matches))
       $domain = $matches[1];
-    @$ticket = file_get_contents("http://kortforsyningen.kms.dk/?request=GetTicket&login=nikam&password=KMS2012");
+    @$ticket = file_get_contents("http://kortforsyningen.kms.dk/?request=GetTicket&login=FriDownload&password=FriDownload2013");
     setcookie("downloadticket", $ticket, time()+60*60*24, '/', $domain); 
   }
 

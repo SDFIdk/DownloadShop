@@ -1327,7 +1327,7 @@ input.form-submit:hover {
 
 /* Status messages */
 /* line 1226, ../sass/screen.scss */
-div.error, tr.error {
+div.messages, tr.error {
   -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
   -ms-border-radius: 3px;

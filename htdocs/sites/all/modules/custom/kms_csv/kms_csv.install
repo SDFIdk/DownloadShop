@@ -1,0 +1,103 @@
+<?php
+
+/**
+ * @file
+ * KMS CSV .install file.
+ */
+
+/**
+ * Implements hook_requirements().
+ */
+
+/**
+ * Implements hook_install().
+ */
+function kms_csv_install() {
+  
+  // 1 - users
+  _kms_csv_default_insert(1,18200);
+  // 2 - orders
+  _kms_csv_default_insert(2,40100);
+  // 3 - downloards
+  _kms_csv_default_insert(3,1);
+ 
+  $t = get_t();
+  drupal_set_message($t('<a href="!url">Configure</a> KMS CSV ftp credentials here.', array(
+    '!url' => url('admin/config/system/kmscsv'),
+  ))); 
+}
+
+/**
+ * Implements hook_schema().
+ */
+
+function kms_csv_schema() {
+  $schema['kms_download_count'] = array(
+    'fields' => array(
+      'counter_id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+        'description' => "Counter Id",
+      ),	
+      'order_id' => array(
+        'description' => 'Order identifier.',
+        'type' => 'int',
+        'unsinged' => TRUE,
+        'not null' => TRUE,
+      ),
+	 'element_id' => array(
+        'description' => 'Element downloaded',
+        'type' => 'int',
+        'unsinged' => TRUE,
+        'not null' => TRUE,
+      ),
+	  'download_on' => array(
+        'description' => 'Timestamp of download.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      )
+    ),
+  );
+  
+  $schema['kms_csv_cron_point'] = array(
+    'fields' => array(
+      'type' => array(
+        'description' => 'Type of export',
+        'type' => 'int',
+        'unsinged' => TRUE,
+        'not null' => TRUE,
+      ),
+	  'unid' => array(
+        'description' => 'Universal ID',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+	  'updated' => array(
+        'description' => 'Timestamp of cron run.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      )
+    ),
+  );
+  
+  return $schema;
+}
+
+/**
+ * Inserts default entry into kms_csv_cron_point table
+ *
+ * @param $type of export
+ * @param $unid id of the last exported item
+ */
+function _kms_csv_default_insert($type, $unid) {
+  $data = array(
+    'type' => $type,
+    'unid' => $unid,
+	'updated' => 1386581136
+  );
+  drupal_write_record('kms_csv_cron_point', $data);
+}
+

@@ -57,8 +57,8 @@ function kms_mydownloads_render($subtype, $conf, $panel_args, $context) {
       if ($data['type'] == 'predefined') {
         $extra .= _kms_mydownloads_date_format($remaining_order);
         foreach ($liw->commerce_file_line_item_files->value() as $delta => $file) {
-         //_kms_mydownloads_update_file_size($file);
-         $extra .= theme_file_link(array('file' => file_load($file['fid']), 
+         _kms_mydownloads_update_file_size($file);
+         $extra .= kms_csv_file_link(array('file' => file_load($file['fid']), 'order_id' =>  $ow->order_number->value(), 'element_id' => $liw->line_item_id->value(), 
          	'icon_directory' => 'sites/default/files')) . ' <span class="file-size">(' . _kms_mydownloads_format_bytes($file['filesize'],0) . ')</span>';
         }
       }
@@ -85,12 +85,14 @@ function kms_mydownloads_render($subtype, $conf, $panel_args, $context) {
 
            if ($jobStatus == 'SUCCESS') {            
              $extra .= _kms_mydownloads_date_format($remaining);
-             $extra .= theme_file_link(array(
+             $extra .= kms_csv_file_link(array(
                'file' => (object) array(
                  'filemime' => 'application/zip',
                  'filesize' => 0,
                  'uri' => 'sites/default/files/kfdownload/' . $jobid . '.zip',
-                 'filename' => $jobid . '.zip' ), 
+                 'filename' => $jobid . '.zip' ),
+			    'order_id' =>  $ow->order_number->value(),
+				'element_id' => $liw->line_item_id->value(),  
               'icon_directory' => 'sites/default/files')
              ) . ' ' . _kms_mydownloads_get_file_size($jobid,0);
 
@@ -134,7 +136,7 @@ function kms_mydownloads_render($subtype, $conf, $panel_args, $context) {
     'caption' => '',
     'colgroups' => array(),
     'empty' => ''
-  ));
+  )).'<iframe name="filetargetframe" style="display:none"></iframe>';
 
   //$block->content .= print_r($orders,true);
 
@@ -143,7 +145,7 @@ function kms_mydownloads_render($subtype, $conf, $panel_args, $context) {
 }
 
 /*
-  Update fileinfo ( if files in NFS-share was updated )
+  Update fileinfo ( for FME products NOT in files table )
 */
 
 function _kms_mydownloads_get_file_size($jobid) {
@@ -160,7 +162,7 @@ function _kms_mydownloads_get_file_size($jobid) {
 }
 
 /*
-  Get fileinfo ( for FME products not in files table)
+  Get fileinfo ( for FME products in files table )
 */
 
 function _kms_mydownloads_update_file_size(&$file) {

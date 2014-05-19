@@ -1223,7 +1223,7 @@ input.form-submit:hover {
 }
 
 /* Status messages */
-div.error, tr.error {
+div.messages, tr.error {
   @include border-radius(3px);
   padding: 5px;
   color: #333 !important;
