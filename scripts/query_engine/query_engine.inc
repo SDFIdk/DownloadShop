@@ -273,7 +273,6 @@ function qe_job_has_valid_status($job) {
  *   Array of script options.
  */
 function qe_process_job($job, $args, $opt) {
-  var_dump($job->jid);
   // If the job file could not be loaded change job status and exit.
   if (!file_exists($args['filepath'])) {
     $message = 'Query engine: File: %file does not exist';
@@ -300,6 +299,7 @@ function qe_process_job($job, $args, $opt) {
   // Execute generated sql and get result of it.
   $result = qe_execute_sql($sql, $args);
 
+  $message_vars = array();
   // Move file to processed folder upon success.
   if ($result['exit_code'] === 0) {
     // Move file.
@@ -315,7 +315,6 @@ function qe_process_job($job, $args, $opt) {
     $job_status = KmsOciQueueJob::STATUS_FAILED;
     if (!empty($result['message'])) {
       $message = implode('; ', $result['message']);
-      $message_vars = array();
     }
     else {
       $message = 'Something went wrong with exit code: @exit_code.';
