@@ -37,8 +37,8 @@ function kms_user_perms_attach_query_creator_run($jid, $creator_item, $exe_queue
   $kms_id = $creator_item->params['kms_id'];
   $user_original = $creator_item->params['user_original'];
   $perms_diff = $creator_item->params['perms_diff'];
-
-  $diff = kms_user_perms_attach_create_queue_item_diff($user_original, $perms_diff, $cid);
+  $mode = $creator_item->params['mode'];
+  $diff = kms_user_perms_attach_create_queue_item_diff($user_original, $perms_diff, $cid, $mode);
 
   // Queue the item.
   $exe_queue_item = array(
@@ -129,52 +129,15 @@ function kms_user_perms_attach_compare_diff_and_perms($perms_diff, $original_per
  *   The diff changes to the user permissions.
  * @param string $cid
  *   The connection id that decides which schema to use.
+ * @param string $mode
+ *   Is the user being updated or inserted?
  *
  * @return array
  *   Diff array.
  */
-function kms_user_perms_attach_create_queue_item_diff($user_original, $perms_diff, $cid) {
+function kms_user_perms_attach_create_queue_item_diff($user_original, $perms_diff, $cid, $mode = 'update') {
 
-  $w_original = entity_metadata_wrapper('user', $user_original);
-  $perm_options = array('key_prefix' => FALSE, 'flattened' => TRUE);
-
-  // Define users original permissions.
-  $original_perms['bundles'] = $original_perms['separate'] = array(
-    'services' => array(),
-    'applications' => array(),
-  );
-  // Original permissions from bundles (before changes).
-  $bundles = $w_original->field_access_bundles->raw();
-  $bundles = array_unique(array_merge($bundles, _kms_permissions_get_default_bundles()));
-  foreach ($bundles as $bid) {
-    _kms_permissions_get_permissions_by_bid($bid, $original_perms['bundles'], $perm_options);
-  }
-  // Separate services (before changes).
-  foreach (_kms_permissions_webservice_fields() as $field) {
-    $service_values = $w_original->$field->raw();
-    if (!empty($service_values[0])) {
-      $original_perms['separate']['services'] = array_merge(
-        $original_perms['separate']['services'],
-        $service_values
-      );
-    }
-  }
-  // Separate applications (before changes).
-  $application_values = $w_original->field_applications->raw();
-  if (!empty($application_values[0])) {
-    $original_perms['separate']['applications'] = array_merge(
-      $original_perms['separate']['applications'],
-      $application_values
-    );
-  }
-
-  // Add permissions from perms diff to original perms
-  // in order to use those in our calculations.
-  $original_perms['separate']['applications'] += $perms_diff['separate']['applications']['add'];
-  $original_perms['separate']['services'] += $perms_diff['separate']['services']['add'];
-  $original_perms['bundles']['applications'] += $perms_diff['bundles']['applications']['add'];
-  $original_perms['bundles']['services'] += $perms_diff['bundles']['services']['add'];
-
+  // The end result diff.
   $diff = array(
     'services' => array(
       'add' => array(),
@@ -185,31 +148,98 @@ function kms_user_perms_attach_create_queue_item_diff($user_original, $perms_dif
       'remove' => array(),
     ),
   );
+  // If we are updating the user we need to consider old permissons and diff against new.
+  // We do not have to do that with a insert.
+  switch ($mode) {
+    case 'insert':
+      $perms_oracle_rel = _kms_permissions_perms_oracle_relations();
 
-  // Compare bundle perms against original separate perms.
-  $diff_bundle = kms_user_perms_attach_compare_diff_and_perms(
-    $perms_diff['bundles'],
-    $original_perms['separate'],
-    $cid
-  );
-  // Compare separate perms against original bundle perms.
-  $diff_sep_perms = kms_user_perms_attach_compare_diff_and_perms(
-    $perms_diff['separate'],
-    $original_perms['bundles'],
-    $cid
-  );
-  // Merge bundle diff with separate perms diff.
-  $perms_oracle_rel = _kms_permissions_perms_oracle_relations();
-  foreach (array('services', 'applications') as $perm_type) {
-    $perm_conf = $perms_oracle_rel[$perm_type];
-    foreach (array('add', 'remove') as $action) {
-      $diff[$perm_type][$action] = $diff_bundle[$perm_type][$action] + $diff_sep_perms[$perm_type][$action];
-      if ($cid == $perm_conf['cid']) {
-        // Also use permissions that has been selected
-        // in both bundles and separate permissions.
-        $diff[$perm_type][$action] += array_intersect($perms_diff['bundles'][$perm_type][$action], $perms_diff['separate'][$perm_type][$action]);
+      foreach ($perms_diff['bundles'] as $perm_type => $perms) {
+        $perm_conf = $perms_oracle_rel[$perm_type];
+        // If the connection id of the job does not match the one in $perm_conf
+        // do nothing.
+        if ($cid != $perm_conf['cid']) {
+          continue;
+        }
+        // Add bounding box to services.
+        if ($perm_type == 'services') {
+          foreach ($perms['add'] as $sid) {
+            $diff[$perm_type]['add'][$sid] = kms_permissions_get_service_bounding_box($sid);
+          }
+        }
+        else {
+          $diff[$perm_type] = $perms;
+        }
       }
-    }
+      break;
+
+    case 'update':
+      $w_original = entity_metadata_wrapper('user', $user_original);
+      $perm_options = array('key_prefix' => FALSE, 'flattened' => TRUE);
+
+      // Define users original permissions.
+      $original_perms['bundles'] = $original_perms['separate'] = array(
+        'services' => array(),
+        'applications' => array(),
+      );
+      // Original permissions from bundles (before changes).
+      $bundles = $w_original->field_access_bundles->raw();
+      $bundles = array_unique(array_merge($bundles, _kms_permissions_get_default_bundles()));
+      foreach ($bundles as $bid) {
+        _kms_permissions_get_permissions_by_bid($bid, $original_perms['bundles'], $perm_options);
+      }
+      // Separate services (before changes).
+      foreach (_kms_permissions_webservice_fields() as $field) {
+        $service_values = $w_original->$field->raw();
+        if (!empty($service_values[0])) {
+          $original_perms['separate']['services'] = array_merge(
+            $original_perms['separate']['services'],
+            $service_values
+          );
+        }
+      }
+      // Separate applications (before changes).
+      $application_values = $w_original->field_applications->raw();
+      if (!empty($application_values[0])) {
+        $original_perms['separate']['applications'] = array_merge(
+          $original_perms['separate']['applications'],
+          $application_values
+        );
+      }
+
+      // Add permissions from perms diff to original perms
+      // in order to use those in our calculations.
+      $original_perms['separate']['applications'] += $perms_diff['separate']['applications']['add'];
+      $original_perms['separate']['services'] += $perms_diff['separate']['services']['add'];
+      $original_perms['bundles']['applications'] += $perms_diff['bundles']['applications']['add'];
+      $original_perms['bundles']['services'] += $perms_diff['bundles']['services']['add'];
+
+      // Compare bundle perms against original separate perms.
+      $diff_bundle = kms_user_perms_attach_compare_diff_and_perms(
+        $perms_diff['bundles'],
+        $original_perms['separate'],
+        $cid
+      );
+      // Compare separate perms against original bundle perms.
+      $diff_sep_perms = kms_user_perms_attach_compare_diff_and_perms(
+        $perms_diff['separate'],
+        $original_perms['bundles'],
+        $cid
+      );
+      // Merge bundle diff with separate perms diff.
+      $perms_oracle_rel = _kms_permissions_perms_oracle_relations();
+      foreach (array('services', 'applications') as $perm_type) {
+        $perm_conf = $perms_oracle_rel[$perm_type];
+        foreach (array('add', 'remove') as $action) {
+          $diff[$perm_type][$action] = $diff_bundle[$perm_type][$action] + $diff_sep_perms[$perm_type][$action];
+          if ($cid == $perm_conf['cid']) {
+            // Also use permissions that has been selected
+            // in both bundles and separate permissions.
+            $diff[$perm_type][$action] += array_intersect($perms_diff['bundles'][$perm_type][$action], $perms_diff['separate'][$perm_type][$action]);
+          }
+        }
+      }
+      break;
   }
 
   return $diff;

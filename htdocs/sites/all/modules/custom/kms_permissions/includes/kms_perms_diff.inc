@@ -25,7 +25,7 @@ class KmsPermsDiff {
     $perms = self::constructSeparatePerms($w_original, $w_new);
     return self::diffPermsArray($perms['original'], $perms['new']);
   }
-  
+
   public static function constructSeparatePerms(EntityMetadataWrapper $w_original, EntityMetadataWrapper $w_new) {
     $perms_template = array(
       'services' => array(),

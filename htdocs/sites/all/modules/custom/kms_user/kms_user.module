@@ -597,20 +597,26 @@ function _kms_user_submit_insert_user_oracle($form, &$form_state) {
 
   // Handle user permissions.
   if (!empty($perms['services']) || !empty($perms['applications'])) {
-    $perms_diff['bundles']['services']['add'] = $perms['services'];
-    $perms_diff['bundles']['services']['remove'] = array();
-    $perms_diff['separate']['services']['add'] = $perms['services'];
-    $perms_diff['separate']['services']['remove'] = array();
-    $perms_diff['bundles']['applications']['add'] = $perms['applications'];
-    $perms_diff['bundles']['applications']['remove'] = array();
-    $perms_diff['separate']['applications']['add'] = $perms['applications'];
-    $perms_diff['separate']['applications']['remove'] = array();
-    // Atodo: Make sure changes work here as well.
+    $perms_diff = array(
+      'bundles' => KmsPermsDiff::defaultDiff(),
+      'separate' => KmsPermsDiff::defaultDiff(),
+    );
+    if (!empty($perms['services'])) {
+      $perms_diff['bundles']['services']['add'] =
+        $perms_diff['separate']['services']['add'] =
+          $perms['services'];
+    }
+    if (!empty($perms['applications'])) {
+      $perms_diff['bundles']['applications']['add'] =
+        $perms_diff['separate']['applications']['add'] =
+          $perms['applications'];
+    }
     kms_oci_queue_job_action_perms_attach(
       $jobs,
       $account->uid,
       $account,
       $perms_diff,
+      'insert',
       '',
       array('@user' => $account->name)
     );
@@ -670,6 +676,7 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
       $userids['old'],
       $user_original,
       $perms_diff,
+      'update',
       '',
       array('@user' => $user_new->name)
     );

@@ -77,12 +77,14 @@ function kms_oci_queue_job_action_user_update(&$jobs, $data, $message = '', $var
  *   User being processed with properties before changes.
  * @param array $perms_diff
  *   Permissions diff.
+ * @param string $mode
+ *   Is the user being updated or inserted?
  * @param string $message
  *   Message for reporting.
  * @param array $vars
  *   Message placeholders.
  */
-function kms_oci_queue_job_action_perms_attach(&$jobs, $kms_id, $user_original, $perms_diff, $message = '', $vars = array()) {
+function kms_oci_queue_job_action_perms_attach(&$jobs, $kms_id, $user_original, $perms_diff, $mode = 'update', $message = '', $vars = array()) {
   if (empty($message)) {
     $message = 'Administer permissions on user: @user.';
   }
@@ -96,6 +98,7 @@ function kms_oci_queue_job_action_perms_attach(&$jobs, $kms_id, $user_original, 
       'kms_id' => $kms_id,
       'user_original' => $user_original,
       'perms_diff' => $perms_diff,
+      'mode' => $mode,
     ),
   );
 
