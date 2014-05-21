@@ -232,17 +232,20 @@ function _kms_csv_generate_data_download_rows($oid, $file){
     $data = unserialize($line_item_wrapper->field_selection->value());
     if(isset($data['product_id'])) {
       $product_display_id = _kms_csv_get_referencing_node_id($data['product_id']);
-      $product_display_wrapper = entity_metadata_wrapper('node', node_load($product_display_id));
 
-      $product_display_title = $product_display_wrapper->title->value();
+      if(!empty($product_display_id)){
+        $product_display_wrapper = entity_metadata_wrapper('node', node_load($product_display_id));
 
-      $product_display_korttype = $product_display_wrapper->field_korttype->value()->name;
+        $product_display_title = $product_display_wrapper->title->value();
 
-      $product_display_datastruktur = $product_display_wrapper->field_datastruktur->value()->name;
+        $product_display_korttype = $product_display_wrapper->field_korttype->value()->name;
 
-      $product_display_aktualitet = $product_display_wrapper->field_aktualitet->value()->name;
+        $product_display_datastruktur = $product_display_wrapper->field_datastruktur->value()->name;
 
-      $product_display_scheme = $product_display_wrapper->field_scheme->value()->name;
+        $product_display_aktualitet = $product_display_wrapper->field_aktualitet->value()->name;
+
+        $product_display_scheme = $product_display_wrapper->field_scheme->value()->name;
+      }
 
     }
 
@@ -265,11 +268,13 @@ function _kms_csv_generate_data_download_rows($oid, $file){
     // FORMAT
     $product_something =  taxonomy_term_load($data['dataformat']);
     $format = $product_something->name;
+    $squerem = '';
 
     if($downloadtype == 'userdefined') {
       $remove_names = array("left:", "right:", "top:", "bottom:");
       $process_orderid = $line_item_wrapper->field_jobid->value();
       $bbox = str_replace($remove_names, "", $files);
+      $squerem = _kms_csv_squere_meters_from_coordinates($bbox);
       $deliverytime = $line_item_wrapper->field_finished->value();
       $ordertime = $line_item_wrapper->created;
       $opw = entity_metadata_wrapper('commerce_product', commerce_product_load($data['product_id']));
@@ -304,7 +309,7 @@ function _kms_csv_generate_data_download_rows($oid, $file){
                       $product_display_datastruktur,
                       $product_display_aktualitet,
                       $product_display_scheme,
-                      '',
+                      $squerem,
                       '',
                       '',
                       '',
@@ -332,7 +337,7 @@ function _kms_csv_generate_data_download_rows($oid, $file){
                       $product_display_datastruktur,
                       $product_display_aktualitet,
                       $product_display_scheme,
-                      '',
+                      $squerem,
                       $bbox,
                       $datetime,
                       $deliverytime,
@@ -891,4 +896,11 @@ function _kms_csv_get_referencing_node_id($product) {
   }
 
   return false;
+}
+
+function _kms_csv_squere_meters_from_coordinates($coordinate_string) {
+  $coords = explode(',', $coordinate_string);
+  $squarem = ($coords[2]- $coords[0])*( $coords[3]- $coords[1]);
+  $squarekm = $squarem/1000000;
+  return $squarekm;
 }
