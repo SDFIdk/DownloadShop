@@ -298,7 +298,7 @@ EOD;
       else {
         $replacements[] = preg_replace(
           array('#}#', '#^(.*)$#'),
-          array('}}','\'q{$1}\''),
+          array('}}','q\'{$1}\''),
           $v
         );
       }
