@@ -291,11 +291,16 @@ EOD;
     $patterns = $replacements = array();
     array_walk($data, function($v, $k) use(&$patterns, &$replacements){
       $patterns[] = '#\\*' . $k . '\\*#';
-      if (is_numeric($v)) {
+
+      if (is_numeric($v) || strlen($v) == 0) {
         $replacements[] = "'$v'";
       }
       else {
-        $replacements[] = preg_replace(array('#{#', '#}#', '#^(.*)$#'), array('{{', '}}', '\'{$1}\''), $v);
+        $replacements[] = preg_replace(
+          array('#}#', '#^(.*)$#'),
+          array('}}','\'q{$1}\''),
+          $v
+        );
       }
     });
     return preg_replace($patterns, $replacements, $sql);
