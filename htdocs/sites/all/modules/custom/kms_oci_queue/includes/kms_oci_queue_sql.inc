@@ -44,6 +44,21 @@ class KmsOciQueueSql {
   }
 
   protected function replacePlaceholders($sql, $data) {
+    $cb_replace_place_holders = array($this->sqlClass, 'replacePlaceholders');
+    if (is_callable($cb_replace_place_holders)) {
+      $sql = call_user_func_array(
+        $cb_replace_place_holders,
+        array($sql, $data)
+      );
+    }
+    return $sql;
+  }
+
+}
+
+abstract class KmsOciQueueSqlBase {
+
+  public static function replacePlaceholders($sql, $data) {
     $patterns = $replacements = array();
     array_walk($data, function($v, $k) use(&$patterns, &$replacements){
       $patterns[] = '#\\*' . $k . '\\*#';
@@ -54,7 +69,7 @@ class KmsOciQueueSql {
 
 }
 
-class KmsOciQueueSqlServices {
+class KmsOciQueueSqlServices extends KmsOciQueueSqlBase {
 
   public static $conf = array(
     'table' => 'USERRESTRICTIONS2',
@@ -110,7 +125,7 @@ EOD;
 
 }
 
-class KmsOciQueueSqlApplications {
+class KmsOciQueueSqlApplications extends KmsOciQueueSqlBase {
 
   public static $conf = array(
     'table' => 'SMUSERGROUP',
@@ -156,7 +171,7 @@ EOD;
 
 }
 
-class KmsOciQueueSqlUser {
+class KmsOciQueueSqlUser extends KmsOciQueueSqlBase {
 
   public static $conf = array(
     'tables' => array('SMUSER', 'SMUSER_EXTRA'),
@@ -246,11 +261,8 @@ EOD;
         continue;
       }
       $cols = array_keys($conf);
-      $col_values = array();
-      foreach ($data as $col => $val) {
-        $col_values[] = sprintf("t.%s = '%s'", $col, $val);
-      }
-      $values = implode(', ', $col_values);
+      $sql_data = self::sqlData($cols, $data);
+      $values = implode(', ', $sql_data['update']);
       $sql[] = <<<EOD
 UPDATE $table t SET $values WHERE t.userid = :userid;
 EOD;
@@ -259,16 +271,34 @@ EOD;
     return $output ? $output : '';
   }
 
-  protected static function sqlData($cols) {
-    $data = array('insert', 'update');
-    array_walk($cols, function($col) use(&$data) {
+  protected static function sqlData($cols, $data = array()) {
+    $sql_data = array('insert' => array(), 'update' => array());
+    array_walk($cols, function($col) use(&$sql_data, $data) {
       $sql_col = strtolower($col);
-      $data['insert'][] = $sql_col == 'userid' ? ':userid' : "*$sql_col*";
+      $sql_data['insert'][$sql_col] = $sql_col == 'userid' ? ':userid' : "*$sql_col*";
       if ($sql_col != 'userid') {
-        $data['update'][] = "t.$sql_col = *$sql_col*";
+        // If value is empty there is no reason to include it in update statement.
+        if (empty($data[$sql_col])) {
+          return;
+        }
+        $sql_data['update'][$sql_col] = "t.$sql_col = *$sql_col*";
       }
     });
-    return $data;
+    return $sql_data;
+  }
+
+  public static function replacePlaceholders($sql, $data) {
+    $patterns = $replacements = array();
+    array_walk($data, function($v, $k) use(&$patterns, &$replacements){
+      $patterns[] = '#\\*' . $k . '\\*#';
+      if (is_numeric($v)) {
+        $replacements[] = "'$v'";
+      }
+      else {
+        $replacements[] = preg_replace(array('#{#', '#}#', '#^(.*)$#'), array('{{', '}}', '\'{$1}\''), $v);
+      }
+    });
+    return preg_replace($patterns, $replacements, $sql);
   }
 
 }
