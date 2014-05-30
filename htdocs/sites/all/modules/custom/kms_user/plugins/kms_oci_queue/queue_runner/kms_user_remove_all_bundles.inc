@@ -57,6 +57,7 @@ function kms_user_remove_all_bundles_query_creator_run($jid, $creator_item, $exe
     $i++;
     // Queue the item.
     $exe_queue_item = array(
+      'jid' => $job->jid,
       'cid' => $job->cid,
       'action' => $creator_item->action,
       'uid' => $uid,

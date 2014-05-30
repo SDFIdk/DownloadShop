@@ -57,6 +57,7 @@ function kms_user_bundles_attach_query_creator_run($jid, $creator_item, $exe_que
     $i++;
     // Queue the item.
     $exe_queue_item = array(
+      'jid' => $job->jid,
       'cid' => $job->cid,
       'action' => $creator_item->action,
       'uid' => $uid,

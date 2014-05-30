@@ -49,6 +49,7 @@ function kms_permissions_bundle_save_query_creator_run($jid, $creator_item, $exe
     $i++;
     // Queue the item.
     $exe_queue_item = array(
+      'jid' => $job->jid,
       'cid' => $job->cid,
       'action' => $creator_item->action,
       'bid' => $bid,

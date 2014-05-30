@@ -52,6 +52,7 @@ function kms_permissions_clone_user_perms_query_creator_run($jid, $creator_item,
       $user = user_load($uid);
       // Queue the item.
       $exe_queue_item = array(
+        'jid' => $job->jid,
         'cid' => $job->cid,
         'action' => $creator_item->action,
         'perms' => $perms,
