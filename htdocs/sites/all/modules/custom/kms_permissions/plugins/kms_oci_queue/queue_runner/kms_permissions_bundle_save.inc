@@ -35,6 +35,7 @@ function kms_permissions_bundle_save_query_creator_run($jid, $creator_item, $exe
   $user_count = count($uids);
   $bid = $creator_item->params['bid'];
   $bundle_diff = $creator_item->params['bundle_diff'];
+  $job = KmsOciQueueJobFactory::get($jid);
   // If bundle is not default bundle add subusers to uid array.
   // If it is a default bundle we know that all users are in the array
   // and the subusers do not need to be added.
@@ -48,7 +49,7 @@ function kms_permissions_bundle_save_query_creator_run($jid, $creator_item, $exe
     $i++;
     // Queue the item.
     $exe_queue_item = array(
-      'jid' => $jid,
+      'cid' => $job->cid,
       'action' => $creator_item->action,
       'bid' => $bid,
       'uid' => $uid,
@@ -81,7 +82,7 @@ function kms_permissions_bundle_save_query_run($item) {
   }
   $bid = $item->bid;
   $kms_userid = kms_user_get_userid(user_load($item->uid));
-  $job = KmsOciQueueJobFactory::get($item->jid);
+  $connection_id  = $item->cid;
   // Get permissions from a user and add them to $user_perms array.
   $user_perms = array('services' => array(), 'applications' => array());
   $perms_options = array('key_prefix' => FALSE, 'flattened' => TRUE);
@@ -109,7 +110,7 @@ function kms_permissions_bundle_save_query_run($item) {
     $perm_conf = $perms_oracle_rel[$perm_type];
     // If the connection id of the job does not match the one in $perm_conf
     // do nothing.
-    if ($job->cid != $perm_conf['cid']) {
+    if ($connection_id != $perm_conf['cid']) {
       continue;
     }
     $type_diff = &$diff[$perm_type];

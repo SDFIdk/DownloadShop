@@ -383,10 +383,8 @@ function kms_oci_queue_admin_page() {
 /**
  * Render table with kms oci jobs.
  *
- * @param array $jids
- *   Job ids.
- * @param string $title
- *   Table title.
+ * @param string $type
+ *   jobs_waiting / jobs_done.
  *
  * @return array
  *   Drupal render array.

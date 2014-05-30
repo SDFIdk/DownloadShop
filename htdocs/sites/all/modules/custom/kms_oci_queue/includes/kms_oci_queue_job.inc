@@ -31,7 +31,7 @@ class KmsOciQueueJob {
   public $action;
   public $actionDetails;
   public $cid;
-  protected $queueItem;
+  protected $queueName;
   protected $job;
   public $gid = FALSE;
 
@@ -40,7 +40,7 @@ class KmsOciQueueJob {
     $this->setJob();
     if ($this->job) {
       $this->setGroupId();
-      $this->setQueueItem($this->loadQueueItem());
+      $this->setQueueName($this->loadQueueName());
       $this->setCreated();
       $this->setAction();
       $this->setActionDetails();
@@ -65,8 +65,8 @@ class KmsOciQueueJob {
     $this->cid = $this->job->cid;
   }
 
-  protected function setQueueItem($item){
-    $this->queueItem = $item;
+  protected function setQueueName($queue_name){
+    $this->queueName = $queue_name;
   }
 
   protected function setAction(){
@@ -112,7 +112,7 @@ class KmsOciQueueJob {
     return $result ? $result : array();
   }
 
-  protected function loadQueueItem() {
+  public function loadQueueItem() {
     $query = db_select('queue', 'q');
     $query->fields('q');
     $query->condition('q.item_id', $this->jid, '=');
@@ -122,6 +122,13 @@ class KmsOciQueueJob {
       $result->data = unserialize($result->data);
     }
     return $result;
+  }
+
+  public function loadQueueName() {
+    return db_query(
+      'SELECT q.name FROM {queue} q WHERE q.item_id = :jid',
+      array(':jid' => $this->jid)
+    )->fetchField();
   }
 
   public function changeStatus($status, $message = '', $variables = array()) {
@@ -171,7 +178,7 @@ class KmsOciQueueJob {
 
   public function delete() {
     // Delete queue item;
-    $queue = DrupalQueue::get($this->queueItem->name);
+    $queue = DrupalQueue::get($this->queueName());
     $queue->deleteItem((object) array('item_id' => $this->jid));
     // Delete job from job table.
     KmsOciQueueJobDb::deleteJob($this->jid);
@@ -186,7 +193,7 @@ class KmsOciQueueJob {
 
   public function finishQueue() {
     // Delete queue item;
-    $queue = DrupalQueue::get($this->queueItem->name);
+    $queue = DrupalQueue::get($this->queueName());
     $queue->deleteItem((object) array('item_id' => $this->jid));
   }
 

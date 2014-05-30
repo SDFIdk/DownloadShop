@@ -33,6 +33,7 @@ $plugin = array(
 function kms_permissions_clone_user_perms_query_creator_run($jid, $creator_item, $exe_queue) {
   $source_uid = $creator_item->params['source_uid'];
   $uids = $creator_item->params['uids'];
+  $job = KmsOciQueueJobFactory::get($jid);
   // Add subusers.
   kms_subuser_uids_add_subuser_uids($uids);
   $user_count = count($uids);
@@ -45,13 +46,13 @@ function kms_permissions_clone_user_perms_query_creator_run($jid, $creator_item,
   _kms_permissions_get_permissions_by_uid($source_uid, $perms, $options);
   _kms_permissions_get_separate_perms_by_uid($source_uid, $perms, $options);
 
-  array_walk($uids, function ($uid) use ($jid, $perms, $creator_item, $user_count, &$exe_queue, &$line_num) {
+  array_walk($uids, function ($uid) use ($job, $perms, $creator_item, $user_count, &$exe_queue, &$line_num) {
     if (!empty($perms)) {
       $line_num++;
       $user = user_load($uid);
       // Queue the item.
       $exe_queue_item = array(
-        'jid' => $jid,
+        'cid' => $job->cid,
         'action' => $creator_item->action,
         'perms' => $perms,
         'kms_id' => kms_user_get_userid($user),
@@ -77,28 +78,19 @@ function kms_permissions_clone_user_perms_query_creator_run($jid, $creator_item,
  *   Generated oracle queries.
  */
 function kms_permissions_clone_user_perms_query_run($item) {
-//  _adapt_debug('mikkel', $item->perms);
-  $job = KmsOciQueueJobFactory::get($item->jid);
+  $connection_id = $item->cid;
 
   $perms_oracle_rel = _kms_permissions_perms_oracle_relations();
-//  _adapt_debug('mikkel', __FUNCTION__);
-//  _adapt_debug('mikkel', __LINE__);
-//  _adapt_debug('mikkel', $item->jid);
-//  _adapt_debug('mikkel', $job->cid);
-//  _adapt_debug('mikkel', str_repeat('^', 100));
   foreach($item->perms as $perm_type => $ids) {
     $perm_conf = $perms_oracle_rel[$perm_type];
     // If the connection id of the job does not match the one in $perm_conf
     // do nothing.
-    if ($job->cid != $perm_conf['cid']) {
+    if ($connection_id != $perm_conf['cid']) {
       continue;
     }
 
 
     if ($perm_type == 'services') {
-//      _adapt_debug('mikkel', __FUNCTION__);
-//      _adapt_debug('mikkel', __LINE__);
-//      _adapt_debug('mikkel', str_repeat('^', 100));
       $output = array();
       $conf = KmsOciQueueSqlServices::$conf;
       array_walk($ids, function($sid) use (&$output, $item) {
@@ -113,10 +105,6 @@ function kms_permissions_clone_user_perms_query_run($item) {
       });
 
       if (!empty($ids)) {
-//        _adapt_debug('mikkel', __FUNCTION__);
-//        _adapt_debug('mikkel', __LINE__);
-//        _adapt_debug('mikkel', $data);
-//        _adapt_debug('mikkel', str_repeat('^', 100));
         $data = array(
           'userid' => $item->kms_id,
         );
@@ -139,10 +127,6 @@ function kms_permissions_clone_user_perms_query_run($item) {
         $output[] = sprintf('DELETE FROM %s WHERE userid = :userid;', $conf['table']);
         array_walk($ids, function($gid) use ($data, &$output) {
           $data['groupid'] = $gid;
-//          _adapt_debug('mikkel', __FUNCTION__);
-//          _adapt_debug('mikkel', __LINE__);
-//          _adapt_debug('mikkel', $data);
-//          _adapt_debug('mikkel', str_repeat('^', 100));
           $sql = new KmsOciQueueSql('applications', $data);
           $output[] = $sql->generate('insert');
         });

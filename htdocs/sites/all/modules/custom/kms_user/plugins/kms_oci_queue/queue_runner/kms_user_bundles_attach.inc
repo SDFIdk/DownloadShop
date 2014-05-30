@@ -33,6 +33,7 @@ $plugin = array(
 function kms_user_bundles_attach_query_creator_run($jid, $creator_item, $exe_queue) {
   $uids = $creator_item->params['uids'];
   $bids = $creator_item->params['bids'];
+  $job = KmsOciQueueJobFactory::get($jid);
   // Add subusers to user id array.
   kms_subuser_uids_add_subuser_uids($uids);
   $user_count = count($uids);
@@ -56,7 +57,7 @@ function kms_user_bundles_attach_query_creator_run($jid, $creator_item, $exe_que
     $i++;
     // Queue the item.
     $exe_queue_item = array(
-      'jid' => $jid,
+      'cid' => $job->cid,
       'action' => $creator_item->action,
       'uid' => $uid,
       'bundle_diff' => $bundle_diff,
@@ -81,7 +82,7 @@ function kms_user_bundles_attach_query_creator_run($jid, $creator_item, $exe_que
  *   Generated oracle queries.
  */
 function kms_user_bundles_attach_query_run($item) {
-  $job = KmsOciQueueJobFactory::get($item->jid);
+  $connection_id = $item->cid;
   $uid = $item->uid;
   $bundle_diff = $item->bundle_diff;
   $kms_userid = kms_user_get_userid(user_load($uid));
@@ -97,7 +98,7 @@ function kms_user_bundles_attach_query_run($item) {
     $perm_conf = $perms_oracle_rel[$perm_type];
     // If the connection id of the job does not match the one in $perm_conf
     // do nothing.
-    if ($job->cid != $perm_conf['cid']) {
+    if ($connection_id != $perm_conf['cid']) {
       continue;
     }
     $type_diff = &$diff[$perm_type];
