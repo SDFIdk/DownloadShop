@@ -285,6 +285,12 @@ function kms_oci_queue_query_run($item) {
     return;
   }
 
+  // Atodo: For debugging:
+  _adapt_debug('mikkel', 'Timer end: ' . $timer_name);
+  _adapt_debug('mikkel', timer_read($timer_name));
+  timer_stop($timer_name);
+  _adapt_debug('mikkel', str_repeat('.', 100));
+
   // Append output to tmp file.
   if (file_put_contents($tmp_filename, $output, FILE_APPEND) === FALSE) {
     $job->changeStatus(
@@ -311,12 +317,6 @@ function kms_oci_queue_query_run($item) {
     }
 
   }
-
-  // Atodo: For debugging:
-  _adapt_debug('mikkel', 'Timer end: ' . $timer_name);
-  _adapt_debug('mikkel', timer_read($timer_name));
-  timer_stop($timer_name);
-  _adapt_debug('mikkel', str_repeat('.', 100));
 
 }
 
