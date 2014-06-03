@@ -178,7 +178,7 @@ class KmsOciQueueJob {
 
   public function delete() {
     // Delete queue item;
-    $queue = DrupalQueue::get($this->queueName());
+    $queue = DrupalQueue::get($this->queueName);
     $queue->deleteItem((object) array('item_id' => $this->jid));
     // Delete job from job table.
     KmsOciQueueJobDb::deleteJob($this->jid);
@@ -193,7 +193,7 @@ class KmsOciQueueJob {
 
   public function finishQueue() {
     // Delete queue item;
-    $queue = DrupalQueue::get($this->queueName());
+    $queue = DrupalQueue::get($this->queueName);
     $queue->deleteItem((object) array('item_id' => $this->jid));
   }
 

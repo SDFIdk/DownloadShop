@@ -251,6 +251,8 @@ class KmsPermsExtractServices extends KmsPermsExtract {
     $this->writeFilesInit();
     $default_bounding_box = kms_permissions_get_service_bounding_box();
     $additional_fields = array_merge(array_keys($default_bounding_box), array('featureinfo'));
+    // Make sure that service ids are up to date.
+    cache_clear_all('kms_permissions_get_service_ids_by_type', 'cache');
     $wms_ids = kms_permissions_get_service_ids_by_type('wms');
     $this->writeLines(
       $this->constructCtl($additional_fields),

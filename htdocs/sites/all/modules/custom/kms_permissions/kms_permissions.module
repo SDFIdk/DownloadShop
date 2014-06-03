@@ -2220,26 +2220,34 @@ function kms_permissions_get_service_bounding_box($sid = FALSE) {
 /**
  * Get service ids by service type.
  *
+ * Please note that the function uses temporary cache.
+ * Clear it to be sure of having updated data.
+ *
  * @param string $type
  *   The type of service.
  * @return array
  *   array of ids.
  */
 function kms_permissions_get_service_ids_by_type($type) {
-  static $ids;
-
-  if (!empty($ids[$type])) {
-    return $ids[$type];
+  $ids = &drupal_static(__FUNCTION__);
+  if (!isset($ids)) {
+    if ($cache = cache_get(__FUNCTION__)) {
+      $ids = $cache->data;
+    }
+    else {
+      $type = strtolower($type);
+      $service_list = kms_permissions_get_service_list();
+      $ids = array();
+      array_walk($service_list, function($service) use ($type, &$ids) {
+        if (strtolower($service['TYPENAME']) == $type) {
+          $ids[$type][] = $service['SERVICEID'];
+        }
+      });
+      // Store cache for 2 hours.
+      cache_set(__FUNCTION__, $ids, 'cache', time() + 120);
+    }
   }
 
-  $type = strtolower($type);
-  $service_list = kms_permissions_get_service_list();
-  $ids = array();
-  array_walk($service_list, function($service) use ($type, &$ids) {
-    if (strtolower($service['TYPENAME']) == $type) {
-      $ids[$type][] = $service['SERVICEID'];
-    }
-  });
   return $ids[$type];
 }
 
