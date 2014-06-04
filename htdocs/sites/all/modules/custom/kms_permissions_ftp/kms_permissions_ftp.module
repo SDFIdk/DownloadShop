@@ -8,8 +8,8 @@
  */
 
 define('KMS_FTP_STRUCTURE_DIR', '/data3/Statsaftalen'); //data3/Statsaftalen
-define('KMS_FTP_SCRIPT_CALL1', 'ssh -i  $HOME/.ssh/updateftpservers loadftp1.kmsext.dk');
-define('KMS_FTP_SCRIPT_CALL2', 'ssh -i  $HOME/.ssh/updateftpservers loadftp2.kmsext.dk');
+//define('KMS_FTP_SCRIPT_CALL1', 'ssh -i  $HOME/.ssh/updateftpservers loadftp1.kmsext.dk');
+//define('KMS_FTP_SCRIPT_CALL2', 'ssh -i  $HOME/.ssh/updateftpservers loadftp2.kmsext.dk');
 
 /**
  * Implements hook_menu().
@@ -167,18 +167,18 @@ function kms_permissions_ftp_entity_presave($entity) {
 /**
  * Cron hook
  */
-function kms_permissions_ftp_cron(){
-  kms_permissions_ftp_scan_store_structure();
-
-  if (variable_get('kms_ftp_perm_change')){
-    //Trigger external script
-    shell_exec(KMS_FTP_SCRIPT_CALL1);
-    shell_exec(KMS_FTP_SCRIPT_CALL2);
-    // Set variable to false, as script should revisit the view and update things accordingly
-    variable_set('kms_ftp_perm_change', FALSE);
-    watchdog('Permissions FTP', 'External bash script initiated by cron run', array(), WATCHDOG_NOTICE);
-  }
-}
+//function kms_permissions_ftp_cron(){
+//  kms_permissions_ftp_scan_store_structure();
+//
+//  if (variable_get('kms_ftp_perm_change')){
+//    //Trigger external script
+//    shell_exec(KMS_FTP_SCRIPT_CALL1);
+//    shell_exec(KMS_FTP_SCRIPT_CALL2);
+//    // Set variable to false, as script should revisit the view and update things accordingly
+//    variable_set('kms_ftp_perm_change', FALSE);
+//    watchdog('Permissions FTP', 'External bash script initiated by cron run', array(), WATCHDOG_NOTICE);
+//  }
+//}
 
 /**
  * Return nicely formatted array of ftp permissions associated with a bundle.
