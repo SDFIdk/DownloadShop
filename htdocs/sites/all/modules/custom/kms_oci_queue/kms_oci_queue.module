@@ -235,10 +235,10 @@ function kms_oci_queue_query_creator_process_job($job, $item, $exe_queue) {
  */
 function kms_oci_queue_query_run($item) {
   // Atodo: For debugging:
-  $timer_name = $item->jid . ':' . __FUNCTION__;
-  timer_start($timer_name);
-  _adapt_debug('mikkel', 'Timer start: ' . $timer_name);
-  _adapt_debug('mikkel', timer_read($timer_name));
+//  $timer_name = $item->jid . ':' . __FUNCTION__;
+//  timer_start($timer_name);
+//  _adapt_debug('mikkel', 'Timer start: ' . $timer_name);
+//  _adapt_debug('mikkel', timer_read($timer_name));
 
   // Load query queue executor plugins to create sql output.
   ctools_include('plugins');
@@ -286,10 +286,10 @@ function kms_oci_queue_query_run($item) {
   }
 
   // Atodo: For debugging:
-  _adapt_debug('mikkel', 'Timer end: ' . $timer_name);
-  _adapt_debug('mikkel', timer_read($timer_name));
-  timer_stop($timer_name);
-  _adapt_debug('mikkel', str_repeat('.', 100));
+//  _adapt_debug('mikkel', 'Timer end: ' . $timer_name);
+//  _adapt_debug('mikkel', timer_read($timer_name));
+//  timer_stop($timer_name);
+//  _adapt_debug('mikkel', str_repeat('.', 100));
 
   // Append output to tmp file.
   if (file_put_contents($tmp_filename, $output, FILE_APPEND) === FALSE) {
