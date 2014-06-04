@@ -94,13 +94,17 @@ function kms_permissions_clone_user_perms_query_run($item) {
     if ($perm_type == 'services') {
       $output = array();
       $conf = KmsOciQueueSqlServices::$conf;
-      array_walk($ids, function($sid) use (&$output, $item) {
+      $wms_ids = kms_permissions_get_service_ids_by_type('wms');
+      array_walk($ids, function($sid) use (&$output, $item, $wms_ids) {
         $service_values = kms_permissions_get_service_bounding_box($sid);
         $data = array(
           'featureinfo' => 0,
           'serviceid' => $sid,
         );
         $data += $service_values;
+        if (in_array($sid, $wms_ids)) {
+          $data['featureinfo'] = 1;
+        }
         $sql = new KmsOciQueueSql('services', $data);
         $output[] = $sql->generate('insert');
       });
