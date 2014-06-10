@@ -780,12 +780,17 @@ function kms_permissions_node_presave($node) {
       $w_original,
       $w_new
     );
+    $bounding_box_original = new KmsPermsBoundingBoxBundle($w_original);
+    $bounding_box_new = new KmsPermsBoundingBoxBundle($w_new);
+    $bb_data_original = $bounding_box_original->getData();
+    $bb_data_new = $bounding_box_new->getData();
+    $node->bounding_box_diff = array_diff_assoc($bb_data_new, $bb_data_original);
   }
   // Set permission diff property on access bundle node.
   $node->kms_permissions_diff = $diff;
 
-  $node->update_default_bundle = FALSE;
-  $node->update_bundle = FALSE;
+  $node->update_default_bundle =
+    $node->update_bundle = FALSE;
 
   // Update default bundle when is set as default first time, default state is changed
   $default_new = $default_org = field_get_items('node', $node, 'field_default_bundle');
@@ -806,14 +811,6 @@ function kms_permissions_node_presave($node) {
   // Set flag to tell submit hook that permissions or other settings have changed
   if (isset($node->original)) {
     $fields = array(
-      'field_access_userdefined_ranges',
-      'field_bundle_maxpixelwidth',
-      'field_bundle_maxpixelheight',
-      'field_bundle_maxx',
-      'field_bundle_maxy',
-      'field_bundle_minx',
-      'field_bundle_miny',
-      'field_bundle_featureinfo',
       'field_predefined_datacollections',
       'field_applications'
     );
@@ -855,11 +852,11 @@ function kms_permissions_node_presave($node) {
  * Submit callback for bundle update or delete
  */
 function kms_permissions_access_bundle_update($form, $form_state) {
-  $default_bundle_is_updated = (bool)$form['#node']->update_default_bundle;
-  $bundle_is_updated = (bool)$form['#node']->update_bundle;
-  $bundle_is_deleted = $form_state['clicked_button']['#id'] == 'edit-delete';
   $bundle = $form['#node'];
   $bid = $bundle->nid;
+  $default_bundle_is_updated = (bool)$bundle->update_default_bundle;
+  $bundle_is_updated = (bool)$bundle->update_bundle;
+  $bundle_is_deleted = $form_state['clicked_button']['#id'] == 'edit-delete';
   $action = '';
 
   if ($default_bundle_is_updated) {
@@ -900,6 +897,23 @@ function kms_permissions_access_bundle_update($form, $form_state) {
       )
     );
     KmsOciQueueJob::create($job_params);
+    KmsOciQueueJob::create($job_params, 'kms_permissions');
+  }
+
+  if (!empty($bundle->bounding_box_diff)) {
+    $job_params = array(
+      'action' => KMS_OCI_QUEUE_ACTION_BOUNDING_BOX_UPDATE,
+      'params' => array(
+        'bounding_box_diff' => $bundle->bounding_box_diff,
+        'bid' => $bid,
+      ),
+    );
+    $job_params['action_details'] = format_string(
+      'Bounding box data for bundle: "@bundle" updated.',
+      array(
+        '@bundle' => $bundle->title,
+      )
+    );
     KmsOciQueueJob::create($job_params, 'kms_permissions');
   }
 
@@ -1863,30 +1877,6 @@ function _kms_permissions_get_separate_applications_by_uid($uid) {
 }
 
 /**
- * Get bounding box data from specified bundle id.
- *
- * @param int $bid
- *   Bundle id.
- * @return array
- *   Bounding box data array.
- */
-function _kms_permissions_get_bundle_bounding_box_data($bid) {
-  // Load access_bundle.
-  $node = node_load($bid);
-  $bw = entity_metadata_wrapper('node', $node);
-
-  $field_map = array_flip(_kms_permissions_bounding_box_fields());
-  $data = array();
-  foreach(_kms_permissions_bounding_box_fields() as $field) {
-    $value = $bw->$field->value();
-    if (!empty($value)) {
-      $data[$field_map[$field]] = $value;
-    }
-  }
-  return $data;
-}
-
-/**
  * Return known boundary box fields.
  *
  * @return array
@@ -1956,8 +1946,8 @@ function _kms_permissions_get_default_bundle_bounding_box_data() {
   $data = array();
   $default_bundles = _kms_permissions_get_default_bundles();
   if (!empty($default_bundles)) {
-    $bid = $default_bundles[0];
-    $bounding_box_data = _kms_permissions_get_bundle_bounding_box_data($bid);
+    $bounding_box = new KmsPermsBoundingBoxBundle($default_bundles[0]);
+    $bounding_box_data = $bounding_box->getData();
     if (!empty($bounding_box_data)) {
       $data = $bounding_box_data;
     }
@@ -2185,17 +2175,13 @@ function kms_permissions_get_service_bounding_box($sid = FALSE) {
     }
 
   }
-  $min_max_def = array(
-    'minx' => 'min',
-    'miny' => 'min',
-    'maxx' => 'max',
-    'maxy' => 'max',
-    'maxpixelwidth' => 'max',
-    'maxpixelheight' => 'max',
-  );
+
+  $bounding_box_data = new KmsPermsBoundingBoxData();
+  $boundary_rules = $bounding_box_data->getBoundaryRules();
+
   // Get all bounding box info
   $bounding_box = $last_values = array();
-  array_walk($bundles, function($bundle_ids) use ($min_max_def, &$bounding_box, &$last_values) {
+  array_walk($bundles, function($bundle_ids) use ($boundary_rules, &$bounding_box, &$last_values) {
     foreach(array_keys($bundle_ids) as $bid) {
       $bundle_node = node_load($bid);
       foreach (_kms_permissions_bounding_box_fields() as $field) {
@@ -2204,8 +2190,8 @@ function kms_permissions_get_service_bounding_box($sid = FALSE) {
         $value = (int) $box_field[0]['value'];
         if (
           empty($last_values[$field])
-          || ($min_max_def[$field] == 'min' && $value < $last_values[$field])
-          || ($min_max_def[$field] == 'max' && $value > $last_values[$field])
+          || ($boundary_rules[$field] == 'min' && $value < $last_values[$field])
+          || ($boundary_rules[$field] == 'max' && $value > $last_values[$field])
         ) {
           $bounding_box[$field] = $value;
         }

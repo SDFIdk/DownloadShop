@@ -24,26 +24,29 @@ class KmsOciQueueSql {
   }
 
   public function generate($query_type) {
+    $sql = '';
     $callback = array($this->sqlClass, $query_type);
     if (is_callable($callback)) {
       $args = func_get_args();
       $args = array_slice($args, 1);
       $sql = call_user_func_array($callback, $args);
       $sql = $this->replacePlaceholders($sql, $this->data);
-      return !empty($sql) ? sprintf("%s\n", $sql) : FALSE;
     }
+    return !empty($sql) ? sprintf("%s\n", $sql) : FALSE;
   }
 
   public function generateHeader() {
+    $sql = '';
     $callback = array($this->sqlClass, 'header');
     if (is_callable($callback)) {
       $sql = call_user_func_array($callback, func_get_args());
       $sql = $this->replacePlaceholders($sql, $this->data);
-      return !empty($sql) ? $sql : FALSE;
     }
+    return !empty($sql) ? $sql : FALSE;
   }
 
   protected function replacePlaceholders($sql, $data) {
+    $sql = '';
     $cb_replace_place_holders = array($this->sqlClass, 'replacePlaceholders');
     if (is_callable($cb_replace_place_holders)) {
       $sql = call_user_func_array(
@@ -121,6 +124,29 @@ EOD;
       'DELETE FROM %s t WHERE t.userid = :userid AND t.serviceid = *serviceid*;',
       self::$conf['table']
     );
+  }
+
+  public static function updateBySid($data) {
+    $cols = array_keys(self::$conf['default_values']);
+    $sql = array();
+    $values = '';
+    array_walk($cols, function($col) use(&$values, $data) {
+      $col = strtolower($col);
+      if ($col != 'serviceid') {
+        // If value is empty there is no reason to include it in update statement.
+        if (empty($data[$col])) {
+          return;
+        }
+        $values[$col] = "t.$col = *$col*";
+      }
+    });
+    $sql[] = sprintf(
+      "UPDATE %s t SET %s WHERE t.serviceid = *serviceid*;\n",
+      self::$conf['table'],
+      implode(', ', $values)
+    );
+    $output = implode("\n", $sql);
+    return $output ? $output : '';
   }
 
 }

@@ -19,6 +19,7 @@ define('KMS_OCI_QUEUE_ACTION_BUNDLE_DELETE', 'bundle_delete');
 define('KMS_OCI_QUEUE_ACTION_CLONE_USER_PERMS', 'clone_user_perms');
 define('KMS_OCI_QUEUE_ACTION_REMOVE_ALL_BUNDLES', 'remove_all_bundles');
 define('KMS_OCI_QUEUE_ACTION_BUNDLES_ATTACH', 'attach_bundles_users');
+define('KMS_OCI_QUEUE_ACTION_BOUNDING_BOX_UPDATE', 'bounding_box_update');
 define('KMS_OCI_QUEUE_CRON_DELETE_JOBS_KEEP', 25);
 define('KMS_OCI_QUEUE_CRON_DELETE_JOBS_PER_RUN', 100);
 
@@ -88,7 +89,7 @@ function kms_oci_queue_cronapi($op, $job = NULL) {
     case 'rule':
       switch ($job) {
         case 'kms_oci_queue_query_creator_run': return '*/1 * * * *';
-        case 'kms_oci_queue_cleanup_jobs': return '11 4 * * *';
+        case 'kms_oci_queue_cleanup_jobs': return '02 */4 * * *';
           break;
       }
       break;
