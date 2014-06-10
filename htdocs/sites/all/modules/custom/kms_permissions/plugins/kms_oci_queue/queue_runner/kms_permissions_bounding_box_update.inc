@@ -34,8 +34,6 @@ function kms_permissions_bounding_box_update_query_creator_run($jid, $creator_it
   $job = KmsOciQueueJobFactory::get($jid);
   $bid = $creator_item->params['bid'];
   $bounding_box_diff = $creator_item->params['bounding_box_diff'];
-  $bounding_box_data = new KmsPermsBoundingBoxData();
-  $boundary_rules = $bounding_box_data->getBoundaryRules();
 
   $perms = array();
   _kms_permissions_get_permissions_by_bid(
@@ -63,6 +61,7 @@ function kms_permissions_bounding_box_update_query_creator_run($jid, $creator_it
       // Queue the item.
       $exe_queue_item = array(
         'jid' => $job->jid,
+        'sid' => $sid,
         'action' => $creator_item->action,
         'data' => $data,
         'is_last_item' => $is_last_item,
