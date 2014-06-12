@@ -154,11 +154,13 @@ function kms_permissions_ftp_entity_presave($entity) {
   if(!empty($entity->field_ftp_permissions)) {
     if(empty($entity->original->field_ftp_permissions)) {
       watchdog('Permissions FTP', 'Change has been triggered in FTP permissions for individual user', array(), WATCHDOG_NOTICE);
-      variable_set('kms_ftp_perm_change', TRUE);
+      variable_set('kms_ftp_perm_change_1', TRUE);
+      variable_set('kms_ftp_perm_change_2', TRUE);
     } else {
       if($entity->field_ftp_permissions[$lang] !== $entity->original->field_ftp_permissions[$lang]){
         watchdog('Permissions FTP', 'Change has been triggered in FTP permissions for individual user', array(), WATCHDOG_NOTICE);
-        variable_set('kms_ftp_perm_change', TRUE);
+        variable_set('kms_ftp_perm_change_1', TRUE);
+        variable_set('kms_ftp_perm_change_2', TRUE);
       }
     }
   }
