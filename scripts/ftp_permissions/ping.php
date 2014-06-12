@@ -17,20 +17,21 @@ $ftp_script_hosts = array(
 // Run the ftp thing.
 kms_permissions_ftp_scan_store_structure();
 
-if (variable_get('kms_ftp_perm_change')) {
-  $wd_msg = array();
-  // Trigger external script.
-  foreach ($ftp_script_hosts as $host) {
+$i = 1;
+// Trigger external script.
+foreach ($ftp_script_hosts as $host) {
+  if (variable_get('kms_ftp_perm_change_' . $i )) {
     exec(sprintf('ssh -i  $HOME/.ssh/updateftpservers %s', $host), $message, $exit_code);
-    $wd_msg[] = $message;
+
+    if ($exit_code != 1) {
+      variable_set('kms_ftp_perm_change_' . $i , FALSE);
+      // Set variable to false,
+      // as script should revisit the view and update things accordingly.
+      watchdog(
+        'Permissions FTP',
+        'Ftp cron script ran successfully'
+      );
+    }
   }
-  // Set variable to false,
-  // as script should revisit the view and update things accordingly.
-  variable_set('kms_ftp_perm_change', FALSE);
-  watchdog(
-    'Permissions FTP',
-    'Ftp cron script ran with messages: @messages',
-    array('@messages' => implode(', ', $wd_msg)),
-    WATCHDOG_NOTICE
-  );
+  $i++;
 }
