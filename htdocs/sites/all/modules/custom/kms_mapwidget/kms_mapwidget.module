@@ -813,20 +813,22 @@ function kms_mapwidget_get_predefined_options( $nw ) {
  */
 function kms_mapwidget_get_userdefined_options( $nw ) {
   $options = array();
-
+  // Get allowed max size of the options.
+  $max_download_size_kms_perms = kms_mapwidget_get_user_defined_max_download_area($nw);
   foreach ($nw->field_product as $product) {
     if ($product->type->value() == 'fme_product' && $product->status->value() == 1 ) {
       foreach ($product->field_selection_types as $selection_type) {
+        // Get the max download size for the current option.
         $max_download_size_option = $selection_type->field_max_download_size->value();
-        $max_download_size_kms_perms = kms_mapwidget_get_user_defined_max_download_area($nw);
-        if (empty($max_download_size_option) || $max_download_size_option > $max_download_size_kms_perms) {
-          continue;
+        // If the max download size of the current option
+        // is less than the allowed max size then expose option.
+        if (!empty($max_download_size_option) && $max_download_size_option < $max_download_size_kms_perms) {
+          $tid = $selection_type->tid->value();
+          $options[$tid] =  array(
+            'weight' => $selection_type->weight->value(),
+            'value' => $selection_type->name->value(),
+          );
         }
-        $tid = $selection_type->tid->value();
-        $options[$tid] =  array(
-          'weight' => $selection_type->weight->value(),
-          'value' => $selection_type->name->value(),
-        );
       }
     }
   }
