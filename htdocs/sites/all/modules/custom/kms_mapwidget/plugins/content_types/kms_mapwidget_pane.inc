@@ -56,7 +56,7 @@ function kms_mapwidget_pane_render($subtype, $conf, $panel_args, $context) {
   $form = drupal_get_form('kms_mapwidget_form',$nw);
 
   $block = new stdClass();
-  
+
   $content = '<div class="map-info-wrapper">';
   $content .= '<div class="map-wrapper"><div class="ui-widget"><a class="search" title="' . t('Search', array(), array('context' => 'KMS'))  . '"></a><input id="geosearch"/></div>';
   $content .= '<ul class="controlToggle">';
@@ -72,14 +72,14 @@ function kms_mapwidget_pane_render($subtype, $conf, $panel_args, $context) {
   $content .= '<div class="product-body">' . $nw->body->value->value() . '</div>';
   $content .= '<div id="selection_message"></div>';
 
-  $hide_label = array('label' => 'hidden');
-  $content .= '<div class="useful-links">'; 
-  $content .= '<span>' . render(field_view_field('node', $nw->value(), 'field_kms_dk', $hide_label)) . '</span>';
-  $content .= '<span>' . render(field_view_field('node', $nw->value(), 'field_geodata_info_dk', $hide_label)) . '</span>';
-  $content .= '<span>' . render(field_view_field('node', $nw->value(), 'field_legend', $hide_label)) . '</span>';
+  $content .= '<div class="useful-links">';
+  foreach (array('field_kms_dk', 'field_geodata_info_dk', 'field_legend') as $field_name) {
+    $field = field_view_field('node', $nw->value(), $field_name, array('label' => 'hidden'));
+    $content .= '<span>' . render($field) . '</span>';
+  }
   $content .= '</div><div class="clear-fix"></div></div>';
 
   $block->content = drupal_render($form) . $content;
- 
+
   return $block;
 }

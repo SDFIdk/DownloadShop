@@ -817,10 +817,16 @@ function kms_mapwidget_get_userdefined_options( $nw ) {
   foreach ($nw->field_product as $product) {
     if ($product->type->value() == 'fme_product' && $product->status->value() == 1 ) {
       foreach ($product->field_selection_types as $selection_type) {
-        $options[$selection_type->tid->value()] = 
-          array('weight' => $selection_type->weight->value(),
-                'value' => $selection_type->name->value()
-          );
+        $max_download_size_option = $selection_type->field_max_download_size->value();
+        $max_download_size_kms_perms = kms_mapwidget_get_user_defined_max_download_area($nw);
+        if (empty($max_download_size_option) || $max_download_size_option > $max_download_size_kms_perms) {
+          continue;
+        }
+        $tid = $selection_type->tid->value();
+        $options[$tid] =  array(
+          'weight' => $selection_type->weight->value(),
+          'value' => $selection_type->name->value(),
+        );
       }
     }
   }
@@ -1054,7 +1060,7 @@ function kms_mapwidget_fme_log($event,$order_id,$job_id, $data, $user = false) {
 function kms_mapwidget_get_user_defined_max_download_area($nw) {
   global $user;
   $uw = entity_metadata_wrapper('user', $user);
-  $max_areas = array();
+  $max_areas = array(0);
   // Iterate over user bundles.
   foreach ($uw->field_access_bundles->getIterator() as $bundle) {
     // If product display exists in field_predefined_datacollections

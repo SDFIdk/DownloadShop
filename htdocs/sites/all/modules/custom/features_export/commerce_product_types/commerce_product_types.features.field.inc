@@ -2606,6 +2606,69 @@ function commerce_product_types_field_default_fields() {
     ),
   );
 
+  // Exported field: 'taxonomy_term-selection_type-field_max_download_size'.
+  $fields['taxonomy_term-selection_type-field_max_download_size'] = array(
+    'field_config' => array(
+      'active' => '1',
+      'cardinality' => '1',
+      'deleted' => '0',
+      'entity_types' => array(),
+      'field_name' => 'field_max_download_size',
+      'field_permissions' => array(
+        'type' => '0',
+      ),
+      'foreign keys' => array(),
+      'indexes' => array(),
+      'locked' => '0',
+      'module' => 'number',
+      'settings' => array(),
+      'translatable' => '0',
+      'type' => 'number_integer',
+    ),
+    'field_instance' => array(
+      'bundle' => 'selection_type',
+      'default_value' => array(
+        0 => array(
+          'value' => '1000',
+        ),
+      ),
+      'deleted' => '0',
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'module' => 'number',
+          'settings' => array(
+            'decimal_separator' => '.',
+            'prefix_suffix' => TRUE,
+            'scale' => 0,
+            'thousand_separator' => ' ',
+          ),
+          'type' => 'number_integer',
+          'weight' => 2,
+        ),
+      ),
+      'entity_type' => 'taxonomy_term',
+      'field_name' => 'field_max_download_size',
+      'label' => 'Max download size',
+      'required' => 0,
+      'settings' => array(
+        'max' => '',
+        'min' => '',
+        'prefix' => '',
+        'suffix' => '',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 0,
+        'module' => 'number',
+        'settings' => array(),
+        'type' => 'number',
+        'weight' => '42',
+      ),
+    ),
+  );
+
   // Exported field: 'taxonomy_term-selection_type-field_selection_details'.
   $fields['taxonomy_term-selection_type-field_selection_details'] = array(
     'field_config' => array(
@@ -2756,6 +2819,7 @@ function commerce_product_types_field_default_fields() {
   t('Koordinatsystemer');
   t('Korttype');
   t('Læs mere');
+  t('Max download size');
   t('Metadata');
   t('Ortofoto produkt');
   t('Price');
