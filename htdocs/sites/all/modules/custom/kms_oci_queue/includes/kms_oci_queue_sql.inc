@@ -320,7 +320,7 @@ EOD;
       }
       else {
         $replacements[] = preg_replace(
-          array('#}#', '#^(.*)$#'),
+          array('#}#', '#^(.*)$#s'),
           array('}}','q\'{$1}\''),
           $v
         );
