@@ -822,7 +822,7 @@ function kms_mapwidget_get_userdefined_options( $nw ) {
         $max_download_size_option = $selection_type->field_max_download_size->value();
         // If the max download size of the current option
         // is less than the allowed max size then expose option.
-        if (!empty($max_download_size_option) && $max_download_size_option < $max_download_size_kms_perms) {
+        if (!empty($max_download_size_option) && $max_download_size_option <= $max_download_size_kms_perms) {
           $tid = $selection_type->tid->value();
           $options[$tid] =  array(
             'weight' => $selection_type->weight->value(),
