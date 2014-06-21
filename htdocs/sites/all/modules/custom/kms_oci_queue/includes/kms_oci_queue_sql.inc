@@ -146,6 +146,11 @@ EOD;
     return $output ? $output : '';
   }
 
+  public static function consistency() {
+    $table = self::$conf['table'];
+    return "SELECT userid, serviceid FROM $table ORDER BY userid, serviceid";
+  }
+
 }
 
 class KmsOciQueueSqlApplications extends KmsOciQueueSqlBase {
@@ -190,6 +195,11 @@ EOD;
       'DELETE FROM %s t WHERE t.userid = :userid AND t.groupid = *groupid*;',
       self::$conf['table']
     );
+  }
+
+  public static function consistency() {
+    $table = self::$conf['table'];
+    return "SELECT userid, groupid FROM $table ORDER BY userid, groupid";
   }
 
 }
