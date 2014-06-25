@@ -106,7 +106,7 @@ class cDataCheck {
     $this->dataB = $data_b;
   }
 
-  public function diff() {
+  public function diff($mode = 'both') {
     $rows_a = $this->dataA->getRows();
     $rows_b = $this->dataB->getRows();
     ksort($rows_a);
@@ -117,20 +117,24 @@ class cDataCheck {
     
     // Compare a rows against b rows.
     foreach (array_keys($rows_a) as $id) {
-      $a_data = !empty($rows_a[$id]) ? $rows_a[$id] : array();
-      $b_data = !empty($rows_b[$id]) ? $rows_b[$id] : array();
-      if (count($a_data) != count($b_data)) {
-        $data_diff_a = array_diff($a_data, $b_data);
-        $data_diff_b = array_diff($b_data, $a_data);
-        if ($data_diff_a) {
+      $row_a = !empty($rows_a[$id]) ? $rows_a[$id] : array();
+      $row_b = !empty($rows_b[$id]) ? $rows_b[$id] : array();
+      if (count($row_a) != count($row_b)) {
+        $data_diff_a = array_diff($row_a, $row_b);
+        $data_diff_b = array_diff($row_b, $row_a);
+        // If row a has a diff and current mode allows us then put diff in data.
+        if ($data_diff_a && in_array($mode, array('both', 'a'))) {
           $data[$id][$name_a] = $data_diff_a;
-          if (empty($data[$id][$name_b])) {
+          // If row b is empty and we didn't choose to only watch a diffs.
+          if (empty($data[$id][$name_b]) && $mode != 'a') {
             $data[$id][$name_b] = array();
           }
         }
-        if ($data_diff_b) {
-          $data[$id][$name_b] = array_diff($b_data, $a_data);
-          if (empty($data[$id][$name_a])) {
+        // If row b has a diff and current mode allows us then put diff in data.
+        if ($data_diff_b && in_array($mode, array('both', 'b'))) {
+          $data[$id][$name_b] = array_diff($row_b, $row_a);
+          // If row a is empty and we didn't choose to only watch b diffs.
+          if (empty($data[$id][$name_a]) && $mode != 'b') {
             $data[$id][$name_a] = array();
           }
         }
@@ -139,8 +143,15 @@ class cDataCheck {
 
     // Add unique ids from b rows.
     foreach (array_diff_assoc($rows_b, $rows_a) as $id => $children) {
-      $data[$id][$name_b] = $children;
-      $data[$id][$name_a] = array();
+      // If current mode allows us the populate data with b row diff.
+      if (in_array($mode, array('both', 'b'))) {
+        $data[$id][$name_b] = $children;
+      }
+      // If we are showing both row a and b
+      // then make sure a row is empty when b row has a diff.
+      if ($mode == 'both') {
+        $data[$id][$name_a] = array();
+      }
     }
 
     return $data;
