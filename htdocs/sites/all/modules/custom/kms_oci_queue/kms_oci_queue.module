@@ -919,3 +919,79 @@ function kms_oci_queue_job_is_accessible($action) {
   $restrictions = array_filter($access_values, function($v) { return !$v; });
   return empty($restrictions);
 }
+
+function kms_oci_queue_consistency_check_empty_smuser($db) {
+  include sprintf('/tmp/diff_%s.inc', $db);
+
+  $settings = array(
+    'kms_oci_conn_user' => variable_get('kms_permissions_conn_user', ''),
+    'kms_oci_conn_pass' => variable_get('kms_permissions_conn_pass', ''),
+    'kms_oci_conn_host' => variable_get('kms_permissions_conn_host', ''),
+    'kms_oci_conn_db' => variable_get('kms_permissions_conn_db', ''),
+  );
+
+  if (!kms_oci_get_conn('kms_permissions', $settings)) {
+    return;
+  }
+
+  $rows = array();
+  foreach (array_keys($diff) as $userid) {
+    $record = kms_oci_select(sprintf("SELECT * FROM SMUSER WHERE USERID = '%s'", $userid));
+    if (empty($record)) {
+      $rows[] = $userid;
+    }
+  }
+  echo implode("\n", $rows);
+  echo "\n";
+  echo sprintf("Total count: %d\n", count($rows));
+
+}
+
+function kms_oci_queue_consistency_check_non_empty_smuser($db) {
+  include sprintf('/tmp/diff_%s.inc', $db);
+
+  $settings = array(
+    'kms_oci_conn_user' => variable_get('kms_permissions_conn_user', ''),
+    'kms_oci_conn_pass' => variable_get('kms_permissions_conn_pass', ''),
+    'kms_oci_conn_host' => variable_get('kms_permissions_conn_host', ''),
+    'kms_oci_conn_db' => variable_get('kms_permissions_conn_db', ''),
+  );
+
+  if (!kms_oci_get_conn('kms_permissions', $settings)) {
+    return;
+  }
+
+  $rows = array();
+  foreach (array_keys($diff) as $userid) {
+    $record = kms_oci_select(sprintf("SELECT * FROM SMUSER WHERE USERID = '%s'", $userid));
+    if (!empty($record)) {
+      $rows[] = $userid;
+    }
+  }
+  echo implode("\n", $rows);
+  echo "\n";
+  echo sprintf("Total count: %d\n", count($rows));
+}
+
+
+function kms_oci_queue_consistency_list_diff_userids($db) {
+  include sprintf('/tmp/diff_%s.inc', $db);
+
+  echo implode("\n", array_keys($diff));
+  echo "\n";
+  echo sprintf("Total count: %d\n", count($diff));
+}
+
+function kms_oci_queue_consistency_list_numeric_userids($db) {
+  include sprintf('/tmp/diff_%s.inc', $db);
+
+  $rows = array();
+  foreach (array_keys($diff) as $userid) {
+    if (is_numeric($userid)) {
+      $rows[] = $userid;
+    }
+  }
+  echo implode("\n", $rows);
+  echo "\n";
+  echo sprintf("Total count: %d\n", count($rows));
+}

@@ -132,7 +132,7 @@ class cDataCheck {
         }
         // If row b has a diff and current mode allows us then put diff in data.
         if ($data_diff_b && in_array($mode, array('both', 'b'))) {
-          $data[$id][$name_b] = array_diff($row_b, $row_a);
+          $data[$id][$name_b] = $data_diff_b;
           // If row a is empty and we didn't choose to only watch b diffs.
           if (empty($data[$id][$name_a]) && $mode != 'b') {
             $data[$id][$name_a] = array();
