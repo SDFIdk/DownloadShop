@@ -140,10 +140,11 @@ function kms_permissions_ftp_scan_store_structure() {
 function kms_permissions_ftp_scan_structure() {
 
   $filepath = drupal_realpath(KMS_FTP_STRUCTURE_DIR);
-  $file_contents = file_get_contents($filepath);
-  $folders = explode("\n", $file_contents);
-
-  return array_filter($folders);
+  if (file_exists($filepath)) {
+    $file_contents = file_get_contents($filepath);
+    $folders = explode("\n", $file_contents);
+    return array_filter($folders);
+  }
 }
 
 /**
