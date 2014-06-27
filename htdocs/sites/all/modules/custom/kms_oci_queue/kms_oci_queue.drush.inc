@@ -77,6 +77,7 @@ function kms_oci_queue_consistency_check($data_type, $method) {
       $format = drush_get_option('format');
       switch ($format) {
         case 'var_export':
+          echo "<?php\n";
           echo '$diff = ';
           var_export($result);
           echo ';';
