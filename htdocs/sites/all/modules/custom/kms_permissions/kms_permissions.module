@@ -1172,6 +1172,7 @@ function  _kms_permissions_get_all_users($only_active = FALSE) {
   if (!isset($uids)) {
     $query = db_select('users', 'u')
       ->fields('u', array('uid'));
+    $query->condition('uid', 1, '!=');
     if ($only_active) {
       $query->condition('status', 1, '=');
     }
@@ -2248,4 +2249,21 @@ function kms_permissions_get_service_ids_by_type($type) {
  */
 function _kms_permissions_perm_name_render($perm_id, $perm_name) {
   return sprintf('<span title="%s">%s</span>', $perm_id, $perm_name);
+}
+
+/**
+ * Create the postgres views that are mimicking the Oracle counterparts.
+ */
+function _kms_permissions_create_views_n_functions() {
+  $file = sprintf(
+    "%s/%s/%s/%s",
+    DRUPAL_ROOT,
+    drupal_get_path('module', 'kms_permissions'),
+    'includes',
+    'db_views_n_functions.sql'
+  );
+  $handle = fopen($file, "r");
+  $sql = fread($handle, filesize($file));
+  fclose($handle);
+  db_query($sql);
 }

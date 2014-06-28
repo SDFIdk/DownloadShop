@@ -507,7 +507,7 @@ function  kms_test_build_tag() {
   return FALSE;
 }
 
-function kms_test_data_consitency() {
+function kms_test_data_consistency() {
   module_load_include('inc', 'kms_oci_queue', 'includes/kms_oci_queue.consistency');
   $oracle = new cDataServicesOracle('Services:Oracle');
   $postgres = new cDataServicesPostgres('Services:Postgres');
@@ -515,4 +515,6 @@ function kms_test_data_consitency() {
   var_dump($data_check->diff());
   var_dump($data_check->emptyEntries());
   var_dump($data_check->diffCount());
+
 }
+

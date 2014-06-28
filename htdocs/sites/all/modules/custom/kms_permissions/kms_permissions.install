@@ -15,17 +15,7 @@ function kms_permissions_install() {
   ) {
     return;
   }
-  $file = sprintf(
-    "%s/%s/%s/%s",
-    DRUPAL_ROOT,
-    drupal_get_path('module', 'kms_permissions'),
-    'includes',
-    'db_views_n_functions.sql'
-  );
-  $handle = fopen($file, "r");
-  $sql = fread($handle, filesize($file));
-  fclose($handle);
-  db_query($sql);
+  _kms_permissions_create_postgres_views_n_functions();
 }
 
 /**

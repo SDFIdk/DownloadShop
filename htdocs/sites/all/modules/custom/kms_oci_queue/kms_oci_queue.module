@@ -272,6 +272,10 @@ function kms_oci_queue_query_run($item) {
     )
   );
 
+  if (empty($output)) {
+    _adapt_debug('mikkel', $item);
+  }
+
   // If no output return (do nothing).
   if (empty($output) && $item->is_last_item && !file_exists($tmp_filename)) {
     $job->changeStatus(
