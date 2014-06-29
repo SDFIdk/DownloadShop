@@ -143,38 +143,30 @@ function kms_oci_queue_query_creator_run() {
     $item = $creator_queue->claimItem(60 * 60 * 24 * 30);
     // If no queue item found do nothing.
     if (!$item) {
-//      _adapt_debug('mikkel', __LINE__);
       break;
     }
     // Find job id.
     $jid = $item->item_id;
-//    _adapt_debug('mikkel', __LINE__);
-//    _adapt_debug('mikkel', $jid);
     $job = KmsOciQueueJobFactory::get($jid);
 
     if ($job->gid && $job->gid !== $last_gid && !is_null($last_gid)) {
       $creator_queue->releaseItem($item);
       $last_gid = NULL;
-//      _adapt_debug('mikkel', __LINE__);
     }
     elseif ($job->gid && ($job->gid === $last_gid || is_null($last_gid))) {
-//      _adapt_debug('mikkel', __LINE__);
       kms_oci_queue_query_creator_process_job($job, $item, $exe_queue);
       $last_gid = $job->gid;
     }
     elseif (!$job->gid) {
-//      _adapt_debug('mikkel', __LINE__);
       kms_oci_queue_query_creator_process_job($job, $item, $exe_queue);
       $last_gid = NULL;
 
     }
     else {
-//      _adapt_debug('mikkel', __LINE__);
       $last_gid = NULL;
     }
 
   } while ($job && $job->gid === $last_gid);
-//  _adapt_debug('mikkel', __LINE__);
 }
 
 function kms_oci_queue_query_creator_process_job($job, $item, $exe_queue) {
@@ -183,12 +175,6 @@ function kms_oci_queue_query_creator_process_job($job, $item, $exe_queue) {
     KmsOciQueueJob::STATUS_PROCESSING,
     'Writing sql lines...'
   );
-
-  // Atodo: For debugging:
-//  $timer_name = $jid . ':' . __FUNCTION__;
-//  timer_start($timer_name);
-//  _adapt_debug('mikkel', 'Timer start: ' . $timer_name);
-//  _adapt_debug('mikkel', timer_read($timer_name));
 
   // Creator item with data to create query queue.
   $creator_item = $item->data;
@@ -219,13 +205,6 @@ function kms_oci_queue_query_creator_process_job($job, $item, $exe_queue) {
     }
   );
 
-  // Atodo: For debugging:
-//  _adapt_debug('mikkel', 'Timer end: ' . $timer_name);
-//  _adapt_debug('mikkel', timer_read($timer_name));
-//  timer_stop($timer_name);
-//  _adapt_debug('mikkel', str_repeat('.', 100));
-//  _adapt_debug('mikkel', __LINE__);
-
 }
 
 /**
@@ -235,12 +214,6 @@ function kms_oci_queue_query_creator_process_job($job, $item, $exe_queue) {
  *   Queue item object.
  */
 function kms_oci_queue_query_run($item) {
-  // Atodo: For debugging:
-//  $timer_name = $item->jid . ':' . __FUNCTION__;
-//  timer_start($timer_name);
-//  _adapt_debug('mikkel', 'Timer start: ' . $timer_name);
-//  _adapt_debug('mikkel', timer_read($timer_name));
-
   // Load query queue executor plugins to create sql output.
   ctools_include('plugins');
   $plugins = ctools_get_plugins('kms_oci_queue', 'queue_runner');
@@ -272,29 +245,21 @@ function kms_oci_queue_query_run($item) {
     )
   );
 
-  if (empty($output)) {
-    _adapt_debug('mikkel', $item);
-  }
-
-  // If no output return (do nothing).
+  // If no output and nothing has already been written do nothing
+  // and delete job.
   if (empty($output) && $item->is_last_item && !file_exists($tmp_filename)) {
     $job->changeStatus(
       KmsOciQueueJob::STATUS_DONE,
       'No lines to process in this job'
     );
     // Delete job if no sql lines are present.
-    $job->delete(FALSE);
+    $job->delete();
     return;
   }
-  elseif (empty($output)) {
+  // If no output and we are not at the last item skip item.
+  elseif (empty($output) && !$item->is_last_item) {
     return;
   }
-
-  // Atodo: For debugging:
-//  _adapt_debug('mikkel', 'Timer end: ' . $timer_name);
-//  _adapt_debug('mikkel', timer_read($timer_name));
-//  timer_stop($timer_name);
-//  _adapt_debug('mikkel', str_repeat('.', 100));
 
   // Append output to tmp file.
   if (file_put_contents($tmp_filename, $output, FILE_APPEND) === FALSE) {
