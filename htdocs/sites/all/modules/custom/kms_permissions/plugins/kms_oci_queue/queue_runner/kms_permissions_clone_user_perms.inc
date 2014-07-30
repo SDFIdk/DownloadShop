@@ -43,7 +43,7 @@ function kms_permissions_clone_user_perms_query_creator_run($jid, $creator_item,
     'key_prefix' => FALSE,
     'flattened' => TRUE,
   );
-  _kms_permissions_get_permissions_by_uid($source_uid, $perms, $options);
+  _kms_permissions_get_bundle_perms_by_uid($source_uid, $perms, $options);
   _kms_permissions_get_separate_perms_by_uid($source_uid, $perms, $options);
 
   array_walk($uids, function ($uid) use ($job, $perms, $creator_item, $user_count, &$exe_queue, &$line_num) {

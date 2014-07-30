@@ -1021,7 +1021,7 @@ function kms_user_vbo_add_access_bundles(&$account, $context = array()) {
   // Get user permissions.
   $user_perms = array();
   $perms_options = array('key_prefix' => FALSE, 'flattened' => TRUE);
-  _kms_permissions_get_permissions_by_uid($uid, $user_perms, $perms_options);
+  _kms_permissions_get_bundle_perms_by_uid($uid, $user_perms, $perms_options);
   _kms_permissions_get_separate_perms_by_uid($uid, $user_perms, $perms_options);
   $user_diff = KmsPermsDiff::defaultDiff();
   if (!empty($user_perms['services'])) {
