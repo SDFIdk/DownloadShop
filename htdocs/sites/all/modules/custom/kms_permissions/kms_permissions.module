@@ -882,10 +882,14 @@ function _kms_permissions_get_bundle_perms_by_uid($uid, &$permissions = array(),
   $user = user_load($uid);
   // Get default bundles
   $default = _kms_permissions_get_access_bundles('default');
+
   // Get users bundles
   $field_access_bundles = field_get_items('user', $user, 'field_access_bundles');
 
   if (is_array($field_access_bundles)) {
+    array_walk($field_access_bundles, function(&$row) {
+      $row = $row['nid'];
+    });
     $bundles = array_merge($field_access_bundles, $default);
   }
   else {
@@ -893,15 +897,10 @@ function _kms_permissions_get_bundle_perms_by_uid($uid, &$permissions = array(),
   }
 
   if (!empty($bundles)) {
+    $bundles = array_unique($bundles);
     // Get permissions from all bundles
     foreach ($bundles as $bid) {
-      if (is_array($bid)) {
-        // Bids from the user fields
-        _kms_permissions_get_permissions_by_bid($bid['nid'], $permissions, $options);
-      }
-      else {
-        _kms_permissions_get_permissions_by_bid($bid, $permissions, $options);
-      }
+      _kms_permissions_get_permissions_by_bid($bid, $permissions, $options);
     }
   }
 }
