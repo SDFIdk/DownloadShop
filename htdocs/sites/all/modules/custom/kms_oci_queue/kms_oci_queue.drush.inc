@@ -19,6 +19,15 @@ function kms_oci_queue_drush_command() {
     'required-arguments' => TRUE,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_DATABASE,
   );
+  $items['consistency-generate-resolving-sql'] = array(
+    'callback' => 'kms_oci_queue_consistency_generate_resolving_sql',
+    'description' => dt('Generate sql needed to solve inconsistency.'),
+    'arguments' => array(
+      "data_type" => "Type of data (i.e.: 'services')",
+      "db_target" => "oracle or postgres",
+    ),
+    'required-arguments' => TRUE,
+  );
   return $items;
 }
 
@@ -93,6 +102,84 @@ function kms_oci_queue_consistency_check($data_type, $method) {
     }
 
   }
+}
+
+function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db) {
+  include '/tmp/diff.inc';
+
+  $protected_oracle_users = array(
+    'AE6475A9DCDD5CC5E04400144FAD6027',
+    '33191',
+  );
+
+  $wms_ids = kms_permissions_get_service_ids_by_type('wms');
+
+  $sql_file = sprintf('temporary://kms_oci_queue_consistency_resolve_%s.sql', $target_db);
+  if (file_exists($sql_file)) {
+    unlink($sql_file);
+  }
+  $user_count = count($diff);
+
+  switch($target_db) {
+    case 'oracle':
+      switch($data_type) {
+        case 'services':
+          $i = 0;
+          foreach($diff as $userid => $data) {
+            $i++;
+            drush_print(dt(
+              'Processing !i out of !total.',
+              array('!i' => $i, '!total' => $user_count)
+            ));
+            $output = array();
+            foreach($data['diff:Services:Postgres'] as $sid) {
+              $service_data = array(
+                'userid' => $userid,
+                'serviceid' => $sid,
+                'featureinfo' => 0,
+              );
+
+              $service_data += kms_permissions_get_service_bounding_box($sid);
+              // If a service is a wms service then set feature info to 1.
+              if (in_array($sid, $wms_ids)) {
+                $service_data['featureinfo'] = 1;
+              }
+              $sql = new KmsOciQueueSql('services', $service_data);
+              $output[] = $sql->generate('insert');
+            }
+
+            if (in_array($userid, $protected_oracle_users)) {
+              continue;
+            }
+
+            foreach($data['diff:Services:Oracle'] as $sid) {
+              $service_data = array(
+                'userid' => $userid,
+                'serviceid' => $sid,
+              );
+              $sql = new KmsOciQueueSql('services', $service_data);
+              $output[] = $sql->generate('delete');
+            }
+
+            if(!empty($output)) {
+              array_unshift($output, $sql->generateHeader());
+              file_put_contents($sql_file, implode("\n", $output), FILE_APPEND);
+            }
+
+          }
+          break;
+      }
+      break;
+
+    case 'postgres':
+      switch($data_type) {
+        case 'services':
+          break;
+      }
+      break;
+  }
+
+  drush_print(dt('Done.'));
 }
 
 /**

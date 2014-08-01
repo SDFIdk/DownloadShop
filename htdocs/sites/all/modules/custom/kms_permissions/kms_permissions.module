@@ -2250,20 +2250,22 @@ function kms_permissions_get_service_ids_by_type($type) {
       $ids = $cache->data;
     }
     else {
+      $ids = array();
       $type = strtolower($type);
       $service_list = kms_permissions_get_service_list();
-      $ids = array();
-      array_walk($service_list, function($service) use ($type, &$ids) {
-        if (strtolower($service['TYPENAME']) == $type) {
-          $ids[$type][] = $service['SERVICEID'];
-        }
-      });
-      // Store cache for 2 hours.
-      cache_set(__FUNCTION__, $ids, 'cache', time() + 120);
+      if (!empty($service_list)) {
+        array_walk($service_list, function($service) use ($type, &$ids) {
+          if (strtolower($service['TYPENAME']) == $type) {
+            $ids[$type][] = $service['SERVICEID'];
+          }
+        });
+        // Store cache for 2 hours.
+        cache_set(__FUNCTION__, $ids, 'cache', time() + 120);
+      }
     }
   }
 
-  return $ids[$type];
+  return !empty($ids[$type]) ? $ids[$type] : array();
 }
 
 /**
