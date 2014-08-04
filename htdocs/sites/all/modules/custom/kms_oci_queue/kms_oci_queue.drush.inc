@@ -132,7 +132,8 @@ function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db
               array('!i' => $i, '!total' => $user_count)
             ));
             $output = array();
-            foreach($data['diff:Services:Postgres'] as $sid) {
+            $services_postgres = array_unique($data['diff:Services:Postgres']);
+            foreach($services_postgres as $sid) {
               $service_data = array(
                 'userid' => $userid,
                 'serviceid' => $sid,
@@ -152,7 +153,8 @@ function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db
               continue;
             }
 
-            foreach($data['diff:Services:Oracle'] as $sid) {
+            $services_oracle = array_unique($data['diff:Services:Oracle']);
+            foreach($services_oracle as $sid) {
               $service_data = array(
                 'userid' => $userid,
                 'serviceid' => $sid,
