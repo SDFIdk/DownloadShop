@@ -975,6 +975,16 @@ h1, .commerce-product-title {
 		}
   }
 
+  .map-info-wrapper #selection_errors {
+    width: 300px;
+    color: #676767;
+    padding-left: 30px;
+    float: left;
+    display: inline-block;
+    padding-top: 10px;
+  }
+
+
   .map-info-wrapper .useful-links {
 		clear: none;
 		width: 300px;
@@ -1481,7 +1491,94 @@ ul.controlToggle {
 	li.reset a {
 		background: url(../images/clear.png) no-repeat;
 	}
+  li.csv {
+    width: 24px;
+    height: 27px;
+    overflow: hidden;
+    transition: 0.3s;
+    -moz-transition: 0.3s;
+    -webkit-transition: 0.3s;
+    -o-transition: 0.3s;
+  }
+
+  li.csv.active {
+    width: 300px;
+    height: 200px;
+    margin-left: -300px;
+    padding: 6px 24px 6px 0px;
+    background-color: #a1c73a;
+    margin-bottom:3px;
+    border-radius: 4px 0px 0px 4px;
+    -moz-border-radius: 4px 0px 0px 4px;
+    -webkit-border-radius: 4px 0px 0px 4px;
+  }
+
+  li.csv a{
+    background: url(../images/csv.png) no-repeat;
+    &:hover {
+      background: url(../images/csv-hover.png) no-repeat;
+    }
+  }
+
+  li.csv.active a {
+    display:none;
+  }
+
+  li.csv div.title {
+    display:none;
+    float:left;
+    padding-left: 11px;
+    height: 20px;
+    padding-top: 4px;
+    width: 280px;
+  }
+
+  li.csv.active div.title {
+    display:block;
+  }
+
+  li.csv textarea{
+    width: 300px;
+    height: 140px;
+    margin: 4px 11px;
+    max-width: 300px;
+    max-height: 140px;
+  }
+
+  li.csv button{
+    float:right;
+    padding: 3px 6px;
+    background: #333333;
+    color: #ffffff;
+    border: none;
+    float: right;
+    filter: none;
+    &:hover { background: #555555; }
+  }
+
 }
+
+#csv-desc-button {
+  background: url("../images/map-info.png") no-repeat center center  #333333;
+  width: 18px;
+  height: 16px;
+  color: #ffffff;
+  font-weight: bold;
+  padding: 3px;
+  margin-bottom: -6px;
+  margin-left: 15px;
+  cursor: pointer;
+  display: inline-block;
+  border-radius: 5em;
+  -moz-border-radius: 5em;
+  -webkit-border-radius: 5em;
+
+  &:hover {
+    background: url("../images/map-info.png") no-repeat center center #555555;
+  }
+}
+
+
 .clear-fix {
 	clear: both;
 }

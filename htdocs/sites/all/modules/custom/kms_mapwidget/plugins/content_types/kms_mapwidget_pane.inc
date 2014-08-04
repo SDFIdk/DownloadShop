@@ -63,7 +63,10 @@ function kms_mapwidget_pane_render($subtype, $conf, $panel_args, $context) {
   $content .= '<li class="drag"><a href="" id="drag-button" class="active toggle" title="' . t('Drag map')  . '"></a></li>';
   $content .= '<li class="select"><a href="" id="select-button" class="toggle" title="' . t('Select items')  . '"></a></li>';
   $content .= '<li class="rect"><a href="" id="rect-button" class="toggle" title="' . t('Draw rectangle')  . '"></a></li>';
-  $content .= '<li class="csv toggle"><a href="" id="csv-button" class="toggle" title="' . t('Enter comma separated values')  . '"></a><textarea id="csv-data"></textarea><button id="update-from-csv">'. t('Update') .'</button></li>';
+  $content .= '<li class="csv toggle"><a href="" id="csv-button" class="toggle" title="' . t('Enter comma separated values')  .
+    '"></a><div class="title">' . t('Enter list with comma separated values').
+    '<span id="csv-desc-button"></span></div><textarea id="csv-data"></textarea><button id="update-from-csv">'.
+    t('Update') .'</button></li>';
   $content .= '<li class="reset"><a href="" id="reset-button" title="' . t('Reset selection')  . '"></a></li>';
   $content .= '<li><div id="layer-switcher"></div ></li>';
   $content .= '</ul>';
@@ -73,6 +76,7 @@ function kms_mapwidget_pane_render($subtype, $conf, $panel_args, $context) {
   $content .= '<div class="product-body">' . $nw->body->value->value() . '</div>';
   $content .= '<div id="selection_message"></div>';
   $content .= '<div id="selection_errors"></div>';
+  $content .= '<div class="select-desc" id="csv-description" style="display:none;">' . t('Paste comma-separated list of codes.') . '</div>';
 
   $content .= '<div class="useful-links">';
   foreach (array('field_kms_dk', 'field_geodata_info_dk', 'field_legend') as $field_name) {

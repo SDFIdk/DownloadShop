@@ -525,36 +525,3 @@ div.drawRectangleActive.olDragDown {
 img.olTileImage {
     max-width: none;
 }
-
-ul.controlToggle li.csv a {
-  width: 18px;
-  height: 18px;
-  background: url("/sites/all/themes/custom/kms/images/arrow.png") no-repeat;
-  display: inline-block;
-  cursor: pointer;
-  margin: 8px 0 0 2px;
-  float: left;
-}
-
-ul.controlToggle li.csv {
-  width: 18px;
-  overflow: hidden;
-}
-
-ul.controlToggle li.active {
-  width: 210px;
-  background-color: #a1c73a;
-}
-
-.pane-kms-mapwidget-pane .map-info-wrapper #selection_errors {
-  width: 300px;
-  color: #676767;
-  padding-left: 30px;
-  float: left;
-  display: inline-block;
-  padding-top: 10px;
-}
-
-
-
-

@@ -243,7 +243,7 @@ function initMap() {
                         "http://b.kortforsyningen.kms.dk/topo_skaermkort",
                         "http://c.kortforsyningen.kms.dk/topo_skaermkort",
                         "http://d.kortforsyningen.kms.dk/topo_skaermkort"];
- 
+
     var map = new OpenLayers.Map(
         'mapTag',
         {
@@ -257,7 +257,7 @@ function initMap() {
 		    controls : []
         }
     );
-   
+
 	// generic WMTS baselayer used for all maps
 	baselayer_generic = new OpenLayers.Layer.WMTS(
 		{
@@ -623,8 +623,14 @@ if (conf.details == 'kommune.json' ) {
         }
       }
       e.preventDefault();
-
     });
+
+    $("#csv-description").easyModal({overlayOpacity: 0.5});
+    $("#csv-desc-button").click(function(e) {
+       $("#csv-description").trigger("openModal");
+      e.preventDefault();
+    });
+
   })(jQuery);
 
 (function($) {
@@ -773,11 +779,11 @@ function addDrawRect(map,conf) {
           sides: 4,
           irregular: true
       },
-      displayClass: 'drawRectangle' 
+      displayClass: 'drawRectangle'
     }
   );
 
-  selectCtrl.events.register("featureadded", this, function (e) { 
+  selectCtrl.events.register("featureadded", this, function (e) {
     if(selectLayer.features.length > 1){
       selectLayer.removeFeatures(selectLayer.features[0]);
     }
@@ -800,7 +806,7 @@ function addDrawRect(map,conf) {
       $('#selection_message').append('<p>' + Drupal.t('Maximum allowed area') + ' :<span class="value">' + conf.max_area + ' km&sup2;</span></p>');
     }
     $('#selection_message').append('<h3>' + Drupal.t('Selected items') + '</h3>');
-    
+
     if (selectLayer.features[0]) {
       selectLayer.features[0].geometry.bounds.left = Math.round(selectLayer.features[0].geometry.bounds.left);
       selectLayer.features[0].geometry.bounds.right = Math.round(selectLayer.features[0].geometry.bounds.right);
@@ -808,9 +814,9 @@ function addDrawRect(map,conf) {
       selectLayer.features[0].geometry.bounds.bottom = Math.round(selectLayer.features[0].geometry.bounds.bottom);
       var bounds = selectLayer.features[0].geometry.bounds;
       var area = selectLayer.features[0].geometry.getArea() / 1000000;
-      $('#selection_message').append('<p>' + Drupal.t('Area') + ': <span class="value">' + area.toFixed(2).replace('.',',') + ' km&sup2;</span></p>'); 
+      $('#selection_message').append('<p>' + Drupal.t('Area') + ': <span class="value">' + area.toFixed(2).replace('.',',') + ' km&sup2;</span></p>');
       $('input[name=selection]').val(JSON.stringify(bounds));
-      
+
       if ( area > conf.max_area) {
         $('.button-submit').attr('disabled', 'disabled');
         $('.button-submit').css('background','#EEEEEE');
