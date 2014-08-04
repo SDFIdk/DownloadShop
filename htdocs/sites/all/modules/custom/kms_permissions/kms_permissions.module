@@ -1258,7 +1258,10 @@ function _kms_permissions_get_bundles_by_item_id($id, $item_type) {
     break;
 
     case 'ftp':
-      $nid_sid_arr = $get_bundle_ids($id, 'ftp', 'custom');
+      $nid_sid_arr = array_merge(
+        $get_bundle_ids($id, 'ftp', 'default'),
+        $get_bundle_ids($id, 'ftp', 'custom')
+      );
     break;
 
     case 'application':
@@ -1269,7 +1272,10 @@ function _kms_permissions_get_bundles_by_item_id($id, $item_type) {
     break;
 
     case 'predefined':
-      $nid_sid_arr = $get_bundle_ids($id, 'predefined', 'custom');
+      $nid_sid_arr = array_merge(
+        $get_bundle_ids($id, 'predefined', 'default'),
+        $get_bundle_ids($id, 'predefined', 'custom')
+      );
     break;
   }
 
