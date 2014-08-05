@@ -19,7 +19,7 @@ function kms_mapwidget_ctools_plugin_directory($owner, $plugin_type) {
  */
 function kms_mapwidget_menu() {
   $items = array();
- 
+
   $items['admin/config/kms/maxarea'] = array(
     'title' => 'FME max area',
     'description' => 'Configure FME maximum area.',
@@ -42,7 +42,14 @@ function kms_mapwidget_menu() {
     'access arguments' => array('access administration pages'),
     'type' => MENU_CALLBACK,
   );
- 
+
+  $items['downloadticket'] = array(
+    'title' => 'Downloadticket callback',
+    'page callback' => 'kms_mapwidget_downloadticket_callback',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+
   return $items;
 }
 
@@ -57,8 +64,13 @@ function kms_mapwidget_fme_log_view( ) {
   echo '</pre>';
 }
 
+function kms_mapwidget_downloadticket_callback() {
+  @$ticket = file_get_contents("http://kortforsyningen.kms.dk/?request=GetTicket&login=FriDownload&password=FriDownload2013");
+  drupal_json_output($ticket);
+}
+
 function kms_mapwidget_fme_callback( ) {
-  
+
   /* BODY example
   string(621) "{
    "subscriber_folder": "\\\\KMSDBDIST3.KMSEXT.DK\\GstFMESys\\DefaultResults\\FME_3A7D171A_1372750248255_4352_nw",
@@ -110,7 +122,7 @@ function kms_mapwidget_fme_callback( ) {
   }
 
   echo 'ERROR';
- 
+
 }
 
 /**

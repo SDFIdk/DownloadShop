@@ -17,14 +17,6 @@ function kms_mapwidget_pane_render($subtype, $conf, $panel_args, $context) {
 
   $modulename = 'kms_mapwidget';
 
-  if (empty($_COOKIE['downloadticket'])) {
-    $domain = $_SERVER['HTTP_HOST'];
-    if (preg_match("/^(.+):/", $_SERVER['HTTP_HOST'], $matches))
-      $domain = $matches[1];
-    @$ticket = file_get_contents("http://kortforsyningen.kms.dk/?request=GetTicket&login=FriDownload&password=FriDownload2013");
-    setcookie("downloadticket", $ticket, time()+60*60*24, '/', $domain);
-  }
-
   $nw = entity_metadata_wrapper('node',$context->data);
 
   drupal_add_js(
@@ -46,6 +38,7 @@ function kms_mapwidget_pane_render($subtype, $conf, $panel_args, $context) {
   drupal_add_js('http://openlayers.org/api/2/OpenLayers.js');
   drupal_add_css(drupal_get_path('module', $modulename).'/css/style.css');
   drupal_add_js(drupal_get_path('module', $modulename).'/js/json2.js');
+  drupal_add_js(drupal_get_path('module', $modulename).'/js/jquery.cookie.js');
   drupal_add_js(drupal_get_path('module', $modulename).'/js/VisStedet/Utils.js');
   drupal_add_js(drupal_get_path('module', $modulename).'/js/VisStedet/Ticket.js');
   drupal_add_js(drupal_get_path('module', $modulename).'/js/VisStedet/Search.js');

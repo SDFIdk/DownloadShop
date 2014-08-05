@@ -217,8 +217,19 @@ function initMap() {
 
   OpenLayers.ImgPath = "/sites/all/themes/custom/kms/images/";
 
-  //kmsticket: '',
   kmsticket = new VisStedet.Ticket();
+
+  if (!kmsticket.ticket) {
+    jQuery.ajax({
+      url : "/downloadticket",
+      type: "POST",
+      async : false,
+      success : function( data ) {
+        jQuery.cookie('downloadticket', data, { expires: 1, path: '/' });
+        kmsticket.ticket = data;
+      }
+    });
+  }
 
   // --------------------------------------------------------------------
   // WMTS matrixId based on OpenLayers zoomlevels
