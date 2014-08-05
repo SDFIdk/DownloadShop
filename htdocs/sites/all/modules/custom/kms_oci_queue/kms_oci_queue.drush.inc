@@ -149,18 +149,16 @@ function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db
               $output[] = $sql->generate('insert');
             }
 
-            if (in_array($userid, $protected_oracle_users)) {
-              continue;
-            }
-
-            $services_oracle = array_unique($data['diff:Services:Oracle']);
-            foreach($services_oracle as $sid) {
-              $service_data = array(
-                'userid' => $userid,
-                'serviceid' => $sid,
-              );
-              $sql = new KmsOciQueueSql('services', $service_data);
-              $output[] = $sql->generate('delete');
+            if (!in_array($userid, $protected_oracle_users)) {
+              $services_oracle = array_unique($data['diff:Services:Oracle']);
+              foreach($services_oracle as $sid) {
+                $service_data = array(
+                  'userid' => $userid,
+                  'serviceid' => $sid,
+                );
+                $sql = new KmsOciQueueSql('services', $service_data);
+                $output[] = $sql->generate('delete');
+              }
             }
 
             if(!empty($output)) {
