@@ -611,6 +611,7 @@ if (conf.details == 'kommune.json' ) {
       $('#selection_errors').empty();
       selectCtrl.unselectAll();
       var codes = $('textarea#csv-data').val().split(',');
+      for(var f=0; f<codes.length; f++) { codes[f] = codes[f].trim(); }
       codes = sort_unique(codes);
       codeVarName = getCodeVarName(conf);
       for(var f=0; f<codes.length; f++) {
