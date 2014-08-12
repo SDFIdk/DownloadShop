@@ -162,7 +162,8 @@ function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db
             }
 
             if(!empty($output)) {
-              array_unshift($output, $sql->generateHeader());
+              array_unshift($output, $sql->generateWrapper('header'));
+              $output[] = $sql->generateWrapper('footer');
               file_put_contents($sql_file, implode("\n", $output), FILE_APPEND);
             }
 

@@ -606,7 +606,8 @@ function _kms_oci_queue_process_perms_query_creator_queue_item($item) {
   }
 
   if (!empty($output)) {
-    array_unshift($output, $sql->generateHeader());
+    array_unshift($output, $sql->generateWrapper('header'));
+    $output[] = $sql->generateWrapper('footer');
   }
 
   // Return all created query lines.

@@ -13,10 +13,10 @@ class KmsOciQueueSql {
   private $sqlClass = '';
   private $conf = array();
 
-  public function __construct($type, $data) {
+  public function __construct($type = NULL, $data = NULL) {
     $this->type = $type;
     $this->data = $data;
-    $this->sqlClass = sprintf('KmsOciQueueSql%s', ucfirst($type));
+    $this->sqlClass = sprintf('%s%s', __CLASS__, ucfirst($type));
     $conf_callback = array($this->sqlClass, 'conf');
     if (is_callable($conf_callback)) {
       $this->conf = call_user_func($conf_callback);
@@ -30,17 +30,28 @@ class KmsOciQueueSql {
       $args = array_slice($args, 1);
       $sql = call_user_func_array($callback, $args);
       $sql = $this->replacePlaceholders($sql, $this->data);
-      return !empty($sql) ? sprintf("%s\n", $sql) : FALSE;
+      return !empty($sql) ? sprintf("%s\n", $sql) : '';
     }
   }
 
-  public function generateHeader() {
-    $callback = array($this->sqlClass, 'header');
-    if (is_callable($callback)) {
-      $sql = call_user_func_array($callback, func_get_args());
-      $sql = $this->replacePlaceholders($sql, $this->data);
-      return !empty($sql) ? $sql : FALSE;
+  public function generateWrapper($wrapper_type) {
+    $sql = '';
+    if (
+      $this->type != __CLASS__
+        && is_callable(array($this->sqlClass, $wrapper_type))
+    ){
+      $args = array_slice(func_get_args(), 1);
+      $sql = call_user_func_array(array($this->sqlClass, $wrapper_type), $args);
     }
+    else if (is_callable(array($this, $wrapper_type))) {
+      $sql = $this->$wrapper_type();
+    }
+
+    if ($this->type != __CLASS__ && !empty($sql)) {
+      $sql = $this->replacePlaceholders($sql, $this->data);
+    }
+
+    return $sql;
   }
 
   protected function replacePlaceholders($sql, $data) {
@@ -52,6 +63,27 @@ class KmsOciQueueSql {
       );
     }
     return $sql;
+  }
+
+  private static function header() {
+    return <<<EOD
+DECLARE
+  userid VARCHAR2 (50) := *userid*;
+BEGIN
+
+EOD;
+  }
+
+  private static function footer() {
+    return <<<EOD
+EXCEPTION
+  WHEN DUP_VAL_ON_INDEX THEN
+    RAISE_APPLICATION_ERROR(-20001, 'DUP_VAL_ON_INDEX exception on user: ' || userid);
+    ROLLBACK;
+END;
+/
+
+EOD;
   }
 
 }
@@ -86,21 +118,14 @@ class KmsOciQueueSqlServices extends KmsOciQueueSqlBase {
     ),
   );
 
-  public static function header() {
-    return <<<EOD
-var userid varchar2(50);
-exec :userid:=*userid*;
-EOD;
-  }
-
   public static function upsert() {
     $table = self::$conf['table'];
     return <<<EOD
 MERGE INTO $table t
-USING dual ON (t.userid = :userid AND t.serviceid = *serviceid*)
+USING dual ON (t.userid = userid AND t.serviceid = *serviceid*)
 WHEN NOT MATCHED THEN
   INSERT (SERVICEID, USERID, MINX, MINY, MAXX, MAXY, MAXPIXELWIDTH, MAXPIXELHEIGHT, FEATUREINFO)
-  VALUES (*serviceid*, :userid, *minx*, *miny*, *maxx*, *maxy*, *maxpixelwidth*, *maxpixelheight*, *featureinfo*)
+  VALUES (*serviceid*, userid, *minx*, *miny*, *maxx*, *maxy*, *maxpixelwidth*, *maxpixelheight*, *featureinfo*)
 WHEN MATCHED THEN
   UPDATE SET t.MINX = *minx*, t.MINY = *miny*, t.MAXX = *maxx*, t.MAXY = *maxy*, t.MAXPIXELWIDTH = *maxpixelwidth*, t.MAXPIXELHEIGHT = *maxpixelheight*, t.FEATUREINFO = *featureinfo*
 ;
@@ -111,14 +136,14 @@ EOD;
     $table = self::$conf['table'];
     return <<<EOD
 INSERT INTO $table (SERVICEID, USERID, MINX, MINY, MAXX, MAXY, MAXPIXELWIDTH, MAXPIXELHEIGHT, FEATUREINFO)
-VALUES (*serviceid*, :userid, *minx*, *miny*, *maxx*, *maxy*, *maxpixelwidth*, *maxpixelheight*, *featureinfo*)
+VALUES (*serviceid*, userid, *minx*, *miny*, *maxx*, *maxy*, *maxpixelwidth*, *maxpixelheight*, *featureinfo*)
 ;
 EOD;
   }
 
   public static function delete() {
     return sprintf(
-      'DELETE FROM %s t WHERE t.userid = :userid AND t.serviceid = *serviceid*;',
+      'DELETE FROM %s t WHERE t.userid = userid AND t.serviceid = *serviceid*;',
       self::$conf['table']
     );
   }
@@ -164,21 +189,14 @@ class KmsOciQueueSqlApplications extends KmsOciQueueSqlBase {
     ),
   );
 
-  public static function header() {
-    return <<<EOD
-var userid varchar2(50);
-exec :userid:=*userid*;
-EOD;
-  }
-
   public static function upsert() {
     $table = self::$conf['table'];
     return <<<EOD
 MERGE INTO $table t
-USING dual ON (t.userid = :userid AND t.groupid = *groupid*)
+USING dual ON (t.userid = userid AND t.groupid = *groupid*)
 WHEN NOT MATCHED THEN
   INSERT (GROUPID, USERID)
-  VALUES (*groupid*, :userid)
+  VALUES (*groupid*, userid)
 ;
 EOD;
   }
@@ -186,13 +204,13 @@ EOD;
   public static function insert() {
     $table = self::$conf['table'];
     return <<<EOD
-INSERT INTO $table (ID, GROUPID, USERID) VALUES (:userid, *groupid*, :userid);
+INSERT INTO $table (ID, GROUPID, USERID) VALUES (userid, *groupid*, userid);
 EOD;
   }
 
   public static function delete() {
     return sprintf(
-      'DELETE FROM %s t WHERE t.userid = :userid AND t.groupid = *groupid*;',
+      'DELETE FROM %s t WHERE t.userid = userid AND t.groupid = *groupid*;',
       self::$conf['table']
     );
   }
@@ -233,13 +251,6 @@ class KmsOciQueueSqlUser extends KmsOciQueueSqlBase {
     ),
   );
 
-  public static function header() {
-    return <<<EOD
-var userid varchar2(50);
-exec :userid:=*userid*;
-EOD;
-  }
-
   public static function upsert($table = '') {
     $sql = array();
     $tables = self::$conf['default_values'];
@@ -254,7 +265,7 @@ EOD;
       $update_placeholders = implode(', ', $sql_data['update']);
       $sql[] = <<<EOD
 MERGE INTO $table t
-USING dual ON (t.userid = :userid)
+USING dual ON (t.userid = userid)
 WHEN NOT MATCHED THEN
   INSERT ($insert_cols)
   VALUES ($insert_placeholders)
@@ -297,7 +308,7 @@ EOD;
       $sql_data = self::sqlData($cols, $data);
       $values = implode(', ', $sql_data['update']);
       $sql[] = <<<EOD
-UPDATE $table t SET $values WHERE t.userid = :userid;
+UPDATE $table t SET $values WHERE t.userid = userid;
 EOD;
     }
     $output = implode("\n", $sql);
@@ -308,7 +319,7 @@ EOD;
     $sql_data = array('insert' => array(), 'update' => array());
     array_walk($cols, function($col) use(&$sql_data, $data) {
       $sql_col = strtolower($col);
-      $sql_data['insert'][$sql_col] = $sql_col == 'userid' ? ':userid' : "*$sql_col*";
+      $sql_data['insert'][$sql_col] = $sql_col == 'userid' ? 'userid' : "*$sql_col*";
       if ($sql_col != 'userid') {
         // If value is empty there is no reason to include it in update statement.
         if (empty($data[$sql_col])) {

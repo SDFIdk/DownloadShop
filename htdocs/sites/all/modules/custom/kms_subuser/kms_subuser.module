@@ -697,7 +697,15 @@ function kms_subuser_insert_account_oracle($user, $account) {
   $data['user_extra'][':master_userid'] = $user->uid;
   // Insert oracle user data.
   $jobs = array();
-  kms_oci_queue_job_action_user_insert($jobs, $data);
+  kms_oci_queue_job_action_user_insert(
+    $jobs,
+    $data,
+    'Inserting subuser (master: @master_user): @user_details.',
+    array(
+      '@user_details' => json_encode($data['user']),
+      '@master_user' => $user->name,
+    )
+  );
   kms_oci_queue_job_action_clone_user_perms($jobs, $user, array($account->uid));
   $job_group = new KmsOciQueueJobGroup();
   $job_group->add($jobs);

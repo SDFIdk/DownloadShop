@@ -116,8 +116,8 @@ function kms_permissions_clone_user_perms_query_run($item) {
         $sql = new KmsOciQueueSql('services', $data);
         $delete = sprintf('DELETE FROM %s WHERE userid = :userid;', $conf['table']);
         array_unshift($output, $delete);
-        array_unshift($output, $sql->generateHeader());
-
+        array_unshift($output, $sql->generateWrapper('header'));
+        $output[] = $sql->generateWrapper('footer');
       }
     }
     elseif ($perm_type == 'applications') {
@@ -127,7 +127,7 @@ function kms_permissions_clone_user_perms_query_run($item) {
           'userid' => $item->kms_id,
         );
         $sql = new KmsOciQueueSql('applications', $data);
-        $output[] = $sql->generateHeader();
+        $output[] = $sql->generateWrapper('header');
         $conf = KmsOciQueueSqlApplications::$conf;
         $output[] = sprintf('DELETE FROM %s WHERE userid = :userid;', $conf['table']);
         array_walk($ids, function($gid) use ($data, &$output) {
@@ -135,6 +135,7 @@ function kms_permissions_clone_user_perms_query_run($item) {
           $sql = new KmsOciQueueSql('applications', $data);
           $output[] = $sql->generate('insert');
         });
+        $output[] = $sql->generateWrapper('footer');
       }
     }
   }

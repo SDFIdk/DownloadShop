@@ -121,18 +121,18 @@ function kms_user_remove_all_bundles_query_run($item) {
     // Generate header here because we need the userid for the DELETE statement.
     $data = array('userid' => $kms_userid);
     $sql = new KmsOciQueueSql($perm_type, $data);
-    $output = array();
-    $output[] = $sql->generateHeader();
+    $output = array($sql->generateWrapper('header'));
     // Wipe all permissions for user before writing.
     // This is done because we do not know about the eventual 'removed' bundles
     // for the user at this point.
     $output[] = sprintf(
-      "DELETE FROM %s WHERE userid = :userid;",
+      "DELETE FROM %s WHERE userid = userid;",
       $perm_conf['table']
     );
   }
   // Create permission sql statements.
   $output[] = kmsPermsDiff::createOciSqlFromPermDiff($diff, $kms_userid, TRUE);
+  $output[] = $sql->generateWrapper('footer');
   // Return sql.
   return implode("\n", $output);
 }

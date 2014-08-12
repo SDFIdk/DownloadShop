@@ -196,7 +196,8 @@ class KmsPermsDiff {
     }
 
     if (!empty($output) && !$ignore_header) {
-      array_unshift($output, $sql->generateHeader());
+      array_unshift($output, $sql->generateWrapper('header'));
+      $output[] = $sql->generateWrapper('footer');
     }
 
     // Return all created query lines.
