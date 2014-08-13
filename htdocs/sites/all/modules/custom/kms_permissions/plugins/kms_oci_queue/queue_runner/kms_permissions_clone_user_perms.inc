@@ -114,7 +114,7 @@ function kms_permissions_clone_user_perms_query_run($item) {
           'userid' => $item->kms_id,
         );
         $sql = new KmsOciQueueSql('services', $data);
-        $delete = sprintf('DELETE FROM %s WHERE userid = :userid;', $conf['table']);
+        $delete = sprintf('DELETE FROM %s WHERE userid = userid;', $conf['table']);
         array_unshift($output, $delete);
         array_unshift($output, $sql->generateWrapper('header'));
         $output[] = $sql->generateWrapper('footer');

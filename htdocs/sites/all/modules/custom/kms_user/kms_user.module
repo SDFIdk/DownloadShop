@@ -1011,33 +1011,35 @@ function kms_user_vbo_add_access_bundles_submit($form, $form_state) {
  * @return void
  */
 function kms_user_vbo_add_access_bundles(&$account, $context = array()) {
-  $uid = $context['user']->uid;
-  // If it is the first user make sure that the uids variable is deleted.
-  if ($context['progress']['current'] == 1) {
-    variable_del('kms_user_vbo_access_bundle_add_uids');
-  }
-  // Get processed uids.
-  $uids = variable_get('kms_user_vbo_access_bundle_add_uids', array());
-  // Get user permissions.
-  $user_perms = _kms_permissions_get_all_permissions_by_uid(
-    $uid,
-    array('key_prefix' => FALSE, 'flattened' => TRUE)
-  );
+  if (!kms_subuser_is_subuser($account)) {
+    $uid = $context['user']->uid;
+    // If it is the first user make sure that the uids variable is deleted.
+    if ($context['progress']['current'] == 1) {
+      variable_del('kms_user_vbo_access_bundle_add_uids');
+    }
+    // Get processed uids.
+    $uids = variable_get('kms_user_vbo_access_bundle_add_uids', array());
+    // Get user permissions.
+    $user_perms = _kms_permissions_get_all_permissions_by_uid(
+      $uid,
+      array('key_prefix' => FALSE, 'flattened' => TRUE)
+    );
 
-  $user_diff = KmsPermsDiff::defaultDiff();
-  if (!empty($user_perms['services'])) {
-    $user_diff['services']['add'] = $user_perms['services'];
+    $user_diff = KmsPermsDiff::defaultDiff();
+    if (!empty($user_perms['services'])) {
+      $user_diff['services']['add'] = $user_perms['services'];
+    }
+    if (!empty($user_perms['applications'])) {
+      $user_diff['applications']['add'] = $user_perms['applications'];
+    }
+    // Store user permissions as a diff in the diff table.
+    KmsPermsDiffDb::save($uid, $user_diff, 'user');
+    // Add current uid to uids variable.
+    $uids[] = $uid;
+    variable_set('kms_user_vbo_access_bundle_add_uids', $uids);
+    // Do the user permissions update on the Drupal side.
+    kms_user_access_bundle_administer('add', $account, $context['access_bundle']);
   }
-  if (!empty($user_perms['applications'])) {
-    $user_diff['applications']['add'] = $user_perms['applications'];
-  }
-  // Store user permissions as a diff in the diff table.
-  KmsPermsDiffDb::save($uid, $user_diff, 'user');
-  // Add current uid to uids variable.
-  $uids[] = $uid;
-  variable_set('kms_user_vbo_access_bundle_add_uids', $uids);
-  // Do the user permissions update on the Drupal side.
-  kms_user_access_bundle_administer('add', $account, $context['access_bundle']);
   // If we are finished use the finished callback
   // that initiates a kms oci queue job.
   if ($context['progress']['current'] == $context['progress']['total']) {
@@ -1099,22 +1101,6 @@ function kms_user_vbo_access_bundle_finished($op, $context) {
       // If no bids chosen do nothing.
       if (empty($bids)) {
         return;
-      }
-      // Create bundle diff array.
-      $perms = array();
-      $bundle_diff = KmsPermsDiff::defaultDiff();
-      foreach($bids as $bid) {
-        _kms_permissions_get_permissions_by_bid(
-          $bid,
-          $perms,
-          array('key_prefix' => FALSE, 'flattened' => TRUE)
-        );
-        if (!empty($perms['services'])) {
-          $bundle_diff['services']['add'] = $perms['services'];
-        }
-        if (!empty($perms['applications'])) {
-          $bundle_diff['applications']['add'] = $perms['applications'];
-        }
       }
       // Create kms oci queue job that attaches bundle permissions to users.
       $jobs = array();

@@ -34,8 +34,6 @@ function kms_user_bundles_attach_query_creator_run($jid, $creator_item, $exe_que
   $uids = $creator_item->params['uids'];
   $bids = $creator_item->params['bids'];
   $job = KmsOciQueueJobFactory::get($jid);
-  // Add subusers to user id array.
-  kms_subuser_uids_add_subuser_uids($uids);
   $user_count = count($uids);
   $perms_options = array('key_prefix' => FALSE, 'flattened' => TRUE);
 
@@ -121,6 +119,28 @@ function kms_user_bundles_attach_query_run($item) {
       }
     }
   }
+
+  // If the user has any subuser clone permissions to them.
+  $account = user_load($uid);
+  $subusers = subuser_load_all($account);
+  if (!empty($subusers)) {
+    $job_params = array(
+      'action' => KMS_OCI_QUEUE_ACTION_CLONE_USER_PERMS,
+      'action_details' => format_string(
+        'Cloning user permissions from: @source_user. Affects @user_count.',
+        array(
+          '@source_user' => $account->name,
+          '@user_count' => count($subusers),
+        )
+      ),
+      'params' => array(
+        'source_uid' => $account->uid,
+        'uids' => $subusers,
+      ),
+    );
+    KmsOciQueueJob::create($job_params, $cid);
+  }
+
   // Create permission sql statements.
   $output = kmsPermsDiff::createOciSqlFromPermDiff($diff, $kms_userid);
   // Return sql.
