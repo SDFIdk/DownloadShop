@@ -83,13 +83,19 @@ function kms_user_bundles_attach_query_creator_run($jid, $creator_item, $exe_que
  *   Generated oracle queries.
  */
 function kms_user_bundles_attach_query_run($item) {
-  $connection_id = $item->cid;
+  $cid = $item->cid;
   $uid = $item->uid;
   $bundle_diff = $item->bundle_diff;
   $kms_userid = kms_user_get_userid(user_load($uid));
-
+  // This is actually not a user diff but contains the state
+  // of the user permissions before VBO processed it.
   $user_diff = KmsPermsDiffDb::loadDiff($uid, 'user');
-  KmsPermsDiffDb::deleteDiff($uid, 'user');
+  // Another ugly thing. We make sure the "user diff" is erased
+  // when the second job (kms_permissions) has run.
+  // This only works if kms_permissions job comes last.
+  if ($cid == 'kms_permissions') {
+    KmsPermsDiffDb::deleteDiff($uid, 'user');
+  }
   if (empty($user_diff)) {
     $user_diff = KmsPermsDiff::defaultDiff();
   }
@@ -99,7 +105,7 @@ function kms_user_bundles_attach_query_run($item) {
     $perm_conf = $perms_oracle_rel[$perm_type];
     // If the connection id of the job does not match the one in $perm_conf
     // do nothing.
-    if ($connection_id != $perm_conf['cid']) {
+    if ($cid != $perm_conf['cid']) {
       continue;
     }
     $type_diff = &$diff[$perm_type];
