@@ -126,7 +126,7 @@ function kms_user_remove_all_bundles_query_run($item) {
     // This is done because we do not know about the eventual 'removed' bundles
     // for the user at this point.
     $output[] = sprintf(
-      "DELETE FROM %s WHERE userid = userid;",
+      "DELETE FROM %s WHERE userid = v_userid;",
       $perm_conf['table']
     );
   }

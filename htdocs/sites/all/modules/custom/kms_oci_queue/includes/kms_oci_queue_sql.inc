@@ -68,7 +68,7 @@ class KmsOciQueueSql {
   private static function header() {
     return <<<EOD
 DECLARE
-  userid VARCHAR2 (50) := *userid*;
+  v_userid VARCHAR2 (50) := *userid*;
 BEGIN
 
 EOD;
@@ -78,7 +78,7 @@ EOD;
     return <<<EOD
 EXCEPTION
   WHEN DUP_VAL_ON_INDEX THEN
-    RAISE_APPLICATION_ERROR(-20001, 'DUP_VAL_ON_INDEX exception on user: ' || userid);
+    RAISE_APPLICATION_ERROR(-20001, 'DUP_VAL_ON_INDEX exception on user: ' || v_userid);
     ROLLBACK;
 END;
 /
@@ -122,10 +122,10 @@ class KmsOciQueueSqlServices extends KmsOciQueueSqlBase {
     $table = self::$conf['table'];
     return <<<EOD
 MERGE INTO $table t
-USING dual ON (t.userid = userid AND t.serviceid = *serviceid*)
+USING dual ON (t.userid = v_userid AND t.serviceid = *serviceid*)
 WHEN NOT MATCHED THEN
   INSERT (SERVICEID, USERID, MINX, MINY, MAXX, MAXY, MAXPIXELWIDTH, MAXPIXELHEIGHT, FEATUREINFO)
-  VALUES (*serviceid*, userid, *minx*, *miny*, *maxx*, *maxy*, *maxpixelwidth*, *maxpixelheight*, *featureinfo*)
+  VALUES (*serviceid*, v_userid, *minx*, *miny*, *maxx*, *maxy*, *maxpixelwidth*, *maxpixelheight*, *featureinfo*)
 WHEN MATCHED THEN
   UPDATE SET t.MINX = *minx*, t.MINY = *miny*, t.MAXX = *maxx*, t.MAXY = *maxy*, t.MAXPIXELWIDTH = *maxpixelwidth*, t.MAXPIXELHEIGHT = *maxpixelheight*, t.FEATUREINFO = *featureinfo*
 ;
@@ -136,14 +136,14 @@ EOD;
     $table = self::$conf['table'];
     return <<<EOD
 INSERT INTO $table (SERVICEID, USERID, MINX, MINY, MAXX, MAXY, MAXPIXELWIDTH, MAXPIXELHEIGHT, FEATUREINFO)
-VALUES (*serviceid*, userid, *minx*, *miny*, *maxx*, *maxy*, *maxpixelwidth*, *maxpixelheight*, *featureinfo*)
+VALUES (*serviceid*, v_userid, *minx*, *miny*, *maxx*, *maxy*, *maxpixelwidth*, *maxpixelheight*, *featureinfo*)
 ;
 EOD;
   }
 
   public static function delete() {
     return sprintf(
-      'DELETE FROM %s t WHERE t.userid = userid AND t.serviceid = *serviceid*;',
+      'DELETE FROM %s t WHERE t.userid = v_userid AND t.serviceid = *serviceid*;',
       self::$conf['table']
     );
   }
@@ -193,10 +193,10 @@ class KmsOciQueueSqlApplications extends KmsOciQueueSqlBase {
     $table = self::$conf['table'];
     return <<<EOD
 MERGE INTO $table t
-USING dual ON (t.userid = userid AND t.groupid = *groupid*)
+USING dual ON (t.userid = v_userid AND t.groupid = *groupid*)
 WHEN NOT MATCHED THEN
   INSERT (GROUPID, USERID)
-  VALUES (*groupid*, userid)
+  VALUES (*groupid*, v_userid)
 ;
 EOD;
   }
@@ -204,13 +204,13 @@ EOD;
   public static function insert() {
     $table = self::$conf['table'];
     return <<<EOD
-INSERT INTO $table (ID, GROUPID, USERID) VALUES (userid, *groupid*, userid);
+INSERT INTO $table (ID, GROUPID, USERID) VALUES (v_userid, *groupid*, v_userid);
 EOD;
   }
 
   public static function delete() {
     return sprintf(
-      'DELETE FROM %s t WHERE t.userid = userid AND t.groupid = *groupid*;',
+      'DELETE FROM %s t WHERE t.userid = v_userid AND t.groupid = *groupid*;',
       self::$conf['table']
     );
   }
@@ -265,7 +265,7 @@ class KmsOciQueueSqlUser extends KmsOciQueueSqlBase {
       $update_placeholders = implode(', ', $sql_data['update']);
       $sql[] = <<<EOD
 MERGE INTO $table t
-USING dual ON (t.userid = userid)
+USING dual ON (t.userid = v_userid)
 WHEN NOT MATCHED THEN
   INSERT ($insert_cols)
   VALUES ($insert_placeholders)
@@ -308,7 +308,7 @@ EOD;
       $sql_data = self::sqlData($cols, $data);
       $values = implode(', ', $sql_data['update']);
       $sql[] = <<<EOD
-UPDATE $table t SET $values WHERE t.userid = userid;
+UPDATE $table t SET $values WHERE t.userid = v_userid;
 EOD;
     }
     $output = implode("\n", $sql);
@@ -319,7 +319,7 @@ EOD;
     $sql_data = array('insert' => array(), 'update' => array());
     array_walk($cols, function($col) use(&$sql_data, $data) {
       $sql_col = strtolower($col);
-      $sql_data['insert'][$sql_col] = $sql_col == 'userid' ? 'userid' : "*$sql_col*";
+      $sql_data['insert'][$sql_col] = $sql_col == 'userid' ? 'v_userid' : "*$sql_col*";
       if ($sql_col != 'userid') {
         // If value is empty there is no reason to include it in update statement.
         if (empty($data[$sql_col])) {
