@@ -42,6 +42,19 @@ function kms_permissions_bounding_box_update_query_creator_run($jid, $creator_it
     array('key_prefix' => FALSE, 'flattened' => TRUE)
   );
 
+  // If no services are present make sure to end this thing.
+  if (empty($perms['services'])) {
+    $exe_queue_item = array(
+      'jid' => $job->jid,
+      'sid' => 0,
+      'action' => $creator_item->action,
+      'data' => array(),
+      'is_last_item' => TRUE,
+    );
+    $exe_queue->createItem((object) $exe_queue_item);
+    return;
+  }
+
   $service_count = count($perms['services']);
   $i = 0;
   foreach ($perms['services'] as $sid) {
@@ -87,10 +100,15 @@ function kms_permissions_bounding_box_update_query_creator_run($jid, $creator_it
 function kms_permissions_bounding_box_update_query_run($item) {
   $sid = $item->sid;
   $data = $item->data;
-  $wms_ids = kms_permissions_get_service_ids_by_type('wms');
-  if (in_array($sid, $wms_ids)) {
-    $data['featureinfo'] = 1;
+  $output = '';
+  if (!empty($data)) {
+    $wms_ids = kms_permissions_get_service_ids_by_type('wms');
+    if (in_array($sid, $wms_ids)) {
+      $data['featureinfo'] = 1;
+    }
+    $sql = new KmsOciQueueSql('services', $data);
+    $output = $sql->generate('updateBySid', $data);
   }
-  $sql = new KmsOciQueueSql('services', $data);
-  return $sql->generate('updateBySid', $data);
+
+  return $output;
 }
