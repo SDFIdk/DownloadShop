@@ -2076,7 +2076,7 @@ function _kms_permissions_perms_oracle_relations() {
         'MAXPIXELWIDTH' => '',
         'MAXPIXELHEIGHT' => '',
         'FEATUREINFO' => '',
-      )
+      ),
     ),
     'applications' => array(
       'table' => 'SMUSERGROUP',
@@ -2084,7 +2084,12 @@ function _kms_permissions_perms_oracle_relations() {
       'default_values' => array(
         'USERID' => '',
         'GROUPID' => '',
-      )
+      ),
+    ),
+    'predefined_datacollections' => array(
+      'table' => 'local',
+      'cid' => 'local',
+      'default_values' => array(),
     ),
   );
 }
