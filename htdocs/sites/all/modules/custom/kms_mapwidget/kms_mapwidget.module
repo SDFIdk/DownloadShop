@@ -1077,20 +1077,15 @@ function kms_mapwidget_get_user_defined_max_download_area($nw) {
   $max_areas = array(0);
   // Iterate over user bundles.
   foreach ($uw->field_access_bundles->getIterator() as $bundle) {
-    // If product display exists in field_predefined_datacollections
-    // of a bundle then get the max download size of the bundle.
-    if (
-      in_array(
-        'field_predefined_datacollections',
-        array_keys($bundle->getPropertyInfo())
-      )
-      &&
-      in_array(
-        $nw->getIdentifier(),
-        $bundle->field_predefined_datacollections->raw()
-      )
-    ) {
-      $max_areas[] = $bundle->field_max_download_size->value();
+    $bundle_fields = $bundle->getPropertyInfo();
+    $bundle_max_download_size = $bundle->field_max_download_size->value();
+    // Checking if bundle has field_predefined_datacollections.
+    // Otherwise entity metadata wrapper fails with a nasty exception.
+    if (in_array(
+      'field_predefined_datacollections',
+      array_keys($bundle_fields)
+    )) {
+      $max_areas[] = $bundle_max_download_size;
     }
   }
 
