@@ -299,7 +299,7 @@ $handler->display->display_options['fields']['views_bulk_operations']['vbo_opera
     'label' => 'Send e-mail',
   ),
 );
-/* Field: User: Username */
+/* Field: User: Name */
 $handler->display->display_options['fields']['name']['id'] = 'name';
 $handler->display->display_options['fields']['name']['table'] = 'users';
 $handler->display->display_options['fields']['name']['field'] = 'name';
@@ -375,7 +375,7 @@ $handler->display->display_options['arguments']['uid_1']['summary']['format'] = 
 $handler->display->display_options['arguments']['uid_1']['summary_options']['items_per_page'] = '25';
 $handler->display->display_options['arguments']['uid_1']['break_phrase'] = TRUE;
 $handler->display->display_options['arguments']['uid_1']['not'] = TRUE;
-/* Filter criterion: User: Username */
+/* Filter criterion: User: Name */
 $handler->display->display_options['filters']['uid']['id'] = 'uid';
 $handler->display->display_options['filters']['uid']['table'] = 'users';
 $handler->display->display_options['filters']['uid']['field'] = 'uid';
@@ -558,6 +558,9 @@ $handler->display->display_options['filters']['field_access_bundles_nid']['expos
 $handler = $view->new_display('system', 'System', 'system_1');
 $handler->display->display_options['defaults']['hide_admin_links'] = FALSE;
 $handler->display->display_options['defaults']['access'] = FALSE;
+$handler->display->display_options['defaults']['query'] = FALSE;
+$handler->display->display_options['query']['type'] = 'views_query';
+$handler->display->display_options['query']['options']['distinct'] = TRUE;
 $handler->display->display_options['defaults']['fields'] = FALSE;
 /* Field: Bulk operations: User */
 $handler->display->display_options['fields']['views_bulk_operations']['id'] = 'views_bulk_operations';
@@ -679,7 +682,7 @@ $handler->display->display_options['fields']['views_bulk_operations']['vbo_opera
     'label' => '',
   ),
 );
-/* Field: User: Username */
+/* Field: User: Name */
 $handler->display->display_options['fields']['name']['id'] = 'name';
 $handler->display->display_options['fields']['name']['table'] = 'users';
 $handler->display->display_options['fields']['name']['field'] = 'name';
@@ -823,6 +826,7 @@ $translatables['admin_views_user'] = array(
   t('Bunde legend label'),
   t('Bundle legend'),
   t('No users available.'),
+  t('Name'),
   t('Bundles'),
   t('Aktiv'),
   t('Roles'),
@@ -833,6 +837,7 @@ $translatables['admin_views_user'] = array(
   t('E-mail'),
   t('Role'),
   t('User type'),
+  t('Brugertype (field_user_type)'),
   t('Created'),
   t('Created date'),
   t('Active'),
