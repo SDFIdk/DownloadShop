@@ -581,12 +581,12 @@ $conf['404_fast_html'] = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
 // Oracle db 
 $conf['kms_oci_conn_user'] = 'kf_download_test';
 $conf['kms_oci_conn_pass'] = 'kf_download_test';
-$conf['kms_oci_conn_host'] = 'kmslds51.kms.adroot.dk';
-$conf['kms_oci_conn_db'] = 'ldsdb5.kms.adroot.dk';
+$conf['kms_oci_conn_host'] = 'gst-orarac01.prod.sitad.dk';
+$conf['kms_oci_conn_db'] = 'lds6.prod.sitad.dk';
 $conf['kms_permissions_conn_user'] = 'weblog_test';
 $conf['kms_permissions_conn_pass'] = 'weblogtest';
-$conf['kms_permissions_conn_host'] = 'kmslds51.kms.adroot.dk';
-$conf['kms_permissions_conn_db'] = 'ldsdb5.kms.adroot.dk';
+$conf['kms_permissions_conn_host'] = 'gst-orarac01.prod.sitad.dk';
+$conf['kms_permissions_conn_db'] = 'lds6.prod.sitad.dk';
 $conf['kms_oci_mail_default_from'] = 'download@kortforsyningen.dk';
 
 // Weird kms server environment demands this:
