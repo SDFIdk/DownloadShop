@@ -629,12 +629,14 @@ if (conf.details == 'kommune.json' ) {
       codes = sort_unique(codes);
       codeVarName = getCodeVarName(conf);
       for(var f=0; f<codes.length; f++) {
-        code = codes[f].trim();
-        feature = selectLayer.getFeaturesByAttribute(codeVarName, code);
-        if (feature.length == 1) {
-          selectCtrl.select(feature[0]);
-        } else {
-          $('#selection_errors').append('<p style="color:red">"' + code + '" ' + Drupal.t('is not a valid code') + '</p>');
+        code = codes[f];
+        if (code.length > 0) {
+          feature = selectLayer.getFeaturesByAttribute(codeVarName, code);
+          if (feature.length == 1) {
+            selectCtrl.select(feature[0]);
+          } else {
+            $('#selection_errors').append('<p style="color:red">"' + code + '" ' + Drupal.t('is not a valid code') + '</p>');
+          }
         }
       }
       e.preventDefault();
