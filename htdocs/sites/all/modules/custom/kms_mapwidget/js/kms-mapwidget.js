@@ -650,11 +650,13 @@ if (conf.details == 'kommune.json' ) {
 
       // Zoom to selected features
       var fts = selectLayer.selectedFeatures;
-      var bounds = fts[0].geometry.getBounds().clone();
-      for(var i=1;i<fts.length;i++)
-        bounds.extend(fts[i].geometry.getBounds());
-      map.zoomToExtent(bounds,false);
-
+      if (fts.length > 0) {
+        var bounds = fts[0].geometry.getBounds().clone();
+        for(var i=1;i<fts.length;i++)
+          bounds.extend(fts[i].geometry.getBounds());
+        map.zoomToExtent(bounds,false);
+      }
+      
       // Click the select tool, so CSV dialog is hidden.
       $('#select-button').click();
     });
