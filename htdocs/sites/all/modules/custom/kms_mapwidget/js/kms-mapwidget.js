@@ -56,6 +56,7 @@ jQuery(document).ready(function($) {
         selectCtrl.unselectAll();
     }
 
+    $('#selection_errors').empty();
     jQuery.fn.updateForm();
     return false;
   });
@@ -95,6 +96,7 @@ jQuery(document).ready(function($) {
     $('div.product-body').hide();
     $('div.useful-links').hide();
     $('#selection_message').show();
+    $('#selection_errors').empty();
 
     if (currentType != conf.type + conf.details ) {
 
@@ -199,6 +201,7 @@ jQuery(document).ready(function($) {
       $('#selection_message').hide();
     }
 
+  $('#selection_errors').empty();
   $('li.rect').hide();
   $('li.select').hide();
   $('li.reset').hide();
@@ -635,6 +638,7 @@ if (conf.details == 'kommune.json' ) {
         }
       }
       e.preventDefault();
+      $('#select-button').click();
     });
 
     $("#csv-description").easyModal({overlayOpacity: 0.5});

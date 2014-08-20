@@ -59,7 +59,7 @@ function kms_mapwidget_pane_render($subtype, $conf, $panel_args, $context) {
   $content .= '<li class="csv toggle"><a href="" id="csv-button" class="toggle" title="' . t('Enter comma separated values')  .
     '"></a><div class="title">' . t('Enter list with comma separated values').
     '<span id="csv-desc-button"></span></div><textarea id="csv-data"></textarea><button id="update-from-csv">'.
-    t('Update') .'</button></li>';
+    t('Update', array(), array('context' => 'mapwidget')) .'</button></li>';
   $content .= '<li class="reset"><a href="" id="reset-button" title="' . t('Reset selection')  . '"></a></li>';
   $content .= '<li><div id="layer-switcher"></div ></li>';
   $content .= '</ul>';
