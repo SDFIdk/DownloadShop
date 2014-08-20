@@ -497,7 +497,7 @@ if (conf.details == 'ejerlav.json' ) {
   context = {
     getLabel: function(feature) {
       if(feature.layer.map.getZoom() > 6)
-        return feature.attributes.ELAVSNAVN;
+        return feature.attributes.name;
       else
         return '';
     }
@@ -509,7 +509,7 @@ if (conf.details == 'sogn.json' ) {
   context = {
     getLabel: function(feature) {
       if(feature.layer.map.getZoom() > 4)
-        return feature.attributes.SOGNENAVN;
+        return feature.attributes.name;
       else
         return '';
     }
@@ -522,7 +522,7 @@ if (conf.details == 'kommune.json' ) {
   context = {
     getLabel: function(feature) {
       if(feature.layer.map.getZoom() > 2)
-        return feature.attributes.KOMNAVN;
+        return feature.attributes.name;
       else
         return '';
     }
@@ -585,6 +585,14 @@ if (conf.details == 'kommune.json' ) {
 
   jQuery.getJSON(conf.grid_folder + conf.details,
     function(data) {
+      codeVarName = getCodeVarName(conf);
+      nameVarName = getNameVarName(conf);
+      for(var f=0; f<data.features.length; f++) {
+        data.features[f].properties.code = parseInt(data.features[f].properties[codeVarName]);
+        data.features[f].properties.name = data.features[f].properties[nameVarName];
+        delete data.features[f].properties[nameVarName];
+        delete data.features[f].properties[codeVarName];
+      }
       var geojson_format = new OpenLayers.Format.GeoJSON();
       var features = geojson_format.read(data);
       selectLayer.addFeatures(features);
@@ -627,11 +635,10 @@ if (conf.details == 'kommune.json' ) {
       var codes = $('textarea#csv-data').val().split(',');
       for(var f=0; f<codes.length; f++) { codes[f] = codes[f].trim(); }
       codes = sort_unique(codes);
-      codeVarName = getCodeVarName(conf);
       for(var f=0; f<codes.length; f++) {
-        code = codes[f];
-        if (code.length > 0) {
-          feature = selectLayer.getFeaturesByAttribute(codeVarName, code);
+        code = parseInt(codes[f]);
+        if (code) {
+          feature = selectLayer.getFeaturesByAttribute('code', code);
           if (feature.length == 1) {
             selectCtrl.select(feature[0]);
           } else {
@@ -640,6 +647,15 @@ if (conf.details == 'kommune.json' ) {
         }
       }
       e.preventDefault();
+
+      // Zoom to selected features
+      var fts = selectLayer.selectedFeatures;
+      var bounds = fts[0].geometry.getBounds().clone();
+      for(var i=1;i<fts.length;i++)
+        bounds.extend(fts[i].geometry.getBounds());
+      map.zoomToExtent(bounds,false);
+
+      // Click the select tool, so CSV dialog is hidden.
       $('#select-button').click();
     });
 
@@ -671,47 +687,27 @@ if (conf.details == 'kommune.json' ) {
 
     for (var i=0; i<selectLayer.selectedFeatures.length; i++) {
 
-        var feature = selectLayer.selectedFeatures[i];
+      var feature = selectLayer.selectedFeatures[i];
 
-        if (feature.geometry.bounds.bottom < bounds.bottom)
-          bounds.bottom = feature.geometry.bounds.bottom;
+      if (feature.geometry.bounds.bottom < bounds.bottom)
+        bounds.bottom = feature.geometry.bounds.bottom;
 
-        if (feature.geometry.bounds.left < bounds.left)
-          bounds.left = feature.geometry.bounds.left;
+      if (feature.geometry.bounds.left < bounds.left)
+        bounds.left = feature.geometry.bounds.left;
 
-        if (feature.geometry.bounds.top >bounds.top)
-          bounds.top = feature.geometry.bounds.top;
+      if (feature.geometry.bounds.top >bounds.top)
+        bounds.top = feature.geometry.bounds.top;
 
-        if (feature.geometry.bounds.right > bounds.right)
-          bounds.right = feature.geometry.bounds.right;
-
-        if (conf.details == 'region.json' ) {
-          code = selectLayer.selectedFeatures[i].attributes.REGIONKODE;
-          name = selectLayer.selectedFeatures[i].attributes.REGIONNAVN;
-        }
-
-        if (conf.details == 'kommune.json' ) {
-          code = selectLayer.selectedFeatures[i].attributes.KOMKODE;
-          name = selectLayer.selectedFeatures[i].attributes.KOMNAVN;
-        }
-
-        if (conf.details == 'ejerlav.json' ) {
-          code = selectLayer.selectedFeatures[i].attributes.ELAVSKODE;
-          name = selectLayer.selectedFeatures[i].attributes.ELAVSNAVN;
-        }
-
-        if (conf.details == 'sogn.json' ) {
-          code = selectLayer.selectedFeatures[i].attributes.SOGNEKODE;
-          name = selectLayer.selectedFeatures[i].attributes.SOGNENAVN;
-        }
+      if (feature.geometry.bounds.right > bounds.right)
+        bounds.right = feature.geometry.bounds.right;
 
       if ( conf.product_type == 'predefined') {
-        files[i] = code + '_' + conf.dataformat + '_' + conf.koordinatsystem + '.zip';
+        files[i] = feature.attributes.code + '_' + conf.dataformat + '_' + conf.koordinatsystem + '.zip';
       } else {
-        files[i] = code;
+        files[i] = feature.attributes.code;
       }
 
-      $('#selection_message ul').append('<li>' + name + ' (' + files[i] + ')</li>');
+      $('#selection_message ul').append('<li>' + feature.attributes.name + ' (' + files[i] + ')</li>');
     }
 
     /* Remove existing bounding box rectangle */
@@ -771,10 +767,34 @@ function getCodeVarName(conf) {
     'region.json': 'REGIONKODE',
     'kommune.json': 'KOMKODE',
     'ejerlav.json': 'ELAVSKODE',
-    'sogn.json': 'SOGNEKODE'
+    'sogn.json': 'SOGNEKODE',
+    'ejerlav_1081.json' : 'ELAVSKODE',
+    'ejerlav_1082.json' : 'ELAVSKODE',
+    'ejerlav_1083.json' : 'ELAVSKODE',
+    'ejerlav_1084.json' : 'ELAVSKODE',
+    'ejerlav_1085.json' : 'ELAVSKODE'
+
   };
   return codenames[conf.details];
 }
+
+function getNameVarName(conf) {
+  codenames= {
+    'region.json': 'REGIONNAVN',
+    'kommune.json': 'KOMNAVN',
+    'ejerlav.json': 'ELAVSNAVN',
+    'sogn.json': 'SOGNENAVN',
+    'ejerlav_1081.json' : 'ELAVSNAVN',
+    'ejerlav_1082.json' : 'ELAVSNAVN',
+    'ejerlav_1083.json' : 'ELAVSNAVN',
+    'ejerlav_1084.json' : 'ELAVSNAVN',
+    'ejerlav_1085.json' : 'ELAVSNAVN'
+
+  };
+  return codenames[conf.details];
+}
+
+
 
 function addDrawRect(map,conf) {
 
