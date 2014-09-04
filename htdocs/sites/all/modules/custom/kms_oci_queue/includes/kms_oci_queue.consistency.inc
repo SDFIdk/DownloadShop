@@ -12,7 +12,7 @@ abstract class cData {
 
   public function __construct() {
     // Atodo: Put data in chunks and remove this.
-    ini_set('memory_limit', '2048M');
+    ini_set('memory_limit', '3052M');
     $this->defineRows();
   }
 
