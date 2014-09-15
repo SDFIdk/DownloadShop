@@ -211,7 +211,7 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
 
         // No one should be able to change clear text password in admin area.
         $form['field_pass_clear']['#disabled'] = TRUE;
-        
+
         // Show user name.
         $form['username'] = array(
           '#type' => 'markup',
@@ -230,7 +230,7 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
           ),
           'setting'
         );
-        
+
         // Do not allow editing of user type to anybody else than super admin.
         if (!kms_user_is_superadmin($user)) {
           $form['field_user_type']['#access'] = FALSE;
@@ -321,13 +321,13 @@ proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
     $form_element[LANGUAGE_NONE]['#suffix'] = '<div id="terms_and_conditions" style="display:none;">' . $terms_and_conditions .'<a id="terms_and_conditions_close" class="close" href="#">close</a></div>'; */
 
     drupal_add_js(drupal_get_path('module', 'kms_user') .'/js/jquery.lightbox_me.js');
-    drupal_add_js("jQuery(function() { 
-               jQuery('#terms_and_conditions_link').click(function(e) { 
+    drupal_add_js("jQuery(function() {
+               jQuery('#terms_and_conditions_link').click(function(e) {
                  jQuery('#terms_and_conditions').lightbox_me({ centered: true });
-                 e.preventDefault(); 
+                 e.preventDefault();
                }); });",'inline');
-               
-      // On the user-register form users must be presented with a textfield if the user-type selected 
+
+      // On the user-register form users must be presented with a textfield if the user-type selected
       // via Hiearchical Select is either 'NGO' (tid=3518) or 'Forening' (tid=3520)
       drupal_add_js('jQuery(function() {
               jQuery("#hierarchical-select-0-wrapper").live("change-hierarchical-select", function() {
@@ -442,11 +442,11 @@ function _kms_user_cron_expire_users() {
 function _kms_user_update_timestamp($form, &$form_state) {
   // Update time stamp.
   $time = time();
-  $user_updated = db_update('field_data_field_updated') 
+  $user_updated = db_update('field_data_field_updated')
   ->fields(array('field_updated_value' => $time))
   ->condition('entity_id'  , $form['#user']->uid, '=')
   ->execute();
-  $user_updated_rev = db_update('field_revision_field_updated') 
+  $user_updated_rev = db_update('field_revision_field_updated')
   ->fields(array('field_updated_value' => $time))
   ->condition('entity_id'  , $form['#user']->uid, '=')
   ->execute();
@@ -477,17 +477,17 @@ function _kms_user_insert_user_pass($form, &$form_state) {
       ->fetchAssoc();
     if (!empty($pass_exists)) {
       // The password does exist in the target-table and we update that password
-      $pass_updated = db_update('field_data_field_pass_clear') 
+      $pass_updated = db_update('field_data_field_pass_clear')
       ->fields(array('field_pass_clear_value' => $new_pass))
       ->condition('entity_id', $form['#user']->uid, '=')
       ->execute();
     }
     else {
       // The password does not exist in the target-table and we must insert it
-      db_insert('field_data_field_pass_clear') 
-      ->fields(array('entity_type' => 'user', 
-		      'bundle' => 'user', 
-		      'deleted' => 0, 
+      db_insert('field_data_field_pass_clear')
+      ->fields(array('entity_type' => 'user',
+		      'bundle' => 'user',
+		      'deleted' => 0,
 		      'entity_id' => $form['#user']->uid,
 		      'revision_id' => $form['#user']->uid,
 		      'language' => LANGUAGE_NONE,
@@ -783,7 +783,7 @@ function kms_user_smuser_load($uid) {
         $smusers[$uid]->$prop = $v;
       });
     }
-    
+
   }
 
   return $smusers[$uid];
@@ -838,7 +838,7 @@ function kms_user_smuser_delete($user) {
  * Implements hook_user_delete().
  */
 function kms_user_user_delete($user) {
-  
+
   // Delete subusers if present.
   $subusers = subuser_load_all($user);
   if (!empty($subusers)) {
@@ -857,7 +857,7 @@ function kms_user_user_delete($user) {
     // Delete subusers locally.
     user_delete_multiple($subusers);
   }
-  
+
   // Delete Oracle user data.
   kms_user_smuser_delete($user);
 
@@ -939,9 +939,9 @@ function kms_user_smuser_exists($user) {
   );
 
   oci_execute($stid);
-  
+
   $row = oci_fetch_array($stid);
-  
+
   return !empty($row);
 
 }
@@ -1508,5 +1508,31 @@ function kms_user_views_bulk_operations_form_alter(&$form, &$form_state, $vbo) {
         ),
       ),
     );
+  }
+}
+
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function kms_user_form_user_register_form_alter(&$form, &$form_state) {
+  //Add validation for character lenght
+  $form['#validate'][] = 'kms_user_username_lenght_validate';
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function kms_user_form_user_profile_form_alter(&$form, &$form_state) {
+  //Add validation for character lenght
+  $form['#validate'][] = 'kms_user_username_lenght_validate';
+}
+
+/**
+ * Implements validation callback on register form.
+ */
+function kms_user_username_lenght_validate($form, &$form_state) {
+  if(strlen($form_state['values']['name']) > 32 || strlen($form_state['values']['pass']) > 32) {
+    form_set_error('name', t('Username and Password should not exceed 32 characters'));
   }
 }
