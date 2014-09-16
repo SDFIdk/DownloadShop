@@ -9,8 +9,10 @@
 abstract class cData {
 
   protected $rows = array();
+  protected $uids = array();
 
-  public function __construct() {
+  public function __construct($uids) {
+    $this->uids = $uids;
     // Atodo: Put data in chunks and remove this.
     ini_set('memory_limit', '3052M');
     $this->defineRows();
@@ -33,14 +35,13 @@ abstract class cData {
 }
 
 class cDataServicesPostgres extends cData {
-  public function __construct() {
-    parent::__construct();
+  public function __construct($uids) {
+    parent::__construct($uids);
   }
 
   public function defineRows() {
-    $sql = new KmsOciQueueSql('services', array());
-    $sql_str = $sql->generate('consistency');
-    $result = db_query($sql_str);
+    $sql = new KmsOciQueueSql('services');
+    $result = db_query($sql->generate('consistency', $this->uids));
     while ($record = $result->fetchObject()) {
       $this->rows[$record->userid][] = $record->serviceid;
     }
@@ -50,8 +51,8 @@ class cDataServicesPostgres extends cData {
 
 class cDataServicesOracle extends cData {
 
-  public function __construct() {
-    parent::__construct();
+  public function __construct($uids) {
+    parent::__construct($uids);
   }
 
   public function defineRows() {
@@ -61,11 +62,10 @@ class cDataServicesOracle extends cData {
       'kms_oci_conn_host' => variable_get('kms_permissions_conn_host', ''),
       'kms_oci_conn_db' => variable_get('kms_permissions_conn_db', ''),
     );
-
     if (kms_oci_get_conn('kms_permissions', $settings)) {
-      $sql = new KmsOciQueueSql('services', array());
+      $sql = new KmsOciQueueSql('services');
       $records = kms_oci_select(
-        $sql->generate('consistency'),
+        $sql->generate('consistency', $this->uids),
         array(),
         'kms_permissions'
       );
@@ -78,8 +78,8 @@ class cDataServicesOracle extends cData {
 }
 
 class cDataApplicationsPostgres extends cData {
-  public function __construct() {
-    parent::__construct();
+  public function __construct($uids) {
+    parent::__construct($uids);
   }
 
   public function defineRows() {
@@ -89,8 +89,8 @@ class cDataApplicationsPostgres extends cData {
 }
 
 class cDataApplicationsOracle extends cData {
-  public function __construct() {
-    parent::__construct();
+  public function __construct($uids) {
+    parent::__construct($uids);
   }
 
   public function defineRows() {
@@ -114,7 +114,7 @@ class cDataCheck {
     $name_a = 'diff:' . $this->dataA->getName();
     $name_b = 'diff:' . $this->dataB->getName();
     $data = array();
-    
+
     // Compare a rows against b rows.
     foreach (array_keys($rows_a) as $id) {
       $row_a = !empty($rows_a[$id]) ? $rows_a[$id] : array();
@@ -172,7 +172,7 @@ class cDataCheck {
     return $data;
   }
 
-  protected function testRowsA() {
+  public function testRowsA() {
 return array (
   '001FA1F410637ED3C1256E1A0034EA2B' => 
   array (
@@ -345,7 +345,7 @@ return array (
 
   }
 
-protected function testRowsB() {
+public function testRowsB() {
 return array (
   '001FA1F410637ED3C1256E1A0034EA2B' => 
   array (
@@ -426,4 +426,31 @@ return array (
 );
 }
 
+}
+
+class cHelper {
+  const uidChunkSize = 1000;
+
+  public static function getUidChunks() {
+    $uids = array();
+    // Postgres
+    $query_str = "SELECT DISTINCT userid FROM smuser ORDER BY userid";
+    $result = db_query($query_str);
+    foreach ($result as $row) {
+      $uids[$row->userid] = $row->userid;
+    }
+    // Oracle
+    if (kms_oci_get_conn()) {
+      $records = kms_oci_select("SELECT DISTINCT userid FROM smuser ORDER BY userid");
+      foreach ($records as $record) {
+        $uid = (string)$record['USERID'];
+        if (empty($uids[$uid])) {
+          $uids[$uid] = $record['USERID'];
+        }
+      }
+    }
+    sort($uids);
+
+    return array_chunk($uids, self::uidChunkSize);
+  }
 }

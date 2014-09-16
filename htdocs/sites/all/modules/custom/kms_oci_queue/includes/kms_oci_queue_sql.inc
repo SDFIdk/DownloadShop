@@ -39,11 +39,11 @@ class KmsOciQueueSql {
     if (
       $this->type != __CLASS__
         && is_callable(array($this->sqlClass, $wrapper_type))
-    ){
+    ) {
       $args = array_slice(func_get_args(), 1);
       $sql = call_user_func_array(array($this->sqlClass, $wrapper_type), $args);
     }
-    else if (is_callable(array($this, $wrapper_type))) {
+    elseif (is_callable(array($this, $wrapper_type))) {
       $sql = $this->$wrapper_type();
     }
 
@@ -91,6 +91,9 @@ EOD;
 abstract class KmsOciQueueSqlBase {
 
   public static function replacePlaceholders($sql, $data) {
+    if (empty($data)) {
+      return $sql;
+    }
     $patterns = $replacements = array();
     array_walk($data, function($v, $k) use(&$patterns, &$replacements){
       $patterns[] = '#\\*' . $k . '\\*#';
@@ -171,9 +174,18 @@ EOD;
     return $output ? $output : '';
   }
 
-  public static function consistency() {
+  public static function consistency($uids = array()) {
     $table = self::$conf['table'];
-    return "SELECT userid, serviceid FROM $table ORDER BY userid, serviceid";
+    array_walk($uids, function(&$v) {
+      $v = "'$v'";
+    });
+    $uids = implode(', ', $uids);
+    return <<<EOD
+    SELECT userid, serviceid
+    FROM $table
+    WHERE userid IN ($uids)
+    ORDER BY userid, serviceid
+EOD;
   }
 
 }
@@ -215,9 +227,9 @@ EOD;
     );
   }
 
-  public static function consistency() {
-    $table = self::$conf['table'];
-    return "SELECT userid, groupid FROM $table ORDER BY userid, groupid";
+  public static function consistency($uids = array()) {
+    // Use same as services.
+    return KmsOciQueueSqlServices::consistency($uids);
   }
 
 }

@@ -14,7 +14,6 @@ function kms_oci_queue_drush_command() {
     ),
     'options' => array(
       'mode' => 'Extra option to the called method. Currently supported by the diff method.',
-      'format' => 'Output formats: json, var_export',
     ),
     'required-arguments' => TRUE,
     'bootstrap' => DRUSH_BOOTSTRAP_DRUPAL_DATABASE,
@@ -32,18 +31,19 @@ function kms_oci_queue_drush_command() {
 }
 
 /**
-* Implements hook_drush_help().
+ * Implements hook_drush_help().
  */
 function kms_oci_queue_drush_help($section) {
   switch ($section) {
     case 'drush:consistency-check':
       return dt("Run consistency check between postgres and oracle. Specify data type and method [data_type] [method].");
-      break;
+
   }
 }
 
 /**
  * Executes a data consistency check between postgres and oracle.
+ *
  * Supports different "data types" and methods (diff etc.).
  *
  * @param string $data_type
@@ -58,52 +58,87 @@ function kms_oci_queue_consistency_check($data_type, $method) {
   // Check if classes are defined.
   if (
     !class_exists($class_name_postgres)
-      && !class_exists($class_name_oracle)
-  ){
+    && !class_exists($class_name_oracle)
+  ) {
     return;
   }
-  $postgres = new $class_name_postgres();
-  $oracle = new $class_name_oracle();
-  $data_check = new cDataCheck($postgres, $oracle);
-  if (method_exists($data_check, $method)) {
-    if ($method == 'diff' && $mode = drush_get_option('mode')) {
-      $mode_map = array(
-        'postgres' => 'a',
-        'oracle' => 'b',
-      );
-      if (empty($mode_map[$mode])) {
-        throw new Exception('Mode type does not exist.');
+
+//  $dir_name = sprintf('temporary://consistency_diff_%s', date("Ymd_Hi"));
+  $dir_name = 'temporary://consistency_diff';
+  $mkdir = FALSE;
+  $del_files = file_unmanaged_delete_recursive($dir_name);
+  if ($del_files) {
+    $mkdir = file_prepare_directory($dir_name, FILE_CREATE_DIRECTORY);
+  }
+  if (!$del_files || !$mkdir) {
+    return;
+  }
+
+  $i = $user_count = 0;
+  // debug
+  $chunks = cHelper::getUidChunks();
+  array_splice($chunks, 3);
+  drush_print(
+    dt('Working on: !dir_name.', array('!dir_name' => $dir_name))
+  );
+  drush_print(
+    dt('Chunk count: !chunk_count.', array('!chunk_count' => count($chunks)))
+  );
+  drush_print(
+    dt('Chunk size: !chunk_size.', array('!chunk_size' => cHelper::uidChunkSize))
+  );
+  foreach ($chunks as $uids) {
+    $postgres = new $class_name_postgres($uids);
+    $oracle = new $class_name_oracle($uids);
+    $data_check = new cDataCheck($postgres, $oracle);
+    if (method_exists($data_check, $method)) {
+      if ($method == 'diff' && $mode = drush_get_option('mode')) {
+        $mode_map = array(
+          'postgres' => 'a',
+          'oracle' => 'b',
+        );
+        if (empty($mode_map[$mode])) {
+          throw new Exception('Mode type does not exist.');
+        }
+        else {
+          $result = $data_check->diff($mode_map[$mode]);
+        }
       }
       else {
-        $result = $data_check->$method($mode_map[$mode]);
+        $result = $data_check->diff();
       }
-    }
-    else {
-      $result = $data_check->$method();
-    }
 
-    if (is_array($result)) {
-      $format = drush_get_option('format');
-      switch ($format) {
-        case 'var_export':
-          echo "<?php\n";
-          echo '$diff = ';
-          var_export($result);
-          echo ';';
-          break;
-        case 'json':
-        default:
-          echo kms_oci_queue_json_pretty_cli_format(json_encode($result));
-          break;
+      $xml = new SimpleXMLElement('<?xml version="1.0" encoding="utf-8"?><user_diffs></user_diffs>');
+      foreach ($result as $uid => $diffs) {
+        $user = $xml->addChild('user');
+        $user->addChild('id', $uid);
+        foreach ($diffs as $diff_key => $ids) {
+          $diff_key = str_replace(':', '-', $diff_key);
+          $diff_ids = $user->addChild($diff_key);
+          foreach ($ids as $id) {
+            $diff_ids->addChild('id', $id);
+          }
+        }
       }
+      $file = fopen(sprintf('%s/diff%s.xml', $dir_name, $i ? "_$i" : ''), "w");
+      fwrite($file, $xml->asXML());
+      fclose($file);
+      $i++;
+      $user_count += count($uids);
+      drush_print(
+        dt('!user_count users processed...', array('!user_count' => $user_count))
+      );
     }
-    else {
-      echo "$result\n";
-    }
-
   }
+  drush_print(dt('Done.'));
 }
 
+/**
+ * Generates sql file that cleans up target database.
+ *
+ * @param string $data_type
+ * @param string $target_db
+ */
 function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db) {
   include '/tmp/diff.inc';
 
@@ -120,12 +155,12 @@ function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db
   }
   $user_count = count($diff);
 
-  switch($target_db) {
+  switch ($target_db) {
     case 'oracle':
-      switch($data_type) {
+      switch ($data_type) {
         case 'services':
           $i = 0;
-          foreach($diff as $userid => $data) {
+          foreach ($diff as $userid => $data) {
             $i++;
             drush_print(dt(
               'Processing !i out of !total.',
@@ -133,7 +168,7 @@ function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db
             ));
             $output = array();
             $services_postgres = array_unique($data['diff:Services:Postgres']);
-            foreach($services_postgres as $sid) {
+            foreach ($services_postgres as $sid) {
               $service_data = array(
                 'userid' => $userid,
                 'serviceid' => $sid,
@@ -151,7 +186,7 @@ function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db
 
             if (!in_array($userid, $protected_oracle_users)) {
               $services_oracle = array_unique($data['diff:Services:Oracle']);
-              foreach($services_oracle as $sid) {
+              foreach ($services_oracle as $sid) {
                 $service_data = array(
                   'userid' => $userid,
                   'serviceid' => $sid,
@@ -161,7 +196,7 @@ function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db
               }
             }
 
-            if(!empty($output)) {
+            if (!empty($output)) {
               array_unshift($output, $sql->generateWrapper('header'));
               $output[] = $sql->generateWrapper('footer');
               file_put_contents($sql_file, implode("\n", $output), FILE_APPEND);
@@ -173,7 +208,7 @@ function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db
       break;
 
     case 'postgres':
-      switch($data_type) {
+      switch ($data_type) {
         case 'services':
           break;
       }
@@ -181,68 +216,4 @@ function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db
   }
 
   drush_print(dt('Done.'));
-}
-
-/**
- * @param string $json
- * @return bool|string
- */
-function kms_oci_queue_json_pretty_cli_format($json) {
-  $tab = "  ";
-  $new_json = "";
-  $indent_level = 0;
-  $in_string = FALSE;
-
-  $len = strlen($json);
-
-  for ($c = 0; $c < $len; $c++) {
-    $char = $json[$c];
-    switch ($char) {
-      case '{':
-      case '[':
-        if (!$in_string) {
-          $new_json .= $char . "\n" . str_repeat($tab, $indent_level + 1);
-          $indent_level++;
-        }
-        else {
-          $new_json .= $char;
-        }
-        break;
-      case '}':
-      case ']':
-        if (!$in_string) {
-          $indent_level--;
-          $new_json .= "\n" . str_repeat($tab, $indent_level) . $char;
-        }
-        else {
-          $new_json .= $char;
-        }
-        break;
-      case ',':
-        if (!$in_string) {
-          $new_json .= ",\n" . str_repeat($tab, $indent_level);
-        }
-        else {
-          $new_json .= $char;
-        }
-        break;
-      case ':':
-        if (!$in_string) {
-          $new_json .= ": ";
-        }
-        else {
-          $new_json .= $char;
-        }
-        break;
-      case '"':
-        if ($c > 0 && $json[$c - 1] != '\\') {
-          $in_string = !$in_string;
-        }
-      default:
-        $new_json .= $char;
-        break;
-    }
-  }
-
-  return $new_json;
 }
