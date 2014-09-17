@@ -40,6 +40,11 @@ class cDataServicesPostgres extends cData {
   }
 
   public function defineRows() {
+    // Atodo: Remove this. Used for debugging.
+//    $data_a = $data_b = new stdClass();
+//    $cdc = new cDataCheck($data_a, $data_b);
+//    $this->rows = $cdc->testRowsA();
+//    return;
     $sql = new KmsOciQueueSql('services');
     $result = db_query($sql->generate('consistency', $this->uids));
     while ($record = $result->fetchObject()) {
@@ -56,6 +61,11 @@ class cDataServicesOracle extends cData {
   }
 
   public function defineRows() {
+    // Atodo: Remove this. Used for debugging.
+//    $data_a = $data_b = new stdClass();
+//    $cdc = new cDataCheck($data_a, $data_b);
+//    $this->rows = $cdc->testRowsB();
+//    return;
     $settings = array(
       'kms_oci_conn_user' => variable_get('kms_permissions_conn_user', ''),
       'kms_oci_conn_pass' => variable_get('kms_permissions_conn_pass', ''),
@@ -430,6 +440,7 @@ return array (
 
 class cHelper {
   const uidChunkSize = 1000;
+  const dirConsistencyDiff = 'temporary://consistency_diff';
 
   public static function getUidChunks() {
     $uids = array();
@@ -449,6 +460,12 @@ class cHelper {
         }
       }
     }
+
+    // Atodo: Remove this. Used for debugging.
+   # $data_a = $data_b = new stdClass();
+   # $cdc = new cDataCheck($data_a, $data_b);
+   # $uids = array_merge(array_keys($cdc->testRowsA()), array_keys($cdc->testRowsB()));
+
     sort($uids);
 
     return array_chunk($uids, self::uidChunkSize);

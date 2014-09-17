@@ -63,8 +63,7 @@ function kms_oci_queue_consistency_check($data_type, $method) {
     return;
   }
 
-//  $dir_name = sprintf('temporary://consistency_diff_%s', date("Ymd_Hi"));
-  $dir_name = 'temporary://consistency_diff';
+  $dir_name = cHelper::dirConsistencyDiff;
   $mkdir = FALSE;
   $del_files = file_unmanaged_delete_recursive($dir_name);
   if ($del_files) {
@@ -130,6 +129,7 @@ function kms_oci_queue_consistency_check($data_type, $method) {
       );
     }
   }
+
   drush_print(dt('Done.'));
 }
 
@@ -140,7 +140,7 @@ function kms_oci_queue_consistency_check($data_type, $method) {
  * @param string $target_db
  */
 function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db) {
-  include '/tmp/diff.inc';
+  module_load_include('inc', 'kms_oci_queue', 'includes/kms_oci_queue.consistency');
 
   $protected_oracle_users = array(
     'AE6475A9DCDD5CC5E04400144FAD6027',
@@ -149,59 +149,89 @@ function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db
 
   $wms_ids = kms_permissions_get_service_ids_by_type('wms');
 
-  $sql_file = sprintf('temporary://kms_oci_queue_consistency_resolve_%s.sql', $target_db);
+  $sql_file = sprintf(
+    '%s/kms_oci_queue_consistency_resolve_%s.sql',
+    cHelper::dirConsistencyDiff,
+    $target_db
+  );
   if (file_exists($sql_file)) {
     unlink($sql_file);
   }
-  $user_count = count($diff);
 
   switch ($target_db) {
     case 'oracle':
       switch ($data_type) {
         case 'services':
+          $files = file_scan_directory(cHelper::dirConsistencyDiff, '/.*\.xml$/');
+          if (empty($files)) {
+            drush_print(dt('No diff files found.'));
+            return;
+          }
+          ksort($files);
           $i = 0;
-          foreach ($diff as $userid => $data) {
-            $i++;
-            drush_print(dt(
-              'Processing !i out of !total.',
-              array('!i' => $i, '!total' => $user_count)
-            ));
-            $output = array();
-            $services_postgres = array_unique($data['diff:Services:Postgres']);
-            foreach ($services_postgres as $sid) {
-              $service_data = array(
-                'userid' => $userid,
-                'serviceid' => $sid,
-                'featureinfo' => 0,
-              );
+          foreach ($files as $file) {
+            drush_print(
+              dt('Processing file: !filename.', array('!filename' => $file->filename))
+            );
+            $xml = simplexml_load_file($file->uri);
+            foreach ($xml->user as $user) {
+              $userid = (string) $user->id;
+              $output = array();
+              $sids_postgres = array_unique((array) $user->{'diff-Services-Postgres'});
+//              var_dump('diff-Services-Postgres');
+//              var_dump($sids_postgres);
+              $sids_postgres = !empty($sids_postgres['id']) ? $sids_postgres['id'] : array();
 
-              $service_data += kms_permissions_get_service_bounding_box($sid);
-              // If a service is a wms service then set feature info to 1.
-              if (in_array($sid, $wms_ids)) {
-                $service_data['featureinfo'] = 1;
+              if (!is_array($sids_postgres)) {
+                $sids_postgres = array($sids_postgres);
               }
-              $sql = new KmsOciQueueSql('services', $service_data);
-              $output[] = $sql->generate('insert');
-            }
-
-            if (!in_array($userid, $protected_oracle_users)) {
-              $services_oracle = array_unique($data['diff:Services:Oracle']);
-              foreach ($services_oracle as $sid) {
+//              var_dump($sids_postgres);
+//              var_dump(str_repeat('-', 100));
+              foreach ($sids_postgres as $sid) {
                 $service_data = array(
                   'userid' => $userid,
                   'serviceid' => $sid,
+                  'featureinfo' => 0,
                 );
+
+                $service_data += kms_permissions_get_service_bounding_box($sid);
+                // If a service is a wms service then set feature info to 1.
+                if (in_array($sid, $wms_ids)) {
+                  $service_data['featureinfo'] = 1;
+                }
                 $sql = new KmsOciQueueSql('services', $service_data);
-                $output[] = $sql->generate('delete');
+                $output[] = $sql->generate('insert');
               }
-            }
 
-            if (!empty($output)) {
-              array_unshift($output, $sql->generateWrapper('header'));
-              $output[] = $sql->generateWrapper('footer');
-              file_put_contents($sql_file, implode("\n", $output), FILE_APPEND);
-            }
+              if (!in_array($userid, $protected_oracle_users)) {
+                // Atodo: check this:
+                $sids_oracle = array_unique((array) $user->{'diff-Services-Oracle'});
+//                var_dump('diff-Services-Oracle');
+//                var_dump($sids_oracle);
+                $sids_oracle = !empty($sids_oracle['id']) ? $sids_oracle['id'] : array();
+                if (!is_array($sids_oracle)) {
+                  $sids_oracle = array($sids_oracle);
+                }
+//                var_dump($sids_oracle);
+//                var_dump(str_repeat('*', 100));
+                foreach ($sids_oracle as $sid) {
+                  $service_data = array(
+                    'userid' => $userid,
+                    'serviceid' => $sid,
+                  );
+                  $sql = new KmsOciQueueSql('services', $service_data);
+                  $output[] = $sql->generate('delete');
+                }
+              }
 
+              if (!empty($output)) {
+                array_unshift($output, $sql->generateWrapper('header'));
+                $output[] = $sql->generateWrapper('footer');
+                file_put_contents($sql_file, implode("\n", $output), FILE_APPEND);
+              }
+              $i++;
+              drush_print(format_plural($i, '1 user', '@count users') . dt(' processed.'));
+            }
           }
           break;
       }
