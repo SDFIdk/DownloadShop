@@ -74,9 +74,7 @@ function kms_oci_queue_consistency_check($data_type, $method) {
   }
 
   $i = $user_count = 0;
-  // debug
   $chunks = cHelper::getUidChunks();
-  array_splice($chunks, 3);
   drush_print(
     dt('Working on: !dir_name.', array('!dir_name' => $dir_name))
   );
@@ -178,15 +176,11 @@ function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db
               $userid = (string) $user->id;
               $output = array();
               $sids_postgres = array_unique((array) $user->{'diff-Services-Postgres'});
-//              var_dump('diff-Services-Postgres');
-//              var_dump($sids_postgres);
               $sids_postgres = !empty($sids_postgres['id']) ? $sids_postgres['id'] : array();
 
               if (!is_array($sids_postgres)) {
                 $sids_postgres = array($sids_postgres);
               }
-//              var_dump($sids_postgres);
-//              var_dump(str_repeat('-', 100));
               foreach ($sids_postgres as $sid) {
                 $service_data = array(
                   'userid' => $userid,
@@ -204,16 +198,11 @@ function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db
               }
 
               if (!in_array($userid, $protected_oracle_users)) {
-                // Atodo: check this:
                 $sids_oracle = array_unique((array) $user->{'diff-Services-Oracle'});
-//                var_dump('diff-Services-Oracle');
-//                var_dump($sids_oracle);
                 $sids_oracle = !empty($sids_oracle['id']) ? $sids_oracle['id'] : array();
                 if (!is_array($sids_oracle)) {
                   $sids_oracle = array($sids_oracle);
                 }
-//                var_dump($sids_oracle);
-//                var_dump(str_repeat('*', 100));
                 foreach ($sids_oracle as $sid) {
                   $service_data = array(
                     'userid' => $userid,

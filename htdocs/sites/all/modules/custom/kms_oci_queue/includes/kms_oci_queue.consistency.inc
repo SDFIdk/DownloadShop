@@ -13,8 +13,6 @@ abstract class cData {
 
   public function __construct($uids) {
     $this->uids = $uids;
-    // Atodo: Put data in chunks and remove this.
-    ini_set('memory_limit', '3052M');
     $this->defineRows();
   }
 
@@ -40,11 +38,6 @@ class cDataServicesPostgres extends cData {
   }
 
   public function defineRows() {
-    // Atodo: Remove this. Used for debugging.
-//    $data_a = $data_b = new stdClass();
-//    $cdc = new cDataCheck($data_a, $data_b);
-//    $this->rows = $cdc->testRowsA();
-//    return;
     $sql = new KmsOciQueueSql('services');
     $result = db_query($sql->generate('consistency', $this->uids));
     while ($record = $result->fetchObject()) {
@@ -61,11 +54,6 @@ class cDataServicesOracle extends cData {
   }
 
   public function defineRows() {
-    // Atodo: Remove this. Used for debugging.
-//    $data_a = $data_b = new stdClass();
-//    $cdc = new cDataCheck($data_a, $data_b);
-//    $this->rows = $cdc->testRowsB();
-//    return;
     $settings = array(
       'kms_oci_conn_user' => variable_get('kms_permissions_conn_user', ''),
       'kms_oci_conn_pass' => variable_get('kms_permissions_conn_pass', ''),
