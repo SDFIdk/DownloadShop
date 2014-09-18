@@ -960,8 +960,7 @@ function kms_oci_queue_consistency_check($data_type, $method) {
 
   $i = $user_count = 0;
   $chunks = cHelper::getUidChunks();
-  // debug
-  array_splice($chunks, 1);
+
   if ($run_mode == 'drush') {
     drush_print(
       dt('Working on: !dir_name.', array('!dir_name' => $dir))
