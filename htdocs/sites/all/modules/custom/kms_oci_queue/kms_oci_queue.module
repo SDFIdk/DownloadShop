@@ -79,18 +79,25 @@ function kms_oci_queue_ctools_plugin_type() {
  * Implements hook_cronapi().
  */
 function kms_oci_queue_cronapi($op, $job = NULL) {
+  _adapt_debug('mikkel', $op);
   switch ($op) {
     case 'list':
       return array(
         'kms_oci_queue_query_creator_run' => 'Run query creator',
         'kms_oci_queue_cleanup_jobs' => 'Cleanup job queue',
+        'kms_oci_queue_consistency_check_services_diff' => 'Check service data consistency between dbs',
       );
 
     case 'rule':
       switch ($job) {
-        case 'kms_oci_queue_query_creator_run': return '*/1 * * * *';
-        case 'kms_oci_queue_cleanup_jobs': return '02 */4 * * *';
-          break;
+        case 'kms_oci_queue_query_creator_run':
+          return '*/1 * * * *';
+
+        case 'kms_oci_queue_cleanup_jobs':
+          return '02 */4 * * *';
+
+        case 'kms_oci_queue_consistency_check_services_diff':
+          return '03 */4 * * *';
       }
       break;
 
@@ -102,6 +109,10 @@ function kms_oci_queue_cronapi($op, $job = NULL) {
 
         case 'kms_oci_queue_cleanup_jobs':
           kms_oci_queue_cron_cleanup_jobs();
+          break;
+
+        case 'kms_oci_queue_consistency_check_services_diff':
+          kms_oci_queue_consistency_check_services_diff();
           break;
       }
       break;
@@ -747,12 +758,12 @@ function _kms_oci_queue_create_update_smuser_data($account, $user = FALSE) {
       = $account->field_newsletter[LANGUAGE_NONE][0]['value'];
   }
   if (isset($account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'])) {
-    $data['user_extra']['accept_terms'] =
-      $account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'];
+    $data['user_extra']['accept_terms']
+      = $account->field_terms_and_conditions[LANGUAGE_NONE][0]['value'];
   }
   if (isset($account->field_contact_me[LANGUAGE_NONE][0]['value'])) {
-    $data['user_extra']['contact_me'] =
-      $account->field_contact_me[LANGUAGE_NONE][0]['value'];
+    $data['user_extra']['contact_me']
+      = $account->field_contact_me[LANGUAGE_NONE][0]['value'];
   }
 
   return $data;
@@ -888,4 +899,262 @@ function kms_oci_queue_job_is_accessible($action) {
   $access_values = module_invoke_all('kms_oci_queue_job_access', $action);
   $restrictions = array_filter($access_values, function($v) { return !$v; });
   return empty($restrictions);
+}
+
+/**
+ * Cron consistency check function wrapper.
+ *
+ * Ultimate cron settings seems flaky concerning arguments etc.
+ */
+function kms_oci_queue_consistency_check_services_diff() {
+  kms_oci_queue_consistency_check('services', 'diff');
+  kms_oci_queue_consistency_generate_resolving_sql('services', 'oracle');
+}
+
+
+
+/**
+ * Executes a data consistency check between postgres and oracle.
+ *
+ * Supports different "data types" and methods (diff etc.).
+ *
+ * @param string $data_type
+ * @param string $method
+ * @throws Exception
+ */
+function kms_oci_queue_consistency_check($data_type, $method) {
+  module_load_include('inc', 'kms_oci_queue', 'includes/kms_oci_queue.consistency');
+  $run_mode = function_exists('drush_main') ? 'drush' : 'normal';
+  $drush_option_mode = function_exists('drush_main') ? drush_get_option('mode') : FALSE;
+  $class_name_prefix = 'cData' . ucfirst($data_type);
+  $class_name_postgres = $class_name_prefix . 'Postgres';
+  $class_name_oracle = $class_name_prefix . 'Oracle';
+
+  // Check if classes are defined.
+  if (
+    !class_exists($class_name_postgres)
+    && !class_exists($class_name_oracle)
+  ) {
+    return;
+  }
+
+  if ($run_mode == 'normal') {
+    watchdog(
+      sprintf('%s:%s', KMS_OCI_QUEUE_PREFIX, __FUNCTION__),
+      'kms_oci_queue_consistency_check initiated.'
+    );
+  }
+
+  $dir = cHelper::dirConsistencyDiff;
+  if ($run_mode == 'drush') {
+    $dir .= '_drush';
+  }
+  $mkdir = FALSE;
+  $del_files = file_unmanaged_delete_recursive($dir);
+  if ($del_files) {
+    $mkdir = file_prepare_directory($dir, FILE_CREATE_DIRECTORY);
+  }
+  if (!$del_files || !$mkdir) {
+    return;
+  }
+
+  $i = $user_count = 0;
+  $chunks = cHelper::getUidChunks();
+  // debug
+  array_splice($chunks, 1);
+  if ($run_mode == 'drush') {
+    drush_print(
+      dt('Working on: !dir_name.', array('!dir_name' => $dir))
+    );
+    drush_print(
+      dt('Chunk count: !chunk_count.', array('!chunk_count' => count($chunks)))
+    );
+    drush_print(
+      dt('Chunk size: !chunk_size.', array('!chunk_size' => cHelper::uidChunkSize))
+    );
+  }
+
+  foreach ($chunks as $uids) {
+    $postgres = new $class_name_postgres($uids);
+    $oracle = new $class_name_oracle($uids);
+    $data_check = new cDataCheck($postgres, $oracle);
+    if (method_exists($data_check, $method)) {
+      if ($method == 'diff' && $drush_option_mode) {
+        $mode_map = array(
+          'postgres' => 'a',
+          'oracle' => 'b',
+        );
+        if (empty($mode_map[$drush_option_mode])) {
+          throw new Exception('Mode type does not exist.');
+        }
+        else {
+          $result = $data_check->diff($mode_map[$drush_option_mode]);
+        }
+      }
+      else {
+        $result = $data_check->diff();
+      }
+
+      $xml = new SimpleXMLElement('<?xml version="1.0" encoding="utf-8"?><user_diffs></user_diffs>');
+      foreach ($result as $uid => $diffs) {
+        $user = $xml->addChild('user');
+        $user->addChild('id', $uid);
+        foreach ($diffs as $diff_key => $ids) {
+          $diff_key = str_replace(':', '-', $diff_key);
+          $diff_ids = $user->addChild($diff_key);
+          foreach ($ids as $id) {
+            $diff_ids->addChild('id', $id);
+          }
+        }
+      }
+      $file = fopen(sprintf('%s/diff%s.xml', $dir, $i ? "_$i" : ''), "w");
+      fwrite($file, $xml->asXML());
+      fclose($file);
+      $i++;
+      $user_count += count($uids);
+      if ($run_mode == 'drush') {
+        drush_print(
+          format_plural($user_count, '1 user', '@count users') . dt(' processed.')
+        );
+      }
+
+    }
+  }
+
+  if ($run_mode == 'drush') {
+    drush_print(dt('Done.'));
+  }
+  else {
+    watchdog(
+      sprintf('%s:%s', KMS_OCI_QUEUE_PREFIX, __FUNCTION__),
+      format_plural($user_count, '1 user', '@count users') . ' processed.'
+    );
+  }
+
+}
+
+/**
+ * Generates sql file that cleans up target database.
+ *
+ * @param string $data_type
+ * @param string $target_db
+ */
+function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db) {
+  module_load_include('inc', 'kms_oci_queue', 'includes/kms_oci_queue.consistency');
+  $run_mode = function_exists('drush_main') ? 'drush' : 'normal';
+
+  $protected_oracle_users = array(
+    'AE6475A9DCDD5CC5E04400144FAD6027',
+    '33191',
+  );
+
+  $wms_ids = kms_permissions_get_service_ids_by_type('wms');
+
+  if ($run_mode == 'normal') {
+    watchdog(
+      sprintf('%s:%s', KMS_OCI_QUEUE_PREFIX, __FUNCTION__),
+      'kms_oci_queue_consistency_generate_resolving_sql initiated.'
+    );
+  }
+
+  $dir = cHelper::dirConsistencyDiff;
+  if ($run_mode == 'drush') {
+    $dir .= '_drush';
+  }
+  $sql_file = sprintf('%s/consistency_resolve_%s.sql', $dir, $target_db);
+  if (file_exists($sql_file)) {
+    unlink($sql_file);
+  }
+
+  switch ($target_db) {
+    case 'oracle':
+      switch ($data_type) {
+        case 'services':
+          $files = file_scan_directory(cHelper::dirConsistencyDiff, '/.*\.xml$/');
+          if (empty($files) && $run_mode == 'drush') {
+            drush_print(dt('No diff files found.'));
+            return;
+          }
+          ksort($files);
+          $i = 0;
+          foreach ($files as $file) {
+            if ($run_mode == 'drush') {
+              drush_print(
+                dt('Processing file: !filename.', array('!filename' => $file->filename))
+              );
+            }
+            $xml = simplexml_load_file($file->uri);
+            foreach ($xml->user as $user) {
+              $userid = (string) $user->id;
+              $output = array();
+              $sids_postgres = array_unique((array) $user->{'diff-Services-Postgres'});
+              $sids_postgres = !empty($sids_postgres['id']) ? $sids_postgres['id'] : array();
+
+              if (!is_array($sids_postgres)) {
+                $sids_postgres = array($sids_postgres);
+              }
+              foreach ($sids_postgres as $sid) {
+                $service_data = array(
+                  'userid' => $userid,
+                  'serviceid' => $sid,
+                  'featureinfo' => 0,
+                );
+
+                $service_data += kms_permissions_get_service_bounding_box($sid);
+                // If a service is a wms service then set feature info to 1.
+                if (in_array($sid, $wms_ids)) {
+                  $service_data['featureinfo'] = 1;
+                }
+                $sql = new KmsOciQueueSql('services', $service_data);
+                $output[] = $sql->generate('insert');
+              }
+
+              if (!in_array($userid, $protected_oracle_users)) {
+                $sids_oracle = array_unique((array) $user->{'diff-Services-Oracle'});
+                $sids_oracle = !empty($sids_oracle['id']) ? $sids_oracle['id'] : array();
+                if (!is_array($sids_oracle)) {
+                  $sids_oracle = array($sids_oracle);
+                }
+                foreach ($sids_oracle as $sid) {
+                  $service_data = array(
+                    'userid' => $userid,
+                    'serviceid' => $sid,
+                  );
+                  $sql = new KmsOciQueueSql('services', $service_data);
+                  $output[] = $sql->generate('delete');
+                }
+              }
+
+              if (!empty($output)) {
+                array_unshift($output, $sql->generateWrapper('header'));
+                $output[] = $sql->generateWrapper('footer');
+                file_put_contents($sql_file, implode("\n", $output), FILE_APPEND);
+              }
+              $i++;
+              if ($run_mode == 'drush') {
+                drush_print(format_plural($i, '1 user', '@count users') . dt(' processed.'));
+              }
+            }
+          }
+          break;
+      }
+      break;
+
+    case 'postgres':
+      switch ($data_type) {
+        case 'services':
+          break;
+      }
+      break;
+  }
+
+  if ($run_mode == 'drush') {
+    drush_print(dt('Done.'));
+  }
+  else {
+    watchdog(
+      sprintf('%s:%s', KMS_OCI_QUEUE_PREFIX, __FUNCTION__),
+      format_plural($i, '1 user', '@count users') . ' processed.'
+    );
+  }
 }
