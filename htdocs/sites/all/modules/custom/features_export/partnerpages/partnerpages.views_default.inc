@@ -56,10 +56,12 @@ function partnerpages_views_default_views() {
   $handler->display->display_options['fields']['field_teaser_text']['field'] = 'field_teaser_text';
   $handler->display->display_options['fields']['field_teaser_text']['label'] = '';
   $handler->display->display_options['fields']['field_teaser_text']['exclude'] = TRUE;
-  $handler->display->display_options['fields']['field_teaser_text']['alter']['max_length'] = '77';
-  $handler->display->display_options['fields']['field_teaser_text']['alter']['ellipsis'] = FALSE;
+  $handler->display->display_options['fields']['field_teaser_text']['alter']['max_length'] = '80';
   $handler->display->display_options['fields']['field_teaser_text']['alter']['trim'] = TRUE;
   $handler->display->display_options['fields']['field_teaser_text']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['field_teaser_text']['settings'] = array(
+    'trim_length' => '600',
+  );
   /* Field: Content: Partner logo */
   $handler->display->display_options['fields']['field_partner_logo']['id'] = 'field_partner_logo';
   $handler->display->display_options['fields']['field_partner_logo']['table'] = 'field_data_field_partner_logo';
@@ -88,13 +90,14 @@ function partnerpages_views_default_views() {
   $handler->display->display_options['fields']['nothing']['alter']['text'] = '<a href="[path]">[field_partner_top_img]</a>
 <div class="content">
 <div class="logo">
+<a href="[path]">
 [field_partner_logo]
+</a>
 </div>
 <div class="text">
+<a href="[path]">
 [field_teaser_text]
-</div>
-<div class="read-more">
-<a href="[path]">Læs mere</a>
+</a>
 </div>
 </div>';
   $handler->display->display_options['fields']['nothing']['element_label_colon'] = FALSE;
@@ -138,13 +141,14 @@ function partnerpages_views_default_views() {
     t('<a href="[path]">[field_partner_top_img]</a>
 <div class="content">
 <div class="logo">
+<a href="[path]">
 [field_partner_logo]
+</a>
 </div>
 <div class="text">
+<a href="[path]">
 [field_teaser_text]
-</div>
-<div class="read-more">
-<a href="[path]">Læs mere</a>
+</a>
 </div>
 </div>'),
     t('Partnerlist'),
