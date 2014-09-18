@@ -228,8 +228,10 @@ h1, .commerce-product-title {
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#dee3d1', endColorstr='#eff2e7',GradientType=0 );
   /* IE6-8 */
   padding: 0px 10px;
-  -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -ms-border-radius: 4px;
+  -o-border-radius: 4px;
   border-radius: 4px;
 }
 /* line 321, ../sass/screen.scss */
@@ -241,8 +243,10 @@ h1, .commerce-product-title {
 .panel-2col-stacked > .center-wrapper > .panel-col-last .pane-commerce-cart-cart .view-footer li {
   background: #fff;
   padding: 5px;
-  -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -ms-border-radius: 4px;
+  -o-border-radius: 4px;
   border-radius: 4px;
   background: white;
   /* Old browsers */
@@ -1033,6 +1037,7 @@ div.messages.status em {
     background: #eff2e8;
   }
 }
+
 @-webkit-keyframes fademeessage {
   /* line 1036, ../sass/screen.scss */
   0% {
@@ -1049,6 +1054,7 @@ div.messages.status em {
     background: #eff2e8;
   }
 }
+
 /* line 1047, ../sass/screen.scss */
 .commerce-line-item-actions .form-submit {
   background: #97bc00;
@@ -1210,8 +1216,10 @@ span.file-size {
 
 /* line 1200, ../sass/screen.scss */
 input.form-text {
-  -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
   border-radius: 3px;
   height: 25px;
   background: white;
@@ -1237,8 +1245,10 @@ input.form-text {
 
 /* line 1207, ../sass/screen.scss */
 textarea.form-textarea {
-  -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
   border-radius: 3px;
   background: white;
   /* Old browsers */
@@ -1286,8 +1296,10 @@ input.form-submit {
   /* W3C */
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#f2f2f2', endColorstr='#f9f9f9',GradientType=0 );
   /* IE6-8 */
-  -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
   border-radius: 3px;
   border: none;
   height: 30px;
@@ -1325,8 +1337,10 @@ input.form-submit:hover {
 /* Status messages */
 /* line 1236, ../sass/screen.scss */
 div.messages, tr.error {
-  -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
   border-radius: 3px;
   padding: 5px;
   color: #333 !important;
@@ -1338,12 +1352,14 @@ div.messages, tr.error {
 #terms_and_conditions {
   background: #fff;
   width: 700px;
-  -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
   border-radius: 5px;
-  -moz-box-shadow: 0px 5px #333333;
-  -webkit-box-shadow: 0px 5px #333333;
-  box-shadow: 0px 5px #333333;
+  -webkit-box-shadow: 0px 0px 5px #333333;
+  -moz-box-shadow: 0px 0px 5px #333333;
+  box-shadow: 0px 0px 5px #333333;
   padding: 10px;
   background: white;
   /* Old browsers */
@@ -1536,8 +1552,10 @@ table.mydownloads div.product-details {
 }
 /* line 1368, ../sass/screen.scss */
 .page-cart .cart-add-more, .page-checkout .cart-add-more {
-  -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
   border-radius: 3px;
   background-color: #333333;
   padding: 7px 10px;
@@ -1583,8 +1601,10 @@ table.mydownloads div.product-details {
 /* line 1417, ../sass/screen.scss */
 #geosearch {
   margin-top: 15px;
-  -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
   border-radius: 3px;
   height: 30px;
   line-height: 25px;
@@ -1596,8 +1616,10 @@ table.mydownloads div.product-details {
 
 /* line 1428, ../sass/screen.scss */
 .ui-autocomplete.ui-menu {
-  -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
   border-radius: 3px;
   border: 1px solid #cccccc;
 }
@@ -1886,12 +1908,16 @@ ul.controlToggle li.csv button:hover {
   color: #787878;
   line-height: 19px;
 }
-/* line 1668, ../sass/screen.scss */
+/* line 1667, ../sass/screen.scss */
+.node-type-partner-list .partner-list .views-row .views-field-nothing .text a {
+  color: #787878;
+}
+/* line 1671, ../sass/screen.scss */
 .node-type-partner-list .partner-list .views-row .views-field-nothing .read-more {
   padding-top: 20px;
   text-align: center;
 }
-/* line 1671, ../sass/screen.scss */
+/* line 1674, ../sass/screen.scss */
 .node-type-partner-list .partner-list .views-row .views-field-nothing .read-more a {
   display: inline-block;
   background: #97bc00;
@@ -1899,43 +1925,48 @@ ul.controlToggle li.csv button:hover {
   font-size: 12px;
   font-weight: bold;
   padding: 8px 10px;
-  -moz-border-radius: 3px;
   -webkit-border-radius: 3px;
+  -moz-border-radius: 3px;
+  -ms-border-radius: 3px;
+  -o-border-radius: 3px;
   border-radius: 3px;
 }
-/* line 1683, ../sass/screen.scss */
+/* line 1686, ../sass/screen.scss */
 .node-type-partner-list .partner-list .views-row:hover .read-more a {
   text-decoration: underline;
 }
 
-/* line 1690, ../sass/screen.scss */
+/* line 1693, ../sass/screen.scss */
 .node-type-partner .partner-topimg {
   padding-bottom: 15px;
 }
-/* line 1693, ../sass/screen.scss */
+/* line 1696, ../sass/screen.scss */
 .node-type-partner .partner-logo {
   padding-bottom: 25px;
 }
-/* line 1696, ../sass/screen.scss */
+/* line 1699, ../sass/screen.scss */
 .node-type-partner .partner-images-middle {
-  border-top: 1px dotted #999999;
+  border-bottom: 1px dotted #999999;
   clear: both;
-  padding-top: 20px;
   overflow: auto;
-  padding-bottom: 20px;
+  margin-bottom: 20px;
 }
-/* line 1702, ../sass/screen.scss */
+/* line 1704, ../sass/screen.scss */
 .node-type-partner .partner-images-middle .field-item {
   float: left;
-  margin: 0px 11px 20px 11px;
+  margin: 8px 11px 18px 11px;
 }
-/* line 1707, ../sass/screen.scss */
+/* line 1709, ../sass/screen.scss */
+.node-type-partner .partner-images-middle ~ .partner-cases-references .pane-title {
+  display: none;
+}
+/* line 1714, ../sass/screen.scss */
 .node-type-partner .partner-cases-references {
   padding-bottom: 20px;
   overflow: auto;
   clear: both;
 }
-/* line 1711, ../sass/screen.scss */
+/* line 1718, ../sass/screen.scss */
 .node-type-partner .partner-cases-references .field-item {
   width: 235px;
   float: left;
@@ -1944,24 +1975,24 @@ ul.controlToggle li.csv button:hover {
   color: #787878;
   margin-bottom: 20px;
 }
-/* line 1718, ../sass/screen.scss */
+/* line 1725, ../sass/screen.scss */
 .node-type-partner .partner-cases-references .field-item h2 {
   font-size: 15px;
   font-weight: normal;
   padding-bottom: 10px;
   padding-top: 10px;
 }
-/* line 1725, ../sass/screen.scss */
+/* line 1732, ../sass/screen.scss */
 .node-type-partner .partner-cases-references .field-item:first-child {
   margin-left: 0px;
 }
-/* line 1729, ../sass/screen.scss */
+/* line 1736, ../sass/screen.scss */
 .node-type-partner .partner-contact {
   clear: both;
   line-height: 21px;
   color: #787878;
 }
-/* line 1734, ../sass/screen.scss */
+/* line 1741, ../sass/screen.scss */
 .node-type-partner .panel-pane > h2.pane-title {
   font-size: 16px;
   color: #333;

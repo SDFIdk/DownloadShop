@@ -1664,6 +1664,9 @@ ul.controlToggle {
         .text {
           color: #787878;
           line-height: 19px;
+          a {
+            color: #787878;
+          }
         }
         .read-more {
           padding-top:20px;
@@ -1694,14 +1697,18 @@ ul.controlToggle {
     padding-bottom: 25px;
   }
   .partner-images-middle {
-      border-top: 1px dotted #999999;
+      border-bottom: 1px dotted #999999;
       clear: both;
-      padding-top: 20px;
       overflow: auto;
-      padding-bottom: 20px;
+      margin-bottom: 20px;
       .field-item {
         float: left;
-        margin: 0px 11px 20px 11px;
+        margin: 8px 11px 18px 11px;
+      }
+      ~ .partner-cases-references {
+        .pane-title {
+          display:none;
+        }
       }
   }
   .partner-cases-references {
