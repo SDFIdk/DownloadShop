@@ -1069,7 +1069,7 @@ function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db
     case 'oracle':
       switch ($data_type) {
         case 'services':
-          $files = file_scan_directory(cHelper::dirConsistencyDiff, '/.*\.xml$/');
+          $files = file_scan_directory($dir, '/.*\.xml$/');
           if (empty($files) && $run_mode == 'drush') {
             drush_print(dt('No diff files found.'));
             return;
