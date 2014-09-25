@@ -51,8 +51,13 @@ function kms_oci_queue_drush_help($section) {
  * @throws Exception
  */
 function kms_oci_queue_drush_consistency_check($data_type, $method) {
+  $time_start = microtime(TRUE);
   drupal_load('module', 'kms_oci_queue');
   kms_oci_queue_consistency_check($data_type, $method);
+  $time_end = microtime(TRUE);
+  drush_print(
+    dt('Execution time: @seconds seconds', array('@seconds' => ($time_end - $time_start)))
+  );
 }
 
 /**
@@ -62,5 +67,10 @@ function kms_oci_queue_drush_consistency_check($data_type, $method) {
  * @param string $target_db
  */
 function kms_oci_queue_drush_consistency_generate_resolving_sql($data_type, $target_db) {
+  $time_start = microtime(TRUE);
   kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db);
+  $time_end = microtime(TRUE);
+  drush_print(
+    dt('Execution time: @seconds seconds', array('@seconds' => ($time_end - $time_start)))
+  );
 }
