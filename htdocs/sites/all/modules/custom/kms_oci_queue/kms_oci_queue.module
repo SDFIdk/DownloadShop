@@ -993,23 +993,30 @@ function kms_oci_queue_consistency_check($data_type, $method) {
       else {
         $result = $data_check->diff();
       }
-
-      $xml = new SimpleXMLElement('<?xml version="1.0" encoding="utf-8"?><user_diffs></user_diffs>');
-      foreach ($result as $uid => $diffs) {
-        $user = $xml->addChild('user');
-        $user->addChild('id', $uid);
-        foreach ($diffs as $diff_key => $ids) {
-          $diff_key = str_replace(':', '-', $diff_key);
-          $diff_ids = $user->addChild($diff_key);
-          foreach ($ids as $id) {
-            $diff_ids->addChild('id', $id);
+      // If any diff's exist then create xml.
+      if (!empty($result)) {
+        $xml = new SimpleXMLElement('<?xml version="1.0" encoding="utf-8"?><user_diffs></user_diffs>');
+        foreach ($result as $uid => $diffs) {
+          $user = $xml->addChild('user');
+          $user->addChild('id', $uid);
+          foreach ($diffs as $diff_key => $ids) {
+            $diff_key = str_replace(':', '-', $diff_key);
+            $diff_ids = $user->addChild($diff_key);
+            foreach ($ids as $id) {
+              $diff_ids->addChild('id', $id);
+            }
           }
         }
+        // If xml object is populated then write file.
+        if (is_object($xml)) {
+          $file = fopen(sprintf('%s/diff%s.xml', $dir, $i ? "_$i" : ''), "w");
+          fwrite($file, $xml->asXML());
+          fclose($file);
+          $i++;
+        }
+
       }
-      $file = fopen(sprintf('%s/diff%s.xml', $dir, $i ? "_$i" : ''), "w");
-      fwrite($file, $xml->asXML());
-      fclose($file);
-      $i++;
+
       $user_count += count($uids);
       if ($run_mode == 'drush') {
         drush_print(
