@@ -41,7 +41,7 @@ class cDataServicesPostgres extends cData {
     $sql = new KmsOciQueueSql('services');
     $result = db_query($sql->generate('consistency', $this->uids));
     while ($record = $result->fetchObject()) {
-      $this->rows[$record->userid][] = $record->serviceid;
+      $this->rows[$record->userid][(string) $record->serviceid] = $record->serviceid;
     }
   }
 
@@ -68,7 +68,7 @@ class cDataServicesOracle extends cData {
         'kms_permissions'
       );
       foreach ($records as $record) {
-        $this->rows[$record['USERID']][] = $record['SERVICEID'];
+        $this->rows[$record['USERID']][(string) $record['SERVICEID']] = $record['SERVICEID'];
       }
     }
   }
