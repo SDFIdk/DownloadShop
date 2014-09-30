@@ -181,7 +181,7 @@ EOD;
     });
     $uids = implode(', ', $uids);
     return <<<EOD
-    SELECT userid, serviceid
+    SELECT DISTINCT userid, serviceid
     FROM $table
     WHERE userid IN ($uids)
     ORDER BY userid, serviceid
