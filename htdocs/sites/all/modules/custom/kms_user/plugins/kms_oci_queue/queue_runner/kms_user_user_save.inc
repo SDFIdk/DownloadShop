@@ -31,11 +31,11 @@ $plugin = array(
  *   Number of query lines to be written.
  */
 function kms_user_user_save_query_creator_run($jid, $creator_item, $exe_queue) {
-  $num_exe_items = count($creator_item->params);
+  $num_statements = count($creator_item->params);
   $line_num = 0;
   array_walk(
     $creator_item->params,
-    function ($query_data) use ($jid, $num_exe_items, $creator_item, &$exe_queue, &$line_num){
+    function ($query_data) use ($jid, $num_statements, $creator_item, &$exe_queue, &$line_num){
       $line_num++;
       list($data, $table, $is_new) = $query_data;
       kms_oci_filter_query_data($data);
@@ -47,7 +47,8 @@ function kms_user_user_save_query_creator_run($jid, $creator_item, $exe_queue) {
         'table' => $table,
         'kms_id' => $data['userid'],
         'is_new' => $is_new,
-        'is_last_item' => $line_num == $num_exe_items,
+        'num_statements' => $num_statements,
+        'is_last_item' => $line_num == $num_statements,
       );
       $exe_queue->createItem($exe_queue_item);
     }
@@ -74,9 +75,17 @@ function kms_user_user_save_query_run($item) {
   $data = $item->data;
   unset($data['userid']);
   $output[] = $sql->generate($statement_type, $item->table, $data);
-  if (!$item->is_last_item) {
+  // If we only have one sql statement then wrap that one in header / footer.
+  if ($item->num_statements == 1) {
+    array_unshift($output, $sql->generateWrapper('header'));
+    $output[] = $sql->generateWrapper('footer');
+  }
+  // Else if we have more than one statement
+  // and it is not the last one add header.
+  elseif (!$item->is_last_item) {
     array_unshift($output, $sql->generateWrapper('header'));
   }
+  // Otherwise it must be the last one. Give it a footer then...
   else {
     $output[] = $sql->generateWrapper('footer');
   }
