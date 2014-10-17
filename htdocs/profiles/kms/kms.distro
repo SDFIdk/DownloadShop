@@ -4,8 +4,7 @@ api = 2
 
 
 projects[drupal][version] = "7.32"
-projects[drupal][patch][] = "http://www.drupal.org/files/issues/stream_wrappers-allow_symlinks-1008402-99.patch"
-; projects[drupal][patch][] = "http://drupal.org/files/symlinks_within_files_directory-1008402-72-D7.14-do-not-test.patch"
+projects[drupal][patch][] = "http://drupal.org/files/symlinks_within_files_directory-1008402-72-D7.14-do-not-test.patch"
 
 includes[kms_distro_inc] = "kms.distro.inc"
 
