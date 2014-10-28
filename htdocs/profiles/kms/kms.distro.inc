@@ -33,11 +33,6 @@ projects[boolean][subdir] = "contrib"
 projects[boolean][version] = "1.0"
 projects[boolean][type] = "module"
 
-;colorbox
-projects[colorbox][subdir] = "contrib"
-projects[colorbox][version] = "2.5"
-projects[colorbox][type] = "module"
-
 ;colorbox_node
 projects[colorbox_node][subdir] = "contrib"
 projects[colorbox_node][version] = "3.x-dev"
