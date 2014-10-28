@@ -1633,9 +1633,12 @@ function kms_permissions_form_views_exposed_form_alter(&$form, &$form_state, $fo
         )
       );
 
+      // Select all maptype terms used by products the current user is allowed to access.
       $query = db_select('taxonomy_index', 'ti');
       $query->join('taxonomy_term_data', 'ttd', 'ttd.tid=ti.tid');
-      $query->fields('ttd');
+      $query->join('taxonomy_term_hierarchy', 'tth', 'tth.tid=ti.tid');
+      $query->fields('ttd', array('tid','name'));
+      $query->fields('tth', array('parent'));
       $query->condition('ttd.vid', 10, '=');
 
       if (isset($perms['predefined_datacollections'])) {
@@ -1644,10 +1647,30 @@ function kms_permissions_form_views_exposed_form_alter(&$form, &$form_state, $fo
 
       $result = $query->execute()->fetchAllAssoc('tid');
 
+      // Add select all option to map type options.
       $form['field_korttype_tid_1']['#options'] = array('All' => '- Alle -');
-      array_walk($result, function($data, $tid) use (&$form) {
-        $form['field_korttype_tid_1']['#options'][$tid] = $data->name;
+
+      // Add terms with parent not set to taxonomy root (zero)
+      // as children terms to the parent. Only supports one level.
+      $hierachy = array();
+      array_walk($result, function($data, $tid) use (&$hierachy, $result) {
+        if ($data->parent > 0) {
+          $hierachy[$data->parent]['children'][$tid] = $data->name;
+        } else {
+          $hierachy[$tid]['name'] = $data->name;
+        }
       });
+
+      // Add the allowed options to the form. Terms with children are
+      // optgroups and can't be selected by the user.
+      array_walk($hierachy, function($data, $tid) use (&$form) {
+        if (empty($data['children'])) {
+          $form['field_korttype_tid_1']['#options'][$tid] = $data['name'];
+        } else {
+          $form['field_korttype_tid_1']['#options'][$data['name']] = $data['children'];
+        }
+      });
+
       break;
   }
 
