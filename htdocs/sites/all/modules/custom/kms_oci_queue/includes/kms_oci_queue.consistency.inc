@@ -38,10 +38,14 @@ class cDataServicesPostgres extends cData {
   }
 
   public function defineRows() {
+    $valid_sids = cHelper::getValidServiceIds();
     $sql = new KmsOciQueueSql('services');
     $result = db_query($sql->generate('consistency', $this->uids));
     while ($record = $result->fetchObject()) {
-      $this->rows[$record->userid][(string) $record->serviceid] = $record->serviceid;
+      $sid = (string) $record->serviceid;
+      if (in_array($sid, $valid_sids)) {
+        $this->rows[$record->userid][$sid] = $record->serviceid;
+      }
     }
   }
 
@@ -54,6 +58,7 @@ class cDataServicesOracle extends cData {
   }
 
   public function defineRows() {
+    $valid_sids = cHelper::getValidServiceIds();
     $settings = array(
       'kms_oci_conn_user' => variable_get('kms_permissions_conn_user', ''),
       'kms_oci_conn_pass' => variable_get('kms_permissions_conn_pass', ''),
@@ -68,7 +73,10 @@ class cDataServicesOracle extends cData {
         'kms_permissions'
       );
       foreach ($records as $record) {
-        $this->rows[$record['USERID']][(string) $record['SERVICEID']] = $record['SERVICEID'];
+        $sid = (string) $record['SERVICEID'];
+        if (in_array($sid, $valid_sids)) {
+          $this->rows[$record['USERID']][$sid] = $record['SERVICEID'];
+        }
       }
     }
   }
@@ -449,13 +457,37 @@ class cHelper {
       }
     }
 
-    // Atodo: Remove this. Used for debugging.
-   # $data_a = $data_b = new stdClass();
-   # $cdc = new cDataCheck($data_a, $data_b);
-   # $uids = array_merge(array_keys($cdc->testRowsA()), array_keys($cdc->testRowsB()));
-
     sort($uids);
 
     return array_chunk($uids, self::uidChunkSize);
   }
+
+  public static function getValidServiceIds() {
+    static $sids;
+
+    if (isset($sids)) {
+      return $sids;
+    }
+
+    $sids = array();
+    $settings = array(
+      'kms_oci_conn_user' => variable_get('kms_permissions_conn_user', ''),
+      'kms_oci_conn_pass' => variable_get('kms_permissions_conn_pass', ''),
+      'kms_oci_conn_host' => variable_get('kms_permissions_conn_host', ''),
+      'kms_oci_conn_db' => variable_get('kms_permissions_conn_db', ''),
+    );
+    if (kms_oci_get_conn('kms_permissions', $settings)) {
+      $sql = new KmsOciQueueSql('services');
+      $records = kms_oci_select(
+        'SELECT serviceid from SERVICES2',
+        array(),
+        'kms_permissions'
+      );
+      foreach ($records as $record) {
+        $sids[$record['SERVICEID']] = $record['SERVICEID'];
+      }
+    }
+    return $sids;
+  }
+
 }
