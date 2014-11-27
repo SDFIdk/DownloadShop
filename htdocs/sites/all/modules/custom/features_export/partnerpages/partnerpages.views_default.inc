@@ -95,9 +95,11 @@ function partnerpages_views_default_views() {
 </a>
 </div>
 <div class="text">
+<div class="read-more">
 <a href="[path]">
-[field_teaser_text]
+Læs mere
 </a>
+</div>
 </div>
 </div>';
   $handler->display->display_options['fields']['nothing']['element_label_colon'] = FALSE;
@@ -146,9 +148,11 @@ function partnerpages_views_default_views() {
 </a>
 </div>
 <div class="text">
+<div class="read-more">
 <a href="[path]">
-[field_teaser_text]
+Læs mere
 </a>
+</div>
 </div>
 </div>'),
     t('Partnerlist'),
