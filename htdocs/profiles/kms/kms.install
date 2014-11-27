@@ -366,3 +366,15 @@ function kms_update_7011(&$sandbox) {
   node_export_import($export);
   */
 }
+
+
+/**
+* Enable commerce_checkout_order_created_date_update rule.
+*
+* @author Andrius Prudnikovas <andrius@adapt.dk>
+*/
+function kms_update_7012() {
+  $rules_config = rules_config_load('commerce_checkout_order_created_date_update');
+  $rules_config->active = TRUE;
+  $rules_config->save();
+}

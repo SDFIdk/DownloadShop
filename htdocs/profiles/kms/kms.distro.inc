@@ -42,6 +42,7 @@ projects[colorbox_node][type] = "module"
 projects[commerce][subdir] = "contrib"
 projects[commerce][version] = "1.4"
 projects[commerce][type] = "module"
+projects[commerce][patch][] = 'https://www.drupal.org/files/issues/2044231.checkout_order_created_date_update.patch'
 
 ;commerce_autosku
 projects[commerce_autosku][subdir] = "contrib"
