@@ -1896,7 +1896,7 @@ ul.controlToggle li.csv button:hover {
   text-align: center;
   padding-bottom: 20px;
   border-bottom: 1px solid #e6e7e4;
-  margin-bottom: 20px;
+  margin-bottom: 0px;
 }
 /* line 1659, ../sass/screen.scss */
 .node-type-partner-list .partner-list .views-row .views-field-nothing .logo img {
