@@ -73,6 +73,16 @@ function kms_user_menu() {
     'page arguments' => array(2),
     'type' => MENU_CALLBACK,
   );
+
+  //Return json of webservices
+  $items['kms-user/json/webservices/%'] = array(
+    'title' => 'json for webservices',
+    'page callback' => 'return_websevice_list',
+    'page arguments' => array(3),
+    'type' => MENU_CALLBACK,
+    'access arguments' => array('access content'),
+  );
+
   return $items;
 }
 
@@ -112,6 +122,16 @@ function kms_user_views_data() {
       'handler' => 'views_handler_field_kms_user_link_edit',
     ),
   );
+
+  $data['users']['exposed_services'] = array(
+    'group' => t('Custom'),
+    'title' => t('Webservices filter'),
+    'help' => t('Custom web services filter'),
+    'filter' => array(
+      'handler' => 'kms_user_handler_filter_exposed_services',
+    ),
+  );
+
   return $data;
 }
 
@@ -1536,3 +1556,68 @@ function kms_user_username_lenght_validate($form, &$form_state) {
     form_set_error('name', t('Username and Password should not exceed 32 characters'));
   }
 }
+
+
+/**
+ * Implements hook_views_api()
+ */
+function kms_user_views_api() {
+  return array(
+    'api' => 3,
+  );
+}
+
+/**
+ * Implementation of hook_views_handlers() to register all of the basic handlers
+ * views uses.
+ */
+function kms_user_views_handlers() {
+  return array(
+    'info' => array(
+      // path to handler files
+      'path' => drupal_get_path('module', 'kms_user') . '/includes/handlers',
+    ),
+    'handlers' => array(
+      // register our custom filter, with the class/file name and parent class
+      'kms_user_handler_filter_exposed_services' => array(
+        'parent' => 'views_handler_filter',
+      ),
+    ),
+  );
+}
+
+/**
+* Return webservice json array
+* @param $webid string contains webservice type
+*
+*/
+function return_websevice_list($webid) {
+  //get all available services
+  $service_list = kms_permissions_get_service_list();
+
+  //Create new array with current service list type
+  $current_sev_list = array();
+  foreach ($service_list as $key => $value) {
+    if($value['TYPENAME'] == $webid){
+      $current_sev_list[$key] = $value;
+    }
+  }
+ 
+  drupal_json_output($current_sev_list);
+  exit();
+}
+
+function return_websevice_list_all() {
+  $service_list = kms_permissions_get_service_list();
+
+  //Create new array with current service list type
+  $current_sev_list = array();
+  foreach ($service_list as $key => $value) {
+      $current_sev_list[$key] = $value['SERVICENAME'];
+  }
+ 
+  return $current_sev_list;
+}
+
+
+

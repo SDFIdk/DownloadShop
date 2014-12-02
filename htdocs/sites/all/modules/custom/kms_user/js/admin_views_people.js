@@ -6,6 +6,65 @@
   Drupal.behaviors.kms_user_admin_views_people = {
     attach: function(context, settings) {
 
+      /* Custom filter for webservice START */
+      //check if service type is selected
+      if($("select[name=\'exposed_services\']").val() != 0){
+        changeServicesList();
+        $(".form-item-seperate-permissions").show();
+      }
+
+      //Trigger when service type select was changed
+      $("select[name=\'exposed_services\']").live("change",function(){
+        //if service type is changed to all
+        if($("select[name=\'exposed_services\']").val() == 0){
+          $("#edit-exposed-services-list").hide();
+          $(".form-item-seperate-permissions").hide();
+          //if seperate permissions is checked, then unclick it
+          if($("#edit-seperate-permissions").is(":checked")){
+            $("#edit-seperate-permissions").click();
+          }
+          $("#edit-exposed-services-list").find("option").remove().end();
+        }else{
+          //show service list
+          $(".form-item-seperate-permissions").show();
+          changeServicesList();
+        }
+      });
+
+      //This functions gets json array of services in selected service type
+      function changeServicesList(){
+        var webid = $("select[name=\'exposed_services\']").val();
+        $("#edit-exposed-services-list").fadeOut();
+        var webid_link = "/kms-user/json/webservices/" + webid;
+        $.getJSON(webid_link, function(data){
+          $("#edit-exposed-services-list").find("option").remove().end();
+          jQuery.each(data, function(index, item){
+            $("#edit-exposed-services-list").append("<option value=\'" + item.SERVICEID + "\'>" + item.SERVICENAME + "</option>");
+          });
+          selectSelectedWebserviceList(window.location.search);
+          $("#edit-exposed-services-list").scrollTop();
+          $("#edit-exposed-services-list").fadeIn();
+        });
+      }
+
+      function selectSelectedWebserviceList(str) {
+        str = decodeURIComponent(str);
+        var chunks = str.split("&");
+        var selectedServices = [];
+        var i = 0;
+        for(var c=0; c < chunks.length; c++) {
+          var split = chunks[c].split("=", 2);
+          if(split[0] == "exposed_services_list[]"){
+            selectedServices[i] = split[1];
+            i++;
+          }
+        }
+        $("#edit-exposed-services-list").val(selectedServices);
+      }
+
+      /* Custom filter for webservice END */
+
+
       $('.field-widget-kms-services .form-checkboxes', context).each(function(){
         $(this).hide();
         var id = $(this).attr('id');

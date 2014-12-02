@@ -513,6 +513,7 @@ $handler->display->display_options['filters']['field_newsletter_value']['value']
   0 => '0',
   1 => '1',
 );
+$handler->display->display_options['filters']['field_newsletter_value']['group'] = 1;
 $handler->display->display_options['filters']['field_newsletter_value']['exposed'] = TRUE;
 $handler->display->display_options['filters']['field_newsletter_value']['expose']['operator_id'] = 'field_newsletter_value_op';
 $handler->display->display_options['filters']['field_newsletter_value']['expose']['label'] = 'Newsletter';
@@ -535,6 +536,7 @@ $handler->display->display_options['filters']['field_newsletter_value']['expose'
 $handler->display->display_options['filters']['field_access_bundles_nid']['id'] = 'field_access_bundles_nid';
 $handler->display->display_options['filters']['field_access_bundles_nid']['table'] = 'field_data_field_access_bundles';
 $handler->display->display_options['filters']['field_access_bundles_nid']['field'] = 'field_access_bundles_nid';
+$handler->display->display_options['filters']['field_access_bundles_nid']['group'] = 1;
 $handler->display->display_options['filters']['field_access_bundles_nid']['exposed'] = TRUE;
 $handler->display->display_options['filters']['field_access_bundles_nid']['expose']['operator_id'] = 'field_access_bundles_nid_op';
 $handler->display->display_options['filters']['field_access_bundles_nid']['expose']['label'] = 'Bundles';
@@ -543,6 +545,34 @@ $handler->display->display_options['filters']['field_access_bundles_nid']['expos
 $handler->display->display_options['filters']['field_access_bundles_nid']['expose']['remember'] = TRUE;
 $handler->display->display_options['filters']['field_access_bundles_nid']['expose']['multiple'] = TRUE;
 $handler->display->display_options['filters']['field_access_bundles_nid']['expose']['remember_roles'] = array(
+  2 => '2',
+  1 => 0,
+  3 => 0,
+  4 => 0,
+  6 => 0,
+  7 => 0,
+  8 => 0,
+  9 => 0,
+  10 => 0,
+);
+/* Filter criterion: Custom: Webservices filter */
+$handler->display->display_options['filters']['exposed_services']['id'] = 'exposed_services';
+$handler->display->display_options['filters']['exposed_services']['table'] = 'users';
+$handler->display->display_options['filters']['exposed_services']['field'] = 'exposed_services';
+$handler->display->display_options['filters']['exposed_services']['value'] = array(
+  'exposed_services' => array(
+    0 => '0',
+    1 => 'GEO',
+    2 => 'WMS',
+  ),
+  'exposed_services_list' => array(),
+);
+$handler->display->display_options['filters']['exposed_services']['exposed'] = TRUE;
+$handler->display->display_options['filters']['exposed_services']['expose']['operator_id'] = '';
+$handler->display->display_options['filters']['exposed_services']['expose']['label'] = 'Webservices filter';
+$handler->display->display_options['filters']['exposed_services']['expose']['operator'] = 'exposed_services_op';
+$handler->display->display_options['filters']['exposed_services']['expose']['identifier'] = 'exposed_services';
+$handler->display->display_options['filters']['exposed_services']['expose']['remember_roles'] = array(
   2 => '2',
   1 => 0,
   3 => 0,
@@ -842,6 +872,7 @@ $translatables['admin_views_user'] = array(
   t('Created date'),
   t('Active'),
   t('Newsletter'),
+  t('Webservices filter'),
   t('System'),
   t('Seperate Permissions'),
   t('Webservices (GEO)'),
