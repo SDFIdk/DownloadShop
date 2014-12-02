@@ -4,7 +4,6 @@
  * @file
  * Default view for user administration.
  */
-
 $view = new view();
 $view->name = 'admin_views_user';
 $view->description = 'List, add, and edit users.';
@@ -560,12 +559,9 @@ $handler->display->display_options['filters']['exposed_services']['id'] = 'expos
 $handler->display->display_options['filters']['exposed_services']['table'] = 'users';
 $handler->display->display_options['filters']['exposed_services']['field'] = 'exposed_services';
 $handler->display->display_options['filters']['exposed_services']['value'] = array(
-  'exposed_services' => array(
-    0 => '0',
-    1 => 'GEO',
-    2 => 'WMS',
-  ),
+  'exposed_services' => '0',
   'exposed_services_list' => array(),
+  'seperate_permissions' => 0,
 );
 $handler->display->display_options['filters']['exposed_services']['exposed'] = TRUE;
 $handler->display->display_options['filters']['exposed_services']['expose']['operator_id'] = '';
