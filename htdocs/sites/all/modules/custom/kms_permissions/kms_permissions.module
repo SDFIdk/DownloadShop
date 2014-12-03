@@ -26,27 +26,35 @@ function kms_permissions_menu() {
  * Implements hook_ctools_plugin_directory().
  */
 function kms_permissions_ctools_plugin_directory($module, $plugin) {
-  // we'll be nice and limit scandir() calls
-  if ($module == 'ctools' && $plugin == 'content_types') {
-    return 'plugins/content_types';
+  $path = '';
+  switch ($module) {
+    case 'ctools':
+      $path = 'plugins/' . $plugin;
+      break;
+
+    case 'kms_oci_queue':
+      $path = 'plugins/kms_oci_queue/' . $plugin;
+      break;
   }
-  if ($module == 'kms_oci_queue') {
-    return 'plugins/kms_oci_queue/' . $plugin;
-  }
+
+  return $path;
 }
 
 /**
- * Implements hook_ctools_plugin_directory().
+ * Implements hook_permission().
  */
 function kms_permissions_permission() {
   return array(
     'administer kms permissions' => array(
       'title' => t('Administer KMS permissions'),
-      'description' => t('Administer KMS permissions '),
+      'description' => t('Administer KMS permissions'),
     ),
   );
 }
 
+/**
+ * Implements hook_library().
+ */
 function kms_permissions_library() {
   // jQuery Foggy plugin.
   $libraries['jquery.foggy'] = array(
@@ -62,7 +70,36 @@ function kms_permissions_library() {
 }
 
 /**
- * Implementation of hook_action_info().
+ * Implements hook_cronapi().
+ */
+function kms_permissions_cronapi($op, $job = NULL) {
+  switch ($op) {
+    case 'list':
+      return array(
+        'kms_permissions_cron_cleanup_dead_services' => 'Remove dead services in postgres',
+      );
+
+    case 'rule':
+      switch ($job) {
+        case 'kms_permissions_cron_cleanup_dead_services':
+          return '3 58 * * *';
+      }
+      break;
+
+    case 'execute':
+      switch ($job) {
+        case 'kms_permissions_cron_cleanup_dead_services':
+          module_load_include('inc', 'kms_permissions', 'includes/kms_perms_cron');
+          kms_permissions_cron_cleanup_dead_services();
+          break;
+      }
+      break;
+  }
+
+}
+
+/**
+ * Implements hook_action_info().
  */
 function kms_permissions_action_info() {
   return array(
@@ -86,8 +123,8 @@ function kms_permissions_views_api() {
 }
 
 /**
-* Implements hook_field_widget_info().
-*/
+ * Implements hook_field_widget_info().
+ */
 function kms_permissions_field_widget_info() {
   return array(
     'kms_applications' => array(
@@ -110,8 +147,8 @@ function kms_permissions_field_widget_info() {
 }
 
 /**
-* Implements hook_field_widget_settings_form().
-*/
+ * Implements hook_field_widget_settings_form().
+ */
 function kms_permissions_field_widget_settings_form($field, $instance) {
   $settings = $instance['widget']['settings'];
   if ($instance['widget']['type'] == 'kms_services') {
@@ -147,7 +184,6 @@ function kms_permissions_field_widget_form(&$form, &$form_state, $field, $instan
       $default_value = array();
 
       if (is_array($items)) {
-        // Put current field values in
         foreach ($items as $key => $item) {
           $default_value[] = $item['value'];
         }
@@ -172,10 +208,9 @@ function kms_permissions_field_widget_form(&$form, &$form_state, $field, $instan
         '#type' => $multiple ? 'checkboxes' : 'radios',
         '#title' => ($instance['widget']['type'] == 'kms_applications' ? t('KMS applications') : t('KMS services')),
         '#default_value' => $default_value,
-        '#options' => $options
+        '#options' => $options,
       );
   }
-
 
   $element += array(
     '#value_key' => $value_key,
@@ -473,6 +508,9 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
       case 'kms_permissions_applications':
 
           $application_data = kms_permissions_get_application_list();
+          if (empty($application_data)) {
+            $application_data = array();
+          }
 
           foreach ($application_data as $application) {
             foreach ($items as $item) {
@@ -546,10 +584,6 @@ function kms_permissions_form_user_profile_form_alter(&$form, &$form_state) {
   foreach(_kms_permissions_get_access_bundles('default') as $bid) {
 
   }
-  // Atodo: I let this stay in case of change request. Remove if not needed!
-  // Hide default bundle checkboxes.
-  //  $access_bundle_options = &$form['field_access_bundles'][$form['field_access_bundles']['#language']]['#options'];
-  //  $access_bundle_options = array_diff_key($access_bundle_options, array_flip(_kms_permissions_get_default_bundles()));
 
   $services_description = array(
     'title' => array(
@@ -816,6 +850,7 @@ function kms_permissions_access_bundle_update($form, $form_state) {
     // If a bundle is set as a default bundle or WAS set as a default bundle, update all users.
     $uids = _kms_permissions_get_all_users();
     $action = KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE;
+    $message = 'Bundle: "@bundle" saved. Affects @count users.';
     if(!empty($uids)) {
       kms_permissions_run_batch('default_bundle_attach_users', $bid, $uids);
     }
@@ -824,12 +859,14 @@ function kms_permissions_access_bundle_update($form, $form_state) {
     // When a bundle get updated, find all users related to that bundle, and queue them for updating.
     $uids = _kms_permissions_get_users_by_bid($bid);
     $action = KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE;
+    $message = 'Bundle: "@bundle" saved. Affects @count users.';
     // Clear cached perm filter form at admin/people.
     cache_clear_all(KMS_USER_CACHE_ID_ADMIN_VIEWS_PEOPLE_PERMS_FORM, 'cache');
   }
   elseif($bundle_is_deleted) {
     $uids = _kms_permissions_get_users_by_bid($bid);
     $action = KMS_OCI_QUEUE_ACTION_BUNDLE_DELETE;
+    $message = 'Bundle: "@bundle" is deleted. Affects @count users.';
   }
 
   // Only create a job if there are any users using the bundle.
@@ -843,14 +880,14 @@ function kms_permissions_access_bundle_update($form, $form_state) {
       ),
     );
     $job_params['action_details'] = format_string(
-      'Bundle: "@bundle" saved. Affects @count users.',
+      $message,
       array(
         '@bundle' => $bundle->title,
         '@count' => count($uids),
       )
     );
-    KmsOciQueueJob::create($job_params);
-    KmsOciQueueJob::create($job_params, 'kms_permissions');
+    $job = KmsOciQueueJob::create($job_params);
+    $job = KmsOciQueueJob::create($job_params, 'kms_permissions');
   }
 
   if (!empty($bundle->bounding_box_diff)) {
@@ -1831,7 +1868,7 @@ function _kms_permissions_get_bundles_by_sids($sids) {
  */
 function _kms_permissions_get_uids_by_bids($bids) {
   $query = db_select('field_data_field_access_bundles', 'ab');
-  $query->fields('ab', array('entity_id'));
+  $query->fields('ab', array('entity_id', 'entity_id'));
   $query->condition('ab.field_access_bundles_nid', $bids, 'IN');
   $result = $query->execute();
   return array_keys($result->fetchAllKeyed());

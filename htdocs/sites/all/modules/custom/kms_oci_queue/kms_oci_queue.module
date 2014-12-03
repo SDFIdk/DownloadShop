@@ -15,6 +15,7 @@ define('KMS_OCI_QUEUE_ACTION_USER_SAVE', 'user_save');
 define('KMS_OCI_QUEUE_ACTION_USER_DELETE', 'user_delete');
 define('KMS_OCI_QUEUE_ACTION_PERMS_ATTACH', 'permissions_attach');
 define('KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE', 'bundle_save');
+// Atodo: Create actual job for this!!
 define('KMS_OCI_QUEUE_ACTION_BUNDLE_DELETE', 'bundle_delete');
 define('KMS_OCI_QUEUE_ACTION_CLONE_USER_PERMS', 'clone_user_perms');
 define('KMS_OCI_QUEUE_ACTION_REMOVE_ALL_BUNDLES', 'remove_all_bundles');
@@ -76,10 +77,23 @@ function kms_oci_queue_ctools_plugin_type() {
 }
 
 /**
+* Implements hook_ctools_plugin_directory().
+ */
+function kms_oci_queue_ctools_plugin_directory($module, $plugin) {
+  $path = '';
+  switch ($module) {
+    case 'kms_system_status':
+      $path = 'plugins/system_status';
+      break;
+  }
+
+  return $path;
+}
+
+/**
  * Implements hook_cronapi().
  */
 function kms_oci_queue_cronapi($op, $job = NULL) {
-  _adapt_debug('mikkel', $op);
   switch ($op) {
     case 'list':
       return array(
@@ -94,10 +108,10 @@ function kms_oci_queue_cronapi($op, $job = NULL) {
           return '*/1 * * * *';
 
         case 'kms_oci_queue_cleanup_jobs':
-          return '02 */4 * * *';
+          return '4 */2 * * *';
 
         case 'kms_oci_queue_consistency_check_services_diff':
-          return '03 */4 * * *';
+          return '6 */4 * * *';
       }
       break;
 
@@ -204,7 +218,7 @@ function kms_oci_queue_query_creator_process_job($job, $item, $exe_queue) {
     $plugins,
     function($plugin) use ($jid, $creator_item, $exe_queue) {
       // Only load plugins corresponding to the queue item action.
-      if ($plugin['type'] != $creator_item->action) {
+      if ($plugin['action'] != $creator_item->action) {
         return;
       }
       // Because Drupal auto loading is flaky we have to do it ourselves, sigh.
@@ -234,7 +248,7 @@ function kms_oci_queue_query_run($item) {
     module_load_include('inc', 'kms_permissions', 'includes/kms_perms_diff');
     // Only load plugins corresponding to the queue item action.
 
-    if ($plugin['type'] != $item->action) {
+    if ($plugin['action'] != $item->action) {
       return;
     }
     // Accumulate output.
@@ -348,10 +362,9 @@ function kms_oci_queue_admin_page() {
   $output['queues'] = kms_oci_queue_admin_page_jobs('jobs_waiting');
   $output['queues'] += kms_oci_queue_admin_page_jobs('jobs_done');
 
-
   $module_path = drupal_get_path('module', 'kms_oci_queue');
-  $output['#attached']['js'][] = $module_path .'/js/kms_oci_queue_reports.js';
-  $output['#attached']['css'][] = $module_path .'/css/kms_oci_queue_reports.css';
+  $output['#attached']['js'][] = $module_path . '/js/kms_oci_queue_reports.js';
+  $output['#attached']['css'][] = $module_path . '/css/kms_oci_queue_reports.css';
   $output['#attached']['library'][] = array('beautytips', 'beautytips-module');
   $output['#attached']['library'][] = array('beautytips', 'excanvas_r3');
   if (variable_get('beautytips_ltr', FALSE)) {
@@ -1049,11 +1062,6 @@ function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db
   module_load_include('inc', 'kms_oci_queue', 'includes/kms_oci_queue.consistency');
   $run_mode = function_exists('drush_main') ? 'drush' : 'normal';
 
-  $protected_oracle_users = array(
-    'AE6475A9DCDD5CC5E04400144FAD6027',
-    '33191',
-  );
-
   $wms_ids = kms_permissions_get_service_ids_by_type('wms');
 
   if ($run_mode == 'normal') {
@@ -1115,20 +1123,18 @@ function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db
                 $output[] = $sql->generate('insert');
               }
 
-              if (!in_array($userid, $protected_oracle_users)) {
-                $sids_oracle = array_unique((array) $user->{'diff-Services-Oracle'});
-                $sids_oracle = !empty($sids_oracle['id']) ? $sids_oracle['id'] : array();
-                if (!is_array($sids_oracle)) {
-                  $sids_oracle = array($sids_oracle);
-                }
-                foreach ($sids_oracle as $sid) {
-                  $service_data = array(
-                    'userid' => $userid,
-                    'serviceid' => $sid,
-                  );
-                  $sql = new KmsOciQueueSql('services', $service_data);
-                  $output[] = $sql->generate('delete');
-                }
+              $sids_oracle = array_unique((array) $user->{'diff-Services-Oracle'});
+              $sids_oracle = !empty($sids_oracle['id']) ? $sids_oracle['id'] : array();
+              if (!is_array($sids_oracle)) {
+                $sids_oracle = array($sids_oracle);
+              }
+              foreach ($sids_oracle as $sid) {
+                $service_data = array(
+                  'userid' => $userid,
+                  'serviceid' => $sid,
+                );
+                $sql = new KmsOciQueueSql('services', $service_data);
+                $output[] = $sql->generate('delete');
               }
 
               if (!empty($output)) {
@@ -1163,4 +1169,158 @@ function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db
       format_plural($i, '1 user', '@count users') . ' processed.'
     );
   }
+}
+
+/**
+ * Validates if the user is already in the kms oci queue.
+ *
+ * @param array $form
+ *   Drupal form array.
+ * @param array $form_state
+ *   Drupal form state array.
+ */
+function _kms_oci_queue_validate_job_blocker_user($form, &$form_state) {
+  $user = $form['#user'];
+  if (KmsOciQueueJobBlocker::userIsBlocked($user->uid)) {
+    form_set_error('submit', t('A job with same user is in the queue. Please wait until it has been executed.'));
+    // GST wants form to be reset and reflect what is stored in drupal.
+    // So we redirect to the edit page.
+    $path = sprintf('user/%d/edit', $user->uid);
+    $_GET['destination'] = $path;
+    drupal_goto($path);
+  }
+
+}
+
+/**
+ * Validates if the users using the bundle is already in the kms oci queue.
+ *
+ * @param array $form
+ *   Drupal form array.
+ * @param array $form_state
+ *   Drupal form state array.
+ */
+function _kms_oci_queue_validate_job_blocker_bundle($form, &$form_state) {
+  if (_kms_oci_queue_validate_job_blocker_bundle_is_blocked($form)) {
+    form_set_error('submit', t('A job that shares users with this bundle is in the queue. Please wait until it has been executed.'));
+    // GST wants form to be reset and reflect what is stored in drupal.
+    // So we redirect to the edit page.
+    $node = $form['#node'];
+    $path = sprintf('node/%d/edit', $node->nid);
+    $_GET['destination'] = $path;
+    drupal_goto($path);
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function kms_oci_queue_form_user_profile_form_alter(&$form, &$form_state, $form_id) {
+  if (_kms_oci_queue_validate_job_blocker_user_is_blocked($form)) {
+    drupal_set_message(
+      t('A job with same user is in the queue. Please wait until it has been executed.'),
+      'warning',
+      FALSE
+    );
+  }
+  array_unshift($form['#validate'], '_kms_oci_queue_validate_job_blocker_user');
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function kms_oci_queue_form_access_bundle_node_form_alter(&$form, &$form_state, $form_id) {
+  if (_kms_oci_queue_validate_job_blocker_bundle_is_blocked($form)) {
+    drupal_set_message(
+      t('A job that shares users with this bundle is in the queue. Please wait until it has been executed.'),
+      'warning',
+      FALSE
+    );
+  }
+  array_unshift($form['#validate'], '_kms_oci_queue_validate_job_blocker_bundle');
+}
+
+/**
+ * Is the current bundle blocked or not.
+ *
+ * @param array $form
+ *   Drupal form array.
+ *
+ * @return bool
+ *   Is the current bundle blocked or not?
+ */
+function _kms_oci_queue_validate_job_blocker_bundle_is_blocked($form) {
+  module_load_include('inc', 'kms_oci_queue', 'includes/kms_oci_queue_job_blocker');
+  $node = $form['#node'];
+  if (!empty($node->nid)) {
+    $uids = _kms_permissions_get_uids_by_bids(array($node->nid));
+    return kmsOciQueueJobBlocker::usersAreBlocked($uids);
+  }
+  return FALSE;
+}
+
+/**
+ * Is the current bundle blocked or not.
+ *
+ * @param array $form
+ *   Drupal form array.
+ *
+ * @return bool
+ *   Is the current bundle blocked or not?
+ */
+function _kms_oci_queue_validate_job_blocker_user_is_blocked($form) {
+  module_load_include('inc', 'kms_oci_queue', 'includes/kms_oci_queue_job_blocker');
+  $user = $form['#user'];
+  if (!empty($user->uid)) {
+    return KmsOciQueueJobBlocker::userIsBlocked($user->uid);
+  }
+  return FALSE;
+}
+
+/**
+ * Implements hook_views_bulk_operations_form_alter().
+ */
+function kms_oci_queue_views_bulk_operations_form_alter(&$form, &$form_state, $vbo) {
+  if (empty($form_state['values']) || !isset($form_state['values']['select_all'])) {
+    return;
+  }
+
+  $values = $form_state['values'];
+  $operations = array(
+    'action::kms_user_vbo_add_access_bundles',
+    'action::kms_user_vbo_clear_access_bundles',
+    'action::kms_permissions_vbo_clone_user_perms',
+  );
+  $steps = array(
+    'views_bulk_operations_confirm_form',
+    'views_bulk_operations_config_form',
+  );
+
+  if ($values['select_all']) {
+    $uids = _kms_permissions_get_all_users();
+  }
+  else {
+    $uids = array_filter($values['views_bulk_operations']);
+  }
+
+  if (
+    in_array($form_state['step'], $steps)
+      && in_array($values['operation'], $operations)
+        && KmsOciQueueJobBlocker::usersAreBlocked($uids)
+  ) {
+    $destination = drupal_get_destination();
+    drupal_set_message(
+      t(
+        'A job that shares users with action. Please wait until it has been executed. Go !back.',
+        array('!back' => l(t('back'), $destination['destination']))
+      ),
+      'warning'
+    );
+    foreach (element_children($form) as $key) {
+      if (!in_array($key, array('show_view_elements'))) {
+        unset($form[$key]);
+      }
+    }
+  }
+
 }

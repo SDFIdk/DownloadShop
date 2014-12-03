@@ -1,0 +1,6 @@
+name = "KMS System Status"
+package = KMS
+description = "Unified way of reporting selected system statuses as a REST endpoint"
+core = 7.x
+
+dependencies[] = ctools

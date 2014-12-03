@@ -2,7 +2,7 @@
 
 PROJECT="kms.dev"
 SETTINGS_FILE="mikkel.settings.php"
-REPO="svn+ssh://svnhost/data/subversion/drupal/kms/trunk/htdocs"
+REPO="svn+ssh://svnhost/data/subversion/drupal/kms/branches/GST-59/htdocs"
 
 BASE_PATH=$(echo `pwd`);
 

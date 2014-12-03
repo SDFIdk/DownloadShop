@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * Kms oci queue install.
+ */
 
 /**
  * Implements hook_install().
@@ -25,16 +29,6 @@ function kms_oci_queue_install() {
     file_prepare_directory($path, FILE_CREATE_DIRECTORY);
   }
 
-}
-
-function kms_oci_queue_uninstall() {
-  // Atodo: find a solution to load KmsOciQueueJob.
-//  module_load_include('inc', 'kms_oci_queue', 'includes/kms_oci_queue_job');
-//  foreach(KmsOciQueueJob::$queues as $queue) {
-//    $q = DrupalQueue::get($queue['name']);
-//    $q->deleteQueue();
-//    variable_del('queue_class_' . $queue['name']);
-//  }
 }
 
 /**
@@ -184,5 +178,52 @@ function kms_oci_queue_schema() {
     ),
   );
 
+  $schema['kms_oci_queue_job_user_relations'] = array(
+    'description' => 'Maintains user/job relationships.',
+    'fields' => array(
+      'jid' => array(
+        'description' => 'The job id.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'uid' => array(
+        'description' => 'The user ID.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'indexes' => array(
+      'jid_uid' => array('jid', 'uid'),
+      'jid' => array('jid'),
+    ),
+    'foreign keys' => array(
+      'job' => array(
+        'table' => 'kms_oci_queue_job',
+        'columns' => array('jid' => 'jid'),
+      ),
+      'user' => array(
+        'table' => 'user',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
+  );
+
   return $schema;
+}
+
+/**
+ * Add kms_oci_queue_job_user_relations schema.
+ *
+ * @author Mikkel Jakobsen <mikkel@adapt.dk>
+ */
+function kms_oci_queue_update_7001() {
+  $schema_name = 'kms_oci_queue_job_user_relations';
+  if (!db_table_exists($schema_name)) {
+    $schema = kms_oci_queue_schema();
+    db_create_table($schema_name, $schema[$schema_name]);
+  }
 }

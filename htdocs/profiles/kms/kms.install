@@ -352,28 +352,25 @@ function kms_update_7011(&$sandbox) {
     'node_export',
     'uuid',
   ));
-  // This breaks for some reason. Import the node export manually instead.
-  /*
-  $filename = sprintf(
-    "%s/%s/%s",
-    DRUPAL_ROOT,
-    drupal_get_path('profile', 'kms'),
-    'kms_partner.node_export.inc'
-  );
-  $handle = fopen($filename, "r");
-  $export = fread($handle, filesize($filename));
-  fclose($handle);
-  node_export_import($export);
-  */
 }
 
+/**
+ * Enable kms_system_status module.
+ *
+ * @author Mikkel Jakobsen <mikkel@adapt.dk>
+ */
+function kms_update_7012(&$sandbox) {
+  module_enable(array(
+    'kms_system_status',
+  ));
+}
 
 /**
 * Enable commerce_checkout_order_created_date_update rule.
 *
 * @author Andrius Prudnikovas <andrius@adapt.dk>
 */
-function kms_update_7012() {
+function kms_update_7013() {
   $rules_config = rules_config_load('commerce_checkout_order_created_date_update');
   $rules_config->active = TRUE;
   $rules_config->save();

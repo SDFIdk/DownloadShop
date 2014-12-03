@@ -8,7 +8,7 @@
  */
 
 $plugin = array(
-  'type' => KMS_OCI_QUEUE_ACTION_USER_DELETE,
+  'action' => KMS_OCI_QUEUE_ACTION_USER_DELETE,
   'query_creator_run' => array(
     'function' => 'kms_user_user_delete_query_creator_run',
   ),

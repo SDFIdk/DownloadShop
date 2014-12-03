@@ -82,7 +82,7 @@ function kms_perms_live_get_active_jobs($op) {
     $plugins = ctools_get_plugins('kms_oci_queue', 'queue_runner');
     $options = array();
     array_walk($plugins, function($plugin) use (&$options) {
-      $options[$plugin['type']] = $plugin['type'];
+      $options[$plugin['action']] = $plugin['action'];
     });
     ksort($options);
   }

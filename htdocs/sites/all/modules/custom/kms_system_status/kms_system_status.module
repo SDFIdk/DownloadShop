@@ -1,0 +1,55 @@
+<?php
+
+define('KMS_SYSTEM_STATUS_CODE_PASSED', 0);
+define('KMS_SYSTEM_STATUS_CODE_ERROR', 1);
+define('KMS_SYSTEM_STATUS_CODE_NOT_READY', 2);
+
+/**
+ * Implements hook_ctools_plugin_type().
+ */
+function kms_system_status_ctools_plugin_type() {
+  return array(
+    'system_status' => array(
+      'use hooks' => FALSE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu().
+ */
+function kms_system_status_menu() {
+  $items['system-status/%/%'] = array(
+    'title' => 'Get system status of a certain type',
+    'page callback' => 'kms_system_status_get',
+    'access arguments' => array('access content'),
+    'page arguments' => array(1, 2),
+    'type' => MENU_CALLBACK,
+  );
+  return $items;
+}
+
+/**
+ * Get system status from relevant plugin.
+ *
+ * @param string $type
+ *   Plugin id or type. Eg.: 'consistency'.
+ */
+
+/**
+ * Get system status from relevant plugin.
+ *
+ * @param string $type
+ *   The type of plugin (in ctools context: plugin_id). Eg.: 'consistency'.
+ * @param string $subtype
+ *   A sub level of type. Eg.: 'services'.
+ */
+function kms_system_status_get($type, $subtype) {
+  $params = drupal_get_query_parameters();
+  $mode = !empty($params['mode']) ? $params['mode'] : 'simple';
+  ctools_include('plugins');
+  $plugin = ctools_get_plugins('kms_system_status', 'system_status', $type);
+  if ($function = ctools_plugin_get_function($plugin, 'get')) {
+    $function($subtype, $mode);
+  }
+}

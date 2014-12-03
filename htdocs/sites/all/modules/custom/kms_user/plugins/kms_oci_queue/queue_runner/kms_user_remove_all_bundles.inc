@@ -9,13 +9,14 @@
 
 
 $plugin = array(
-  'type' => KMS_OCI_QUEUE_ACTION_REMOVE_ALL_BUNDLES,
+  'action' => KMS_OCI_QUEUE_ACTION_REMOVE_ALL_BUNDLES,
   'query_creator_run' => array(
     'function' => 'kms_user_remove_all_bundles_query_creator_run',
   ),
   'query_run' => array(
     'function' => 'kms_user_remove_all_bundles_query_run',
   ),
+  'fixed_permissions' => FALSE,
 );
 
 /**
@@ -67,6 +68,8 @@ function kms_user_remove_all_bundles_query_creator_run($jid, $creator_item, $exe
 
     $exe_queue->createItem((object) $exe_queue_item);
   }
+
+  KmsOciQueueJobUserRelations::update($job, $uids);
 
   return $i;
 }

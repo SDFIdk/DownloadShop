@@ -6,6 +6,8 @@ define('KMS_USER_PAGE_CONTACT', 'node/7');
 define('KMS_USER_VIEW_NAME_ADMIN_VIEWS_USER', 'admin_views_user');
 define('KMS_USER_VIEW_DISPLAY_ADMIN_VIEWS_USER', 'system_1');
 define('KMS_USER_CACHE_ID_ADMIN_VIEWS_PEOPLE_PERMS_FORM', 'kms_user:admin_views_people_perms_form');
+define('KMS_USER_VALIDATE_NAME_LENGTH', 32);
+define('KMS_USER_VALIDATE_PASS_LENGTH', 32);
 
 /**
  * Implements hook_init().
@@ -140,7 +142,7 @@ function _kms_user_access_callback_deny_system_account() {
   $args = func_get_args();
   $access_callback = array_pop($args);
   $original_access = TRUE;
-  if(!empty($access_callback) && is_string($access_callback)) {
+  if (!empty($access_callback) && is_string($access_callback)) {
     $original_access = call_user_func_array($access_callback, $args);
   }
   $roles = $user->roles;
@@ -152,7 +154,7 @@ function _kms_user_access_callback_deny_system_account() {
 }
 
 /**
- * Implements hook_cron.
+ * Implements hook_cron().
  */
 function kms_user_cron() {
   _kms_user_cron_expire_users();
@@ -188,12 +190,12 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
     switch ($form_id) {
       case 'user_profile_form':
         // Bundle in service list
-        // Add CSS
+        // Add CSS.
         $form['#attached']['css'][] = drupal_get_path('module', 'kms_user') . '/css/kms_user.css';
-        // Field loop
+        // Field loop.
         foreach ($form as $field_name => $field_value) {
-          // Only use bundle fields
-          if (strpos($field_name, 'field_bundle_webservices') !== false) {
+          // Only use bundle fields.
+          if (strpos($field_name, 'field_bundle_webservices') !== FALSE) {
             if (!empty($field_value['und']['#options'])) {
               foreach ($field_value['und']['#options'] as $service_id => $service_name) {
                 $form[$field_name]['und']['#options'][$service_id] = $service_name;
@@ -201,20 +203,23 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
             }
           }
         }
-        // The terms and conditions must(!) be accepted on the register-form. After that the terms and conditions
-        // can NOT be altered by the user. So we change the default value to 'accepted', and disable the checkbox
+        // The terms and conditions must(!) be accepted on the register-form.
+        // After that the terms and conditions can NOT be altered by the user.
+        // So we change the default value to 'accepted',
+        // and disable the checkbox.
         $form['field_terms_and_conditions']['#default_value'] = 1;
         $form['field_terms_and_conditions'][LANGUAGE_NONE]['#default_value'] = 1;
         $form_state['field']['field_terms_and_conditions'][LANGUAGE_NONE]['instance']['default_value'][0]['value'] = 1;
         $form['field_terms_and_conditions']['#disabled'] = TRUE;
 
-        // We need to store any changes to the password
+        // We need to store any changes to the password.
         $form['#submit'][] = '_kms_user_submit_update_user_pass';
         // Store user data in Oracle.
         $form['#submit'][] = '_kms_user_submit_update_user_oracle';
-        // The user-profile-form has some trouble remembering the user-provided values for
-        // the fields "field_contact_me", and "field_newsletter". We must fetch the values
-        // and set the fields accordingly
+        // The user-profile-form has some trouble remembering
+        // the user-provided values for the fields
+        // "field_contact_me", and "field_newsletter".
+        // We must fetch the values and set the fields accordingly.
         $user_contact_me = db_select('field_data_field_contact_me', 'cme')
         ->fields('cme', array('field_contact_me_value'))
         ->condition('entity_id', $form['#user']->uid, '=')
@@ -246,7 +251,7 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
             'kms_user' => array(
               'isSuperAdmin' => kms_user_is_superadmin($user),
               'uid' => $user->uid,
-              ),
+            ),
           ),
           'setting'
         );
@@ -263,13 +268,12 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
       case 'user_register_form':
         // They do not want a fieldset title on address.
         $form['field_address'][LANGUAGE_NONE][0]['#title'] = '';
-        // We need to store the new password
+        // We need to store the new password.
         $form['#submit'][] = '_kms_user_insert_user_pass';
         // Store user data in Oracle.
         $form['#submit'][] = '_kms_user_submit_insert_user_oracle';
         break;
     }
-
 
   }
 
@@ -292,6 +296,12 @@ function _kms_user_user_pass_validate($form, &$form_state) {
     // No success, try to load by name.
     $users = user_load_multiple(array(), array('name' => $name, 'status' => '1'));
     $account = reset($users);
+  }
+  if (strlen($form_state['values']['pass']) > KMS_USER_VALIDATE_PASS_LENGTH) {
+    form_set_error(
+      'pass',
+      t('Password should not exceed @len characters', array('@len' => KMS_USER_VALIDATE_PASS_LENGTH))
+    );
   }
 
   if (isset($account->uid)) {
@@ -379,12 +389,21 @@ proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
  * @return void
  */
 function _kms_user_validate_username($element, &$form_state, $form) {
-    _kms_user_validate_chars(
-      $element,
-      "#(\/)|(\\\\)|(=)|(\?)|(\&)|(\.)|(\@)|(\s)|([æøå])#uis"
-    );
+  _kms_user_validate_chars(
+    $element,
+    "#(\/)|(\\\\)|(=)|(\?)|(\&)|(\.)|(\@)|(\s)|([æøå])#uis"
+  );
+  _kms_user_validate_length($element, KMS_USER_VALIDATE_NAME_LENGTH);
 }
 
+/**
+ * Validate allowed characters.
+ *
+ * @param array $element
+ *   Drupal form element.
+ * @param string $pattern
+ *   Regex match pattern.
+ */
 function _kms_user_validate_chars($element, $pattern) {
   if (empty($element['#value'])) {
     return;
@@ -411,6 +430,33 @@ function _kms_user_validate_chars($element, $pattern) {
     return;
   }
 
+}
+
+/**
+ * Validate form element value length..
+ *
+ * @param array $element
+ *   Drupal form element.
+ * @param integer $length
+ *   Allowed string length.
+ */
+function _kms_user_validate_length($element, $length) {
+  if (empty($element['#value'])) {
+    return;
+  }
+
+  if (strlen($element['#value']) > $length) {
+    form_error(
+      $element,
+      t(
+        '"!element" should not exceed @len characters',
+        array(
+          '!element' => $element['#title'],
+          '@len' => $length,
+        )
+      )
+    );
+  }
 }
 
 /**
@@ -1531,7 +1577,6 @@ function kms_user_views_bulk_operations_form_alter(&$form, &$form_state, $vbo) {
   }
 }
 
-
 /**
  * Implements hook_form_FORM_ID_alter().
  */
@@ -1618,6 +1663,4 @@ function return_websevice_list_all() {
  
   return $current_sev_list;
 }
-
-
 

@@ -8,13 +8,14 @@
  */
 
 $plugin = array(
-  'type' => KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE,
+  'action' => KMS_OCI_QUEUE_ACTION_BUNDLE_SAVE,
   'query_creator_run' => array(
     'function' => 'kms_permissions_bundle_save_query_creator_run',
   ),
   'query_run' => array(
     'function' => 'kms_permissions_bundle_save_query_run',
   ),
+  'fixed_permissions' => FALSE,
 );
 
 /**
@@ -60,6 +61,8 @@ function kms_permissions_bundle_save_query_creator_run($jid, $creator_item, $exe
 
     $exe_queue->createItem((object) $exe_queue_item);
   }
+  // We update the relations because we want to add subusers as well.
+  KmsOciQueueJobUserRelations::update($job, $uids);
 
   return $i;
 }

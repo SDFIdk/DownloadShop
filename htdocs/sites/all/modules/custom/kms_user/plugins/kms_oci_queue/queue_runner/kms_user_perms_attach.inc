@@ -9,13 +9,14 @@
 
 
 $plugin = array(
-  'type' => KMS_OCI_QUEUE_ACTION_PERMS_ATTACH,
+  'action' => KMS_OCI_QUEUE_ACTION_PERMS_ATTACH,
   'query_creator_run' => array(
     'function' => 'kms_user_perms_attach_query_creator_run',
   ),
   'query_run' => array(
     'function' => 'kms_user_perms_attach_query_run',
   ),
+  'fixed_permissions' => TRUE,
 );
 
 /**

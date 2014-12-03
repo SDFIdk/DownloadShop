@@ -137,6 +137,11 @@ class KmsOciQueueJob {
       case self::STATUS_FAILED:
         $severity = WATCHDOG_ERROR;
         break;
+
+      case self::STATUS_DONE:
+        KmsOciQueueJobUserRelations::delete($this);
+        break;
+
     }
     $job = $this->job;
     $job->status = $status;
@@ -172,7 +177,21 @@ class KmsOciQueueJob {
     $job_saved = KmsOciQueueJobDb::insertJob($job);
     if ($job_saved) {
       self::log($job->jid, t('Job %jid created'), array('%jid' => $job->jid));
-      return KmsOciQueueJobFactory::get($job->jid);
+      $job = KmsOciQueueJobFactory::get($job->jid);
+      // Find plugins of same action
+      // and save job/user relations if the job does not have fixed permissions.
+      $plugins = ctools_get_plugins('kms_oci_queue', 'queue_runner');
+      foreach ($plugins as $plugin) {
+        $plugin += array('fixed_permissions' => FALSE);
+        if (
+          $plugin['action'] == $job->action
+            && $plugin['fixed_permissions'] == FALSE
+              && (!empty($params['params']) && !empty($params['params']['uids']))
+        ) {
+          KmsOciQueueJobUserRelations::save($job, $params['params']['uids']);
+        }
+      }
+      return $job;
     }
   }
 
@@ -186,9 +205,8 @@ class KmsOciQueueJob {
     db_delete('kms_oci_queue_log')
       ->condition('jid', $this->jid)
       ->execute();
-    db_delete('kms_oci_queue_job_group')
-      ->condition('jid', $this->jid)
-      ->execute();
+    KmsOciQueueJobGroup::deleteByJob($this);
+    KmsOciQueueJobUserRelations::delete($this);
   }
 
   public function finishQueue() {
@@ -264,13 +282,15 @@ class KmsOciQueueJob {
 
 class KmsOciQueueJobDb {
 
+  const schema = "kms_oci_queue_job";
+
   public static function insertJob($job){
     $job->timestamp = time();
-    return drupal_write_record('kms_oci_queue_job', $job);
+    return drupal_write_record(self::schema, $job);
   }
 
   public static function updateJob($job){
-    return drupal_write_record('kms_oci_queue_job', $job, 'jid');
+    return drupal_write_record(self::schema, $job, 'jid');
   }
 
   public static function loadJob($jid){
@@ -285,7 +305,7 @@ class KmsOciQueueJobDb {
   }
 
   public static function deleteJob($jid){
-    db_delete('kms_oci_queue_job')
+    db_delete(self::schema)
       ->condition('jid', $jid)
       ->execute();
   }
@@ -315,6 +335,8 @@ class KmsOciQueueJobDb {
 
 class KmsOciQueueJobGroup {
 
+  const schema = "kms_oci_queue_job_group";
+
   protected $gid = 0;
 
   public function __construct() {
@@ -330,16 +352,16 @@ class KmsOciQueueJobGroup {
     }
   }
 
-  protected function insertJob($job){
+  protected function insertJob(KmsOciQueueJob $job){
     $group_job = new stdClass();
     $group_job->gid = $this->gid;
     $group_job->jid = $job->jid;
-    drupal_write_record('kms_oci_queue_job_group', $group_job);
+    drupal_write_record(self::schema, $group_job);
     return $group_job->jid;
   }
 
   public static function getGidFromJid($jid) {
-    $query = db_select('kms_oci_queue_job_group', 'g');
+    $query = db_select(self::schema, 'g');
     $query->fields('g', array('gid'));
     $query->condition('g.jid', $jid, '=');
     $result = $query->execute()->fetchField();
@@ -347,10 +369,16 @@ class KmsOciQueueJobGroup {
   }
 
   public static function getJidsFromGid($gid) {
-    $query = db_select('kms_oci_queue_job_group', 'g');
+    $query = db_select(self::schema, 'g');
     $query->fields('g', array('jid'));
     $query->condition('g.gid', $gid, '=');
     return $query->execute()->fetchCol();
+  }
+
+  public static function deleteByJob(KmsOciQueueJob $job) {
+    db_delete(self::schema)
+      ->condition('jid', $job->jid)
+      ->execute();
   }
 
   public static function getJobWeight($job) {
