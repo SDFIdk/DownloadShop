@@ -8,6 +8,8 @@ class kms_user_handler_filter_exposed_services extends views_handler_filter {
     parent::value_form($form, $form_state);
 
     $service_types = kms_permissions_widget_type_options();
+    $service_types_diferent = $this->diferent_service_types();
+    $service_types = array_merge($service_types, $service_types_diferent);
     $service_types['0'] = t('- Alle -');
 
     //Multiple select field for webservice type list
@@ -20,7 +22,6 @@ class kms_user_handler_filter_exposed_services extends views_handler_filter {
   	);
 
     //Fake multiple select field list for webservice with all available web services
-    //*TODO if filter already has value, add array with webservice list
     $webServiceList = return_websevice_list_all();
     $form['value']['exposed_services_list'] = array(
       '#type' => 'select',
@@ -43,6 +44,29 @@ class kms_user_handler_filter_exposed_services extends views_handler_filter {
   }
 
   /**
+  * Return diferent service types
+  */
+  function diferent_service_types(){
+    $service_types['predefined_datacollections'] = "Predefined datacollections";
+    $service_types['applications'] = "Applications";
+    $service_types['ftp'] = "FTP";
+
+    return $service_types;
+  }
+
+  /**
+  * remowes prefix from key
+  */
+  function remove_prefix_from_key($array, $prefix){
+    $narray = array();
+    foreach ($array as $key => $value) {
+      $new_key = str_replace($prefix, "", $key);
+      $narray[$new_key] = $new_key;
+    }
+    return $narray;
+  }
+
+  /**
    * Alters Views query when filter is used.
    */
   function query() {
@@ -54,28 +78,54 @@ class kms_user_handler_filter_exposed_services extends views_handler_filter {
       // make sure base table is included in the query
       $this->ensure_my_table();
             
-      //Get webservice name in lower cases
-      $webservice = strtolower($this->value['0']);
+      //Get webservice table name
+      $other_services = $this->diferent_service_types();
+      $col_name = 'value';
+      switch ($this->value['0']) {
+        case 'predefined_datacollections':
+          $webservice = 'field_predefined_datacollections';
+          //Remove prefix from key
+          $prefix = 'predefined_datacollections_';
+          $webserviceType = $this->remove_prefix_from_key($data->exposed_data['exposed_services_list'], $prefix);
+          $col_name = 'target_id';
+          break;
+        case 'applications':
+          $webservice = 'field_applications';
+          //Remove prefix from key
+          $prefix = 'applications_';
+          $webserviceType = $this->remove_prefix_from_key($data->exposed_data['exposed_services_list'], $prefix);
+          break;
+        case 'ftp':
+          $webservice = 'field_ftp_permissions';
+          //Remove prefix from key
+          $prefix = 'ftp_';
+          $webserviceType = $this->remove_prefix_from_key($data->exposed_data['exposed_services_list'], $prefix);
+          break;
 
-      //GetService list array
-      $webserviceType = $data->exposed_data['exposed_services_list'];
-      $service = array('field_bundle_webservices_'.$webservice => array('und' => $webserviceType));
+        default:
+          $webservice = 'field_bundle_webservices_'.strtolower($this->value['0']);
+          //GetService list array
+          $webserviceType = $data->exposed_data['exposed_services_list'];
+          break;
+      }
+
+      $service = array($webservice => array('und' => $webserviceType));
 
       //defind empty users array
       $users = array();
-
       if($data->exposed_data['seperate_permissions'] == "1"){
         //Seperate permissions only
-        $usersAll = _kms_permissions_get_uids_by_separate_services($service);
+        $usersAll = _kms_permissions_get_uids_by_separate_services($service, $col_name);
         foreach($usersAll as $uid => $sids) {
             $users[] = $uid;
         }
       }else{
         //Show seperate permissions and bundles        
         //Get all users which are in has permission for that webservice
-        $users = _kms_user_get_users_from_services($service);
+        $users = _kms_user_get_users_from_services($service, $col_name);
       }
-
+      
+      if(empty($users)){ $users['0'] = '0'; }
       //Add where expresion to view query
       $usersIn = join($users, ', ');
       $operator = "IN (".$usersIn.")";

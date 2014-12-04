@@ -8,15 +8,15 @@
 
       /* Custom filter for webservice START */
       //check if service type is selected
-      if($("select[name=\'exposed_services\']").val() != 0){
+      if($("select[name='exposed_services']").val() != 0){
         changeServicesList();
         $(".form-item-seperate-permissions").show();
       }
 
       //Trigger when service type select was changed
-      $("select[name=\'exposed_services\']").live("change",function(){
+      $("select[name='exposed_services']").live("change",function(){
         //if service type is changed to all
-        if($("select[name=\'exposed_services\']").val() == 0){
+        if($("select[name='exposed_services']").val() == 0){
           $("#edit-exposed-services-list").hide();
           $(".form-item-seperate-permissions").hide();
           //if seperate permissions is checked, then unclick it
@@ -33,13 +33,18 @@
 
       //This functions gets json array of services in selected service type
       function changeServicesList(){
-        var webid = $("select[name=\'exposed_services\']").val();
+        var custom_services = ['ftp', 'applications', 'predefined_datacollections'];
+        var webid = $("select[name='exposed_services']").val();
+        var prefix = '';
+        if ( $.inArray(webid, custom_services) > -1 ) {
+            prefix = webid + '_';
+        }
         $("#edit-exposed-services-list").fadeOut();
         var webid_link = "/kms-user/json/webservices/" + webid;
         $.getJSON(webid_link, function(data){
           $("#edit-exposed-services-list").find("option").remove().end();
           jQuery.each(data, function(index, item){
-            $("#edit-exposed-services-list").append("<option value=\'" + item.SERVICEID + "\'>" + item.SERVICENAME + "</option>");
+            $("#edit-exposed-services-list").append("<option value='" + prefix + item.id + "'>" + item.name + "</option>");
           });
           selectSelectedWebserviceList(window.location.search);
           $("#edit-exposed-services-list").scrollTop();

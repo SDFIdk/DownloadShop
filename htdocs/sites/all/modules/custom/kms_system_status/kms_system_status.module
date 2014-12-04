@@ -26,6 +26,8 @@ function kms_system_status_menu() {
     'page arguments' => array(1, 2),
     'type' => MENU_CALLBACK,
   );
+
+
   return $items;
 }
 

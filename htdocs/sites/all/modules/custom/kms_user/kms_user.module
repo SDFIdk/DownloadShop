@@ -1477,7 +1477,7 @@ function kms_user_filter_admin_views_people_perms_form_submit($form, &$form_stat
  *  Ex.: array('field_bundle_webservices_geo' => array(1, 4218, 4458), 'field_bundle_webservices_wms' => array(1614))
  * @return array
  */
-function _kms_user_get_users_from_services($services) {
+function _kms_user_get_users_from_services($services, $column_name = null) {
   // Merge user arrays function.
   $merge_uids = function ($uids_n_sids, &$users) {
     foreach($uids_n_sids as $uid => $sids) {
@@ -1493,9 +1493,9 @@ function _kms_user_get_users_from_services($services) {
   // The end result users array.
   $users = array();
   // Users with separate services.
-  $merge_uids(_kms_permissions_get_uids_by_separate_services($services), $users);
+  $merge_uids(_kms_permissions_get_uids_by_separate_services($services, $column_name), $users);
   // Users with permissions in bundles.
-  $merge_uids(_kms_permissions_get_uids_by_bundle_services($services), $users);
+  $merge_uids(_kms_permissions_get_uids_by_bundle_services($services, $column_name), $users);
   // Find total number of services.
   $service_count = 0;
   array_walk($services, function ($sids) use (&$service_count) {
@@ -1638,30 +1638,73 @@ function kms_user_views_handlers() {
 */
 function return_websevice_list($webid) {
   //get all available services
-  $service_list = kms_permissions_get_service_list();
-
+  $service_list = return_merged_service_list_array();
   //Create new array with current service list type
   $current_sev_list = array();
   foreach ($service_list as $key => $value) {
-    if($value['TYPENAME'] == $webid){
-      $current_sev_list[$key] = $value;
+    if($key == $webid){
+      foreach ($value as $key2 => $value2) {
+        $current_sev_list[$key2] = $value2;
+      }
     }
   }
- 
+
   drupal_json_output($current_sev_list);
   exit();
 }
 
-function return_websevice_list_all() {
+function return_websevice_list_all() { 
+  $array_list = return_merged_service_list_array();
+  $new_array = array();
+  $custom_services = array('ftp', 'applications', 'predefined_datacollections');
+  $prefix = '';
+  foreach ($array_list as $key => $value) {
+    if(in_array($key, $custom_services)){
+      $prefix = $key.'_';
+    }
+
+    foreach ($value as $key2 => $value2) {
+      $new_array[$prefix . $key2] = $value2['name'];
+    }
+  }
+  return $new_array;
+}
+
+function return_merged_service_list_array(){
   $service_list = kms_permissions_get_service_list();
+  $service_list_aplication = kms_permissions_get_application_list();
+  $service_list_ftp = return_ftp_permissions_all();
+  $service_list_predefined = return_predefined_datacollections_permissions_all();
 
   //Create new array with current service list type
   $current_sev_list = array();
   foreach ($service_list as $key => $value) {
-      $current_sev_list[$key] = $value['SERVICENAME'];
+      $current_sev_list[$value['TYPENAME']][$value['SERVICEID']]['name'] = $value['SERVICENAME'];
+      $current_sev_list[$value['TYPENAME']][$value['SERVICEID']]['id'] = $value['SERVICEID'];
   }
- 
+
+  foreach ($service_list_aplication as $key => $value) {
+    $current_sev_list['applications'][$value['GROUPID']]['name'] = $value['NAME'];
+    $current_sev_list['applications'][$value['GROUPID']]['id'] = $value['GROUPID'];
+  }
+
+  foreach ($service_list_ftp as $key => $value) {
+    $current_sev_list['ftp'][$value->fid]['name'] = $value->name;
+    $current_sev_list['ftp'][$value->fid]['id'] = $value->fid;
+  }
+
+  foreach ($service_list_predefined as $key => $value) {
+    $current_sev_list['predefined_datacollections'][$value->nid]['name'] = $value->title;
+    $current_sev_list['predefined_datacollections'][$value->nid]['id'] = $value->nid;
+  }
+
   return $current_sev_list;
 }
 
+function return_ftp_permissions_all(){
+  return db_query("SELECT * FROM {kms_permissions_ftp_folders}")->fetchAll(); 
+}
 
+function return_predefined_datacollections_permissions_all(){
+  return db_query("SELECT nid, title FROM {node} WHERE type = 'product_display'")->fetchAll(); 
+}

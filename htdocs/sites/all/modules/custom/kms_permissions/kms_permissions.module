@@ -35,6 +35,10 @@ function kms_permissions_ctools_plugin_directory($module, $plugin) {
     case 'kms_oci_queue':
       $path = 'plugins/kms_oci_queue/' . $plugin;
       break;
+
+    case 'kms_system_status':
+      $path = 'plugins/system_status/';
+      break;
   }
 
   return $path;
@@ -1764,21 +1768,26 @@ function kms_permissions_run_batch($type) {
  * @return array
  *   User ids.
  */
-function _kms_permissions_get_uids_by_separate_services($services) {
+function _kms_permissions_get_uids_by_separate_services($services, $column_name = null) {
   $users = array();
 
-  array_walk($services, function ($sids, $field) use(&$users) {
+  array_walk($services, function ($sids, $field) use(&$users, $column_name) {
+    $col_name = 'value';
+    if($column_name != null){
+      $col_name = $column_name;
+    }
     $sids = $sids[LANGUAGE_NONE];
     $query = db_select('users', 'u');
     $join_conditions[] = $field .'.entity_id = u.uid';
     $join_conditions[] = $field . ".entity_type = 'user'";
     $query->leftJoin('field_data_' . $field, $field, implode(' AND ', $join_conditions));
-    $query->addField($field, sprintf('%s_value', $field), 'sid');
+    $query->addField($field, sprintf('%s_'.$col_name, $field), 'sid');
     $query->addField($field, 'entity_id', 'uid');
-    $query->condition(sprintf('%s.%s_value', $field, $field), $sids, 'IN');
+    $query->condition(sprintf('%s.%s_'.$col_name, $field, $field), $sids, 'IN');
     $result = $query->execute();
 
     while($row = $result->fetchAssoc()) {
+
       $uid = $row['uid'];
       $sid = $row['sid'];
       if(empty($users[$uid])) {
@@ -1802,9 +1811,13 @@ function _kms_permissions_get_uids_by_separate_services($services) {
  * @return array
  *   User ids.
  */
-function _kms_permissions_get_uids_by_bundle_services($services) {
+function _kms_permissions_get_uids_by_bundle_services($services, $column_name = null) {
   $users = array();
-
+  $col_name = 'value';
+  if($column_name != null){
+    $col_name = $column_name;
+  }  
+  
   foreach($services as $field => $sids) {
     $sids = $sids[LANGUAGE_NONE];
     $query = db_select('users', 'u');
@@ -1819,9 +1832,9 @@ function _kms_permissions_get_uids_by_bundle_services($services) {
       $ab_alias,
       sprintf('%s.field_access_bundles_nid = %s.entity_id', $ab_alias, $field)
     );
-    $query->addField($field, sprintf('%s_value', $field), 'sid');
+    $query->addField($field, sprintf('%s_'.$col_name, $field), 'sid');
     $query->addField($ab_alias, 'entity_id', 'uid');
-    $query->condition(sprintf('%s.%s_value', $field, $field), $sids, 'IN');
+    $query->condition(sprintf('%s.%s_'.$col_name, $field, $field), $sids, 'IN');
     $result = $query->execute();
     while($row = $result->fetchAssoc()) {
       $uid = $row['uid'];
@@ -2397,4 +2410,64 @@ function _kms_permissions_get_all_permissions_by_uid($uid, $options = array()) {
   $user_perm_cache[$user_key] = $perms;
 
   return $perms;
+}
+
+
+function _kms_permissions_webservice_return_list_array($array){
+  $webservices = array();
+  $webservices2 = array();
+  //Gett service ids
+
+  $webServiceListAll = return_websevice_list_all();
+  foreach($array as $key => $value) {
+    $webservices[] = _kms_permissions_webservice_get_services_array_by_bid($value['nid'], $webServiceListAll);
+  }
+
+  return $webservices;
+}
+
+function _kms_permissions_webservice_get_services_array_by_bid($bid, $webServiceListAll) {
+  $permissions = $ftp_permissions = $sids = array();
+   _kms_permissions_get_permissions_by_bid($bid, $permissions);
+   _kms_permissions_ftp_get_permissions_by_bid($bid, $ftp_permissions);
+
+  if(!empty($permissions['services']) && is_array($permissions['services'])) {
+    array_walk($permissions['services'], function($v) use(&$sids, $webServiceListAll) {
+      $sids[$v['id']]['productTypeId'] = 'null';
+      $sids[$v['id']]['ProductID'] = $v['id'];
+      $sids[$v['id']]['ProductName'] = $webServiceListAll[$v['id']];
+      $sids[$v['id']]['productTypeName'] = str_replace("field_bundle_webservices_","",$v['field']);
+      $sids[$v['id']]['ProductLink'] = 'null';
+    });
+  }
+  if(!empty($permissions['applications']) && is_array($permissions['applications'])) {
+    array_walk($permissions['applications'], function($v) use(&$sids, $webServiceListAll) {
+      $sids[$v['id']]['productTypeId'] = 'null';
+      $sids[$v['id']]['ProductID'] = $v['id'];
+      $sids[$v['id']]['ProductName'] = $webServiceListAll['applications_'.$v['id']];
+      $sids[$v['id']]['productTypeName'] = 'Applications';
+      $sids[$v['id']]['ProductLink'] = 'null';
+    });
+  }
+
+  if(!empty($permissions['predefined_datacollections']) && is_array($permissions['predefined_datacollections'])) {
+    array_walk($permissions['predefined_datacollections'], function($v) use(&$sids, $webServiceListAll) {
+      $sids[$v['id']]['productTypeId'] = 'null';
+      $sids[$v['id']]['ProductID'] = $v['id'];
+      $sids[$v['id']]['ProductName'] = $webServiceListAll['predefined_datacollections_'.$v['id']];
+      $sids[$v['id']]['productTypeName'] = 'Predefined datacollections';
+      $sids[$v['id']]['ProductLink'] = 'null';
+    });
+  }
+
+  if(!empty($ftp_permissions['ftp']) && is_array($ftp_permissions['ftp'])) {
+    array_walk($ftp_permissions['ftp'], function($v) use(&$sids, $webServiceListAll) {
+      $sids[$v['id']]['productTypeId'] = 'null';
+      $sids[$v['id']]['ProductID'] = $v['id'];
+      $sids[$v['id']]['ProductName'] = $webServiceListAll['ftp_'.$v['id']];
+      $sids[$v['id']]['productTypeName'] = 'FTP';
+      $sids[$v['id']]['ProductLink'] = 'null';
+    });
+  }
+  return $sids;
 }
