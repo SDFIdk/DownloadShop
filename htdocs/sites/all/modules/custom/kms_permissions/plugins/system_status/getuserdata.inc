@@ -45,7 +45,7 @@ function get_status($type, $mode) {
 
         if(isset($_GET['callback'])){
           drupal_add_http_header('Content-Type', 'application/json');
-          print $_GET['callback']. '(' .$json. ');';
+          print $_GET['callback']. '(' .json_encode($webservices). ');';
         }else{
           drupal_json_output($webservices);
         }
