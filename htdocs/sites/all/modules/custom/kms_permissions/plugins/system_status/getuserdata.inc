@@ -44,9 +44,10 @@ function get_status($type, $mode) {
         $webservices = _kms_permissions_webservice_return_list_array($all_services);
 
         if(isset($_GET['callback'])){
-          print 'json with callback';
+          drupal_add_http_header('Content-Type', 'application/json');
+          print $_GET['callback']. '(' .$json. ');';
         }else{
-          print 'print json';
+          drupal_json_output($webservices);
         }
       }else{
         print "authentication failed";
