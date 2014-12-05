@@ -5,7 +5,6 @@
 (function ($) {
   Drupal.behaviors.kms_user_admin_views_people = {
     attach: function(context, settings) {
-
       /* Custom filter for webservice START */
       //check if service type is selected
       if($("select[name='exposed_services']").val() != 0){
@@ -41,15 +40,24 @@
         }
         $("#edit-exposed-services-list").fadeOut();
         var webid_link = "/kms-user/json/webservices/" + webid;
-        $.getJSON(webid_link, function(data){
-          $("#edit-exposed-services-list").find("option").remove().end();
-          jQuery.each(data, function(index, item){
-            $("#edit-exposed-services-list").append("<option value='" + prefix + item.id + "'>" + item.name + "</option>");
-          });
-          selectSelectedWebserviceList(window.location.search);
-          $("#edit-exposed-services-list").scrollTop();
-          $("#edit-exposed-services-list").fadeIn();
-        });
+        $.ajax({
+           url: webid_link,
+            dataType: 'json',
+            success: function(data){
+                $("#edit-exposed-services-list").find("option").remove().end();
+                jQuery.each(data, function(index, item){
+                  $("#edit-exposed-services-list").append("<option value='" + prefix + item.id + "'>" + item.name + "</option>");
+                });
+             },
+            complete: function(data){
+              var first = selectSelectedWebserviceList(window.location.search);
+              $("#edit-exposed-services-list").fadeIn();
+              var $s = $('#edit-exposed-services-list');
+              var optionTop = $s.find('[value="'+first+'"]').offset().top;
+              var selectTop = $s.offset().top;
+              $('#edit-exposed-services-list').animate({scrollTop: optionTop - selectTop}, 1);
+            }
+         });
       }
 
       function selectSelectedWebserviceList(str) {
@@ -65,6 +73,8 @@
           }
         }
         $("#edit-exposed-services-list").val(selectedServices);
+
+        return selectedServices[0];
       }
 
       /* Custom filter for webservice END */

@@ -2415,22 +2415,69 @@ function _kms_permissions_get_all_permissions_by_uid($uid, $options = array()) {
 
 function _kms_permissions_webservice_return_list_array($array){
   $webservices = array();
-  $webservices2 = array();
+  $webservices_bundles = array();
+  $merged_bundles = array();
   //Gett service ids
 
   $webServiceListAll = return_websevice_list_all();
-  foreach($array as $key => $value) {
-    $webservices[] = _kms_permissions_webservice_get_services_array_by_bid($value['nid'], $webServiceListAll);
+  foreach($array['bundles'] as $key => $value) {
+    $webservices_bundles[] = _kms_permissions_webservice_get_services_array_by_bid($value['nid'], $webServiceListAll);
   }
 
+  $count_bundles = count($webservices_bundles);
+  for ($i=0; $i < $count_bundles; $i++) {
+    $merged_bundles = array_merge($merged_bundles, $webservices_bundles[$i]);
+  }
+
+  $webservices['b'] = $merged_bundles;
+  $webservices['p'] = _kms_permissions_webservice_get_service_array_by_type($array['predefined_datacollections'], $webServiceListAll, 'predefined_datacollections');
+  $webservices['a'] = _kms_permissions_webservice_get_service_array_by_type($array['applications'], $webServiceListAll, 'applications');
+  $webservices['f'] = _kms_permissions_webservice_get_service_array_by_type($array['ftp'], $webServiceListAll, 'ftp');
+  $webservices['w'] = _kms_permissions_webservice_get_service_array_by_type($array['main_services'], $webServiceListAll, 'main_services');
+
+  $webservices = array_merge($webservices['b'], $webservices['p'], $webservices['a'], $webservices['f'], $webservices['w']);
+  ksort($webservices);
+
   return $webservices;
+}
+
+
+function _kms_permissions_webservice_get_service_array_by_type($service, $all_services, $type){
+  $keyname = '';
+  $link = 'null';
+  $typeName = '';
+  if($type != 'main_services') {
+    $keyname = $type.'_';
+    $typeName = $type;
+    foreach ($service as $value) {
+      $keyv = key($value);
+      $key = $keyname . $value[$keyv];
+      if($type == 'predefined_datacollections'){
+        $link = $GLOBALS['base_url'] . '/' . drupal_get_path_alias("node/".$value[$keyv]);
+      }
+
+      $sids[$key]['productTypeId'] = 'null';
+      $sids[$key]['ProductID'] = $value[$keyv];
+      $sids[$key]['ProductName'] = $all_services[$key];
+      $sids[$key]['productTypeName'] = $typeName;
+      $sids[$key]['ProductLink'] = $link;
+    }
+  }else{
+    foreach ($service as $value) {
+      $sids[$value]['productTypeId'] = 'null';
+      $sids[$value]['ProductID'] = $value;
+      $sids[$value]['ProductName'] = $all_services[$value];
+      $sids[$value]['productTypeName'] = $typeName;
+      $sids[$value]['ProductLink'] = 'null';
+    }
+  }
+  return $sids;
 }
 
 function _kms_permissions_webservice_get_services_array_by_bid($bid, $webServiceListAll) {
   $permissions = $ftp_permissions = $sids = array();
    _kms_permissions_get_permissions_by_bid($bid, $permissions);
    _kms_permissions_ftp_get_permissions_by_bid($bid, $ftp_permissions);
-
   if(!empty($permissions['services']) && is_array($permissions['services'])) {
     array_walk($permissions['services'], function($v) use(&$sids, $webServiceListAll) {
       $sids[$v['id']]['productTypeId'] = 'null';
@@ -2442,31 +2489,31 @@ function _kms_permissions_webservice_get_services_array_by_bid($bid, $webService
   }
   if(!empty($permissions['applications']) && is_array($permissions['applications'])) {
     array_walk($permissions['applications'], function($v) use(&$sids, $webServiceListAll) {
-      $sids[$v['id']]['productTypeId'] = 'null';
-      $sids[$v['id']]['ProductID'] = $v['id'];
-      $sids[$v['id']]['ProductName'] = $webServiceListAll['applications_'.$v['id']];
-      $sids[$v['id']]['productTypeName'] = 'Applications';
-      $sids[$v['id']]['ProductLink'] = 'null';
+      $sids['applications_'.$v['id']]['productTypeId'] = 'null';
+      $sids['applications_'.$v['id']]['ProductID'] = $v['id'];
+      $sids['applications_'.$v['id']]['ProductName'] = $webServiceListAll['applications_'.$v['id']];
+      $sids['applications_'.$v['id']]['productTypeName'] = 'Applications';
+      $sids['applications_'.$v['id']]['ProductLink'] = 'null';
     });
   }
 
   if(!empty($permissions['predefined_datacollections']) && is_array($permissions['predefined_datacollections'])) {
     array_walk($permissions['predefined_datacollections'], function($v) use(&$sids, $webServiceListAll) {
-      $sids[$v['id']]['productTypeId'] = 'null';
-      $sids[$v['id']]['ProductID'] = $v['id'];
-      $sids[$v['id']]['ProductName'] = $webServiceListAll['predefined_datacollections_'.$v['id']];
-      $sids[$v['id']]['productTypeName'] = 'Predefined datacollections';
-      $sids[$v['id']]['ProductLink'] = 'null';
+      $sids['predefined_datacollections_'.$v['id']]['productTypeId'] = 'null';
+      $sids['predefined_datacollections_'.$v['id']]['ProductID'] = $v['id'];
+      $sids['predefined_datacollections_'.$v['id']]['ProductName'] = $webServiceListAll['predefined_datacollections_'.$v['id']];
+      $sids['predefined_datacollections_'.$v['id']]['productTypeName'] = 'Predefined datacollections';
+      $sids['predefined_datacollections_'.$v['id']]['ProductLink'] = $GLOBALS['base_url'] . '/' . drupal_get_path_alias("node/".$v['id']);
     });
   }
 
   if(!empty($ftp_permissions['ftp']) && is_array($ftp_permissions['ftp'])) {
     array_walk($ftp_permissions['ftp'], function($v) use(&$sids, $webServiceListAll) {
-      $sids[$v['id']]['productTypeId'] = 'null';
-      $sids[$v['id']]['ProductID'] = $v['id'];
-      $sids[$v['id']]['ProductName'] = $webServiceListAll['ftp_'.$v['id']];
-      $sids[$v['id']]['productTypeName'] = 'FTP';
-      $sids[$v['id']]['ProductLink'] = 'null';
+      $sids['ftp_'.$v['id']]['productTypeId'] = 'null';
+      $sids['ftp_'.$v['id']]['ProductID'] = $v['id'];
+      $sids['ftp_'.$v['id']]['ProductName'] = $webServiceListAll['ftp_'.$v['id']];
+      $sids['ftp_'.$v['id']]['productTypeName'] = 'FTP';
+      $sids['ftp_'.$v['id']]['ProductLink'] = 'null';
     });
   }
   return $sids;

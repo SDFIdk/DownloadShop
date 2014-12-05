@@ -33,15 +33,15 @@ function get_status($type, $mode) {
       $userId = user_authenticate($username, $password);
 
       if($userId != FALSE){
-        $user = user_load($user);
-        $bundles = _kms_permissions_webservice_return_list_array($user->field_access_bundles[LANGUAGE_NONE]);
+        $user = user_load($userId);
 
-        $predefined_datacollections = $user->field_predefined_datacollections[LANGUAGE_NONE];
+        $all_services['bundles'] = $user->field_access_bundles[LANGUAGE_NONE];
+        $all_services['predefined_datacollections'] = $user->field_predefined_datacollections[LANGUAGE_NONE];
+        $all_services['ftp'] = $user->field_ftp_permissions[LANGUAGE_NONE];
+        $all_services['applications'] = $user->field_applications[LANGUAGE_NONE];
+        $all_services['main_services'] = _kms_permissions_get_separate_webservices_by_uid($userId);
 
-        $ftp = $user->field_ftp_permissions[LANGUAGE_NONE];
-        $applications = $user->field_applications[LANGUAGE_NONE];
-
-        $main_services = _kms_permissions_get_separate_webservices_by_uid($userId);
+        $webservices = _kms_permissions_webservice_return_list_array($all_services);
 
         if(isset($_GET['callback'])){
           print 'json with callback';
