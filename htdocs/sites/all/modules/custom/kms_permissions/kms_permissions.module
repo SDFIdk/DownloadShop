@@ -2412,23 +2412,32 @@ function _kms_permissions_get_all_permissions_by_uid($uid, $options = array()) {
   return $perms;
 }
 
-
+/**
+ * Return proper webservice list array for json encode
+ *
+ * @param array $array
+ *        webservice ID's
+ * @return array
+ */
 function _kms_permissions_webservice_return_list_array($array){
   $webservices = array();
   $webservices_bundles = array();
   $merged_bundles = array();
-  //Gett service ids
+  //Get service ids
 
+  //Make proper array for bundles
   $webServiceListAll = return_websevice_list_all();
   foreach($array['bundles'] as $key => $value) {
     $webservices_bundles[] = _kms_permissions_webservice_get_services_array_by_bid($value['nid'], $webServiceListAll);
   }
 
+  //Merge bundle array to one array
   $count_bundles = count($webservices_bundles);
   for ($i=0; $i < $count_bundles; $i++) {
     $merged_bundles = array_merge($merged_bundles, $webservices_bundles[$i]);
   }
 
+  //Merge all webservice types ant bundles two one array
   $webservices['b'] = $merged_bundles;
   $webservices['p'] = _kms_permissions_webservice_get_service_array_by_type($array['predefined_datacollections'], $webServiceListAll, 'predefined_datacollections');
   $webservices['a'] = _kms_permissions_webservice_get_service_array_by_type($array['applications'], $webServiceListAll, 'applications');
@@ -2441,11 +2450,23 @@ function _kms_permissions_webservice_return_list_array($array){
   return $webservices;
 }
 
-
+/**
+ * Convert seperate webservice to proper array for json encode
+ *
+ * @param array $service
+ *        webservice ID's
+ * @param array $all_services
+ *        all available webservices in one array
+ * @param string $type
+ *        webservice type name
+ * @return array
+ */
 function _kms_permissions_webservice_get_service_array_by_type($service, $all_services, $type){
   $keyname = '';
   $link = 'null';
   $typeName = '';
+  // If type is not in this
+  //         array('GEO' => 'GEO' , 'WMS' => 'WMS' , 'PLOT' => 'PLOT', 'WFS' => 'WFS', 'WMTS' => 'WMTS', 'WCS' => 'WCS');
   if($type != 'main_services') {
     $keyname = $type.'_';
     $typeName = $type;
@@ -2453,6 +2474,7 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
       $keyv = key($value);
       $key = $keyname . $value[$keyv];
       if($type == 'predefined_datacollections'){
+        //Get link pro predefined datacollections because it's node content type - product display 
         $link = $GLOBALS['base_url'] . '/' . drupal_get_path_alias("node/".$value[$keyv]);
       }
 
@@ -2474,6 +2496,15 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
   return $sids;
 }
 
+/**
+ * Convert bundles webservice to proper array for json encode
+ *
+ * @param integer $bid
+ *        bundle id
+ * @param array $webServiceListAll
+ *        all available webservices in one array
+ * @return array
+ */
 function _kms_permissions_webservice_get_services_array_by_bid($bid, $webServiceListAll) {
   $permissions = $ftp_permissions = $sids = array();
    _kms_permissions_get_permissions_by_bid($bid, $permissions);

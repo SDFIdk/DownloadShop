@@ -31,10 +31,11 @@ function get_status($type, $mode) {
       $username = $_GET['login'];
       $password = $_GET['password'];
       $userId = user_authenticate($username, $password);
-
+      // Check if username and password match
       if($userId != FALSE){
         $user = user_load($userId);
 
+        // Get all ID's of webservices from user account
         $all_services['bundles'] = $user->field_access_bundles[LANGUAGE_NONE];
         $all_services['predefined_datacollections'] = $user->field_predefined_datacollections[LANGUAGE_NONE];
         $all_services['ftp'] = $user->field_ftp_permissions[LANGUAGE_NONE];
@@ -50,12 +51,11 @@ function get_status($type, $mode) {
           drupal_json_output($webservices);
         }
       }else{
+        // Passworrd incorect
         print "authentication failed";
       }
 
       break;
   }
-
-  //drupal_json_outpu
   die;
 }

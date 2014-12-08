@@ -1632,10 +1632,12 @@ function kms_user_views_handlers() {
 }
 
 /**
-* Return webservice json array
-* @param $webid string contains webservice type
-*
-*/
+ * Return webservice json array
+ *
+ * @param string $webid
+ *        contains webservice type
+ * @return json array
+ */
 function return_websevice_list($webid) {
   //get all available services
   $service_list = return_merged_service_list_array();
@@ -1653,6 +1655,12 @@ function return_websevice_list($webid) {
   exit();
 }
 
+/**
+ * Return webservice list json array
+ *
+ * @return array $new_array
+ *         containing all available webservice names and ID's
+ */
 function return_websevice_list_all() { 
   $array_list = return_merged_service_list_array();
   $new_array = array();
@@ -1670,6 +1678,12 @@ function return_websevice_list_all() {
   return $new_array;
 }
 
+/**
+ * Return webservice list array merged together
+ *
+ * @return array $new_array
+ *         containing all available webservice names and ID's
+ */
 function return_merged_service_list_array(){
   $service_list = kms_permissions_get_service_list();
   $service_list_aplication = kms_permissions_get_application_list();
@@ -1701,10 +1715,20 @@ function return_merged_service_list_array(){
   return $current_sev_list;
 }
 
+/**
+ * Return ftp webservice array
+ *
+ * @return array
+ */
 function return_ftp_permissions_all(){
   return db_query("SELECT * FROM {kms_permissions_ftp_folders}")->fetchAll(); 
 }
 
+/**
+ * Return predifened datacollections webservice array
+ *
+ * @return array
+ */
 function return_predefined_datacollections_permissions_all(){
   return db_query("SELECT nid, title FROM {node} WHERE type = 'product_display'")->fetchAll(); 
 }
