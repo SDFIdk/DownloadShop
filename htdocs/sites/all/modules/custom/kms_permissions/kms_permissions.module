@@ -2498,7 +2498,11 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
       $sids[$key]['ProductLink'] = $link;
     }
   }else{
+    $webservice_types = return_merged_service_list_array();
     foreach ($service as $value) {
+      if($typeName == ''){
+        $typeName = _kms_permissions_webservices_return_type_name_by_service($all_services[$value], $webservice_types);
+      }
       $sids[$value]['ProductTypeId'] = 'null';
       $sids[$value]['ProductID'] = $value;
       $sids[$value]['ProductName'] = $all_services[$value];
@@ -2507,6 +2511,17 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
     }
   }
   return $sids;
+}
+
+function _kms_permissions_webservices_return_type_name_by_service($id, $webservice_types){
+  foreach ($webservice_types as $key => $value) {
+    foreach ($value as $key2 => $value2) {
+      if($key2 = $id){
+        return $key;
+      }
+    }
+  }
+  return "";
 }
 
 /**
