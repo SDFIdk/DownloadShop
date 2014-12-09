@@ -2488,6 +2488,13 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
       if($type == 'predefined_datacollections'){
         //Get link pro predefined datacollections because it's node content type - product display 
         $link = $GLOBALS['base_url'] . '/' . drupal_get_path_alias("node/".$value[$keyv]);
+        $typeName = 'Predefined datacollections';
+      }
+      if($type == 'applications'){
+        $typeName = 'Applications';
+      }
+      if($type == 'ftp'){
+        $typeName = 'FTP';
       }
 
       $sids[$key]['ProductTypeId'] = 'null';
