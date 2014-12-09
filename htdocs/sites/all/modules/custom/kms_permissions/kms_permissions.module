@@ -2450,10 +2450,10 @@ function _kms_permissions_webservice_return_list_array($array){
   $webservices2 = array("products" => array());
   foreach ($webservices as $key => $value) {
     $jsonRow = array(
-        "productTypeId"=>$value['productTypeId'],
+        "ProductTypeId"=>$value['ProductTypeId'],
+        "ProductTypeName"=>$value['ProductTypeName'],
         "ProductID"=>$value['ProductID'],
         "ProductName"=>$value['ProductName'],
-        "productTypeName"=>$value['productTypeName'],
         "ProductLink"=>$value['ProductLink'],
     );
     array_push($webservices2['products'], $jsonRow);
@@ -2490,18 +2490,18 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
         $link = $GLOBALS['base_url'] . '/' . drupal_get_path_alias("node/".$value[$keyv]);
       }
 
-      $sids[$key]['productTypeId'] = 'null';
+      $sids[$key]['ProductTypeId'] = 'null';
       $sids[$key]['ProductID'] = $value[$keyv];
       $sids[$key]['ProductName'] = $all_services[$key];
-      $sids[$key]['productTypeName'] = $typeName;
+      $sids[$key]['ProductTypeName'] = $typeName;
       $sids[$key]['ProductLink'] = $link;
     }
   }else{
     foreach ($service as $value) {
-      $sids[$value]['productTypeId'] = 'null';
+      $sids[$value]['ProductTypeId'] = 'null';
       $sids[$value]['ProductID'] = $value;
       $sids[$value]['ProductName'] = $all_services[$value];
-      $sids[$value]['productTypeName'] = $typeName;
+      $sids[$value]['ProductTypeName'] = $typeName;
       $sids[$value]['ProductLink'] = 'null';
     }
   }
@@ -2523,39 +2523,39 @@ function _kms_permissions_webservice_get_services_array_by_bid($bid, $webService
    _kms_permissions_ftp_get_permissions_by_bid($bid, $ftp_permissions);
   if(!empty($permissions['services']) && is_array($permissions['services'])) {
     array_walk($permissions['services'], function($v) use(&$sids, $webServiceListAll) {
-      $sids[$v['id']]['productTypeId'] = 'null';
+      $sids[$v['id']]['ProductTypeId'] = 'null';
       $sids[$v['id']]['ProductID'] = $v['id'];
       $sids[$v['id']]['ProductName'] = $webServiceListAll[$v['id']];
-      $sids[$v['id']]['productTypeName'] = str_replace("field_bundle_webservices_","",$v['field']);
+      $sids[$v['id']]['ProductTypeName'] = str_replace("field_bundle_webservices_","",$v['field']);
       $sids[$v['id']]['ProductLink'] = 'null';
     });
   }
   if(!empty($permissions['applications']) && is_array($permissions['applications'])) {
     array_walk($permissions['applications'], function($v) use(&$sids, $webServiceListAll) {
-      $sids['applications_'.$v['id']]['productTypeId'] = 'null';
+      $sids['applications_'.$v['id']]['ProductTypeId'] = 'null';
       $sids['applications_'.$v['id']]['ProductID'] = $v['id'];
       $sids['applications_'.$v['id']]['ProductName'] = $webServiceListAll['applications_'.$v['id']];
-      $sids['applications_'.$v['id']]['productTypeName'] = 'Applications';
+      $sids['applications_'.$v['id']]['ProductTypeName'] = 'Applications';
       $sids['applications_'.$v['id']]['ProductLink'] = 'null';
     });
   }
 
   if(!empty($permissions['predefined_datacollections']) && is_array($permissions['predefined_datacollections'])) {
     array_walk($permissions['predefined_datacollections'], function($v) use(&$sids, $webServiceListAll) {
-      $sids['predefined_datacollections_'.$v['id']]['productTypeId'] = 'null';
+      $sids['predefined_datacollections_'.$v['id']]['ProductTypeId'] = 'null';
       $sids['predefined_datacollections_'.$v['id']]['ProductID'] = $v['id'];
       $sids['predefined_datacollections_'.$v['id']]['ProductName'] = $webServiceListAll['predefined_datacollections_'.$v['id']];
-      $sids['predefined_datacollections_'.$v['id']]['productTypeName'] = 'Predefined datacollections';
+      $sids['predefined_datacollections_'.$v['id']]['ProductTypeName'] = 'Predefined datacollections';
       $sids['predefined_datacollections_'.$v['id']]['ProductLink'] = $GLOBALS['base_url'] . '/' . drupal_get_path_alias("node/".$v['id']);
     });
   }
 
   if(!empty($ftp_permissions['ftp']) && is_array($ftp_permissions['ftp'])) {
     array_walk($ftp_permissions['ftp'], function($v) use(&$sids, $webServiceListAll) {
-      $sids['ftp_'.$v['id']]['productTypeId'] = 'null';
+      $sids['ftp_'.$v['id']]['ProductTypeId'] = 'null';
       $sids['ftp_'.$v['id']]['ProductID'] = $v['id'];
       $sids['ftp_'.$v['id']]['ProductName'] = $webServiceListAll['ftp_'.$v['id']];
-      $sids['ftp_'.$v['id']]['productTypeName'] = 'FTP';
+      $sids['ftp_'.$v['id']]['ProductTypeName'] = 'FTP';
       $sids['ftp_'.$v['id']]['ProductLink'] = 'null';
     });
   }
