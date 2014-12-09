@@ -43,12 +43,12 @@ function get_status($type, $mode) {
         $all_services['main_services'] = _kms_permissions_get_separate_webservices_by_uid($userId);
 
         $webservices = _kms_permissions_webservice_return_list_array($all_services);
+        drupal_add_http_header('Content-Type', 'application/json');
 
         if(isset($_GET['callback'])){
-          drupal_add_http_header('Content-Type', 'application/json');
           print $_GET['callback']. '(' .json_encode($webservices). ');';
         }else{
-          drupal_json_output($webservices);
+          print json_encode($webservices);
         }
       }else{
         // Passworrd incorect

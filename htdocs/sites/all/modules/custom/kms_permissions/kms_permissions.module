@@ -2447,7 +2447,19 @@ function _kms_permissions_webservice_return_list_array($array){
   $webservices = array_merge($webservices['b'], $webservices['p'], $webservices['a'], $webservices['f'], $webservices['w']);
   ksort($webservices);
 
-  return $webservices;
+  $webservices2 = array("products" => array());
+  foreach ($webservices as $key => $value) {
+    $jsonRow = array(
+        "productTypeId"=>$value['productTypeId'],
+        "ProductID"=>$value['ProductID'],
+        "ProductName"=>$value['ProductName'],
+        "productTypeName"=>$value['productTypeName'],
+        "ProductLink"=>$value['ProductLink'],
+    );
+    array_push($webservices2['products'], $jsonRow);
+  }
+
+  return $webservices2;
 }
 
 /**
