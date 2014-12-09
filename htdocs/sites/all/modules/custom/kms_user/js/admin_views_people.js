@@ -48,16 +48,33 @@
                 jQuery.each(data, function(index, item){
                   $("#edit-exposed-services-list").append("<option value='" + prefix + item.id + "'>" + item.name + "</option>");
                 });
+
              },
             complete: function(data){
               var first = selectSelectedWebserviceList(window.location.search);
               $("#edit-exposed-services-list").fadeIn();
-              var $s = $('#edit-exposed-services-list');
-              var optionTop = $s.find('[value="'+first+'"]').offset().top;
-              var selectTop = $s.offset().top;
-              $('#edit-exposed-services-list').animate({scrollTop: optionTop - selectTop}, 1);
+              if (typeof first !== "undefined") {
+                var $s = $('#edit-exposed-services-list');
+                var optionTop = $s.find('[value="'+first+'"]').offset().top;
+                var selectTop = $s.offset().top;
+                $('#edit-exposed-services-list').animate({scrollTop: optionTop - selectTop}, 1);
+              }
             }
          });
+      }
+
+      function sortDropDownListByText() {
+        // Loop for each select element on the page.
+        $("#edit-exposed-services-list").each(function() {
+          // Keep track of the selected option.
+          var selectedValue = $(this).val();
+          // Sort all the options by text. I could easily sort these by val.
+          $(this).html($("option", $(this)).sort(function(a, b) {
+            return a.text.toUpperCase() == b.text.toUpperCase() ? 0 : a.text.toUpperCase() < b.text.toUpperCase() ? -1 : 1
+          }));
+          // Select one option.
+          $(this).val(selectedValue);
+        });
       }
 
       function selectSelectedWebserviceList(str) {

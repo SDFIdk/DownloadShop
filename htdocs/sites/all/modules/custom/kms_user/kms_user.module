@@ -1650,7 +1650,7 @@ function return_websevice_list($webid) {
       }
     }
   }
-
+  usort($current_sev_list, 'name');
   drupal_json_output($current_sev_list);
   exit();
 }
