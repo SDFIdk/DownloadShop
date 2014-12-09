@@ -2518,7 +2518,7 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
 function _kms_permissions_webservices_return_type_name_by_service($id, $webservice_types){
   foreach ($webservice_types as $key => $value) {
     foreach ($value as $key2 => $value2) {
-      if($key2 = $id){
+      if($key2 == $id){
         return $key;
       }
     }
