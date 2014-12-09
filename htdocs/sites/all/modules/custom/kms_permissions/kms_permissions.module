@@ -2444,11 +2444,15 @@ function _kms_permissions_webservice_return_list_array($array){
   $webservices['f'] = _kms_permissions_webservice_get_service_array_by_type($array['ftp'], $webServiceListAll, 'FTP');
   $webservices['w'] = _kms_permissions_webservice_get_service_array_by_type($array['main_services'], $webServiceListAll, 'main_services');
 
-  $webservices = array_merge($webservices['b'], $webservices['p'], $webservices['a'], $webservices['f'], $webservices['w']);
-  ksort($webservices);
+  $webservice1 = array();
+  foreach($webservices as $key => $value) {
+    if(!empty($value)){
+      $webservice1 = array_merge($webservice1, $value);
+    }
+  }
 
   $webservices2 = array("products" => array());
-  foreach ($webservices as $key => $value) {
+  foreach ($webservice1 as $key => $value) {
     $jsonRow = array(
         "ProductTypeId"=>$value['ProductTypeId'],
         "ProductTypeName"=>$value['ProductTypeName'],
