@@ -48,7 +48,7 @@
                 jQuery.each(data, function(index, item){
                   $("#edit-exposed-services-list").append("<option value='" + prefix + item.id + "'>" + item.name + "</option>");
                 });
-
+                sortDropDownListByText();
              },
             complete: function(data){
               var first = selectSelectedWebserviceList(window.location.search);
