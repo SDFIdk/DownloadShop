@@ -2500,9 +2500,7 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
   }else{
     $webservice_types = return_merged_service_list_array();
     foreach ($service as $value) {
-      if($typeName == ''){
-        $typeName = _kms_permissions_webservices_return_type_name_by_service($all_services[$value], $webservice_types);
-      }
+      $typeName = _kms_permissions_webservices_return_type_name_by_service($all_services[$value], $webservice_types);
       $sids[$value]['ProductTypeId'] = 'null';
       $sids[$value]['ProductID'] = $value;
       $sids[$value]['ProductName'] = $all_services[$value];
