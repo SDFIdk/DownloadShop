@@ -2440,8 +2440,8 @@ function _kms_permissions_webservice_return_list_array($array){
   //Merge all webservice types ant bundles two one array
   $webservices['b'] = $merged_bundles;
   $webservices['p'] = _kms_permissions_webservice_get_service_array_by_type($array['predefined_datacollections'], $webServiceListAll, 'predefined_datacollections');
-  $webservices['a'] = _kms_permissions_webservice_get_service_array_by_type($array['applications'], $webServiceListAll, 'applications');
-  $webservices['f'] = _kms_permissions_webservice_get_service_array_by_type($array['ftp'], $webServiceListAll, 'ftp');
+  $webservices['a'] = _kms_permissions_webservice_get_service_array_by_type($array['applications'], $webServiceListAll, 'Applications');
+  $webservices['f'] = _kms_permissions_webservice_get_service_array_by_type($array['ftp'], $webServiceListAll, 'FTP');
   $webservices['w'] = _kms_permissions_webservice_get_service_array_by_type($array['main_services'], $webServiceListAll, 'main_services');
 
   $webservices = array_merge($webservices['b'], $webservices['p'], $webservices['a'], $webservices['f'], $webservices['w']);
@@ -2489,12 +2489,6 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
         //Get link pro predefined datacollections because it's node content type - product display 
         $link = $GLOBALS['base_url'] . '/' . drupal_get_path_alias("node/".$value[$keyv]);
         $typeName = 'Predefined datacollections';
-      }
-      if($type == 'applications'){
-        $typeName = 'Applications';
-      }
-      if($type == 'ftp'){
-        $typeName = 'FTP';
       }
 
       $sids[$key]['ProductTypeId'] = 'null';
