@@ -2443,7 +2443,7 @@ function _kms_permissions_webservice_return_list_array($array){
   $webservices['a'] = _kms_permissions_webservice_get_service_array_by_type($array['applications'], $webServiceListAll, 'Applications');
   $webservices['f'] = _kms_permissions_webservice_get_service_array_by_type($array['ftp'], $webServiceListAll, 'FTP');
   $webservices['w'] = _kms_permissions_webservice_get_service_array_by_type($array['main_services'], $webServiceListAll, 'main_services');
-
+  
   $webservice1 = array();
   foreach($webservices as $key => $value) {
     if(!empty($value)){
@@ -2494,7 +2494,6 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
         $link = $GLOBALS['base_url'] . '/' . drupal_get_path_alias("node/".$value[$keyv]);
         $typeName = 'Predefined datacollections';
       }
-
       $sids[$key]['ProductTypeId'] = 'null';
       $sids[$key]['ProductID'] = $value[$keyv];
       $sids[$key]['ProductName'] = $all_services[$key];
@@ -2504,7 +2503,7 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
   }else{
     $webservice_types = return_merged_service_list_array();
     foreach ($service as $value) {
-      $typeName = _kms_permissions_webservices_return_type_name_by_service($all_services[$value], $webservice_types);
+      $typeName = _kms_permissions_webservices_return_type_name_by_service($value, $webservice_types);
       $sids[$value]['ProductTypeId'] = 'null';
       $sids[$value]['ProductID'] = $value;
       $sids[$value]['ProductName'] = $all_services[$value];
@@ -2519,7 +2518,7 @@ function _kms_permissions_webservices_return_type_name_by_service($id, $webservi
   foreach ($webservice_types as $key => $value) {
     foreach ($value as $key2 => $value2) {
       if($key2 == $id){
-        return $key;
+        return strtoupper($key);
       }
     }
   }
@@ -2544,7 +2543,7 @@ function _kms_permissions_webservice_get_services_array_by_bid($bid, $webService
       $sids[$v['id']]['ProductTypeId'] = 'null';
       $sids[$v['id']]['ProductID'] = $v['id'];
       $sids[$v['id']]['ProductName'] = $webServiceListAll[$v['id']];
-      $sids[$v['id']]['ProductTypeName'] = str_replace("field_bundle_webservices_","",$v['field']);
+      $sids[$v['id']]['ProductTypeName'] = strtoupper(str_replace("field_bundle_webservices_","",$v['field']));
       $sids[$v['id']]['ProductLink'] = 'null';
     });
   }
