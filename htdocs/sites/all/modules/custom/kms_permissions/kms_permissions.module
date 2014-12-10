@@ -2462,7 +2462,7 @@ function _kms_permissions_webservice_return_list_array($array){
     );
     array_push($webservices2['products'], $jsonRow);
   }
-
+  $webservices2['products'] = array_map("unserialize", array_unique(array_map("serialize", $webservices2['products'])));
   return $webservices2;
 }
 
