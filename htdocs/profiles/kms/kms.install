@@ -375,3 +375,34 @@ function kms_update_7013() {
   $rules_config->active = TRUE;
   $rules_config->save();
 }
+
+
+/**
+ * Remove 776 (geokeys_v2) permission from users
+ *
+ * @author Andrius Prudnikovas <andrius@adapt.dk>
+ */
+function kms_update_7014() {
+  // Get all users uid with this permission
+  $geo_bundle = db_query("SELECT entity_id as uid FROM field_data_field_bundle_webservices_geo 
+                WHERE field_bundle_webservices_geo_value = '776'
+                ORDER BY entity_id DESC")->fetchAll();
+
+  // Go through users
+  foreach ($geo_bundle as $uid) {
+    // Load user object
+    $user_loaded = user_load($uid->uid);
+    //Check if user is loaded correctly
+    if(!empty($user_loaded) && isset($user_loaded->uid)){
+      // Go throght geo permissions
+      foreach($user_loaded->field_bundle_webservices_geo[LANGUAGE_NONE] as $key => $geo) {
+        // If value is 776 (geokeys_v2), unset this permission
+        if($geo['value'] == 776){
+          unset($user_loaded->field_bundle_webservices_geo[LANGUAGE_NONE][$key]);
+        }
+      }
+      //Save user object
+      user_save($user_loaded);
+    }
+  }
+}
