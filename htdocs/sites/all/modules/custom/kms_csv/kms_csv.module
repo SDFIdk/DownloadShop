@@ -240,6 +240,13 @@ function _kms_csv_generate_data_download_rows($oid, $file){
 
         $product_display_korttype = $product_display_wrapper->field_korttype->value()->name;
 
+        //Get parrent taxonomy term, use php reset to get firt array object, because there always will be one object in array
+        $parent_product_display_korttype = reset(taxonomy_get_parents($product_display_wrapper->field_korttype->value()->tid));
+        //Check if category has parent category, and ad it to string
+        if(!empty($parent_product_display_korttype) && isset($parent_product_display_korttype->name)){
+          $product_display_korttype = $parent_product_display_korttype->name.":".$product_display_korttype;
+        }
+
         $product_display_datastruktur = $product_display_wrapper->field_datastruktur->value()->name;
 
         $product_display_aktualitet = $product_display_wrapper->field_aktualitet->value()->name;
