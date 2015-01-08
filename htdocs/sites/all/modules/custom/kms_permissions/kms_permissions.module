@@ -1702,6 +1702,14 @@ function kms_permissions_form_views_exposed_form_alter(&$form, &$form_state, $fo
         }
       });
 
+      // Go through hierachy, check if there is cildren category and name is set for parent category
+      foreach($hierachy as $key => $value){
+        if(isset($value['children']) && !isset($value['name'])){
+          $term = taxonomy_term_load($key);
+          $hierachy[$key]['name'] = $term->name;
+        }
+      }
+
       // Add the allowed options to the form. Terms with children are
       // optgroups and can't be selected by the user.
       array_walk($hierachy, function($data, $tid) use (&$form) {
