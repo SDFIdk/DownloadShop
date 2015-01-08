@@ -190,29 +190,6 @@ function view_product_list_views_default_views() {
   $handler->display->display_options['filters']['term_node_tid_depth']['vocabulary'] = 'korttype';
   $handler->display->display_options['filters']['term_node_tid_depth']['hierarchy'] = 1;
   $handler->display->display_options['filters']['term_node_tid_depth']['depth'] = '3';
-  /* Filter criterion: Field: Korttype (field_korttype) */
-  $handler->display->display_options['filters']['field_korttype_tid_1']['id'] = 'field_korttype_tid_1';
-  $handler->display->display_options['filters']['field_korttype_tid_1']['table'] = 'field_data_field_korttype';
-  $handler->display->display_options['filters']['field_korttype_tid_1']['field'] = 'field_korttype_tid';
-  $handler->display->display_options['filters']['field_korttype_tid_1']['group'] = 1;
-  $handler->display->display_options['filters']['field_korttype_tid_1']['exposed'] = TRUE;
-  $handler->display->display_options['filters']['field_korttype_tid_1']['expose']['operator_id'] = 'field_korttype_tid_1_op';
-  $handler->display->display_options['filters']['field_korttype_tid_1']['expose']['label'] = 'Korttype';
-  $handler->display->display_options['filters']['field_korttype_tid_1']['expose']['operator'] = 'field_korttype_tid_1_op';
-  $handler->display->display_options['filters']['field_korttype_tid_1']['expose']['identifier'] = 'field_korttype_tid_1a';
-  $handler->display->display_options['filters']['field_korttype_tid_1']['expose']['remember_roles'] = array(
-    2 => '2',
-    1 => 0,
-    3 => 0,
-    4 => 0,
-    6 => 0,
-    7 => 0,
-    8 => 0,
-    9 => 0,
-    10 => 0,
-  );
-  $handler->display->display_options['filters']['field_korttype_tid_1']['type'] = 'select';
-  $handler->display->display_options['filters']['field_korttype_tid_1']['vocabulary'] = 'korttype';
   /* Filter criterion: Field: Aktualitet (field_aktualitet) */
   $handler->display->display_options['filters']['field_aktualitet_tid']['id'] = 'field_aktualitet_tid';
   $handler->display->display_options['filters']['field_aktualitet_tid']['table'] = 'field_data_field_aktualitet';
