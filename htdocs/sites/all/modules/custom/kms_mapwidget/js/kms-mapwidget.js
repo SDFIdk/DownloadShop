@@ -261,7 +261,7 @@ function initMap() {
     var map = new OpenLayers.Map(
         'mapTag',
         {
-            projection: 'EPSG:25832',
+            projection: conf.projection,
             units: 'm',
             theme : null,
             maxExtent: olMaxExtent,

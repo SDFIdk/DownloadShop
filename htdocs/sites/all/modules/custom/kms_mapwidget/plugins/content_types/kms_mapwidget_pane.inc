@@ -16,8 +16,23 @@ $plugin = array(
 function kms_mapwidget_pane_render($subtype, $conf, $panel_args, $context) {
 
   $modulename = 'kms_mapwidget';
+  //Default value for projection
+  $projection_value = 'EPSG:25832';
 
   $nw = entity_metadata_wrapper('node',$context->data);
+
+  //Get project coordinates from taxonomy
+  $coordinate_taxonomy = $nw->field_coordinate_system->value();
+
+  //Check if has coordinates
+  if(!empty($coordinate_taxonomy)){
+    // Get openlayers field value from taxonomy term
+    $coordinate_taxonomy = reset($coordinate_taxonomy);
+    $openlayer_field = field_get_items('taxonomy_term', $coordinate_taxonomy, 'field_openlayers');
+    $openlayer = field_view_value('taxonomy_term', $coordinate_taxonomy, 'field_openlayers', $openlayer_field['0']);
+    $projection_value = render($openlayer);
+
+  }
 
   drupal_add_js(
     array('kms_mapwidget' => array(
@@ -29,6 +44,7 @@ function kms_mapwidget_pane_render($subtype, $conf, $panel_args, $context) {
       'center_latitude'  => (int) $nw->field_center_latitude->value(),
       'zoom_level'       => (int) $nw->field_zoom_level->value(),
       'grid_folder'      => '/sites/default/files/grid/',
+      'projection'       => $projection_value,
       ),
     ),
     array('type' => 'setting')
