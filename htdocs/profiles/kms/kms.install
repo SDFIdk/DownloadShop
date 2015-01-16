@@ -406,3 +406,20 @@ function kms_update_7014() {
     }
   }
 }
+
+/**
+ * Remove fields from commerce products
+ *
+ * @author Andrius Prudnikovas <andrius@adapt.dk>
+ */
+function kms_update_7015(){
+  // Get all field instances from commerce product
+  $instances = field_info_instances('commerce_product', 'product');
+  // Fields which we need to delete
+  $field_names = array('field_aktualitet', 'field_center_latitude', 'field_center_longitude', 'field_scheme', 'field_datastruktur', 'field_korttype', 'field_service_layer', 'field_service_name', 'field_zoom_level', 'field_geodata_info_dk', 'field_kms_dk', 'field_legend');
+  // Remove fields
+  foreach($field_names as $field_name) {
+    field_delete_instance($instances[$field_name], TRUE);
+    field_purge_batch(1);
+  }
+}
