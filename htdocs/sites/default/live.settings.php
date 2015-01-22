@@ -614,3 +614,6 @@ $conf['kms_permissions_conn_db'] = 'gstlog.prod.sitad.dk';
 
 // We do not want poormans cron running.
 $conf['ultimate_cron_poorman'] = 0;
+
+$conf['kms_widget_download_ticket_url'] = 'http://kortforsyningen.kms.dk/?request=GetTicket&login=nikam&password=KMS2012';
+$conf['kms_mapwidget_download_ticket_url'] = 'http://kortforsyningen.kms.dk/?request=GetTicket&login=FriDownload&password=FriDownload2013';

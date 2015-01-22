@@ -15,14 +15,14 @@ $plugin = array(
 
 function kms_widget_pane_render($subtype, $conf, $panel_args, $context) {
   
-  if (empty($_COOKIE['downloadticket'])) {
+  if (empty($_COOKIE['downloadticket']) && variable_get('kms_widget_download_ticket_url', FALSE)) {
     
     $domain = $_SERVER['HTTP_HOST'];
     
     if (preg_match("/^(.+):/", $_SERVER['HTTP_HOST'], $matches))
       $domain = $matches[1];
 
-    $ticket = file_get_contents("http://kortforsyningen.kms.dk/?request=GetTicket&login=nikam&password=KMS2012");
+    $ticket = file_get_contents(variable_get('kms_widget_download_ticket_url'));
     setcookie("downloadticket", $ticket, time()+60*60*24, '/', $domain); 
   }
 

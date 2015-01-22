@@ -596,3 +596,6 @@ $conf['background_process_service_hosts'] = array(
     'http_host' => 'kms.fe.test.cd.adapt.dk',
   ),
 );
+
+$conf['kms_widget_download_ticket_url'] = 'http://kortforsyningen.kms.dk/?request=GetTicket&login=nikam&password=KMS2012';
+$conf['kms_mapwidget_download_ticket_url'] = 'http://kortforsyningen.kms.dk/?request=GetTicket&login=FriDownload&password=FriDownload2013';

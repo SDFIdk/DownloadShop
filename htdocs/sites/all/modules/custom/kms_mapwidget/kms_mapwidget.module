@@ -65,7 +65,10 @@ function kms_mapwidget_fme_log_view( ) {
 }
 
 function kms_mapwidget_downloadticket_callback() {
-  @$ticket = file_get_contents("http://kortforsyningen.kms.dk/?request=GetTicket&login=FriDownload&password=FriDownload2013");
+  $ticket = array();
+  if (variable_get('kms_mapwidget_download_ticket_url', FALSE)) {
+    @$ticket = file_get_contents(variable_get('kms_mapwidget_download_ticket_url'));
+  }
   drupal_json_output($ticket);
 }
 

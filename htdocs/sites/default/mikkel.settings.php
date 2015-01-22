@@ -4,9 +4,9 @@ $databases = array (
   array (
     'default' => 
     array (
-      'database' => 'kms_live',
-      'username' => 'kms_live',
-      'password' => 'kms_live',
+      'database' => 'gst',
+      'username' => 'vagrant',
+      'password' => 'vagrant',
       'host' => 'localhost',
       'port' => '',
       'driver' => 'pgsql',
@@ -28,7 +28,6 @@ $databases = array (
 );
 $update_free_access = FALSE;
 $drupal_hash_salt = 'FZ7cjE7VPpcUCIhLC7-Q0TMzv6WpbQV-9oakjFxFK_M';
-$base_url = 'http://loc.kms.dk';  // NO trailing slash!
 
 ini_set('session.gc_probability', 1);
 ini_set('session.gc_divisor', 100);
@@ -57,3 +56,6 @@ $conf['preprocess_css'] = 0;
 $conf['preprocess_js'] = 0;
 
 $conf['ultimate_cron_poorman'] = 0;
+
+$conf['kms_widget_download_ticket_url'] = 'http://kortforsyningen.kms.dk/?request=GetTicket&login=nikam&password=KMS2012';
+$conf['kms_mapwidget_download_ticket_url'] = 'http://kortforsyningen.kms.dk/?request=GetTicket&login=FriDownload&password=FriDownload2013';
