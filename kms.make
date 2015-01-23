@@ -1,3 +1,54 @@
+core = 7.x
+api = 2
+
+; Modules
+
+;admin_views -- patched
+projects[admin_views][subdir] = "contrib"
+projects[admin_views][version] = "1.0"
+projects[admin_views][patch][] = "http://drupal.org/files/issues/admin_views-enable-use-of-custom-views-2145183-1.patch"
+projects[admin_views][type] = "module"
+
+;views -- patched
+projects[views][subdir] = "contrib"
+projects[views][version] = "3.5"
+projects[views][patch][] = "http://drupal.org/files/views_1055616_81_cache.patch"
+projects[views][type] = "module"
+
+;filefield_paths
+projects[filefield_paths][type] = 'module'
+projects[filefield_paths][subdir] = 'contrib'
+projects[filefield_paths][download][branch] = '7.x-1.x'
+projects[filefield_paths][download][type] = 'git'
+projects[filefield_paths][download][url] = 'http://git.drupal.org/project/filefield_paths.git'
+projects[filefield_paths][download][revision] = '8b39e7369bdc8790d4075a1a0e7544fb60111eea'
+
+;hierarchical_select
+projects[hierarchical_select][type] = 'module'
+projects[hierarchical_select][subdir] = 'contrib'
+projects[hierarchical_select][download][branch] = '7.x-3.x'
+projects[hierarchical_select][download][type] = 'git'
+projects[hierarchical_select][download][url] = 'http://git.drupal.org/project/hierarchical_select.git'
+projects[hierarchical_select][download][revision] = 'b3e34d9c2a0493108481b78ea5ad75c432a1318d'
+
+;colorbox
+projects[colorbox][subdir] = "contrib"
+projects[colorbox][version] = "2.8"
+projects[colorbox][type] = "module"
+
+;colorbox_node
+projects[colorbox_node][type] = 'module'
+projects[colorbox_node][subdir] = 'contrib'
+projects[colorbox_node][download][branch] = '7.x-3.x'
+projects[colorbox_node][download][type] = 'git'
+projects[colorbox_node][download][url] = 'http://git.drupal.org/project/colorbox_node.git'
+projects[colorbox_node][download][revision] = '898ec235c3d7fa43e8fb74edee2336dcbcba0957'
+
+;subuser
+projects[subuser][subdir] = "contrib"
+projects[subuser][version] = "2.0-alpha3"
+projects[subuser][type] = "module"
+
 ;addressfield
 projects[addressfield][subdir] = "contrib"
 projects[addressfield][version] = "1.0-beta3"
@@ -7,11 +58,6 @@ projects[addressfield][type] = "module"
 projects[admin_menu][subdir] = "contrib"
 projects[admin_menu][version] = "3.0-rc3"
 projects[admin_menu][type] = "module"
-
-;admin_views
-projects[admin_views][subdir] = "contrib"
-projects[admin_views][version] = "1.0"
-projects[admin_views][type] = "module"
 
 ;background_process
 projects[background_process][subdir] = "contrib"
@@ -32,11 +78,6 @@ projects[better_exposed_filters][type] = "module"
 projects[boolean][subdir] = "contrib"
 projects[boolean][version] = "1.0"
 projects[boolean][type] = "module"
-
-;colorbox_node
-projects[colorbox_node][subdir] = "contrib"
-projects[colorbox_node][version] = "3.x-dev"
-projects[colorbox_node][type] = "module"
 
 ;commerce
 projects[commerce][subdir] = "contrib"
@@ -124,11 +165,6 @@ projects[field_permissions][subdir] = "contrib"
 projects[field_permissions][version] = "1.0-beta2"
 projects[field_permissions][type] = "module"
 
-;filefield_paths
-projects[filefield_paths][subdir] = "contrib"
-projects[filefield_paths][version] = "1.0-beta4+3-dev"
-projects[filefield_paths][type] = "module"
-
 ;filefield_sources
 projects[filefield_sources][subdir] = "contrib"
 projects[filefield_sources][version] = "1.7"
@@ -138,11 +174,6 @@ projects[filefield_sources][type] = "module"
 projects[google_analytics][subdir] = "contrib"
 projects[google_analytics][version] = "1.2"
 projects[google_analytics][type] = "module"
-
-;hierarchical_select
-projects[hierarchical_select][subdir] = "contrib"
-projects[hierarchical_select][version] = "3.0-alpha7+1-dev"
-projects[hierarchical_select][type] = "module"
 
 ;honeypot
 projects[honeypot][subdir] = "contrib"
@@ -264,11 +295,6 @@ projects[strongarm][subdir] = "contrib"
 projects[strongarm][version] = "2.0"
 projects[strongarm][type] = "module"
 
-;subuser
-projects[subuser][subdir] = "contrib"
-projects[subuser][version] = "unknown"
-projects[subuser][type] = "module"
-
 ;taxonomy_csv
 projects[taxonomy_csv][subdir] = "contrib"
 projects[taxonomy_csv][version] = "5.10"
@@ -288,11 +314,6 @@ projects[token][type] = "module"
 projects[ultimate_cron][subdir] = "contrib"
 projects[ultimate_cron][version] = "1.9"
 projects[ultimate_cron][type] = "module"
-
-;views
-projects[views][subdir] = "contrib"
-projects[views][version] = "3.5"
-projects[views][type] = "module"
 
 ;views_bulk_operations
 projects[views_bulk_operations][subdir] = "contrib"
@@ -314,3 +335,43 @@ projects[xmlsitemap][subdir] = "contrib"
 projects[xmlsitemap][version] = "2.0-rc1"
 projects[xmlsitemap][type] = "module"
 
+; _adapt
+projects[adapt_module][type] = 'module'
+projects[adapt_module][download][type] = 'svn'
+projects[adapt_module][download][url] = 'svn+ssh://svnhost/data/subversion/drupal/global/tags/modules/_adapt-7.x-0.4'
+projects[adapt_module][directory_name] = "_adapt"
+projects[adapt_module][subdir] = "global"
+
+; Libraries
+;; Ckeditor
+libraries[ckeditor][download][type] = 'svn'
+libraries[ckeditor][download][url] = 'svn+ssh://svnhost/data/subversion/drupal/global/tags/libraries/ckeditor-3.6.4'
+
+;; Colorbox
+libraries[colorbox][download][type] = 'git'
+libraries[colorbox][download][url] = 'git://github.com/jackmoore/colorbox.git'
+libraries[colorbox][download][tag] =  1.5.14
+
+; Beautytips
+libraries[beautytips_ie_lib][download][type] = "get"
+libraries[beautytips_ie_lib][download][url] = "https://explorercanvas.googlecode.com/files/excanvas_r3.zip"
+libraries[beautytips_ie_lib][download][md5] = "81a041b98c477f92ed772f2fac0835ad"
+libraries[beautytips_ie_lib][directory_name] = "excanvas_r3"
+libraries[beautytips_ie_lib][destination] = "modules/contrib/beautytips/other_libs"
+
+; Themes
+projects[adapt_theme][download][type] = "svn"
+projects[adapt_theme][download][url] = "svn+ssh://svnhost/data/subversion/drupal/global/tags/themes/adapt-7.x-0.2"
+projects[adapt_theme][directory_name] = "adapt"
+projects[adapt_theme][type] = "theme"
+projects[adapt_theme][subdir] = "global"
+
+
+;Remove after live
+projects[node_export][subdir] = "contrib"
+projects[node_export][version] = "3.0"
+projects[node_export][type] = "module"
+
+projects[uuid][subdir] = "contrib"
+projects[uuid][version] = "1.0-alpha5"
+projects[uuid][type] = "module"
