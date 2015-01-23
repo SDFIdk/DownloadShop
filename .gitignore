@@ -1,0 +1,11 @@
+.idea
+.DS_Store
+.DS_Store?
+.Spotlight-V100
+.Trashes
+.sass-cache
+modules/contrib
+modules/global
+themes/contrib
+themes/global
+libraries
