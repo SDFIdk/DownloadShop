@@ -11,7 +11,7 @@
 // Define paths.
 define('QUERY_ENGINE_ROOT', dirname(__FILE__));
 define('QUERY_ENGINE_RUN_MODE', 'cron');
-define('DRUPAL_ROOT', realpath(QUERY_ENGINE_ROOT . '/../../htdocs'));
+define('DRUPAL_ROOT', realpath(QUERY_ENGINE_ROOT . '/../../../..'));
 
 $_SERVER['HTTP_HOST'] = 'default';
 $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
