@@ -1,0 +1,13 @@
+name = Kms Settings
+core = 7.x
+package = Features
+dependencies[] = ctools
+dependencies[] = strongarm
+features[ctools][] = strongarm:strongarm:1
+features[features_api][] = api:1
+features[variable][] = hide_submit_abtext
+features[variable][] = hide_submit_atext
+features[variable][] = hide_submit_hide_fx
+features[variable][] = hide_submit_hide_text
+features[variable][] = hide_submit_method
+features[variable][] = hide_submit_reset_time

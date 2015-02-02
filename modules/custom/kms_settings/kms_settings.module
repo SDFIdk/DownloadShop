@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Kms Settings feature.
+ */
+
+include_once 'kms_settings.features.inc';
