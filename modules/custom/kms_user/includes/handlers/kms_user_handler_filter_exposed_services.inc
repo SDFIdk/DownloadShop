@@ -22,7 +22,7 @@ class kms_user_handler_filter_exposed_services extends views_handler_filter {
   	);
 
     //Fake multiple select field list for webservice with all available web services
-    $webServiceList = return_websevice_list_all();
+    $webServiceList = _kms_user_return_websevice_list_all();
     $form['value']['exposed_services_list'] = array(
       '#type' => 'select',
       '#multiple' => 'true',

@@ -341,7 +341,8 @@ function kms_permissions_get_application_list() {
             $application_data = $rows;
           }
           else {
-            watchdog('kms_permissons', 'Could not read from Oracle', array(), WATCHDOG_ERROR);
+            $application_data = array();
+            watchdog('kms_permissons', 'Could not read applications from Oracle', array(), WATCHDOG_ERROR);
           }
 
           // Close connection
@@ -2434,7 +2435,7 @@ function _kms_permissions_webservice_return_list_array($array){
   //Get service ids
 
   //Make proper array for bundles
-  $webServiceListAll = return_websevice_list_all();
+  $webServiceListAll = _kms_user_return_websevice_list_all();
   foreach($array['bundles'] as $key => $value) {
     $webservices_bundles[] = _kms_permissions_webservice_get_services_array_by_bid($value['nid'], $webServiceListAll);
   }
@@ -2513,7 +2514,7 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
       $sids[$key]['ProductLink'] = $link;
     }
   }else{
-    $webservice_types = return_merged_service_list_array();
+    $webservice_types = _kms_user_return_merged_service_list_array();
     foreach ($service as $value) {
       $typeName = _kms_permissions_webservices_return_type_name_by_service($value, $webservice_types);
       $sids[$value]['ProductTypeId'] = 'null';

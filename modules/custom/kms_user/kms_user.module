@@ -79,7 +79,7 @@ function kms_user_menu() {
   //Return json of webservices
   $items['kms-user/json/webservices/%'] = array(
     'title' => 'json for webservices',
-    'page callback' => 'return_websevice_list',
+    'page callback' => '_kms_user_return_websevice_list',
     'page arguments' => array(3),
     'type' => MENU_CALLBACK,
     'access arguments' => array('access content'),
@@ -315,7 +315,7 @@ function _kms_user_user_pass_validate($form, &$form_state) {
 }
 
 function _kms_user_user_pass_validate_chars($value) {
-  preg_match_all("#([æøå])#uis", $value, $m);
+  preg_match_all(_kms_user_validate_pattern_get('credentials'), $value, $m);
 
   foreach ($m as $match) {
     if (empty($match)) {
@@ -337,6 +337,25 @@ function _kms_user_user_pass_validate_chars($value) {
 
 }
 
+/**
+ * Get a validation pattern used through application.
+ *
+ * @param string $type
+ *   Type of pattern.
+ * @return string
+ *   Regex pattern string.
+ */
+function _kms_user_validate_pattern_get($type) {
+  $patterns = array(
+    'credentials' => '#(\/)|(\\\\)|(=)|(\?)|(\&)|(\.)|(\@)|(\s)|([æøå])#uis',
+  );
+
+  if (!empty($patterns[$type])) {
+    return $patterns[$type];
+  }
+
+  return '';
+}
 
 function kms_user_form_after_build($form_element) {
     $terms_and_conditions = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
@@ -391,7 +410,7 @@ proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
 function _kms_user_validate_username($element, &$form_state, $form) {
   _kms_user_validate_chars(
     $element,
-    "#(\/)|(\\\\)|(=)|(\?)|(\&)|(\.)|(\@)|(\s)|([æøå])#uis"
+    _kms_user_validate_pattern_get('credentials')
   );
   _kms_user_validate_length($element, KMS_USER_VALIDATE_NAME_LENGTH);
 }
@@ -1582,7 +1601,7 @@ function kms_user_views_bulk_operations_form_alter(&$form, &$form_state, $vbo) {
  */
 function kms_user_form_user_register_form_alter(&$form, &$form_state) {
   //Add validation for character lenght
-  $form['#validate'][] = 'kms_user_username_lenght_validate';
+  $form['#validate'][] = 'kms_user_username_length_validate';
 }
 
 /**
@@ -1590,14 +1609,17 @@ function kms_user_form_user_register_form_alter(&$form, &$form_state) {
  */
 function kms_user_form_user_profile_form_alter(&$form, &$form_state) {
   //Add validation for character lenght
-  $form['#validate'][] = 'kms_user_username_lenght_validate';
+  $form['#validate'][] = 'kms_user_username_length_validate';
 }
 
 /**
  * Implements validation callback on register form.
  */
-function kms_user_username_lenght_validate($form, &$form_state) {
-  if(strlen($form_state['values']['name']) > 32 || strlen($form_state['values']['pass']) > 32) {
+function kms_user_username_length_validate($form, &$form_state) {
+  if (
+  (!empty($form_state['values']['name']) && strlen($form_state['values']['name']) > 32)
+      || (!empty($form_state['values']['pass']) && strlen($form_state['values']['pass']) > 32)
+  ) {
     form_set_error('name', t('Username and Password should not exceed 32 characters'));
   }
 }
@@ -1638,9 +1660,9 @@ function kms_user_views_handlers() {
  *        contains webservice type
  * @return json array
  */
-function return_websevice_list($webid) {
+function _kms_user_return_websevice_list($webid) {
   //get all available services
-  $service_list = return_merged_service_list_array();
+  $service_list = _kms_user_return_merged_service_list_array();
   //Create new array with current service list type
   $current_sev_list = array();
   foreach ($service_list as $key => $value) {
@@ -1661,8 +1683,8 @@ function return_websevice_list($webid) {
  * @return array $new_array
  *         containing all available webservice names and ID's
  */
-function return_websevice_list_all() { 
-  $array_list = return_merged_service_list_array();
+function _kms_user_return_websevice_list_all() {
+  $array_list = _kms_user_return_merged_service_list_array();
   $new_array = array();
   $custom_services = array('ftp', 'applications', 'predefined_datacollections');
   $prefix = '';
@@ -1684,11 +1706,11 @@ function return_websevice_list_all() {
  * @return array $new_array
  *         containing all available webservice names and ID's
  */
-function return_merged_service_list_array(){
+function _kms_user_return_merged_service_list_array(){
   $service_list = kms_permissions_get_service_list();
   $service_list_aplication = kms_permissions_get_application_list();
-  $service_list_ftp = return_ftp_permissions_all();
-  $service_list_predefined = return_predefined_datacollections_permissions_all();
+  $service_list_ftp = _kms_permissions_ftp_return_ftp_permissions_all();
+  $service_list_predefined = _kms_user_return_predefined_datacollections_permissions_all();
 
   //Create new array with current service list type
   $current_sev_list = array();
@@ -1715,20 +1737,12 @@ function return_merged_service_list_array(){
   return $current_sev_list;
 }
 
-/**
- * Return ftp webservice array
- *
- * @return array
- */
-function return_ftp_permissions_all(){
-  return db_query("SELECT * FROM {kms_permissions_ftp_folders}")->fetchAll(); 
-}
 
 /**
  * Return predifened datacollections webservice array
  *
  * @return array
  */
-function return_predefined_datacollections_permissions_all(){
+function _kms_user_return_predefined_datacollections_permissions_all(){
   return db_query("SELECT nid, title FROM {node} WHERE type = 'product_display'")->fetchAll(); 
 }
