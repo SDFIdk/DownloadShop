@@ -3,6 +3,11 @@ api = 2
 
 ; Modules
 
+;hide_submit
+projects[hide_submit][subdir] = "contrib"
+projects[hide_submit][version] = "2.0"
+projects[hide_submit][type] = "module"
+
 ;admin_views -- patched
 projects[admin_views][subdir] = "contrib"
 projects[admin_views][version] = "1.0"

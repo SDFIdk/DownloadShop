@@ -427,3 +427,15 @@ function kms_update_7015(){
     field_purge_batch(1);
   }
 }
+
+/**
+ * Enable hide_submit and kms_settings modules.
+ *
+ * @author Mikkel Jakobsen <mikkel@adapt.dk>
+ */
+function kms_update_7016(&$sandbox) {
+  module_enable(array(
+    'hide_submit',
+    'kms_settings',
+  ));
+}

@@ -71,6 +71,7 @@ dependencies[] = libraries
 dependencies[] = metatag
 dependencies[] = smtp
 dependencies[] = securepages
+dependencies[] = hide_submit
 
 ; Custom
 dependencies[] = adapt
@@ -79,6 +80,7 @@ dependencies[] = view_kms_subuser
 dependencies[] = panel_edit_user_profile
 dependencies[] = kms_subuser
 dependencies[] = kms_deploy
+dependencies[] = kms_settings
 
 
 ; Permissions
