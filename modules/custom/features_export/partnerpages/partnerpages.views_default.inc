@@ -125,6 +125,80 @@ Læs mere
   /* Display: Partnerlist */
   $handler = $view->new_display('panel_pane', 'Partnerlist', 'panel_pane_1');
   $handler->display->display_options['defaults']['hide_admin_links'] = FALSE;
+  $handler->display->display_options['defaults']['fields'] = FALSE;
+  /* Field: Content: Title */
+  $handler->display->display_options['fields']['title']['id'] = 'title';
+  $handler->display->display_options['fields']['title']['table'] = 'node';
+  $handler->display->display_options['fields']['title']['field'] = 'title';
+  $handler->display->display_options['fields']['title']['label'] = '';
+  $handler->display->display_options['fields']['title']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['title']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['title']['node_in_colorbox_width'] = '600';
+  $handler->display->display_options['fields']['title']['node_in_colorbox_height'] = '600';
+  $handler->display->display_options['fields']['title']['node_in_colorbox_rel'] = '';
+  /* Field: Content: Topbillede */
+  $handler->display->display_options['fields']['field_partner_top_img']['id'] = 'field_partner_top_img';
+  $handler->display->display_options['fields']['field_partner_top_img']['table'] = 'field_data_field_partner_top_img';
+  $handler->display->display_options['fields']['field_partner_top_img']['field'] = 'field_partner_top_img';
+  $handler->display->display_options['fields']['field_partner_top_img']['label'] = '';
+  $handler->display->display_options['fields']['field_partner_top_img']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['field_partner_top_img']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['field_partner_top_img']['click_sort_column'] = 'fid';
+  $handler->display->display_options['fields']['field_partner_top_img']['settings'] = array(
+    'image_style' => 'partnerlist',
+    'image_link' => '',
+  );
+  /* Field: Content: Teaser-text */
+  $handler->display->display_options['fields']['field_teaser_text']['id'] = 'field_teaser_text';
+  $handler->display->display_options['fields']['field_teaser_text']['table'] = 'field_data_field_teaser_text';
+  $handler->display->display_options['fields']['field_teaser_text']['field'] = 'field_teaser_text';
+  $handler->display->display_options['fields']['field_teaser_text']['label'] = '';
+  $handler->display->display_options['fields']['field_teaser_text']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['field_teaser_text']['alter']['max_length'] = '80';
+  $handler->display->display_options['fields']['field_teaser_text']['alter']['trim'] = TRUE;
+  $handler->display->display_options['fields']['field_teaser_text']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['field_teaser_text']['settings'] = array(
+    'trim_length' => '600',
+  );
+  /* Field: Content: Partner logo */
+  $handler->display->display_options['fields']['field_partner_logo']['id'] = 'field_partner_logo';
+  $handler->display->display_options['fields']['field_partner_logo']['table'] = 'field_data_field_partner_logo';
+  $handler->display->display_options['fields']['field_partner_logo']['field'] = 'field_partner_logo';
+  $handler->display->display_options['fields']['field_partner_logo']['label'] = '';
+  $handler->display->display_options['fields']['field_partner_logo']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['field_partner_logo']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['field_partner_logo']['click_sort_column'] = 'fid';
+  $handler->display->display_options['fields']['field_partner_logo']['settings'] = array(
+    'image_style' => 'partner_logo',
+    'image_link' => '',
+  );
+  /* Field: Content: Path */
+  $handler->display->display_options['fields']['path']['id'] = 'path';
+  $handler->display->display_options['fields']['path']['table'] = 'node';
+  $handler->display->display_options['fields']['path']['field'] = 'path';
+  $handler->display->display_options['fields']['path']['label'] = '';
+  $handler->display->display_options['fields']['path']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['path']['element_label_colon'] = FALSE;
+  /* Field: Rewrite */
+  $handler->display->display_options['fields']['nothing']['id'] = 'nothing';
+  $handler->display->display_options['fields']['nothing']['table'] = 'views';
+  $handler->display->display_options['fields']['nothing']['field'] = 'nothing';
+  $handler->display->display_options['fields']['nothing']['ui_name'] = 'Rewrite';
+  $handler->display->display_options['fields']['nothing']['label'] = '';
+  $handler->display->display_options['fields']['nothing']['alter']['text'] = '<a href="[path]">[field_partner_top_img]</a>
+<div class="content">
+<div class="logo">
+[title]
+</div>
+<div class="text">
+<div class="read-more">
+<a href="[path]">
+Læs mere
+</a>
+</div>
+</div>
+</div>';
+  $handler->display->display_options['fields']['nothing']['element_label_colon'] = FALSE;
   $translatables['partner'] = array(
     t('Master'),
     t('more'),
@@ -156,6 +230,19 @@ Læs mere
 </div>
 </div>'),
     t('Partnerlist'),
+    t('<a href="[path]">[field_partner_top_img]</a>
+<div class="content">
+<div class="logo">
+[title]
+</div>
+<div class="text">
+<div class="read-more">
+<a href="[path]">
+Læs mere
+</a>
+</div>
+</div>
+</div>'),
     t('View panes'),
   );
   $export['partner'] = $view;
