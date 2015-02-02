@@ -201,3 +201,12 @@ function _kms_permissions_ftp_get_permissions_by_bid($bid, &$permissions = array
 
   return $permissions;
 }
+
+/**
+ * Return ftp webservice array
+ *
+ * @return array
+ */
+function _kms_permissions_ftp_return_ftp_permissions_all(){
+  return db_query("SELECT * FROM {kms_permissions_ftp_folders}")->fetchAll();
+}
