@@ -537,6 +537,7 @@ function kms_mapwidget_form_step_1(&$form, $form_state, $nw) {
     
 }
 
+
 /**
  * [kms_mapwidget_form_step_2 ]
  * @param  [array]  $form
@@ -554,18 +555,22 @@ function kms_mapwidget_form_step_2(&$form, $form_state, $nw) {
     $type_text =  t('Predefined selection');
     $dataformat_options = kms_mapwidget_get_product_dataformat_options($nw,$selection_type);
     $dataformat_descriptions = kms_mapwidget_get_product_dataformat_options($nw,$selection_type,true);
+    $atom_feed = kms_mapwidget_get_product_predefined_feed($nw,$selection_type);
   } else {
     $type_text =  t('User-defined selection');
     $product = kms_mapwidget_get_userdefined_product( $nw );
     $dataformat_options = kms_mapwidget_get_userdefined_product_dataformat_options($product);
     $dataformat_descriptions = kms_mapwidget_get_userdefined_product_dataformat_options($product,true);
+    $atom_feed = kms_mapwidget_get_product_userdefined_feed($product);
   }
+
 
   drupal_add_js(
       array('kms_mapwidget' => array(
           'step' => 2,
           'product_type_title'   => $type_text,
           'selection_type_title' => $selection_type->name->value(),
+          'selection_atom_feed' => $atom_feed,
         ),
       ),
       array('type' => 'setting')
@@ -642,7 +647,7 @@ function kms_mapwidget_form_step_3(&$form, $form_state, $nw) {
     $selection_type = $product->field_selection_type;
     $selection_details = $product->field_selection_details->value();
     $type_text =  t('Predefined selection');
-    
+
     $form['step_3']['product_id'] = array(
       '#type' => 'hidden',
       '#value' => $product->product_id->value()
@@ -936,6 +941,55 @@ function kms_mapwidget_get_userdefined_product_koordinatsystem_options( $product
     return kms_mapwidget__description($options);
 
   return kms_mapwidget__sort($options);
+}
+
+/*
+ * Custom sort function for atom feeds
+ */
+function kms_mapwidget__atom_feed($data) {
+  if(empty($data)) return '';
+
+  $output = '';
+  foreach ($data as $key => $value) {
+    if(isset($value['atom_feed']['url']) && !empty($value['atom_feed']['url'])){
+      $atom_title = $value['atom_feed']['title'];
+      if($value['atom_feed']['title'] == ''){
+        $atom_title = t('Atom feed');
+      }
+      $output .= '<div id="atom-' . $key . '">'. $atom_title .' : <span class="value"><a href="'.$value['atom_feed']['url'].'">' . $value['atom_feed']['url'] . '</a></span></div>';
+    }
+  }
+  return $output;
+}
+/*
+ * Get atom feeds for predefined products
+ */
+function kms_mapwidget_get_product_predefined_feed($nw, $selection_type){
+  $options = array();
+  foreach ($nw->field_product as $product) {
+    if ($product->type->value() == 'product' && $product->field_selection_type->tid->value() == $selection_type->tid->value()) {
+      $options[] =
+        array(
+          'atom_feed' => $product->field_atom_feed->value(),
+        );
+    }
+  }
+
+  return kms_mapwidget__atom_feed($options);
+}
+
+/*
+ * Get product atom feed for userdefind product
+ */
+function kms_mapwidget_get_product_userdefined_feed($product){
+  $options = array();
+
+  $options[] =
+    array(
+      'atom_feed' => $product->field_atom_feed->value(),
+    );
+
+  return kms_mapwidget__atom_feed($options);
 }
 
 /*

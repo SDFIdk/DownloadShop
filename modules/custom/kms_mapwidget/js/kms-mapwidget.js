@@ -194,6 +194,10 @@ jQuery(document).ready(function($) {
       $('div.useful-links').hide();
       jQuery('#selection_message').empty();
       jQuery('#selection_message').append('<p>' + Drupal.t('Selection method') + ' : <span class="value">' + conf.product_type_title + ' - ' + conf.selection_type_title + '</span></p>');
+
+      //insert atom feeds
+      jQuery('#selection_message').append('<p>' + conf.selection_atom_feed +' </p>');
+
       $('#selection_message').show();
     } else {
       $('div.product-body').show();
