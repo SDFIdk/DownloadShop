@@ -67,6 +67,8 @@ class KmsOciQueueSql {
 
   private static function header() {
     return <<<EOD
+SET DEFINE OFF
+
 DECLARE
   v_userid VARCHAR2 (50) := *userid*;
 BEGIN
