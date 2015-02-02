@@ -16,6 +16,7 @@ features[commerce_product_type][] = fme_product
 features[commerce_product_type][] = product
 features[features_api][] = api:1
 features[field][] = commerce_product-fme_product-commerce_price
+features[field][] = commerce_product-fme_product-field_atom_feed
 features[field][] = commerce_product-fme_product-field_dataformats
 features[field][] = commerce_product-fme_product-field_fme_name
 features[field][] = commerce_product-fme_product-field_ortofoto_produkt
