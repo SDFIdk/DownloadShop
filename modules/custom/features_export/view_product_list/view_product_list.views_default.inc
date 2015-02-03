@@ -165,17 +165,25 @@ function view_product_list_views_default_views() {
   $handler->display->display_options['filters']['status']['value'] = 1;
   $handler->display->display_options['filters']['status']['group'] = 1;
   $handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
-  /* Filter criterion: Content: Has taxonomy terms (with depth) */
-  $handler->display->display_options['filters']['term_node_tid_depth']['id'] = 'term_node_tid_depth';
-  $handler->display->display_options['filters']['term_node_tid_depth']['table'] = 'node';
-  $handler->display->display_options['filters']['term_node_tid_depth']['field'] = 'term_node_tid_depth';
-  $handler->display->display_options['filters']['term_node_tid_depth']['group'] = 1;
-  $handler->display->display_options['filters']['term_node_tid_depth']['exposed'] = TRUE;
-  $handler->display->display_options['filters']['term_node_tid_depth']['expose']['operator_id'] = 'term_node_tid_depth_op';
-  $handler->display->display_options['filters']['term_node_tid_depth']['expose']['label'] = 'Korttype';
-  $handler->display->display_options['filters']['term_node_tid_depth']['expose']['operator'] = 'term_node_tid_depth_op';
-  $handler->display->display_options['filters']['term_node_tid_depth']['expose']['identifier'] = 'field_korttype_tid_1';
-  $handler->display->display_options['filters']['term_node_tid_depth']['expose']['remember_roles'] = array(
+  /* Filter criterion: Content: Type */
+  $handler->display->display_options['filters']['type']['id'] = 'type';
+  $handler->display->display_options['filters']['type']['table'] = 'node';
+  $handler->display->display_options['filters']['type']['field'] = 'type';
+  $handler->display->display_options['filters']['type']['value'] = array(
+    'product_display' => 'product_display',
+  );
+  $handler->display->display_options['filters']['type']['group'] = 1;
+  /* Filter criterion: Field: Korttype (field_korttype) */
+  $handler->display->display_options['filters']['field_korttype_tid_1']['id'] = 'field_korttype_tid_1';
+  $handler->display->display_options['filters']['field_korttype_tid_1']['table'] = 'field_data_field_korttype';
+  $handler->display->display_options['filters']['field_korttype_tid_1']['field'] = 'field_korttype_tid';
+  $handler->display->display_options['filters']['field_korttype_tid_1']['group'] = 1;
+  $handler->display->display_options['filters']['field_korttype_tid_1']['exposed'] = TRUE;
+  $handler->display->display_options['filters']['field_korttype_tid_1']['expose']['operator_id'] = 'field_korttype_tid_1_op';
+  $handler->display->display_options['filters']['field_korttype_tid_1']['expose']['label'] = 'Korttype';
+  $handler->display->display_options['filters']['field_korttype_tid_1']['expose']['operator'] = 'field_korttype_tid_1_op';
+  $handler->display->display_options['filters']['field_korttype_tid_1']['expose']['identifier'] = 'field_korttype_tid_1';
+  $handler->display->display_options['filters']['field_korttype_tid_1']['expose']['remember_roles'] = array(
     2 => '2',
     1 => 0,
     3 => 0,
@@ -184,17 +192,13 @@ function view_product_list_views_default_views() {
     7 => 0,
     8 => 0,
     9 => 0,
-    10 => 0,
   );
-  $handler->display->display_options['filters']['term_node_tid_depth']['type'] = 'select';
-  $handler->display->display_options['filters']['term_node_tid_depth']['vocabulary'] = 'korttype';
-  $handler->display->display_options['filters']['term_node_tid_depth']['hierarchy'] = 1;
-  $handler->display->display_options['filters']['term_node_tid_depth']['depth'] = '3';
+  $handler->display->display_options['filters']['field_korttype_tid_1']['type'] = 'select';
+  $handler->display->display_options['filters']['field_korttype_tid_1']['vocabulary'] = 'korttype';
   /* Filter criterion: Field: Aktualitet (field_aktualitet) */
   $handler->display->display_options['filters']['field_aktualitet_tid']['id'] = 'field_aktualitet_tid';
   $handler->display->display_options['filters']['field_aktualitet_tid']['table'] = 'field_data_field_aktualitet';
   $handler->display->display_options['filters']['field_aktualitet_tid']['field'] = 'field_aktualitet_tid';
-  $handler->display->display_options['filters']['field_aktualitet_tid']['group'] = 1;
   $handler->display->display_options['filters']['field_aktualitet_tid']['exposed'] = TRUE;
   $handler->display->display_options['filters']['field_aktualitet_tid']['expose']['operator_id'] = 'field_aktualitet_tid_op';
   $handler->display->display_options['filters']['field_aktualitet_tid']['expose']['label'] = 'Aktualitet';
@@ -216,7 +220,6 @@ function view_product_list_views_default_views() {
   $handler->display->display_options['filters']['field_datastruktur_tid']['id'] = 'field_datastruktur_tid';
   $handler->display->display_options['filters']['field_datastruktur_tid']['table'] = 'field_data_field_datastruktur';
   $handler->display->display_options['filters']['field_datastruktur_tid']['field'] = 'field_datastruktur_tid';
-  $handler->display->display_options['filters']['field_datastruktur_tid']['group'] = 1;
   $handler->display->display_options['filters']['field_datastruktur_tid']['exposed'] = TRUE;
   $handler->display->display_options['filters']['field_datastruktur_tid']['expose']['operator_id'] = 'field_datastruktur_tid_op';
   $handler->display->display_options['filters']['field_datastruktur_tid']['expose']['label'] = 'Datastruktur';
@@ -238,7 +241,6 @@ function view_product_list_views_default_views() {
   $handler->display->display_options['filters']['field_scheme_tid']['id'] = 'field_scheme_tid';
   $handler->display->display_options['filters']['field_scheme_tid']['table'] = 'field_data_field_scheme';
   $handler->display->display_options['filters']['field_scheme_tid']['field'] = 'field_scheme_tid';
-  $handler->display->display_options['filters']['field_scheme_tid']['group'] = 1;
   $handler->display->display_options['filters']['field_scheme_tid']['exposed'] = TRUE;
   $handler->display->display_options['filters']['field_scheme_tid']['expose']['operator_id'] = 'field_scheme_tid_op';
   $handler->display->display_options['filters']['field_scheme_tid']['expose']['label'] = 'Data skema';
