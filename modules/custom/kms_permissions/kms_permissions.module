@@ -86,7 +86,7 @@ function kms_permissions_cronapi($op, $job = NULL) {
     case 'rule':
       switch ($job) {
         case 'kms_permissions_cron_cleanup_dead_services':
-          return '3 58 * * *';
+          return '58 3 * * *';
       }
       break;
 
