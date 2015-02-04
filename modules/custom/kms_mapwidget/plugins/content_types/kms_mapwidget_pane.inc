@@ -45,6 +45,7 @@ function kms_mapwidget_pane_render($subtype, $conf, $panel_args, $context) {
       'zoom_level'       => (int) $nw->field_zoom_level->value(),
       'grid_folder'      => '/sites/default/files/grid/',
       'projection'       => $projection_value,
+      'imgPath'          => '/' . path_to_theme() . '/images/'
       ),
     ),
     array('type' => 'setting')
