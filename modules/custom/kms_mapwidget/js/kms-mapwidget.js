@@ -222,7 +222,7 @@ jQuery(document).ready(function($) {
 
 function initMap() {
 
-  OpenLayers.ImgPath = "/sites/all/themes/custom/kms/images/";
+  OpenLayers.ImgPath = conf.imgPath;
 
   kmsticket = new VisStedet.Ticket();
 
