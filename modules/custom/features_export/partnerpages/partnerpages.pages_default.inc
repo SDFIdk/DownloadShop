@@ -505,68 +505,6 @@ function partnerpages_default_page_manager_handlers() {
     $pane = new stdClass();
     $pane->pid = 'new-15';
     $pane->panel = 'main-content';
-    $pane->type = 'entity_field';
-    $pane->subtype = 'node:field_text_column_1';
-    $pane->shown = TRUE;
-    $pane->access = array();
-    $pane->configuration = array(
-      'label' => 'hidden',
-      'formatter' => 'text_default',
-      'delta_limit' => 0,
-      'delta_offset' => '0',
-      'delta_reversed' => FALSE,
-      'formatter_settings' => array(),
-      'context' => 'argument_entity_id:node_1',
-      'override_title' => 1,
-      'override_title_text' => '',
-    );
-    $pane->cache = array();
-    $pane->style = array(
-      'settings' => NULL,
-    );
-    $pane->css = array(
-      'css_id' => '',
-      'css_class' => 'page-column first',
-    );
-    $pane->extras = array();
-    $pane->position = 2;
-    $pane->locks = array();
-    $display->content['new-15'] = $pane;
-    $display->panels['main-content'][2] = 'new-15';
-    $pane = new stdClass();
-    $pane->pid = 'new-16';
-    $pane->panel = 'main-content';
-    $pane->type = 'entity_field';
-    $pane->subtype = 'node:field_text_column_2';
-    $pane->shown = TRUE;
-    $pane->access = array();
-    $pane->configuration = array(
-      'label' => 'hidden',
-      'formatter' => 'text_default',
-      'delta_limit' => 0,
-      'delta_offset' => '0',
-      'delta_reversed' => FALSE,
-      'formatter_settings' => array(),
-      'context' => 'argument_entity_id:node_1',
-      'override_title' => 1,
-      'override_title_text' => '',
-    );
-    $pane->cache = array();
-    $pane->style = array(
-      'settings' => NULL,
-    );
-    $pane->css = array(
-      'css_id' => '',
-      'css_class' => 'page-column last',
-    );
-    $pane->extras = array();
-    $pane->position = 3;
-    $pane->locks = array();
-    $display->content['new-16'] = $pane;
-    $display->panels['main-content'][3] = 'new-16';
-    $pane = new stdClass();
-    $pane->pid = 'new-17';
-    $pane->panel = 'main-content';
     $pane->type = 'views_panes';
     $pane->subtype = 'partner-panel_pane_1';
     $pane->shown = TRUE;
@@ -581,12 +519,12 @@ function partnerpages_default_page_manager_handlers() {
       'css_class' => 'partner-list',
     );
     $pane->extras = array();
-    $pane->position = 4;
+    $pane->position = 2;
     $pane->locks = array();
-    $display->content['new-17'] = $pane;
-    $display->panels['main-content'][4] = 'new-17';
+    $display->content['new-15'] = $pane;
+    $display->panels['main-content'][2] = 'new-15';
     $pane = new stdClass();
-    $pane->pid = 'new-18';
+    $pane->pid = 'new-16';
     $pane->panel = 'top';
     $pane->type = 'panels_mini';
     $pane->subtype = 'top';
@@ -604,8 +542,8 @@ function partnerpages_default_page_manager_handlers() {
     $pane->extras = array();
     $pane->position = 0;
     $pane->locks = array();
-    $display->content['new-18'] = $pane;
-    $display->panels['top'][0] = 'new-18';
+    $display->content['new-16'] = $pane;
+    $display->panels['top'][0] = 'new-16';
   $display->hide_title = PANELS_TITLE_FIXED;
   $display->title_pane = '0';
   $handler->conf['display'] = $display;

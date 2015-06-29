@@ -1672,9 +1672,16 @@ function _kms_user_return_websevice_list($webid) {
       }
     }
   }
-  usort($current_sev_list, 'name');
+
   drupal_json_output($current_sev_list);
   exit();
+}
+
+
+
+function _kms_user_usort_by_name($a, $b)
+{
+  return $a['sort'] - $b['sort'];
 }
 
 /**
@@ -1694,7 +1701,9 @@ function _kms_user_return_websevice_list_all() {
     }
 
     foreach ($value as $key2 => $value2) {
-      $new_array[$prefix . $key2] = $value2['name'];
+      if(isset($value2['name'])){
+        $new_array[$prefix . $key2] = $value2['name'];
+      }
     }
   }
   return $new_array;

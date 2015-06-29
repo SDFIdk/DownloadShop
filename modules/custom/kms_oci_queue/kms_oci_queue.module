@@ -1155,6 +1155,98 @@ function kms_oci_queue_consistency_generate_resolving_sql($data_type, $target_db
     case 'postgres':
       switch ($data_type) {
         case 'services':
+          $files = file_scan_directory($dir, '/.*\.xml$/');
+          if (empty($files) && $run_mode == 'drush') {
+            drush_print(dt('No diff files found.'));
+            return;
+          }
+          ksort($files);
+          $i = 0;
+          foreach ($files as $file) {
+            if ($run_mode == 'drush') {
+              drush_print(
+                dt('Processing file: !filename.', array('!filename' => $file->filename))
+              );
+            }
+            $xml = simplexml_load_file($file->uri);
+            foreach ($xml->user as $user) {
+              $userid = (string) $user->id;
+              $user_oracle = KmsPermsOracleInfo::userLoad($userid);
+              // If, for some reason, we cannot load a user in oracle
+              // we use the user id we know.
+              $user_oracle_uid = !empty($user_oracle->uid) ? $user_oracle->uid : $userid;
+              $output = array();
+              $sids_oracle = array_unique((array) $user->{'diff-Services-Oracle'});
+              $sids_oracle = !empty($sids_oracle['id']) ? $sids_oracle['id'] : array();
+
+              if (!is_array($sids_oracle)) {
+                $sids_oracle = array($sids_oracle);
+              }
+
+              $service_type_deltas = array();
+              foreach ($sids_oracle as $sid) {
+                $service_type = KmsPermsOracleInfo::serviceGetTypeFromId($sid);
+                if (empty($service_type)) {
+                  continue;
+                }
+                $tables = array(
+                  sprintf("field_data_field_bundle_webservices_%s", $service_type),
+                  sprintf("field_revision_field_bundle_webservices_%s", $service_type),
+                );
+                $field = sprintf("field_bundle_webservices_%s_value", $service_type);
+                $delta = kms_permissions_get_next_delta_webservices($user_oracle_uid, $service_type);
+                // We need to increment delta
+                // if we have more services of the same type for one user.
+                if (in_array($service_type, array_keys($service_type_deltas))) {
+                  $delta = ++$service_type_deltas[$service_type];
+                }
+                else {
+                  $service_type_deltas[$service_type] = $delta;
+                }
+
+                foreach ($tables as $table) {
+                  $output[] = <<<EOD
+
+INSERT INTO $table (entity_type, bundle, deleted, entity_id, revision_id, language, delta, $field)
+VALUES ('user', 'user', 0, $user_oracle_uid, $user_oracle_uid, 'und', $delta, '$sid');
+
+EOD;
+                }
+              }
+                 // Todo: fix deletion later. Not needed for now.
+//              $sids_postgres = array_unique((array) $user->{'diff-Services-Postgres'});
+//              $sids_postgres = !empty($sids_postgres['id']) ? $sids_postgres['id'] : array();
+//              if (!is_array($sids_postgres)) {
+//                $sids_postgres = array($sids_postgres);
+//              }
+//              foreach ($sids_postgres as $sid) {
+//                $service_type = KmsPermsOracleInfo::serviceGetTypeFromId($sid);
+//                if (empty($service_type)) {
+//                  continue;
+//                }
+//                $tables = array(
+//                  sprintf("field_data_field_bundle_webservices_%s", $service_type),
+//                  sprintf("field_revision_field_bundle_webservices_%s", $service_type),
+//                );
+//                $field = sprintf("field_bundle_webservices_%s_value", $service_type);
+//
+//                foreach ($tables as $table) {
+//                  $output[] = <<<EOD
+//                    DELETE FROM $table WHERE entity_type = 'user' AND entity_id = $user_oracle_uid AND $field = '$sid'
+//EOD;
+//                }
+//
+//              }
+
+              if (!empty($output)) {
+                file_put_contents($sql_file, implode("\n", $output), FILE_APPEND);
+              }
+              $i++;
+              if ($run_mode == 'drush') {
+                drush_print(format_plural($i, '1 user', '@count users') . dt(' processed.'));
+              }
+            }
+          }
           break;
       }
       break;

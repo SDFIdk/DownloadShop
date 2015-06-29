@@ -27,15 +27,8 @@ function partnerpages_views_default_views() {
   $handler->display->display_options['cache']['type'] = 'none';
   $handler->display->display_options['query']['type'] = 'views_query';
   $handler->display->display_options['exposed_form']['type'] = 'basic';
-  $handler->display->display_options['pager']['type'] = 'full';
-  $handler->display->display_options['pager']['options']['items_per_page'] = '12';
+  $handler->display->display_options['pager']['type'] = 'none';
   $handler->display->display_options['pager']['options']['offset'] = '0';
-  $handler->display->display_options['pager']['options']['id'] = '0';
-  $handler->display->display_options['pager']['options']['quantity'] = '9';
-  $handler->display->display_options['pager']['options']['tags']['first'] = '« Første';
-  $handler->display->display_options['pager']['options']['tags']['previous'] = '‹ Forrige';
-  $handler->display->display_options['pager']['options']['tags']['next'] = 'Næste ›';
-  $handler->display->display_options['pager']['options']['tags']['last'] = 'Sidste »';
   $handler->display->display_options['style_plugin'] = 'default';
   $handler->display->display_options['row_plugin'] = 'fields';
   /* Field: Content: Topbillede */
@@ -207,13 +200,6 @@ Læs mere
     t('Sort by'),
     t('Asc'),
     t('Desc'),
-    t('Items per page'),
-    t('- All -'),
-    t('Offset'),
-    t('« Første'),
-    t('‹ Forrige'),
-    t('Næste ›'),
-    t('Sidste »'),
     t('<a href="[path]">[field_partner_top_img]</a>
 <div class="content">
 <div class="logo">

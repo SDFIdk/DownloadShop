@@ -9,12 +9,17 @@ var highlightCtrl = false;
 var polygonLayer = false;
 var map;
 var currentType = '';
+var denmark = true;
 
 jQuery(document).ready(function($) {
 
   conf = Drupal.settings.kms_mapwidget;
   map = initMap();
-  initSearch(map);
+  if (denmark) {
+    initSearch(map);
+  } else {
+    $('div.ui-widget').hide();
+  }
 
   $('#rect-button').click(function(e) {
     $('.toggle').removeClass('active');
@@ -222,7 +227,7 @@ jQuery(document).ready(function($) {
 
 function initMap() {
 
-  OpenLayers.ImgPath = conf.imgPath;
+  OpenLayers.ImgPath = "/sites/all/themes/custom/kms/images/";
 
   kmsticket = new VisStedet.Ticket();
 
@@ -254,8 +259,41 @@ function initMap() {
   // The extent - changes should only be done according to the tiling schemas
   var olMaxExtent = new OpenLayers.Bounds(120000,5900000,1000000,6500000); // KMS tiling schema
 
+  var numZoomLevels = 12;
+  var maxResolution = 1638.4;
+
   // The resolutions - changes should only be done according to the tiling schemas
   var olResolutions = new Array(0.8,1.6,3.2,6.4,12.8,25.6,51.2,102.4,204.8,409.6,819.2,1638.4);
+
+  var baselayer_name = 'Danmarkskort 2012';
+  var baselayer_service_name = '';
+  var baselayer_service_layer = '';
+
+  // Greenland
+  if (conf.projection == 'EPSG:32624') {
+    // <BoundingBox miny="6400000" minx="-400000" maxy="9400000" maxx="1320000" SRS="EPSG:32624"/>
+    olMaxExtent = new OpenLayers.Bounds(-400000,6400000,1320000,9400000);
+    olResolutions = new Array(50,100,200,400,800,1600,2000,3000,4000,5000);
+    numZoomLevels = 10;
+    maxResolution = 5000;
+    denmark = false;
+    baselayer_name = 'Basiskort grønland';
+    baselayer_service_name = 'gtopo';
+    baselayer_service_layer = 'gtk_g2500';
+  }
+
+  // The Faroe Islands
+  if (conf.projection == 'EPSG:32629') {
+    // <BoundingBox miny="6791524.000000" minx="557587.000000" maxy="6934414.000000" maxx="654409.000000" SRS="EPSG:32629"/>
+    olMaxExtent = new OpenLayers.Bounds(557587,6791524,654409,6934414);
+    olResolutions = new Array(10,25,50,100,160,200);
+    numZoomLevels = 6;
+    maxResolution = 200;
+    denmark = false;
+    baselayer_name = 'Basiskort færøerne';
+    baselayer_service_name = 'ftopo';
+    baselayer_service_layer = 'ftk_f200';
+  }
 
   var skaermkort_url = ["http://a.kortforsyningen.kms.dk/topo_skaermkort",
                         "http://b.kortforsyningen.kms.dk/topo_skaermkort",
@@ -265,32 +303,53 @@ function initMap() {
     var map = new OpenLayers.Map(
         'mapTag',
         {
-            projection: conf.projection,
-            units: 'm',
-            theme : null,
-            maxExtent: olMaxExtent,
-            maxResolution: 1638.4,
-		    numZoomLevels: 12,
-		    resolutions: olResolutions,
-		    controls : []
+          projection: conf.projection,
+          units: 'm',
+          theme : null,
+          maxExtent: olMaxExtent,
+          maxResolution: maxResolution,
+		      numZoomLevels: numZoomLevels,
+		      resolutions: olResolutions,
+		      controls : []
         }
     );
 
-	// generic WMTS baselayer used for all maps
-	baselayer_generic = new OpenLayers.Layer.WMTS(
-		{
-			name: "Danmarkskort 2012",
-			url: skaermkort_url,
-			layer: "dtk_skaermkort",
-			matrixSet: "View1",
-			matrixIds: kmsWmtsSkaermkortMatrixIds,
-			format: "image/jpeg",
-			style: "default",
-			opacity: 1.0,
-			isBaselayer: true,
-			params: { ticket: kmsticket }
-		}
-	);
+  var baselayer_generic;
+
+  if (denmark) {
+  	// generic WMTS baselayer used for all maps
+  	baselayer_generic = new OpenLayers.Layer.WMTS(
+  		{
+  			name: baselayer_name,
+  			url: skaermkort_url,
+  			layer: "dtk_skaermkort",
+  			matrixSet: "View1",
+  			matrixIds: kmsWmtsSkaermkortMatrixIds,
+  			format: "image/jpeg",
+  			style: "default",
+  			opacity: 1.0,
+  			isBaselayer: true,
+  			params: { ticket: kmsticket }
+  		}
+  	);
+  } else {
+    baselayer_generic = new OpenLayers.Layer.WMS (
+      baselayer_name,
+      "http://kortforsyningen.kms.dk/" + baselayer_service_name + '?',
+      { layers: baselayer_service_layer,
+        format: 'image/png',
+        bgcolor: '0xFFFFFF',
+        ticket: kmsticket,
+        projection: conf.projection,
+        transparent: true
+      },
+      { singleTile: false,
+        transitionEffect: 'resize',
+        buffer: 0,
+        isBaseLayer : true
+      }
+    );
+  }
 
   if (conf.overlay) {
     var layers = conf.service_layer.split(',');
@@ -316,23 +375,26 @@ function initMap() {
     }
 
   } else {
-    // specific WMS baselayer
-    baselayer_specific = new OpenLayers.Layer.WMS (
-  		conf.name,
-  		"http://kortforsyningen.kms.dk/" + conf.service_name + '?',
-  		{ layers: conf.service_layer,
-  		  format: 'image/png',
-  		  bgcolor: '0xFFFFFF',
-  		  ticket: kmsticket,
-  		  transparent: true
-  		},
-  		{ singleTile: false,
-  		  transitionEffect: 'resize',
-  		  buffer: 0,
-  		  isBaseLayer : true
-  		}
-  	);
-    map.addLayer(baselayer_specific);
+    if (conf.service_name != false) {
+      // specific WMS baselayer
+      baselayer_specific = new OpenLayers.Layer.WMS (
+    		conf.name,
+    		"http://kortforsyningen.kms.dk/" + conf.service_name + '?',
+    		{ layers: conf.service_layer,
+    		  format: 'image/png',
+    		  bgcolor: '0xFFFFFF',
+    		  ticket: kmsticket,
+          projection: conf.projection,
+    		  transparent: true
+    		},
+    		{ singleTile: false,
+    		  transitionEffect: 'resize',
+    		  buffer: 0,
+    		  isBaseLayer : true
+    		}
+    	);
+      map.addLayer(baselayer_specific);
+    }
   }
 
   map.addLayer(baselayer_generic);

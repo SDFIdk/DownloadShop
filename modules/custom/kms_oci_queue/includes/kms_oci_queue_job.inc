@@ -180,6 +180,7 @@ class KmsOciQueueJob {
       $job = KmsOciQueueJobFactory::get($job->jid);
       // Find plugins of same action
       // and save job/user relations if the job does not have fixed permissions.
+      ctools_include('plugins');
       $plugins = ctools_get_plugins('kms_oci_queue', 'queue_runner');
       foreach ($plugins as $plugin) {
         $plugin += array('fixed_permissions' => FALSE);

@@ -14,3 +14,4 @@ stylesheets[all][] = css/kms_perm_styles.css
 files[] = includes/kms_perms_diff.inc
 files[] = includes/kms_perms_extract.inc
 files[] = includes/kms_perms_bounding_box.inc
+files[] = includes/kms_perms_oracle_info.inc

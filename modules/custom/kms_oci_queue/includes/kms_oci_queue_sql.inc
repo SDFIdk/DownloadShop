@@ -190,6 +190,23 @@ EOD;
 EOD;
   }
 
+  public static function load($sids) {
+    if (!intval($sids) && !is_array($sids)) {
+      return array();
+    }
+    if (!is_array($sids)) {
+      $sids = array($sids);
+    }
+    $sids = sprintf("'%s'", implode("', '", $sids));
+    return <<<EOD
+    SELECT s.serviceid, s.servicename, st.typename
+    FROM SERVICES2 s
+    LEFT JOIN servicetypes2 st ON s.typeid = st.typeid
+    WHERE s.serviceid IN ($sids)
+EOD;
+
+  }
+
 }
 
 class KmsOciQueueSqlApplications extends KmsOciQueueSqlBase {

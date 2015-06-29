@@ -29,6 +29,15 @@ function kms_mapwidget_menu() {
     'file' => 'kms_mapwidget.admin.inc',
   );
 
+  $items['admin/config/kms/fmeurl'] = array(
+    'title' => 'FME URL',
+    'description' => 'Configure FME URL.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('kms_mapwidget__fmeurl_form'),
+    'access arguments' => array('access administration pages'),
+    'file' => 'kms_mapwidget.admin.inc',
+  );
+
   $items['fmecallback'] = array(
     'title' => 'FME callback',
     'page callback' => 'kms_mapwidget_fme_callback',

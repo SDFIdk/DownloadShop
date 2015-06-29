@@ -1714,10 +1714,11 @@ function kms_permissions_form_views_exposed_form_alter(&$form, &$form_state, $fo
       // Add the allowed options to the form. Terms with children are
       // optgroups and can't be selected by the user.
       array_walk($hierachy, function($data, $tid) use (&$form) {
-        if (empty($data['children'])) {
-          $form['field_korttype_tid_1']['#options'][$tid] = $data['name'];
-        } else {
-          $form['field_korttype_tid_1']['#options'][$data['name']] = $data['children'];
+        $form['field_korttype_tid_1']['#options'][$tid] = $data['name'];
+        if(!empty($data['children'])) {
+          foreach ($data['children'] as $ch_key => $children) {
+            $form['field_korttype_tid_1']['#options'][$ch_key] = '---' . $children;
+          }
         }
       });
 
@@ -2590,4 +2591,19 @@ function _kms_permissions_webservice_get_services_array_by_bid($bid, $webService
     });
   }
   return $sids;
+}
+
+/**
+ * Get next delta in field table.
+ * @see
+ *
+ * @param $uid
+ * @param $type
+ * @return int
+ */
+function kms_permissions_get_next_delta_webservices($uid, $type){
+$last_delta = db_query('SELECT MAX(delta) FROM {field_data_field_bundle_webservices_' . $type . '} WHERE entity_id = '.$uid.'')
+  ->fetchField();
+
+  return $last_delta != "" ? $last_delta + 1 : 0;
 }

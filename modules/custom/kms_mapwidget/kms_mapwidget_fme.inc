@@ -1,11 +1,11 @@
 <?php
 
 function kms_mapwidget__fme_api($action, $id = false, $data = array()) {
-  
-  $fmeurl = 'http://fmeserver.kmsext.dk/fmerest';
+
+  $fmeurl = variable_get('fmeurl', 'http://fmeserver.kmsext.dk/fmerest');
 
   $curl = curl_init();
-  
+
   switch (gethostname()) {
     case 'w3test1.kmsext.dk' :
       $nm_jobsuccess_topic = 'KFDOWNLOAD_TEST';
