@@ -14,7 +14,7 @@ var denmark = true;
 jQuery(document).ready(function($) {
 
   conf = Drupal.settings.kms_mapwidget;
-  map = initMap();
+  map = initMap(conf);
   if (denmark) {
     initSearch(map);
   } else {
@@ -225,9 +225,9 @@ jQuery(document).ready(function($) {
   }
 })(jQuery);
 
-function initMap() {
+function initMap(conf) {
 
-  OpenLayers.ImgPath = "/sites/all/themes/custom/kms/images/";
+  OpenLayers.ImgPath = conf.imgPath;
 
   kmsticket = new VisStedet.Ticket();
 
