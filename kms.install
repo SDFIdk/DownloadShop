@@ -439,3 +439,10 @@ function kms_update_7016(&$sandbox) {
     'kms_settings',
   ));
 }
+
+/**
+ * Enable dbtng_migrator module.
+ */
+function kms_update_7017(&$sandbox) {
+  module_enable(array('dbtng_migrator'));
+}

@@ -340,6 +340,11 @@ projects[xmlsitemap][subdir] = "contrib"
 projects[xmlsitemap][version] = "2.0-rc1"
 projects[xmlsitemap][type] = "module"
 
+;dbtng_migrator
+projects[dbtng_migrator][subdir] = "contrib"
+projects[dbtng_migrator][version] = "1.4"
+projects[dbtng_migrator][type] = "module"
+
 ; _adapt
 projects[adapt_module][type] = 'module'
 projects[adapt_module][download][type] = 'svn'
