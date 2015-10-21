@@ -385,3 +385,8 @@ projects[node_export][type] = "module"
 projects[uuid][subdir] = "contrib"
 projects[uuid][version] = "1.0-alpha5"
 projects[uuid][type] = "module"
+
+;bakery
+projects[bakery][type] = 'module'
+projects[bakery][subdir] = 'contrib'
+projects[bakery][version] = '2.0-alpha4'
