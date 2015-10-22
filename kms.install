@@ -365,6 +365,7 @@ function kms_update_7012(&$sandbox) {
   ));
 }
 
+
 /**
 * Enable commerce_checkout_order_created_date_update rule.
 *
@@ -441,15 +442,36 @@ function kms_update_7016(&$sandbox) {
 }
 
 /**
- * Enable dbtng_migrator module.
+ * Change Oracle connecting settings on kf_download schema because GST changed them.
+ *
+ * @author Mikkel Jakobsen <mikkel@adapt.dk>
  */
 function kms_update_7017(&$sandbox) {
-  module_enable(array('dbtng_migrator'));
+  variable_set('kms_oci_conn_host', 'gst-orarac.prod.sitad.dk');
+}
+
+/**
+ * Remove fields from commerce products
+ *
+ * @author Andrius Prudnikovas <andrius@adapt.dk>
+ */
+function kms_update_7018(&$sandbox) {
+  // Get all field instances from commerce product
+  $instances = field_info_instances('commerce_product', 'product');
+  // Fields which we need to delete
+  $field_names = array('field_aktualitet', 'field_center_latitude', 'field_center_longitude', 'field_scheme', 'field_datastruktur', 'field_korttype', 'field_service_layer', 'field_service_name', 'field_zoom_level', 'field_geodata_info_dk', 'field_kms_dk', 'field_legend');
+  // Remove fields
+  foreach($field_names as $field_name) {
+    if(isset($instances[$field_name])) {
+      field_delete_instance($instances[$field_name], TRUE);
+      field_purge_batch(1);
+    }
+  }
 }
 
 /**
  * Enable bakery module.
  */
-function kms_update_7018(&$sandbox) {
+function kms_update_7019(&$sandbox) {
   module_enable(array('bakery'));
 }
