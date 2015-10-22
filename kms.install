@@ -365,12 +365,11 @@ function kms_update_7012(&$sandbox) {
   ));
 }
 
-
 /**
-* Enable commerce_checkout_order_created_date_update rule.
-*
-* @author Andrius Prudnikovas <andrius@adapt.dk>
-*/
+ * Enable commerce_checkout_order_created_date_update rule.
+ *
+ * @author Andrius Prudnikovas <andrius@adapt.dk>
+ */
 function kms_update_7013() {
   //$rules_config = rules_config_load('commerce_checkout_order_created_date_update');
   //$rules_config->active = TRUE;
@@ -385,7 +384,7 @@ function kms_update_7013() {
  */
 function kms_update_7014() {
   // Get all users uid with this permission
-  $geo_bundle = db_query("SELECT entity_id as uid FROM field_data_field_bundle_webservices_geo 
+  $geo_bundle = db_query("SELECT entity_id as uid FROM field_data_field_bundle_webservices_geo
                 WHERE field_bundle_webservices_geo_value = '776'
                 ORDER BY entity_id DESC")->fetchAll();
 
@@ -442,36 +441,15 @@ function kms_update_7016(&$sandbox) {
 }
 
 /**
- * Change Oracle connecting settings on kf_download schema because GST changed them.
- *
- * @author Mikkel Jakobsen <mikkel@adapt.dk>
+ * Enable dbtng_migrator module.
  */
 function kms_update_7017(&$sandbox) {
-  variable_set('kms_oci_conn_host', 'gst-orarac.prod.sitad.dk');
-}
-
-/**
- * Remove fields from commerce products
- *
- * @author Andrius Prudnikovas <andrius@adapt.dk>
- */
-function kms_update_7018(&$sandbox) {
-  // Get all field instances from commerce product
-  $instances = field_info_instances('commerce_product', 'product');
-  // Fields which we need to delete
-  $field_names = array('field_aktualitet', 'field_center_latitude', 'field_center_longitude', 'field_scheme', 'field_datastruktur', 'field_korttype', 'field_service_layer', 'field_service_name', 'field_zoom_level', 'field_geodata_info_dk', 'field_kms_dk', 'field_legend');
-  // Remove fields
-  foreach($field_names as $field_name) {
-    if(isset($instances[$field_name])) {
-      field_delete_instance($instances[$field_name], TRUE);
-      field_purge_batch(1);
-    }
-  }
+  module_enable(array('dbtng_migrator'));
 }
 
 /**
  * Enable bakery module.
  */
-function kms_update_7019(&$sandbox) {
+function kms_update_7018(&$sandbox) {
   module_enable(array('bakery'));
 }
