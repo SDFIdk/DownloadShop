@@ -366,10 +366,10 @@ function kms_update_7012(&$sandbox) {
 }
 
 /**
-* Enable commerce_checkout_order_created_date_update rule.
-*
-* @author Andrius Prudnikovas <andrius@adapt.dk>
-*/
+ * Enable commerce_checkout_order_created_date_update rule.
+ *
+ * @author Andrius Prudnikovas <andrius@adapt.dk>
+ */
 function kms_update_7013() {
   //$rules_config = rules_config_load('commerce_checkout_order_created_date_update');
   //$rules_config->active = TRUE;
@@ -384,7 +384,7 @@ function kms_update_7013() {
  */
 function kms_update_7014() {
   // Get all users uid with this permission
-  $geo_bundle = db_query("SELECT entity_id as uid FROM field_data_field_bundle_webservices_geo 
+  $geo_bundle = db_query("SELECT entity_id as uid FROM field_data_field_bundle_webservices_geo
                 WHERE field_bundle_webservices_geo_value = '776'
                 ORDER BY entity_id DESC")->fetchAll();
 
@@ -445,4 +445,11 @@ function kms_update_7016(&$sandbox) {
  */
 function kms_update_7017(&$sandbox) {
   module_enable(array('dbtng_migrator'));
+}
+
+/**
+ * Enable bakery module.
+ */
+function kms_update_7018(&$sandbox) {
+  module_enable(array('bakery'));
 }
