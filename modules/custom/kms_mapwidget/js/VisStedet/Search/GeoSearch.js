@@ -28,9 +28,9 @@ VisStedet.Search.GeoSearch = VisStedet.Utils.Class (VisStedet.Search,{
      *          - 'Postdistrikter'
      *          - 'Regioner'
      *          - 'Retskredse'
-     *          - 'Stednavne'
+     *          - 'Stednavne_v2'
      */
-    resources: ['Adresser','Matrikelnumre','Kommuner','Opstillingskredse','Politikredse','Postdistrikter','Regioner','Retskredse','Stednavne'],
+    resources: ['Adresser','Matrikelnumre','Kommuner','Opstillingskredse','Politikredse','Postdistrikter','Regioner','Retskredse','Stednavne_v2'],
     
     /**
      * Constructor: VisStedet.Search.GeoSearch
