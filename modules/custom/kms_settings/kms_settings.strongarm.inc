@@ -13,6 +13,51 @@ function kms_settings_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'bakery_domain';
+  $strongarm->value = '.kortforsyningen.dk';
+  $export['bakery_domain'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'bakery_freshness';
+  $strongarm->value = '3600';
+  $export['bakery_freshness'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'bakery_help_text';
+  $strongarm->value = 'Otherwise you can contact the site administrators.';
+  $export['bakery_help_text'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'bakery_is_master';
+  $strongarm->value = 1;
+  $export['bakery_is_master'] = $strongarm;
+  
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'bakery_master';
+  $strongarm->value = 'http://download.kortforsyningen.dk/';
+  $export['bakery_master'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'bakery_slaves';
+  $strongarm->value = array(
+    0 => 'http://www.kortforsyningen.dk/',
+    1 => 'http://kortforsyningen.dk/',
+  );
+  $export['bakery_slaves'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'hide_submit_abtext';
   $strongarm->value = '';
   $export['hide_submit_abtext'] = $strongarm;
