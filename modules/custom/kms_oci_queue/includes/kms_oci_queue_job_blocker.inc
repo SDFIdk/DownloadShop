@@ -49,7 +49,9 @@ class KmsOciQueueJobUserRelations {
       $job_user_rel = new stdClass();
       $job_user_rel->jid = $job->jid;
       $job_user_rel->uid = $uid;
-      drupal_write_record(self::SCHEMA, $job_user_rel, 'jid');
+      if(self::jobExist($uid, $job->jid) == FALSE) {
+        drupal_write_record(self::SCHEMA, $job_user_rel, 'jid');
+      }
     }
     watchdog(self::SCHEMA, 'Relations updated for job id: @jid', array('@jid' => $job->jid));
   }
@@ -109,6 +111,23 @@ class KmsOciQueueJobUserRelations {
     db_delete(self::SCHEMA)
       ->execute();
     watchdog(self::SCHEMA, 'All relations erased.');
+  }
+
+  /**
+   * Check if job already exist for user.
+   *
+   * @param int $uid
+   *   User id for job.
+   * @param string $jid
+   *   Job id.
+   */
+  public static function jobExist($uid, $jid) {
+    $query = db_select(self::SCHEMA, 'r')
+      ->fields('r', array('jid'))
+      ->condition('uid', $uid, '=')
+      ->condition('jid', $jid, '=');
+    $result = $query->execute()->fetchCol();
+    return !empty($result) ? TRUE : FALSE;
   }
 
 }
