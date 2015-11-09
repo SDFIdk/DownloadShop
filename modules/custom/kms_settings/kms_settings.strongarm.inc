@@ -38,15 +38,6 @@ function kms_settings_strongarm() {
   $strongarm->value = 'http://download.kortforsyningen.dk/';
   $export['bakery_master'] = $strongarm;
 
-  $strongarm = new stdClass();
-  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
-  $strongarm->api_version = 1;
-  $strongarm->name = 'bakery_slaves';
-  $strongarm->value = array(
-    0 => 'http://www.kortforsyningen.dk/',
-    1 => 'http://kortforsyningen.dk/',
-  );
-  $export['bakery_slaves'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
