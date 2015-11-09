@@ -121,7 +121,7 @@ class KmsOciQueueJobUserRelations {
    * @param string $jid
    *   Job id.
    */
-  public static function jobExist($uid, $jid) {
+  public static function relationExist($uid, $jid) {
     $query = db_select(self::SCHEMA, 'r')
       ->fields('r', array('jid'))
       ->condition('uid', $uid, '=')
