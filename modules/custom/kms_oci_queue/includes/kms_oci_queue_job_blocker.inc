@@ -31,7 +31,9 @@ class KmsOciQueueJobUserRelations {
       $job_user_rel = new stdClass();
       $job_user_rel->jid = $job->jid;
       $job_user_rel->uid = $uid;
-      drupal_write_record(self::SCHEMA, $job_user_rel);
+      if(self::relationExist($uid, $job->jid) == FALSE) {
+        drupal_write_record(self::SCHEMA, $job_user_rel);
+      }
     }
     watchdog(self::SCHEMA, 'Relations saved for job id: @jid', array('@jid' => $job->jid));
   }
