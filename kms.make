@@ -390,3 +390,9 @@ projects[uuid][type] = "module"
 projects[bakery][type] = 'module'
 projects[bakery][subdir] = 'contrib'
 projects[bakery][version] = '2.0-alpha4'
+
+; shared accounts
+projects[sharedaccounts][type] = 'module'
+projects[sharedaccounts][subdir] = 'custom'
+projects[sharedaccounts][download][type] = 'git'
+projects[sharedaccounts][download][url] = 'git@github.com:adaptdk/sharedaccounts.git'
