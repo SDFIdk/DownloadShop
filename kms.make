@@ -386,11 +386,6 @@ projects[uuid][subdir] = "contrib"
 projects[uuid][version] = "1.0-alpha5"
 projects[uuid][type] = "module"
 
-;bakery
-projects[bakery][type] = 'module'
-projects[bakery][subdir] = 'contrib'
-projects[bakery][version] = '2.0-alpha4'
-
 ; shared accounts
 projects[sharedaccounts][type] = 'module'
 projects[sharedaccounts][subdir] = 'custom'
