@@ -446,4 +446,3 @@ function kms_update_7016(&$sandbox) {
 function kms_update_7017(&$sandbox) {
   module_enable(array('dbtng_migrator'));
 }
-

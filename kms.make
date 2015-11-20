@@ -385,3 +385,10 @@ projects[node_export][type] = "module"
 projects[uuid][subdir] = "contrib"
 projects[uuid][version] = "1.0-alpha5"
 projects[uuid][type] = "module"
+
+; shared accounts
+projects[sharedaccounts][type] = 'module'
+projects[sharedaccounts][subdir] = 'custom'
+projects[sharedaccounts][download][type] = 'git'
+projects[sharedaccounts][download][url] = 'git@github.com:adaptdk/sharedaccounts.git'
+
