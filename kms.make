@@ -391,4 +391,4 @@ projects[sharedaccounts][type] = 'module'
 projects[sharedaccounts][subdir] = 'custom'
 projects[sharedaccounts][download][type] = 'git'
 projects[sharedaccounts][download][url] = 'git@github.com:adaptdk/sharedaccounts.git'
-
+projects[sharedaccounts][download][branch] = '7.x-2.x'
