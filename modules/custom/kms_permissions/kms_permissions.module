@@ -2495,7 +2495,6 @@ function _kms_permissions_webservice_return_list_array($array){
  * @return array
  */
 function _kms_permissions_webservice_get_service_array_by_type($service, $all_services, $type){
-
   $keyname = '';
   $link = 'null';
   $typeName = '';
@@ -2517,10 +2516,8 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
         $typeName = 'Predefined datacollections';
       }
 
-      $productId = $value[$keyv];
-
       $sids[$key]['ProductTypeId'] = 'null';
-      $sids[$key]['ProductID'] = $productId;
+      $sids[$key]['ProductID'] = $value[$keyv];
       $sids[$key]['ProductName'] = $all_services[$key];
       $sids[$key]['ProductTypeName'] = $typeName;
       $sids[$key]['ProductLink'] = $link;
@@ -2528,12 +2525,10 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
   }else{
     $webservice_types = _kms_user_return_merged_service_list_array();
     foreach ($service as $value) {
-
       $typeName = _kms_permissions_webservices_return_type_name_by_service($value, $webservice_types);
       if (empty($all_services[$value])) {
         continue;
       }
-
       $sids[$value]['ProductTypeId'] = 'null';
       $sids[$value]['ProductID'] = $value;
       $sids[$value]['ProductName'] = $all_services[$value];
