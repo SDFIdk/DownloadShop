@@ -2476,6 +2476,9 @@ function _kms_permissions_webservice_return_list_array($array){
         "ProductName"=>$value['ProductName'],
         "ProductLink"=>$value['ProductLink'],
     );
+    if (isset($value['ProductDescription'])) {
+      $jsonRow['ProductDescription'] = $value['ProductDescription'];
+    }
     array_push($webservices['products'], $jsonRow);
   }
 
@@ -2514,6 +2517,7 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
         //Get link pro predefined datacollections because it's node content type - product display 
         $link = $GLOBALS['base_url'] . '/' . drupal_get_path_alias("node/".$value[$keyv]);
         $typeName = 'Predefined datacollections';
+        $sids[$key]['ProductDescription'] = kms_permissions_get_node_description($value[$keyv]);
       }
 
       $sids[$key]['ProductTypeId'] = 'null';
@@ -2529,6 +2533,11 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
       if (empty($all_services[$value])) {
         continue;
       }
+
+      if($typeName == 'Predefined datacollections'){
+        $sids[$value]['ProductDescription'] = kms_permissions_get_node_description($value);
+      }
+
       $sids[$value]['ProductTypeId'] = 'null';
       $sids[$value]['ProductID'] = $value;
       $sids[$value]['ProductName'] = $all_services[$value];
@@ -2590,6 +2599,7 @@ function _kms_permissions_webservice_get_services_array_by_bid($bid, $webService
       $sids['predefined_datacollections_'.$v['id']]['ProductTypeId'] = 'null';
       $sids['predefined_datacollections_'.$v['id']]['ProductID'] = $v['id'];
       $sids['predefined_datacollections_'.$v['id']]['ProductName'] = $webServiceListAll['predefined_datacollections_'.$v['id']];
+      $sids['predefined_datacollections_'.$v['id']]['ProductDescription'] = kms_permissions_get_node_description($v['id']);
       $sids['predefined_datacollections_'.$v['id']]['ProductTypeName'] = 'Predefined datacollections';
       $sids['predefined_datacollections_'.$v['id']]['ProductLink'] = $GLOBALS['base_url'] . '/' . drupal_get_path_alias("node/".$v['id']);
     });
@@ -2620,4 +2630,30 @@ $last_delta = db_query('SELECT MAX(delta) FROM {field_data_field_bundle_webservi
   ->fetchField();
 
   return $last_delta != "" ? $last_delta + 1 : 0;
+}
+
+/**
+ * Get node body value.
+ *
+ * @param $nid
+ */
+function kms_permissions_get_node_description($nid){
+  $query = db_select('field_data_body', 'b')
+    ->fields('b', array('body_value', 'body_format'))
+    ->condition('entity_id', $nid);
+  $result = $query->execute()->FetchAll();
+
+  return kms_permissions_escapeJsonString(check_markup($result[0]->body_value, $result[0]->body_format));
+}
+
+/**
+ * @param $value
+ * @return mixed
+ */
+function kms_permissions_escapeJsonString($value) {
+  $value = drupal_convert_to_utf8($value);
+  $escapers = array("\\", "/", "\"", "\n", "\r", "\t", "\x08", "\x0c");
+  $replacements = array("\\\\", "\\/", "\\\"", "\\n", "\\r", "\\t", "\\f", "\\b");
+  $result = str_replace($escapers, $replacements, $value);
+  return $result;
 }
