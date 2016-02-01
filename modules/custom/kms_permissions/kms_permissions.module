@@ -438,7 +438,7 @@ function kms_permissions_field_formatter_view($entity_type, $entity, $field, $in
         if($status == 3) {
           $status_class = 'bundle-default';
         }
-        //print('status - '.$status.' on '.$nid.' <br>');
+
         $bundle_node = node_load($nid);
         $wrapper = entity_metadata_wrapper('node', $bundle_node);
 
@@ -2430,6 +2430,7 @@ function _kms_permissions_get_all_permissions_by_uid($uid, $options = array()) {
  * @return array
  */
 function _kms_permissions_webservice_return_list_array($array){
+
   $webservices = array();
   $webservices_bundles = array();
   $merged_bundles = array();
@@ -2437,6 +2438,7 @@ function _kms_permissions_webservice_return_list_array($array){
 
   //Make proper array for bundles
   $webServiceListAll = _kms_user_return_websevice_list_all();
+
   foreach($array['bundles'] as $key => $value) {
     $webservices_bundles[] = _kms_permissions_webservice_get_services_array_by_bid($value['nid'], $webServiceListAll);
   }
@@ -2450,10 +2452,10 @@ function _kms_permissions_webservice_return_list_array($array){
   //Merge all webservice types ant bundles two one array
   $webservices['b'] = $merged_bundles;
   $webservices['p'] = _kms_permissions_webservice_get_service_array_by_type($array['predefined_datacollections'], $webServiceListAll, 'predefined_datacollections');
-  $webservices['a'] = _kms_permissions_webservice_get_service_array_by_type($array['applications'], $webServiceListAll, 'Applications');
+  $webservices['a'] = _kms_permissions_webservice_get_service_array_by_type($array['applications'], $webServiceListAll, 'applications');
   $webservices['f'] = _kms_permissions_webservice_get_service_array_by_type($array['ftp'], $webServiceListAll, 'FTP');
   $webservices['w'] = _kms_permissions_webservice_get_service_array_by_type($array['main_services'], $webServiceListAll, 'main_services');
-  
+
   $webservices1 = array();
   foreach($webservices as $key => $value) {
     if(!empty($value)){
@@ -2476,8 +2478,9 @@ function _kms_permissions_webservice_return_list_array($array){
     );
     array_push($webservices['products'], $jsonRow);
   }
-  
+
   return $webservices;
+
 }
 
 /**
@@ -2492,6 +2495,7 @@ function _kms_permissions_webservice_return_list_array($array){
  * @return array
  */
 function _kms_permissions_webservice_get_service_array_by_type($service, $all_services, $type){
+
   $keyname = '';
   $link = 'null';
   $typeName = '';
@@ -2503,13 +2507,20 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
     foreach ($service as $value) {
       $keyv = key($value);
       $key = $keyname . $value[$keyv];
+      if (empty($all_services[$key])) {
+        continue;
+      }
+
       if($type == 'predefined_datacollections'){
         //Get link pro predefined datacollections because it's node content type - product display 
         $link = $GLOBALS['base_url'] . '/' . drupal_get_path_alias("node/".$value[$keyv]);
         $typeName = 'Predefined datacollections';
       }
+
+      $productId = $value[$keyv];
+
       $sids[$key]['ProductTypeId'] = 'null';
-      $sids[$key]['ProductID'] = $value[$keyv];
+      $sids[$key]['ProductID'] = $productId;
       $sids[$key]['ProductName'] = $all_services[$key];
       $sids[$key]['ProductTypeName'] = $typeName;
       $sids[$key]['ProductLink'] = $link;
@@ -2517,7 +2528,12 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
   }else{
     $webservice_types = _kms_user_return_merged_service_list_array();
     foreach ($service as $value) {
+
       $typeName = _kms_permissions_webservices_return_type_name_by_service($value, $webservice_types);
+      if (empty($all_services[$value])) {
+        continue;
+      }
+
       $sids[$value]['ProductTypeId'] = 'null';
       $sids[$value]['ProductID'] = $value;
       $sids[$value]['ProductName'] = $all_services[$value];
@@ -2525,6 +2541,7 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
       $sids[$value]['ProductLink'] = 'null';
     }
   }
+
   return $sids;
 }
 
@@ -2554,11 +2571,13 @@ function _kms_permissions_webservice_get_services_array_by_bid($bid, $webService
    _kms_permissions_ftp_get_permissions_by_bid($bid, $ftp_permissions);
   if(!empty($permissions['services']) && is_array($permissions['services'])) {
     array_walk($permissions['services'], function($v) use(&$sids, $webServiceListAll) {
-      $sids[$v['id']]['ProductTypeId'] = 'null';
-      $sids[$v['id']]['ProductID'] = $v['id'];
-      $sids[$v['id']]['ProductName'] = $webServiceListAll[$v['id']];
-      $sids[$v['id']]['ProductTypeName'] = strtoupper(str_replace("field_bundle_webservices_","",$v['field']));
-      $sids[$v['id']]['ProductLink'] = 'null';
+      if (isset($webServiceListAll[$v['id']])) {
+        $sids[$v['id']]['ProductTypeId'] = 'null';
+        $sids[$v['id']]['ProductID'] = $v['id'];
+        $sids[$v['id']]['ProductName'] = $webServiceListAll[$v['id']];
+        $sids[$v['id']]['ProductTypeName'] = strtoupper(str_replace("field_bundle_webservices_","",$v['field']));
+        $sids[$v['id']]['ProductLink'] = 'null';
+      }
     });
   }
   if(!empty($permissions['applications']) && is_array($permissions['applications'])) {

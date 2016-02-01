@@ -1695,8 +1695,9 @@ function _kms_user_return_websevice_list_all() {
   $new_array = array();
   $custom_services = array('ftp', 'applications', 'predefined_datacollections');
   $prefix = '';
+
   foreach ($array_list as $key => $value) {
-    if(in_array($key, $custom_services)){
+        if(in_array($key, $custom_services)){
       $prefix = $key.'_';
     }
 
@@ -1706,6 +1707,7 @@ function _kms_user_return_websevice_list_all() {
       }
     }
   }
+
   return $new_array;
 }
 
