@@ -2498,6 +2498,10 @@ function _kms_permissions_webservice_return_list_array($array){
  * @return array
  */
 function _kms_permissions_webservice_get_service_array_by_type($service, $all_services, $type){
+  if (empty($service)) {
+    return;
+  }
+  
   $keyname = '';
   $link = 'null';
   $typeName = '';
@@ -2643,6 +2647,10 @@ function kms_permissions_get_node_description($nid){
     ->condition('entity_id', $nid);
   $result = $query->execute()->FetchAll();
 
+  if (!isset($result[0]->body_value)) {
+    return;
+  }
+
   return kms_permissions_escapeJsonString(check_markup($result[0]->body_value, $result[0]->body_format));
 }
 
@@ -2651,7 +2659,7 @@ function kms_permissions_get_node_description($nid){
  * @return mixed
  */
 function kms_permissions_escapeJsonString($value) {
-  $value = drupal_convert_to_utf8($value);
+  $value = drupal_convert_to_utf8($value, 'utf-8');
   $escapers = array("\\", "/", "\"", "\n", "\r", "\t", "\x08", "\x0c");
   $replacements = array("\\\\", "\\/", "\\\"", "\\n", "\\r", "\\t", "\\f", "\\b");
   $result = str_replace($escapers, $replacements, $value);

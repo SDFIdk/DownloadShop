@@ -37,8 +37,8 @@ function get_status($type, $mode) {
 
         // Get all ID's of webservices from user account
         $all_services['bundles'] = $user->field_access_bundles[LANGUAGE_NONE];
-        $all_services['predefined_datacollections'] = $user->field_predefined_datacollections[LANGUAGE_NONE];
-        $all_services['ftp'] = $user->field_ftp_permissions[LANGUAGE_NONE];
+        $all_services['predefined_datacollections'] = (isset($user->field_predefined_datacollections[LANGUAGE_NONE]) ? $user->field_predefined_datacollections[LANGUAGE_NONE] : '');
+        $all_services['ftp'] = (isset($user->field_ftp_permissions[LANGUAGE_NONE]) ? $user->field_ftp_permissions[LANGUAGE_NONE] : 0);
         $all_services['applications'] = $user->field_applications[LANGUAGE_NONE];
         $all_services['main_services'] = _kms_permissions_get_separate_webservices_by_uid($userId);
 
