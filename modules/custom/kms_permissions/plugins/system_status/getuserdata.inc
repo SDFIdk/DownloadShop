@@ -31,36 +31,29 @@ function get_status($type, $mode) {
       $username = $_GET['login'];
       $password = $_GET['password'];
       $userId = user_authenticate($username, $password);
-      // Check if username and password match.
-      if ($userId != FALSE) {
+      // Check if username and password match
+      if($userId != FALSE){
         $data = cache_get('kms_user_permissions:' . $userId);
-        if (!$data || time() > $data->expire) {
-          $user = user_load($userId);
 
-          // Get all ID's of webservices from user account
-          $all_services['bundles'] = $user->field_access_bundles[LANGUAGE_NONE];
-          $all_services['predefined_datacollections'] = (isset($user->field_predefined_datacollections[LANGUAGE_NONE]) ? $user->field_predefined_datacollections[LANGUAGE_NONE] : '');
-          $all_services['ftp'] = (isset($user->field_ftp_permissions[LANGUAGE_NONE]) ? $user->field_ftp_permissions[LANGUAGE_NONE] : '');
-          $all_services['applications'] = $user->field_applications[LANGUAGE_NONE];
-          $all_services['main_services'] = _kms_permissions_get_separate_webservices_by_uid($userId);
+        $user = user_load($userId);
 
-          $webservices = _kms_permissions_webservice_return_list_array($all_services);
-          drupal_add_http_header('Content-Type', 'application/json');
-          cache_set('kms_user_permissions:' . $userId, $webservices, 'cache', time() + 10 * 60);
-        }
-        else {
-          $webservices = $data->data;
-        }
+        // Get all ID's of webservices from user account
+        $all_services['bundles'] = $user->field_access_bundles[LANGUAGE_NONE];
+        $all_services['predefined_datacollections'] = (isset($user->field_predefined_datacollections[LANGUAGE_NONE]) ? $user->field_predefined_datacollections[LANGUAGE_NONE] : '');
+        $all_services['ftp'] = (isset($user->field_ftp_permissions[LANGUAGE_NONE]) ? $user->field_ftp_permissions[LANGUAGE_NONE] : '');
+        $all_services['applications'] = $user->field_applications[LANGUAGE_NONE];
+        $all_services['main_services'] = _kms_permissions_get_separate_webservices_by_uid($userId);
 
-        if (isset($_GET['callback'])) {
+        $webservices = _kms_permissions_webservice_return_list_array($all_services);
+        drupal_add_http_header('Content-Type', 'application/json');
+
+        if(isset($_GET['callback'])){
           print $_GET['callback']. '(' .json_encode($webservices). ');';
-        }
-        else {
+        }else{
           print json_encode($webservices);
         }
-
-      } else {
-        // Passworrd incorect.
+      }else{
+        // Passworrd incorect
         print t("Authentication failed");
       }
 
