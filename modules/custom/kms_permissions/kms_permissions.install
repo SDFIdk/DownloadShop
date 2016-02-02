@@ -89,3 +89,24 @@ function kms_permissions_schema() {
 
   return $schema;
 }
+
+/**
+ * Add additional fields for ftp.
+ *
+ * @author Andrius Prudnikovas <andrius@adapt.dk>
+ */
+function kms_permissions_update_7001() {
+  db_add_field('kms_permissions_ftp_folders', 'description', array(
+    'type' => 'text',
+    'size' => 'big',
+    'not null' => TRUE,
+    'default' => '',
+  ));
+
+  db_add_field('kms_permissions_ftp_folders', 'description_format', array(
+    'type' => 'varchar',
+    'length' => 255,
+    'not null' => TRUE,
+    'default' => 'filtered_html',
+  ));
+}
