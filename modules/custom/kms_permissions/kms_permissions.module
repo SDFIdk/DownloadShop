@@ -2524,7 +2524,7 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
         $sids[$key]['ProductDescription'] = kms_permissions_get_node_description($value[$keyv]);
       }
       elseif ($type == "FTP") {
-        $sids[$key]['ProductDescription'] = kms_permissions_escapeJsonString(_kms_permissions_ftp_return_ftp_permission_description($v['id']));
+        $sids[$key]['ProductDescription'] = _kms_permissions_ftp_return_ftp_permission_description($v['id']);
       }
 
       $sids[$key]['ProductTypeId'] = 'null';
@@ -2613,7 +2613,7 @@ function _kms_permissions_webservice_get_services_array_by_bid($bid, $webService
       $sids['ftp_'.$v['id']]['ProductTypeId'] = 'null';
       $sids['ftp_'.$v['id']]['ProductID'] = $v['id'];
       $sids['ftp_'.$v['id']]['ProductName'] = $webServiceListAll['ftp_'.$v['id']];
-      $sids['ftp_'.$v['id']]['ProductDescription'] = kms_permissions_escapeJsonString(_kms_permissions_ftp_return_ftp_permission_description($v['id']));
+      $sids['ftp_'.$v['id']]['ProductDescription'] = _kms_permissions_ftp_return_ftp_permission_description($v['id']);
       $sids['ftp_'.$v['id']]['ProductTypeName'] = 'FTP';
       $sids['ftp_'.$v['id']]['ProductLink'] = 'null';
     });
