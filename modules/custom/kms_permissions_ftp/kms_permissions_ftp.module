@@ -219,7 +219,7 @@ function _kms_permissions_ftp_get_permissions_by_bid($bid, &$permissions = array
 }
 
 /**
- * Return ftp webservice array
+ * Return ftp webservice array.
  *
  * @return array
  */
@@ -227,8 +227,9 @@ function _kms_permissions_ftp_return_ftp_permissions_all(){
   return db_query("SELECT * FROM {kms_permissions_ftp_folders} ORDER BY fid ASC")->fetchAll();
 }
 
+
 /**
- * Return ftp webservice array
+ * Return ftp webservice data.
  *
  * @return array
  */
@@ -238,6 +239,21 @@ function _kms_permissions_ftp_return_ftp_permission($fid){
     ->condition('fid', $fid)
     ->execute()
     ->fetchAssoc();
+
+  return $result;
+}
+
+/**
+ * Return ftp webservice data.
+ *
+ * @return array
+ */
+function _kms_permissions_ftp_return_ftp_permission_description($fid){
+  $result = db_select('kms_permissions_ftp_folders', 'p')
+    ->fields('p', array('description'))
+    ->condition('fid', $fid)
+    ->execute()
+    ->fetchField();
 
   return $result;
 }
