@@ -33,8 +33,6 @@ function get_status($type, $mode) {
       $userId = user_authenticate($username, $password);
       // Check if username and password match
       if($userId != FALSE){
-        $data = cache_get('kms_user_permissions:' . $userId);
-
         $user = user_load($userId);
 
         // Get all ID's of webservices from user account
