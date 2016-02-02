@@ -31,7 +31,7 @@ function get_status($type, $mode) {
       $username = $_GET['login'];
       $password = $_GET['password'];
       $userId = user_authenticate($username, $password);
-      // Check if username and password match
+      // Check if username and password match.
       if ($userId != FALSE) {
         $data = cache_get('kms_user_permissions:' . $userId);
         if (!$data || time() > $data->expire) {
@@ -60,8 +60,8 @@ function get_status($type, $mode) {
         }
 
       } else {
-        // Passworrd incorect
-        print "authentication failed";
+        // Passworrd incorect.
+        print t("Authentication failed");
       }
 
       break;
