@@ -23,6 +23,22 @@ function kms_permissions_ftp_menu() {
     'page callback' => 'kms_permissions_ftp_scan_store_structure',
     'access arguments' => array('ftp read'),
   );
+
+  $items['admin/config/ftp'] = array(
+    'title' =>'FTP configuration',
+    'description' => 'Add description and other information for ftp permissions',
+    'page callback' => 'kms_permissions_ftp_edit_page',
+    'access arguments' => array('ftp read'),
+  );
+
+  $items['admin/config/ftp/%'] = array(
+    'title' =>'FTP configuration',
+    'description' => 'Add description and other information for ftp permissions',
+    'page arguments' => array('kms_permissions_ftp_edit_form', 3),
+    'page callback' => 'drupal_get_form',
+    'access arguments' => array('ftp read'),
+  );
+
   return $items;
 }
 
@@ -208,5 +224,97 @@ function _kms_permissions_ftp_get_permissions_by_bid($bid, &$permissions = array
  * @return array
  */
 function _kms_permissions_ftp_return_ftp_permissions_all(){
-  return db_query("SELECT * FROM {kms_permissions_ftp_folders}")->fetchAll();
+  return db_query("SELECT * FROM {kms_permissions_ftp_folders} ORDER BY fid ASC")->fetchAll();
+}
+
+/**
+ * Return ftp webservice array
+ *
+ * @return array
+ */
+function _kms_permissions_ftp_return_ftp_permission($fid){
+  $result = db_select('kms_permissions_ftp_folders', 'p')
+    ->fields('p')
+    ->condition('fid', $fid)
+    ->execute()
+    ->fetchAssoc();
+
+  return $result;
+}
+
+/**
+ * Access callback for ftp permissions information edit page.
+ */
+function kms_permissions_ftp_edit_page() {
+  $ftp = _kms_permissions_ftp_return_ftp_permissions_all();
+  $header = array('ID', 'Title', 'Edit');
+  $rows = array();
+
+  foreach ($ftp as $permission) {
+    $rows[] = array(
+      $permission->fid,
+      $permission-> name,
+      l(t('Edit'), 'admin/config/ftp/' . $permission->fid));
+  }
+
+  return theme('table', array('header' => $header, 'rows' => $rows));
+}
+
+/**
+ * Ftp permission edit form.
+ */
+function kms_permissions_ftp_edit_form($form, &$form_state, $fid) {
+  $ftp = _kms_permissions_ftp_return_ftp_permission($fid);
+
+  if (empty($ftp)) {
+    return;
+  }
+
+  $form['#prefix'] = '<h2>' . $ftp['name'] .'</h2>';
+
+  $form['description'] = array(
+    '#type' => 'text_format',
+    '#title' => t('Description'),
+    '#default_value' => empty($ftp['description']) ? '' : $ftp['description'],
+    '#format' => $ftp['description_format'],
+  );
+
+  $form['fid'] = array(
+    '#type' => 'hidden',
+    '#value' => $fid,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Save'),
+  );
+
+  $form['back'] = array(
+    '#type' => 'button',
+    '#value' =>'Back',
+  );
+
+  return $form;
+}
+
+/**
+ * Ftp permission form validate.
+ */
+function kms_permissions_ftp_edit_form_validate($form, &$form_state) {
+  if($form_state['values']['op'] == 'Back'){
+    drupal_goto('admin/config/ftp');
+  }
+}
+
+/**
+ * Ftp permission edit form.
+ */
+function kms_permissions_ftp_edit_form_submit($form, &$form_state) {
+  db_update('kms_permissions_ftp_folders')
+    ->fields(array(
+      'description' => $form_state['values']['description']['value'],
+      'description_format' => $form_state['values']['description']['format'],
+    ))
+    ->condition ('fid', $form_state['values']['fid'], '=')
+    ->execute();
 }
