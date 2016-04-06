@@ -23,7 +23,7 @@ function get_status($type, $mode) {
     'ProductID' => NULL,
     'ProductName' => NULL,
     'ProductLink' => NULL,
-
+    'ProductKorttype' => NULL,
   );
 
   switch($type) {

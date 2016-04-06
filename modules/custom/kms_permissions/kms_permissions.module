@@ -2479,6 +2479,9 @@ function _kms_permissions_webservice_return_list_array($array){
     if (isset($value['ProductDescription'])) {
       $jsonRow['ProductDescription'] = $value['ProductDescription'];
     }
+    if (isset($value['ProductKorttype'])) {
+      $jsonRow['ProductKorttype'] = $value['ProductKorttype'];
+    }
     array_push($webservices['products'], $jsonRow);
   }
 
@@ -2516,9 +2519,8 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
       if (empty($all_services[$key])) {
         continue;
       }
-
       if($type == 'predefined_datacollections'){
-        //Get link pro predefined datacollections because it's node content type - product display 
+        //Get link pro predefined datacollections because it's node content type - product display
         $link = $GLOBALS['base_url'] . '/' . drupal_get_path_alias("node/".$value[$keyv]);
         $typeName = 'Predefined datacollections';
         $sids[$key]['ProductDescription'] = kms_permissions_get_node_description($value[$keyv]);
@@ -2605,6 +2607,7 @@ function _kms_permissions_webservice_get_services_array_by_bid($bid, $webService
       $sids['predefined_datacollections_'.$v['id']]['ProductDescription'] = kms_permissions_get_node_description($v['id']);
       $sids['predefined_datacollections_'.$v['id']]['ProductTypeName'] = 'Predefined datacollections';
       $sids['predefined_datacollections_'.$v['id']]['ProductLink'] = $GLOBALS['base_url'] . '/' . drupal_get_path_alias("node/".$v['id']);
+      $sids['predefined_datacollections_'.$v['id']]['ProductKorttype'] = kms_permissions_get_product_display_field_korttype_value($v['id']);
     });
   }
 
@@ -2652,4 +2655,25 @@ function kms_permissions_get_node_description($nid){
   }
 
   return check_markup($result[0]->body_value, $result[0]->body_format);
+}
+
+/**
+ * Get node korttype value.
+ *
+ * @param $nid.
+ */
+function kms_permissions_get_product_display_field_korttype_value($nid) {
+  $query = db_select('field_data_field_korttype', 'k')
+    ->fields('k', array('field_korttype_tid'))
+    ->condition('entity_id', $nid);
+  $result = $query->execute()->FetchField();
+
+  if(empty($result)) {
+    return;
+  }
+
+  $taxonomy_term = taxonomy_term_load($result);
+
+  return $taxonomy_term->name;
+
 }
