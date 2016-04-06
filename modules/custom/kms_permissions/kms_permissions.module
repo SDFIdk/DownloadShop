@@ -2664,15 +2664,15 @@ function kms_permissions_get_node_description($nid){
  */
 function kms_permissions_get_product_display_field_korttype_value($nid) {
   $query = db_select('field_data_field_korttype', 'k')
-    ->fields('k')
+    ->fields('k', array('field_korttype_tid'))
     ->condition('entity_id', $nid);
-  $result = $query->execute()->FetchAll();
+  $result = $query->execute()->FetchField();
 
-  if(!isset($result[0]->field_korttype_tid)) {
+  if(empty($result)) {
     return;
   }
 
-  $taxonomy_term = taxonomy_term_load($result[0]->field_korttype_tid);
+  $taxonomy_term = taxonomy_term_load($result);
 
   return $taxonomy_term->name;
 
