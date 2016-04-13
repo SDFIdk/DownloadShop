@@ -34,6 +34,12 @@ function contenttype_product_display_strongarm() {
       'token' => array(
         'custom_settings' => FALSE,
       ),
+      'colorbox' => array(
+        'custom_settings' => FALSE,
+      ),
+      'diff_standard' => array(
+        'custom_settings' => FALSE,
+      ),
     ),
     'extra_fields' => array(
       'form' => array(
@@ -50,19 +56,19 @@ function contenttype_product_display_strongarm() {
       'display' => array(
         'product:sku' => array(
           'default' => array(
-            'weight' => '-10',
+            'weight' => '31',
             'visible' => FALSE,
           ),
         ),
         'product:title' => array(
           'default' => array(
-            'weight' => '-5',
+            'weight' => '32',
             'visible' => FALSE,
           ),
         ),
         'product:status' => array(
           'default' => array(
-            'weight' => '5',
+            'weight' => '33',
             'visible' => FALSE,
           ),
         ),
@@ -74,13 +80,13 @@ function contenttype_product_display_strongarm() {
         ),
         'product:field_folder' => array(
           'default' => array(
-            'weight' => '11',
+            'weight' => '20',
             'visible' => TRUE,
           ),
         ),
         'product:field_dataformat' => array(
           'default' => array(
-            'weight' => '5',
+            'weight' => '10',
             'visible' => TRUE,
           ),
         ),
@@ -104,7 +110,7 @@ function contenttype_product_display_strongarm() {
         ),
         'product:field_selection_type' => array(
           'default' => array(
-            'weight' => '9',
+            'weight' => '17',
             'visible' => TRUE,
           ),
         ),
@@ -128,7 +134,7 @@ function contenttype_product_display_strongarm() {
         ),
         'product:field_atom_feed' => array(
           'default' => array(
-            'weight' => '19',
+            'weight' => '29',
             'visible' => TRUE,
           ),
         ),
@@ -146,7 +152,7 @@ function contenttype_product_display_strongarm() {
         ),
         'product:field_koordinatsystem' => array(
           'default' => array(
-            'weight' => '6',
+            'weight' => '12',
             'visible' => TRUE,
           ),
         ),
@@ -170,7 +176,7 @@ function contenttype_product_display_strongarm() {
         ),
         'product:field_selection_details' => array(
           'default' => array(
-            'weight' => '10',
+            'weight' => '18',
             'visible' => TRUE,
           ),
         ),
@@ -182,13 +188,43 @@ function contenttype_product_display_strongarm() {
         ),
         'product:commerce_price' => array(
           'default' => array(
-            'weight' => '16',
+            'weight' => '26',
             'visible' => TRUE,
           ),
         ),
         'product:field_scheme' => array(
           'default' => array(
             'weight' => '6',
+            'visible' => TRUE,
+          ),
+        ),
+        'product:field_dataformats' => array(
+          'default' => array(
+            'weight' => '6',
+            'visible' => TRUE,
+          ),
+        ),
+        'product:field_fme_name' => array(
+          'default' => array(
+            'weight' => '2',
+            'visible' => TRUE,
+          ),
+        ),
+        'product:field_ortofoto_produkt' => array(
+          'default' => array(
+            'weight' => '4',
+            'visible' => TRUE,
+          ),
+        ),
+        'product:field_reference_systems' => array(
+          'default' => array(
+            'weight' => '13',
+            'visible' => TRUE,
+          ),
+        ),
+        'product:field_selection_types' => array(
+          'default' => array(
+            'weight' => '8',
             'visible' => TRUE,
           ),
         ),

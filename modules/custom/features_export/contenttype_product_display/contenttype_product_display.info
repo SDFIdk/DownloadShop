@@ -25,6 +25,7 @@ features[field][] = node-product_display-field_geodata_info_dk
 features[field][] = node-product_display-field_kms_dk
 features[field][] = node-product_display-field_korttype
 features[field][] = node-product_display-field_legend
+features[field][] = node-product_display-field_min_side
 features[field][] = node-product_display-field_overlay
 features[field][] = node-product_display-field_product
 features[field][] = node-product_display-field_product_image
