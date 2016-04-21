@@ -2453,7 +2453,7 @@ function _kms_permissions_webservice_return_list_array($array){
   $webservices['b'] = $merged_bundles;
   $webservices['p'] = _kms_permissions_webservice_get_service_array_by_type($array['predefined_datacollections'], $webServiceListAll, 'predefined_datacollections');
   $webservices['a'] = _kms_permissions_webservice_get_service_array_by_type($array['applications'], $webServiceListAll, 'applications');
-  $webservices['f'] = _kms_permissions_webservice_get_service_array_by_type($array['ftp'], $webServiceListAll, 'FTP');
+  $webservices['f'] = _format_ftp_permissions_array($array['ftp']);
   $webservices['w'] = _kms_permissions_webservice_get_service_array_by_type($array['main_services'], $webServiceListAll, 'main_services');
 
   $webservices1 = array();
@@ -2577,7 +2577,7 @@ function _kms_permissions_webservices_return_type_name_by_service($id, $webservi
 function _kms_permissions_webservice_get_services_array_by_bid($bid, $webServiceListAll) {
   $permissions = $ftp_permissions = $sids = array();
    _kms_permissions_get_permissions_by_bid($bid, $permissions);
-   _kms_permissions_ftp_get_permissions_by_bid($bid, $ftp_permissions);
+
   if(!empty($permissions['services']) && is_array($permissions['services'])) {
     array_walk($permissions['services'], function($v) use(&$sids, $webServiceListAll) {
       if (isset($webServiceListAll[$v['id']])) {
@@ -2611,16 +2611,6 @@ function _kms_permissions_webservice_get_services_array_by_bid($bid, $webService
     });
   }
 
-  if(!empty($ftp_permissions['ftp']) && is_array($ftp_permissions['ftp'])) {
-    array_walk($ftp_permissions['ftp'], function($v) use(&$sids, $webServiceListAll) {
-      $sids['ftp_'.$v['id']]['ProductTypeId'] = 'null';
-      $sids['ftp_'.$v['id']]['ProductID'] = $v['id'];
-      $sids['ftp_'.$v['id']]['ProductName'] = $webServiceListAll['ftp_'.$v['id']];
-      $sids['ftp_'.$v['id']]['ProductDescription'] = _kms_permissions_ftp_return_ftp_permission_description($v['id']);
-      $sids['ftp_'.$v['id']]['ProductTypeName'] = 'FTP';
-      $sids['ftp_'.$v['id']]['ProductLink'] = 'null';
-    });
-  }
   return $sids;
 }
 
@@ -2676,4 +2666,22 @@ function kms_permissions_get_product_display_field_korttype_value($nid) {
 
   return $taxonomy_term->name;
 
+}
+
+function _format_ftp_permissions_array($products) {
+  $ftp = array();
+  if (!empty($products)) {
+    foreach ($products as $key => $product) {
+      $ftp['ftp_' . $product->entity_id] = array(
+        'ProductTypeId' => 'null',
+        'ProductID' => $product->entity_id,
+        'ProductName' => $product->field_min_side_title,
+        'ProductTypeName' => 'FTP',
+        'ProductDescription' => $product->body_value,
+        'ProductLink' => $product->field_min_side_url,
+      );
+    }
+  }
+
+  return $ftp;
 }
