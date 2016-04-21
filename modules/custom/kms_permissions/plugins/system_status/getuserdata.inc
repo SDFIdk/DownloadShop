@@ -38,7 +38,7 @@ function get_status($type, $mode) {
         // Get all ID's of webservices from user account
         $all_services['bundles'] = $user->field_access_bundles[LANGUAGE_NONE];
         $all_services['predefined_datacollections'] = (isset($user->field_predefined_datacollections[LANGUAGE_NONE]) ? $user->field_predefined_datacollections[LANGUAGE_NONE] : '');
-        $all_services['ftp'] = (isset($user->field_ftp_permissions[LANGUAGE_NONE]) ? $user->field_ftp_permissions[LANGUAGE_NONE] : '');
+        $all_services['ftp'] = min_side_query();
         $all_services['applications'] = $user->field_applications[LANGUAGE_NONE];
         $all_services['main_services'] = _kms_permissions_get_separate_webservices_by_uid($userId);
 
@@ -58,4 +58,14 @@ function get_status($type, $mode) {
       break;
   }
   die;
+}
+
+function min_side_query() {
+  $query = db_select('field_data_field_min_side', 'ms');
+  $query->leftJoin('field_data_body', 'b', 'ms.entity_id = b.entity_id');
+  $query->fields('ms', array('entity_id', 'field_min_side_url', 'field_min_side_title'));
+  $query->fields('b', array('body_value', 'body_summary'));
+  $result = $query->execute()->fetchAll();
+
+  return $result;
 }
