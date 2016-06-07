@@ -10,3 +10,15 @@ function kms_user_install() {
   }
   db_query('ALTER TABLE {field_data_field_address} ADD field_address_phone_number VARCHAR');
 }
+
+function kms_user_update_7001() {
+  $vocabulary_name = 'user_type';
+  $vocabulary =  taxonomy_vocabulary_machine_name_load($vocabulary_name);
+  $term_tree = taxonomy_get_tree($vocabulary->vid);
+
+  foreach ($term_tree as $entry => $term_entry) {
+    $term = taxonomy_term_load($term_entry->tid);
+    $term->field_user_type_id[LANGUAGE_NONE][0]['value'] = $entry;
+    taxonomy_term_save($term);
+  }
+}
