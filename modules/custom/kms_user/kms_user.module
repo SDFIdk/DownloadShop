@@ -258,7 +258,9 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
 
         // Do not allow editing of user type to anybody else than super admin.
         if (!kms_user_is_superadmin($user)) {
-          $form['field_user_type']['#access'] = FALSE;
+          // Allow users editing user type.
+          //$form['field_user_type']['#access'] = FALSE;
+
           $form['field_address']['und'][0]['street_block']['#access'] = FALSE;
           $form['field_address']['und'][0]['country']['#access'] = FALSE;
           $form['field_address']['und'][0]['locality_block']['#access'] = FALSE;
