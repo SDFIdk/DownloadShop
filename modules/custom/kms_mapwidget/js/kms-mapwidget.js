@@ -14,6 +14,8 @@ var denmark = true;
 jQuery(document).ready(function($) {
 
   conf = Drupal.settings.kms_mapwidget;
+  console.log(conf);
+
   map = initMap(conf);
   if (denmark) {
     initSearch(map);
@@ -279,7 +281,7 @@ function initMap(conf) {
     denmark = false;
     baselayer_name = 'Basiskort grønland';
     baselayer_service_name = 'gtopo';
-    baselayer_service_layer = 'gtk_g2500';
+    baselayer_service_layer = 'Gtk_g2500';
   }
 
   // The Faroe Islands
@@ -292,7 +294,7 @@ function initMap(conf) {
     denmark = false;
     baselayer_name = 'Basiskort færøerne';
     baselayer_service_name = 'ftopo';
-    baselayer_service_layer = 'ftk_f200';
+    baselayer_service_layer = 'Ftk_f200';
   }
 
   var skaermkort_url = ["http://a.kortforsyningen.kms.dk/topo_skaermkort",
