@@ -14,8 +14,6 @@ var denmark = true;
 jQuery(document).ready(function($) {
 
   conf = Drupal.settings.kms_mapwidget;
-  console.log(conf);
-
   map = initMap(conf);
   if (denmark) {
     initSearch(map);
