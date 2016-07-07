@@ -75,6 +75,59 @@ function user_fields_field_default_fields() {
     ),
   );
 
+  // Exported field: 'taxonomy_term-user_type-field_user_type_id'.
+  $fields['taxonomy_term-user_type-field_user_type_id'] = array(
+    'field_config' => array(
+      'active' => '1',
+      'cardinality' => '1',
+      'deleted' => '0',
+      'entity_types' => array(),
+      'field_name' => 'field_user_type_id',
+      'field_permissions' => array(
+        'type' => '1',
+      ),
+      'foreign keys' => array(),
+      'indexes' => array(),
+      'locked' => '0',
+      'module' => 'number',
+      'settings' => array(),
+      'translatable' => '0',
+      'type' => 'number_integer',
+    ),
+    'field_instance' => array(
+      'bundle' => 'user_type',
+      'default_value' => NULL,
+      'deleted' => '0',
+      'description' => '',
+      'display' => array(
+        'default' => array(
+          'label' => 'above',
+          'settings' => array(),
+          'type' => 'hidden',
+          'weight' => '1',
+        ),
+      ),
+      'entity_type' => 'taxonomy_term',
+      'field_name' => 'field_user_type_id',
+      'label' => 'User type ID',
+      'required' => 1,
+      'settings' => array(
+        'max' => '',
+        'min' => '0',
+        'prefix' => '',
+        'suffix' => '',
+        'user_register_form' => FALSE,
+      ),
+      'widget' => array(
+        'active' => 0,
+        'module' => 'number',
+        'settings' => array(),
+        'type' => 'number',
+        'weight' => '41',
+      ),
+    ),
+  );
+
   // Exported field: 'user-user-field_access_bundles'.
   $fields['user-user-field_access_bundles'] = array(
     'field_config' => array(
@@ -1295,6 +1348,7 @@ function user_fields_field_default_fields() {
           'label' => 'above',
           'module' => 'entityreference',
           'settings' => array(
+            'colorbox_node_classes' => '',
             'colorbox_node_height' => '600',
             'colorbox_node_link' => FALSE,
             'colorbox_node_width' => '600',
@@ -1683,6 +1737,7 @@ function user_fields_field_default_fields() {
   t('Telefon');
   t('Udløbsdato');
   t('Updated');
+  t('User type ID');
   t('Webservices');
   t('Webservices (GEO)');
   t('Webservices (PLOT)');
