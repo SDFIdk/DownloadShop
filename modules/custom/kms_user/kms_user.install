@@ -11,7 +11,7 @@ function kms_user_install() {
   db_query('ALTER TABLE {field_data_field_address} ADD field_address_phone_number VARCHAR');
 }
 
-function kms_user_update_7001() {
+function kms_user_update_7002() {
   $vocabulary_name = 'user_type';
   $vocabulary =  taxonomy_vocabulary_machine_name_load($vocabulary_name);
   $term_tree = taxonomy_get_tree($vocabulary->vid);
