@@ -19,6 +19,7 @@ dependencies[] = taxonomy
 features[ctools][] = field_group:field_group:1
 features[features_api][] = api:1
 features[field][] = taxonomy_term-bundle-field_webservices
+features[field][] = taxonomy_term-user_type-field_user_type_id
 features[field][] = user-user-field_access_bundles
 features[field][] = user-user-field_address
 features[field][] = user-user-field_applications
