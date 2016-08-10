@@ -446,3 +446,12 @@ function kms_update_7016(&$sandbox) {
 function kms_update_7017(&$sandbox) {
   module_enable(array('dbtng_migrator'));
 }
+
+/**
+ * Enable taxonomy_manager module.
+ *
+ * @author Mikkel Jakobsen <mikkel@adapt.dk>
+ */
+function kms_update_7018(&$sandbox) {
+  module_enable(array('taxonomy_manager'));
+}
