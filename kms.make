@@ -392,3 +392,8 @@ projects[sharedaccounts][subdir] = 'custom'
 projects[sharedaccounts][download][type] = 'git'
 projects[sharedaccounts][download][url] = 'git@github.com:adaptdk/sharedaccounts.git'
 projects[sharedaccounts][download][branch] = '7.x-2.x'
+
+;taxonomy_manager
+projects[taxonomy_manager][subdir] = "contrib"
+projects[taxonomy_manager][version] = "1.0"
+projects[taxonomy_manager][type] = "module"
