@@ -364,8 +364,8 @@ libraries[colorbox][download][tag] =  1.5.14
 
 ; Beautytips
 libraries[beautytips_ie_lib][download][type] = "get"
-libraries[beautytips_ie_lib][download][url] = "https://explorercanvas.googlecode.com/files/excanvas_r3.zip"
-libraries[beautytips_ie_lib][download][md5] = "81a041b98c477f92ed772f2fac0835ad"
+libraries[beautytips_ie_lib][download][url] = "https://cdn.jsdelivr.net/excanvas/r3/excanvas.js"
+libraries[beautytips_ie_lib][download][md5] = "d6daf9202fd54f3df4e95369715a4eab"
 libraries[beautytips_ie_lib][directory_name] = "excanvas_r3"
 libraries[beautytips_ie_lib][destination] = "modules/contrib/beautytips/other_libs"
 
