@@ -180,9 +180,9 @@ function kms_oci_insert($data, $table, $cid = FALSE) {
 }
 
 function kms_oci_filter_query_data(&$data) {
-  // Only use variables with values.
+  // Only use variables with non empty string values.
   $data = array_filter($data, function($v){
-    return $v == 0 || !empty($v);
+    return $v !== '';
   });
 }
 
@@ -221,9 +221,7 @@ function kms_oci_update_user($data, $table, $kms_userid) {
     return;
   }
   // Only use variables with values.
-  $data = array_filter($data, function($v){
-    return $v == 0 || !empty($v);
-  });
+  kms_oci_filter_query_data($data);
 
   $values = array();
   array_walk($data, function($v, $k) use (&$values) {
