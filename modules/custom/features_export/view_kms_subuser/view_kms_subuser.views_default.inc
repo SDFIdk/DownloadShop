@@ -143,6 +143,13 @@ function view_kms_subuser_views_default_views() {
   $handler->display->display_options['arguments']['uid']['summary']['number_of_records'] = '0';
   $handler->display->display_options['arguments']['uid']['summary']['format'] = 'default_summary';
   $handler->display->display_options['arguments']['uid']['summary_options']['items_per_page'] = '25';
+  /* Filter criterion: User: Roles */
+  $handler->display->display_options['filters']['rid']['id'] = 'rid';
+  $handler->display->display_options['filters']['rid']['table'] = 'users_roles';
+  $handler->display->display_options['filters']['rid']['field'] = 'rid';
+  $handler->display->display_options['filters']['rid']['value'] = array(
+    9 => '9',
+  );
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
