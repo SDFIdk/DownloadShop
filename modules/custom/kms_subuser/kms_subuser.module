@@ -294,11 +294,21 @@ function kms_subuser_update_form_submit(&$form, &$form_state) {
   // Set expire.
   if (!empty($values['user_expire'])) {
     $suwrapper->field_expire_date->set(strtotime($values['user_expire']));
-    if (strtotime($values['user_expire']) > time()) {
-      $suwrapper->status = 1;
-      $data['user']['disabled'] = '0';
-    }
   }
+  else {
+    $suwrapper->field_expire_date->set(null);
+  }
+
+  // Set the user to active if no expire date, or expire date is in the future, else disable
+  if (empty($values['user_expire']) || strtotime($values['user_expire']) > time()) {
+    $suwrapper->status = 1;
+    $data['user']['disabled'] = '0';
+  }
+  else {
+    $suwrapper->status = 0;
+    $data['user']['disabled'] = '1';
+  }
+
   // Set password and cleartext passwd.
   if (!empty($values['pass'])) {
     $suwrapper->field_pass_clear->set($values['pass']);
