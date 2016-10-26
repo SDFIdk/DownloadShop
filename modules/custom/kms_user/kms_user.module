@@ -246,16 +246,7 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
           '#weight' => -100,
         );
 
-        // Add user settings to js.
-        drupal_add_js(
-          array(
-            'kms_user' => array(
-              'isSuperAdmin' => kms_user_is_superadmin($user),
-              'uid' => $user->uid,
-            ),
-          ),
-          'setting'
-        );
+        kms_user_js_settings();
 
         // Do not allow editing of user type to anybody else than super admin.
         if (!kms_user_is_superadmin($user)) {
@@ -284,6 +275,20 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
     $form['#validate'][] = '_kms_user_user_pass_validate';
   }
 
+}
+
+function kms_user_js_settings() {
+  global $user;
+  // Add user settings to js.
+  drupal_add_js(
+    array(
+      'kms_user' => array(
+        'isSuperAdmin' => kms_user_is_superadmin($user),
+        'uid' => $user->uid,
+      ),
+    ),
+    'setting'
+  );
 }
 
 function _kms_user_user_pass_validate($form, &$form_state) {
