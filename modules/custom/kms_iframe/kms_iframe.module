@@ -1,0 +1,38 @@
+<?php
+
+function kms_iframe_ctools_render_alter(&$info, &$page, &$context){
+
+  // Add iframe css if the page is iframed
+  if (kms_iframe_test()) {
+    drupal_add_css(drupal_get_path('theme', 'kms') . '/css/iframe.css');
+  }
+}
+
+
+function kms_iframe_url_outbound_alter(&$path, &$options, $original_path) {
+
+  // If the page is not iframed return
+  if (!kms_iframe_test()) {
+    return;
+  }
+
+  // Append /iframe to urls starting with edit/profile when in an iframe
+  if (strpos($path, 'edit/profile') === 0) {
+    $path .= '/iframe';
+  }
+}
+
+/**
+ * Check if the current path ends with iframe
+ */
+function kms_iframe_test() {
+  $path = current_path();
+  $match = 'iframe';
+
+  if (substr_compare($path, $match, strlen($path)-strlen($match), strlen($match)) === 0) {
+    return true;
+  }
+
+  return false;
+
+}
