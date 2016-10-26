@@ -181,6 +181,7 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
     $form['account']['name']['#description'] = t(
       'Spaces are not allowed; punctuation is not allowed except for periods, hyphens, apostrophes, and underscores.'
     );
+    $form['account']['name']['#access'] = true;
 
     $form['field_terms_and_conditions']['#after_build'] = array('kms_user_form_after_build');
 
