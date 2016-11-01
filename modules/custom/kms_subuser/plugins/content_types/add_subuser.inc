@@ -34,6 +34,7 @@ function add_subuser_plugin_render($subtype, $conf, $panel_args, $context) {
   // $user = user_load($user->uid);
   // 
 // die;
+  kms_user_js_settings();
 
   $block = new stdClass();
   $block->subject = $block->subject = '';
