@@ -563,16 +563,13 @@ function kms_subuser_form_user_profile_form_alter(&$form, &$form_state, $form_id
     '%subuser is a subuser of %master',
     array('%subuser' => $account->name, '%master' => $master_user->name)
   );
-  // Prevent editing of user name.
-  $form['account']['name']['#disabled'] = TRUE;
+
+  // Allow edit of user name
+  $form['account']['name']['#access'] = true;
   // Manipulate form.
   $form['#after_build'][] = 'kms_subuser_user_profile_after_build';
   // Make sure that subuser role always is set.
   array_unshift($form['#submit'], 'kms_subuser_profile_submit');
-  // If the logged in user is a subuser strip down form.
-  if (kms_subuser_is_subuser($user)) {
-    unset($form['actions']);
-  }
 }
 
 /**
@@ -628,9 +625,7 @@ function kms_subuser_user_profile_after_build($form, &$form_state) {
     'field_debtor_nr',
     'field_webservices_extra',
     'field_kms_user_id',
-    'field_address',
     'field_contact_me',
-    'field_phone',
     'field_user_type_info',
     'field_user_type',
     'masquerade',
@@ -642,11 +637,8 @@ function kms_subuser_user_profile_after_build($form, &$form_state) {
     }
   }
   // Hide account elements.
-  $form['account']['mail']['#access'] = FALSE;
   $form['account']['roles']['#access'] = FALSE;
   $form['account']['status']['#access'] = FALSE;
-  $form['account']['pass']['#access'] = FALSE;
-  $form['account']['current_pass']['#access'] = FALSE;
   // Make sure that user remark is shown.
   $form['field_user_remark']['#access'] = TRUE;
 
