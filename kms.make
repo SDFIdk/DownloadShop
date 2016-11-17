@@ -403,3 +403,14 @@ projects[sharedaccounts][download][branch] = '7.x-2.x'
 projects[taxonomy_manager][subdir] = "contrib"
 projects[taxonomy_manager][version] = "1.0"
 projects[taxonomy_manager][type] = "module"
+
+; mailchimp
+projects[mailchimp][subdir] = "contrib"
+projects[mailchimp][version] = "3.6"
+projects[mailchimp][type] = "module"
+
+; MailChimp library
+libraries[mailchimp][download][type] = "get"
+libraries[mailchimp][download][url] = "https://bitbucket.org/mailchimp/mailchimp-api-php/get/2.0.6.zip"
+libraries[mailchimp][directory_name] = "mailchimp"
+libraries[mailchimp][destination] = "libraries"

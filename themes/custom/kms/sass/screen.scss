@@ -1746,3 +1746,382 @@ ul.controlToggle {
     margin-bottom: 9px;
   }
 }
+
+/*iframe løsning*/
+body.page-edit-profile {
+
+  .panel-2col-stacked {
+
+    > .center-wrapper {
+
+      > .panel-col-first {
+        width: 280px;
+        padding: 20px;
+      }
+
+      > .panel-col-last {
+        background: none;
+        width: 817px;
+        border-bottom: none;
+
+        .pane-content {
+          padding-top: 15px !important;
+        }
+      }
+    }
+  }
+
+  .pane-kms-user-profile-pane {
+
+    #user-profile-form {
+
+      .form-item {
+        background: #f1f3eb;
+        margin: 5px 0;
+        position: relative;
+
+        label {
+          padding: 10px 20px 0;
+          font-size: 14px;
+
+          &[for="edit-pass-pass2"] {
+            background: none;
+          }
+        }
+
+        select {
+          width: 320px;
+          display: inline-block;
+          margin: 10px 20px;
+          float: none;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+          width: 300px;
+          padding: 5px 10px;
+          margin: 10px 0 10px 20px;
+          background: #fff;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+        }
+
+
+
+        em {
+          display: inline-block;
+          margin: 10px 20px;
+        }
+
+        .description {
+          display: inline-block;
+          width: 400px;
+          vertical-align: top;
+          margin: 10px 20px;
+
+          &.password-suggestions {
+            margin: 10px 20px;
+            width: calc(100% - 60px);
+            padding: 10px;
+            border: 1px solid #b4bba4;
+            border-radius: 5px;
+          }
+
+          em {
+            display: inline;
+            margin: 0;
+          }
+        }
+
+        div.password-strength,
+        div.password-confirm {
+          float: none;
+          position: absolute;
+          top: 55px;
+          right: 20px;
+        }
+      }
+
+      .field-type-addressfield {
+
+        legend {
+          display: none !important;
+        }
+        .form-item {
+          width: 49.4%;
+          display: inline-block;
+        }
+      }
+
+      input[type="submit"] {
+        margin: 20px 0;
+        background: #97BC00;
+        border: none;
+        border-radius: 5px;
+        min-width: 100px;
+        color: #fff;
+        height: 37px;
+      }
+
+      .form-type-checkbox,
+      .form-type-radio {
+        margin: 0;
+        background: none;
+
+        label {
+          background: none;
+          padding: 10px 20px;
+          font-size: 12px;
+        }
+
+        input[type="checkbox"],
+        input[type="radio"] {
+          padding: 5px 10px;
+          margin: 10px 0 10px 20px;
+          background: #fff;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+        }
+      }
+    }
+  }
+
+  .panel-col-first{
+    .panel-pane {
+      background: #f1f3eb;
+      overflow: hidden;
+      margin: 0 0 10px;
+      border-bottom: #d0d7c8 3px solid;
+
+      h2 {
+        background: #b4bba4;
+        margin: 0;
+        padding: 5px 15px 5px 15px;
+        font-size: 18px;
+        line-height: 1.6;
+      }
+
+      ul {
+        margin: 0;
+        padding: 0;
+        background: #f1f3eb;
+
+        li {
+          -webkit-transition: background 0.3s ease-in-out;
+          -moz-transition: background 0.3s ease-in-out;
+          transition: background 0.3s ease-in-out;
+          list-style: none;
+          border-bottom: 1px solid #b4bba4;
+          padding: 0;
+          line-height: 14px;
+          margin: 0;
+          background: url(/profiles/gst2/themes/custom/gst2_theme/images/collapsed.gif) no-repeat 235px 10px;
+
+          &:hover {
+            background-position: 228px 10px;
+          }
+
+          a {
+            display: block;
+            background: url(/profiles/gst2/themes/custom/gst2_theme/images/arrow-grey.gif) no-repeat 19px 10px;
+            padding: 9px 0 10px 45px;
+            text-decoration: none;
+            color: #000;
+
+            &:hover{
+              color: #c2712b;
+            }
+
+            &.active-trail {
+              font-weight: 800;
+            }
+          }
+        }
+      }
+
+      p {
+        padding: 15px;
+      }
+    }
+  }
+
+  &.page-edit-profile-subuser {
+
+    #subuser-popup {
+
+      h2 {
+        display: none;
+      }
+
+      button {
+        margin: 0 20px 10px 0;
+        background: #97BC00;
+        border: none;
+        border-radius: 5px;
+        min-width: 170px;
+        color: #fff;
+        height: 37px;
+        display: inline-block;
+      }
+
+      p {
+        display: inline-block;
+      }
+    }
+
+    #subuser-view-wrapper {
+
+      input[type="text"] {
+        width: 300px;
+        padding: 5px 10px;
+        margin: 10px 0 10px 20px;
+        background: #fff;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      table {
+        table-layout: fixed;
+        margin-top: 50px;
+
+        tr {
+
+          th:nth-child(5),
+          th:nth-child(6) {
+            width: 50px;
+          }
+
+          td:nth-child(2),
+          th:nth-child(2) {
+            display: none;
+          }
+        }
+
+        th {
+          background: #f1f3eb;
+          padding: 10px 15px;
+          text-align: left;
+        }
+
+        td {
+          border-bottom: 1px solid #000;
+          padding: 10px 15px;
+          text-align: left;
+        }
+      }
+    }
+
+    #modalContent {
+
+      .ctools-modal-content {
+        height: 600px;
+
+        .modal-header {
+          background-color: #fff;
+          padding: 20px;
+          color: #000;
+        }
+
+        .modal-title {
+          font-size: 16px;
+          font-weight: bold;
+          color: #000;
+          overflow: hidden;
+          white-space: nowrap;
+        }
+
+        a.close {
+          color: #000;
+          float: right;
+        }
+
+        .modal-content {
+          padding: 0 20px 20px;
+          overflow: auto;
+          position: relative;
+
+          .form-item {
+            margin-bottom: 20px;
+
+            label {
+              width: auto;
+              float: none;
+            }
+
+            input[type="text"] {
+              width: 300px;
+              padding: 5px 10px;
+              margin: 5px 0;
+              background: #fff;
+              border: 1px solid #ccc;
+              border-radius: 5px;
+            }
+          }
+
+          .container-inline-date .date-padding {
+            padding: 0;
+            float: none;
+
+            label {
+              display: none;
+            }
+          }
+
+          .resizable-textarea {
+            margin-left: 0;
+            margin-right: 0;
+
+            textarea {
+              width: 500px;
+              padding: 5px 10px;
+              margin: 5px 0;
+              background: #fff;
+              border: 1px solid #ccc;
+              border-radius: 5px;
+            }
+          }
+        }
+
+        input[type="submit"] {
+          background: #97BC00;
+          border: none;
+          border-radius: 5px;
+          min-width: 100px;
+          color: #fff;
+          height: 37px;
+        }
+      }
+    }
+  }
+}
+
+.pane-mailchimp-signup-newsletter {
+   
+  input[type="submit"] {
+    background: #97BC00;
+    border: none;
+    border-radius: 5px;
+    min-width: 100px;
+    color: #fff;
+    height: 37px;
+  }
+
+  .form-item {
+    margin-bottom: 20px;
+
+    label {
+      width: auto;
+      float: none;
+    }
+
+    input[type="text"] {
+      width: 300px;
+      padding: 5px 10px;
+      margin: 5px 0;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+  }
+}
+
