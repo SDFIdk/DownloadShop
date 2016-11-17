@@ -403,3 +403,14 @@ projects[sharedaccounts][download][branch] = '7.x-2.x'
 projects[taxonomy_manager][subdir] = "contrib"
 projects[taxonomy_manager][version] = "1.0"
 projects[taxonomy_manager][type] = "module"
+
+; mailchimp
+projects[mailchimp][subdir] = "contrib"
+projects[mailchimp][version] = "4.7"
+projects[mailchimp][type] = "module"
+
+; MailChimp library
+libraries[mailchimp][download][type] = "get"
+libraries[mailchimp][download][url] = "https://github.com/thinkshout/mailchimp-api-php/releases/download/v1.0.5/v1.0.5-package.zip"
+libraries[mailchimp][directory_name] = "mailchimp"
+libraries[mailchimp][destination] = "libraries"
