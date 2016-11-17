@@ -2095,4 +2095,33 @@ body.page-edit-profile {
   }
 }
 
+.pane-mailchimp-signup-newsletter {
+   
+  input[type="submit"] {
+    background: #97BC00;
+    border: none;
+    border-radius: 5px;
+    min-width: 100px;
+    color: #fff;
+    height: 37px;
+  }
+
+  .form-item {
+    margin-bottom: 20px;
+
+    label {
+      width: auto;
+      float: none;
+    }
+
+    input[type="text"] {
+      width: 300px;
+      padding: 5px 10px;
+      margin: 5px 0;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+  }
+}
 

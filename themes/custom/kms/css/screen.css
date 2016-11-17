@@ -2283,3 +2283,31 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   color: #fff;
   height: 37px;
 }
+
+/* line 2100, ../sass/screen.scss */
+.pane-mailchimp-signup-newsletter input[type="submit"] {
+  background: #97BC00;
+  border: none;
+  border-radius: 5px;
+  min-width: 100px;
+  color: #fff;
+  height: 37px;
+}
+/* line 2109, ../sass/screen.scss */
+.pane-mailchimp-signup-newsletter .form-item {
+  margin-bottom: 20px;
+}
+/* line 2112, ../sass/screen.scss */
+.pane-mailchimp-signup-newsletter .form-item label {
+  width: auto;
+  float: none;
+}
+/* line 2117, ../sass/screen.scss */
+.pane-mailchimp-signup-newsletter .form-item input[type="text"] {
+  width: 300px;
+  padding: 5px 10px;
+  margin: 5px 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
