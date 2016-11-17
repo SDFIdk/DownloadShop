@@ -30,6 +30,8 @@ function panel_edit_user_profile_default_page_manager_pages() {
       ),
     ),
     'logic' => 'and',
+    'type' => 'none',
+    'settings' => NULL,
   );
   $page->menu = array();
   $page->arguments = array();
@@ -300,18 +302,7 @@ function panel_edit_user_profile_default_page_manager_pages() {
   $page->admin_description = '';
   $page->path = 'edit/profile';
   $page->access = array(
-    'plugins' => array(
-      0 => array(
-        'name' => 'role',
-        'settings' => array(
-          'rids' => array(
-            0 => 2,
-          ),
-        ),
-        'context' => 'logged-in-user',
-        'not' => FALSE,
-      ),
-    ),
+    'plugins' => array(),
     'logic' => 'and',
   );
   $page->menu = array();
@@ -327,7 +318,7 @@ function panel_edit_user_profile_default_page_manager_pages() {
   $handler->task = 'page';
   $handler->subtask = 'edit_user_profile';
   $handler->handler = 'panel_context';
-  $handler->weight = 2;
+  $handler->weight = -29;
   $handler->conf = array(
     'title' => 'Edit profile',
     'no_blocks' => 0,
@@ -569,6 +560,80 @@ function panel_edit_user_profile_default_page_manager_pages() {
   $display->title_pane = '0';
   $handler->conf['display'] = $display;
   $page->default_handlers[$handler->name] = $handler;
+  $handler = new stdClass();
+  $handler->disabled = FALSE; /* Edit this to true to make a default handler disabled initially */
+  $handler->api_version = 1;
+  $handler->name = 'page_edit_user_profile_panel_context_2';
+  $handler->task = 'page';
+  $handler->subtask = 'edit_user_profile';
+  $handler->handler = 'panel_context';
+  $handler->weight = -30;
+  $handler->conf = array(
+    'title' => 'Login',
+    'no_blocks' => 1,
+    'pipeline' => 'standard',
+    'body_classes_to_remove' => '',
+    'body_classes_to_add' => '',
+    'css_id' => '',
+    'css' => '',
+    'contexts' => array(),
+    'relationships' => array(),
+    'access' => array(
+      'logic' => 'and',
+      'plugins' => array(
+        0 => array(
+          'name' => 'role',
+          'settings' => array(
+            'rids' => array(
+              0 => 1,
+            ),
+          ),
+          'context' => 'logged-in-user',
+          'not' => FALSE,
+        ),
+      ),
+    ),
+  );
+  $display = new panels_display();
+  $display->layout = 'onecol_kms';
+  $display->layout_settings = array();
+  $display->panel_settings = array(
+    'style_settings' => array(
+      'default' => NULL,
+      'top' => NULL,
+      'main-content' => NULL,
+      'bottom' => NULL,
+    ),
+  );
+  $display->cache = array();
+  $display->title = '';
+  $display->content = array();
+  $display->panels = array();
+    $pane = new stdClass();
+    $pane->pid = 'new-17';
+    $pane->panel = 'main-content';
+    $pane->type = 'block';
+    $pane->subtype = 'user-login';
+    $pane->shown = TRUE;
+    $pane->access = array();
+    $pane->configuration = array(
+      'override_title' => 0,
+      'override_title_text' => '',
+    );
+    $pane->cache = array();
+    $pane->style = array(
+      'settings' => NULL,
+    );
+    $pane->css = array();
+    $pane->extras = array();
+    $pane->position = 0;
+    $pane->locks = array();
+    $display->content['new-17'] = $pane;
+    $display->panels['main-content'][0] = 'new-17';
+  $display->hide_title = PANELS_TITLE_FIXED;
+  $display->title_pane = '0';
+  $handler->conf['display'] = $display;
+  $page->default_handlers[$handler->name] = $handler;
   $pages['edit_user_profile'] = $page;
 
   $page = new stdClass();
@@ -649,7 +714,7 @@ function panel_edit_user_profile_default_page_manager_pages() {
   $display->content = array();
   $display->panels = array();
     $pane = new stdClass();
-    $pane->pid = 'new-17';
+    $pane->pid = 'new-18';
     $pane->panel = 'bottom';
     $pane->type = 'panels_mini';
     $pane->subtype = 'bottom';
@@ -682,10 +747,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 0;
     $pane->locks = array();
-    $display->content['new-17'] = $pane;
-    $display->panels['bottom'][0] = 'new-17';
+    $display->content['new-18'] = $pane;
+    $display->panels['bottom'][0] = 'new-18';
     $pane = new stdClass();
-    $pane->pid = 'new-18';
+    $pane->pid = 'new-19';
     $pane->panel = 'left';
     $pane->type = 'block';
     $pane->subtype = 'menu-menu-profile-menu';
@@ -703,10 +768,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 0;
     $pane->locks = array();
-    $display->content['new-18'] = $pane;
-    $display->panels['left'][0] = 'new-18';
+    $display->content['new-19'] = $pane;
+    $display->panels['left'][0] = 'new-19';
     $pane = new stdClass();
-    $pane->pid = 'new-19';
+    $pane->pid = 'new-20';
     $pane->panel = 'left';
     $pane->type = 'block';
     $pane->subtype = 'user-login';
@@ -724,10 +789,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 1;
     $pane->locks = array();
-    $display->content['new-19'] = $pane;
-    $display->panels['left'][1] = 'new-19';
+    $display->content['new-20'] = $pane;
+    $display->panels['left'][1] = 'new-20';
     $pane = new stdClass();
-    $pane->pid = 'new-20';
+    $pane->pid = 'new-21';
     $pane->panel = 'left';
     $pane->type = 'custom';
     $pane->subtype = 'custom';
@@ -750,10 +815,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 2;
     $pane->locks = array();
-    $display->content['new-20'] = $pane;
-    $display->panels['left'][2] = 'new-20';
+    $display->content['new-21'] = $pane;
+    $display->panels['left'][2] = 'new-21';
     $pane = new stdClass();
-    $pane->pid = 'new-21';
+    $pane->pid = 'new-22';
     $pane->panel = 'right';
     $pane->type = 'page_messages';
     $pane->subtype = 'page_messages';
@@ -768,10 +833,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 0;
     $pane->locks = array();
-    $display->content['new-21'] = $pane;
-    $display->panels['right'][0] = 'new-21';
+    $display->content['new-22'] = $pane;
+    $display->panels['right'][0] = 'new-22';
     $pane = new stdClass();
-    $pane->pid = 'new-22';
+    $pane->pid = 'new-23';
     $pane->panel = 'right';
     $pane->type = 'page_title';
     $pane->subtype = 'page_title';
@@ -792,17 +857,17 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 1;
     $pane->locks = array();
-    $display->content['new-22'] = $pane;
-    $display->panels['right'][1] = 'new-22';
+    $display->content['new-23'] = $pane;
+    $display->panels['right'][1] = 'new-23';
     $pane = new stdClass();
-    $pane->pid = 'new-23';
+    $pane->pid = 'new-24';
     $pane->panel = 'right';
     $pane->type = 'block';
     $pane->subtype = 'mailchimp_signup-newsletter';
     $pane->shown = TRUE;
     $pane->access = array();
     $pane->configuration = array(
-      'override_title' => 0,
+      'override_title' => 1,
       'override_title_text' => '',
     );
     $pane->cache = array();
@@ -813,10 +878,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 2;
     $pane->locks = array();
-    $display->content['new-23'] = $pane;
-    $display->panels['right'][2] = 'new-23';
+    $display->content['new-24'] = $pane;
+    $display->panels['right'][2] = 'new-24';
     $pane = new stdClass();
-    $pane->pid = 'new-24';
+    $pane->pid = 'new-25';
     $pane->panel = 'top';
     $pane->type = 'panels_mini';
     $pane->subtype = 'top';
@@ -846,8 +911,8 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 0;
     $pane->locks = array();
-    $display->content['new-24'] = $pane;
-    $display->panels['top'][0] = 'new-24';
+    $display->content['new-25'] = $pane;
+    $display->panels['top'][0] = 'new-25';
   $display->hide_title = PANELS_TITLE_FIXED;
   $display->title_pane = '0';
   $handler->conf['display'] = $display;
