@@ -1,0 +1,4 @@
+name = KMS user products and services
+core = 7.x
+package = KMS
+project path = profiles/kms/modules/custom
