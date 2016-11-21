@@ -462,5 +462,5 @@ function kms_update_7018(&$sandbox) {
  * @author Tom Helmer Hansen <tom@adapt.dk>
  */
 function kms_update_7019(&$sandbox) {
-  module_enable(array('mailchimp', 'mailchimp_signup', 'gst2_news'));
+  module_enable(array('mailchimp', 'mailchimp_signup', 'gst2_news', 'kms_pands', 'kms_services'));
 }

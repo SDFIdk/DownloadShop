@@ -1,0 +1,35 @@
+25832;UTM Zone 32 Euref89
+25833;UTM Zone 33 Euref89
+4093;DKTM1 - Vestjylland
+4094;DKTM2 - Østjylland og Fyn
+4095;DKTM3 - Sjælland
+4096;DKTM4 - Bornholm
+18401;KP2000 Jylland-Fyn
+18402;KP2000 Sjælland
+18403;KP2000 Bornholm
+23032;UTM Zone 32 (ED 50)
+23033;UTM Zone 33 (ED 50)
+34003;System 34 Jylland-Fyn
+34005;System 34 Sjælland
+45001;System 45 Bornholm
+25832;Afgrænset UTM zone 32 ETRS89
+25833;Afgrænset UTM zone 33 ETRS89
+4093;Afgrænset DKTM1 - Vestjylland
+4094;Afgrænset DKTM2 - Østjylland og Fyn
+4095;Afgrænset DKTM3 - Sjælland
+4096;Afgrænset DKTM4 - Bornholm
+18401;Afgrænset KP2000 Jylland-Fyn
+18402;Afgrænset KP2000 Sjælland
+18403;Afgrænset KP2000 Bornholm
+23032;Afgrænset UTM zone 32 (ED 50)
+23033;Afgrænset UTM zone 33 (ED 50)
+34003;Afgrænset system 34 Jylland-Fyn
+34005;Afgrænset system 34 Sjælland
+45001;Afgrænset system 45 Bornholm
+4322;Længde / bredde (WGS 72)
+4326;Længde / bredde (WGS 84)
+4258;Længde / bredde (ETRS89)
+32632;UTM32 WGS84
+32633;UTM33 WGS84
+3395;World Mercator WGS 84
+3857;Sfærisk Web Mercator (google, OSM) (kuglekoordinater) WGS 84

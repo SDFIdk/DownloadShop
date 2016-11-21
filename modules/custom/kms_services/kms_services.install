@@ -1,0 +1,45 @@
+<?php
+/**
+ * @file
+ * Code for the kms services module.
+ */
+
+/**
+ * Create custom form to store free service lists.
+ */
+function kms_services_install() {
+  if (!db_table_exists('kms_services')) {
+    drupal_install_schema('kms_services');
+  }
+}
+
+/**
+ * Define custom table schema for free services.
+ */
+function kms_services_schema() {
+  $schema['kms_services'] = array(
+    'fields' => array(
+      'id' => array(
+        'type' => 'serial',
+        'not null' => TRUE,
+      ),
+      'free_service' => array(
+        'type' => 'varchar',
+        'length' => 256,
+        'not null' => FALSE,
+        'default' => NULL,
+      ),
+    ),
+    'primary key' => array('id'),
+  );
+
+  return $schema;
+}
+
+function kms_services_update_7002() {
+  if (!db_table_exists('kms_services')) {
+    drupal_install_schema('kms_services');
+  }
+  module_load_include('inc', 'kms_services', 'inc/services');
+  kms_services_free_service_list_import();
+}
