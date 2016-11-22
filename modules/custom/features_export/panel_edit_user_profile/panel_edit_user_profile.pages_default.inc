@@ -527,7 +527,20 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->type = 'content';
     $pane->subtype = 'content';
     $pane->shown = TRUE;
-    $pane->access = array();
+    $pane->access = array(
+      'plugins' => array(
+        0 => array(
+          'name' => 'role',
+          'settings' => array(
+            'rids' => array(
+              0 => 9,
+            ),
+          ),
+          'context' => 'context_user_1',
+          'not' => TRUE,
+        ),
+      ),
+    );
     $pane->configuration = array(
       'bundle' => 'my_profile_info',
       'view_mode' => 'full',
@@ -549,6 +562,45 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $display->panels['left'][2] = 'new-13';
     $pane = new stdClass();
     $pane->pid = 'new-14';
+    $pane->panel = 'left';
+    $pane->type = 'content';
+    $pane->subtype = 'content';
+    $pane->shown = TRUE;
+    $pane->access = array(
+      'plugins' => array(
+        0 => array(
+          'name' => 'role',
+          'settings' => array(
+            'rids' => array(
+              0 => 9,
+            ),
+          ),
+          'context' => 'context_user_1',
+          'not' => FALSE,
+        ),
+      ),
+    );
+    $pane->configuration = array(
+      'bundle' => 'my_profile_info_subuser',
+      'view_mode' => 'full',
+      'context' => array(
+        0 => 'empty',
+      ),
+      'override_title' => 1,
+      'override_title_text' => 'Info',
+    );
+    $pane->cache = array();
+    $pane->style = array(
+      'settings' => NULL,
+    );
+    $pane->css = array();
+    $pane->extras = array();
+    $pane->position = 3;
+    $pane->locks = array();
+    $display->content['new-14'] = $pane;
+    $display->panels['left'][3] = 'new-14';
+    $pane = new stdClass();
+    $pane->pid = 'new-15';
     $pane->panel = 'right';
     $pane->type = 'page_messages';
     $pane->subtype = 'page_messages';
@@ -563,10 +615,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 0;
     $pane->locks = array();
-    $display->content['new-14'] = $pane;
-    $display->panels['right'][0] = 'new-14';
+    $display->content['new-15'] = $pane;
+    $display->panels['right'][0] = 'new-15';
     $pane = new stdClass();
-    $pane->pid = 'new-15';
+    $pane->pid = 'new-16';
     $pane->panel = 'right';
     $pane->type = 'page_title';
     $pane->subtype = 'page_title';
@@ -587,10 +639,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 1;
     $pane->locks = array();
-    $display->content['new-15'] = $pane;
-    $display->panels['right'][1] = 'new-15';
+    $display->content['new-16'] = $pane;
+    $display->panels['right'][1] = 'new-16';
     $pane = new stdClass();
-    $pane->pid = 'new-16';
+    $pane->pid = 'new-17';
     $pane->panel = 'right';
     $pane->type = 'kms_user_profile_pane';
     $pane->subtype = 'kms_user_profile_pane';
@@ -618,10 +670,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 2;
     $pane->locks = array();
-    $display->content['new-16'] = $pane;
-    $display->panels['right'][2] = 'new-16';
+    $display->content['new-17'] = $pane;
+    $display->panels['right'][2] = 'new-17';
     $pane = new stdClass();
-    $pane->pid = 'new-17';
+    $pane->pid = 'new-18';
     $pane->panel = 'right';
     $pane->type = 'info_subuser';
     $pane->subtype = 'info_subuser';
@@ -649,10 +701,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 3;
     $pane->locks = array();
-    $display->content['new-17'] = $pane;
-    $display->panels['right'][3] = 'new-17';
+    $display->content['new-18'] = $pane;
+    $display->panels['right'][3] = 'new-18';
     $pane = new stdClass();
-    $pane->pid = 'new-18';
+    $pane->pid = 'new-19';
     $pane->panel = 'top';
     $pane->type = 'panels_mini';
     $pane->subtype = 'top';
@@ -682,8 +734,8 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 0;
     $pane->locks = array();
-    $display->content['new-18'] = $pane;
-    $display->panels['top'][0] = 'new-18';
+    $display->content['new-19'] = $pane;
+    $display->panels['top'][0] = 'new-19';
   $display->hide_title = PANELS_TITLE_FIXED;
   $display->title_pane = '0';
   $handler->conf['display'] = $display;
@@ -742,7 +794,7 @@ function panel_edit_user_profile_default_page_manager_pages() {
   $display->content = array();
   $display->panels = array();
     $pane = new stdClass();
-    $pane->pid = 'new-19';
+    $pane->pid = 'new-20';
     $pane->panel = 'left';
     $pane->type = 'menu_tree';
     $pane->subtype = 'menu-profile-menu';
@@ -769,10 +821,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 0;
     $pane->locks = array();
-    $display->content['new-19'] = $pane;
-    $display->panels['left'][0] = 'new-19';
+    $display->content['new-20'] = $pane;
+    $display->panels['left'][0] = 'new-20';
     $pane = new stdClass();
-    $pane->pid = 'new-20';
+    $pane->pid = 'new-21';
     $pane->panel = 'left';
     $pane->type = 'block';
     $pane->subtype = 'user-login';
@@ -790,10 +842,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 1;
     $pane->locks = array();
-    $display->content['new-20'] = $pane;
-    $display->panels['left'][1] = 'new-20';
+    $display->content['new-21'] = $pane;
+    $display->panels['left'][1] = 'new-21';
     $pane = new stdClass();
-    $pane->pid = 'new-21';
+    $pane->pid = 'new-22';
     $pane->panel = 'left';
     $pane->type = 'content';
     $pane->subtype = 'content';
@@ -816,10 +868,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 2;
     $pane->locks = array();
-    $display->content['new-21'] = $pane;
-    $display->panels['left'][2] = 'new-21';
+    $display->content['new-22'] = $pane;
+    $display->panels['left'][2] = 'new-22';
     $pane = new stdClass();
-    $pane->pid = 'new-22';
+    $pane->pid = 'new-23';
     $pane->panel = 'right';
     $pane->type = 'page_title';
     $pane->subtype = 'page_title';
@@ -840,10 +892,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 0;
     $pane->locks = array();
-    $display->content['new-22'] = $pane;
-    $display->panels['right'][0] = 'new-22';
+    $display->content['new-23'] = $pane;
+    $display->panels['right'][0] = 'new-23';
     $pane = new stdClass();
-    $pane->pid = 'new-23';
+    $pane->pid = 'new-24';
     $pane->panel = 'right';
     $pane->type = 'page_messages';
     $pane->subtype = 'page_messages';
@@ -858,10 +910,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 1;
     $pane->locks = array();
-    $display->content['new-23'] = $pane;
-    $display->panels['right'][1] = 'new-23';
+    $display->content['new-24'] = $pane;
+    $display->panels['right'][1] = 'new-24';
     $pane = new stdClass();
-    $pane->pid = 'new-24';
+    $pane->pid = 'new-25';
     $pane->panel = 'right';
     $pane->type = 'kms_pands_products';
     $pane->subtype = 'kms_pands_products';
@@ -876,10 +928,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 2;
     $pane->locks = array();
-    $display->content['new-24'] = $pane;
-    $display->panels['right'][2] = 'new-24';
+    $display->content['new-25'] = $pane;
+    $display->panels['right'][2] = 'new-25';
     $pane = new stdClass();
-    $pane->pid = 'new-25';
+    $pane->pid = 'new-26';
     $pane->panel = 'top';
     $pane->type = 'panels_mini';
     $pane->subtype = 'top';
@@ -897,8 +949,8 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 0;
     $pane->locks = array();
-    $display->content['new-25'] = $pane;
-    $display->panels['top'][0] = 'new-25';
+    $display->content['new-26'] = $pane;
+    $display->panels['top'][0] = 'new-26';
   $display->hide_title = PANELS_TITLE_FIXED;
   $display->title_pane = '0';
   $handler->conf['display'] = $display;
@@ -983,7 +1035,7 @@ function panel_edit_user_profile_default_page_manager_pages() {
   $display->content = array();
   $display->panels = array();
     $pane = new stdClass();
-    $pane->pid = 'new-26';
+    $pane->pid = 'new-27';
     $pane->panel = 'bottom';
     $pane->type = 'panels_mini';
     $pane->subtype = 'bottom';
@@ -1016,10 +1068,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 0;
     $pane->locks = array();
-    $display->content['new-26'] = $pane;
-    $display->panels['bottom'][0] = 'new-26';
+    $display->content['new-27'] = $pane;
+    $display->panels['bottom'][0] = 'new-27';
     $pane = new stdClass();
-    $pane->pid = 'new-27';
+    $pane->pid = 'new-28';
     $pane->panel = 'left';
     $pane->type = 'block';
     $pane->subtype = 'menu-menu-profile-menu';
@@ -1037,10 +1089,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 0;
     $pane->locks = array();
-    $display->content['new-27'] = $pane;
-    $display->panels['left'][0] = 'new-27';
+    $display->content['new-28'] = $pane;
+    $display->panels['left'][0] = 'new-28';
     $pane = new stdClass();
-    $pane->pid = 'new-28';
+    $pane->pid = 'new-29';
     $pane->panel = 'left';
     $pane->type = 'block';
     $pane->subtype = 'user-login';
@@ -1058,10 +1110,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 1;
     $pane->locks = array();
-    $display->content['new-28'] = $pane;
-    $display->panels['left'][1] = 'new-28';
+    $display->content['new-29'] = $pane;
+    $display->panels['left'][1] = 'new-29';
     $pane = new stdClass();
-    $pane->pid = 'new-29';
+    $pane->pid = 'new-30';
     $pane->panel = 'left';
     $pane->type = 'content';
     $pane->subtype = 'content';
@@ -1084,10 +1136,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 2;
     $pane->locks = array();
-    $display->content['new-29'] = $pane;
-    $display->panels['left'][2] = 'new-29';
+    $display->content['new-30'] = $pane;
+    $display->panels['left'][2] = 'new-30';
     $pane = new stdClass();
-    $pane->pid = 'new-30';
+    $pane->pid = 'new-31';
     $pane->panel = 'right';
     $pane->type = 'page_messages';
     $pane->subtype = 'page_messages';
@@ -1102,10 +1154,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 0;
     $pane->locks = array();
-    $display->content['new-30'] = $pane;
-    $display->panels['right'][0] = 'new-30';
+    $display->content['new-31'] = $pane;
+    $display->panels['right'][0] = 'new-31';
     $pane = new stdClass();
-    $pane->pid = 'new-31';
+    $pane->pid = 'new-32';
     $pane->panel = 'right';
     $pane->type = 'page_title';
     $pane->subtype = 'page_title';
@@ -1126,10 +1178,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 1;
     $pane->locks = array();
-    $display->content['new-31'] = $pane;
-    $display->panels['right'][1] = 'new-31';
+    $display->content['new-32'] = $pane;
+    $display->panels['right'][1] = 'new-32';
     $pane = new stdClass();
-    $pane->pid = 'new-32';
+    $pane->pid = 'new-33';
     $pane->panel = 'right';
     $pane->type = 'block';
     $pane->subtype = 'mailchimp_signup-newsletter';
@@ -1147,10 +1199,10 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 2;
     $pane->locks = array();
-    $display->content['new-32'] = $pane;
-    $display->panels['right'][2] = 'new-32';
+    $display->content['new-33'] = $pane;
+    $display->panels['right'][2] = 'new-33';
     $pane = new stdClass();
-    $pane->pid = 'new-33';
+    $pane->pid = 'new-34';
     $pane->panel = 'top';
     $pane->type = 'panels_mini';
     $pane->subtype = 'top';
@@ -1180,8 +1232,8 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 0;
     $pane->locks = array();
-    $display->content['new-33'] = $pane;
-    $display->panels['top'][0] = 'new-33';
+    $display->content['new-34'] = $pane;
+    $display->panels['top'][0] = 'new-34';
   $display->hide_title = PANELS_TITLE_FIXED;
   $display->title_pane = '0';
   $handler->conf['display'] = $display;
