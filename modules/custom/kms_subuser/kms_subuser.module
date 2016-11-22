@@ -420,18 +420,29 @@ function theme_subuser_add_user_popup($vars) {
  *   HTML.
  */
 function theme_subuser_info($vars) {
-  $mw = entity_metadata_wrapper('user', $vars['master']);
-  $uw = entity_metadata_wrapper('user', $vars['user']);
-  $output  = '<div class="user-info">';
-  $output .= '<div class="master-info">' . t('Your account is a sub-account to @master', 
-    array('@master' => $mw->field_address->first_name->value() . ' ' . $mw->field_address->last_name->value() . ' (' . $mw->name->value())) 
-    . ')</div>';
+  $mw      = entity_metadata_wrapper('user', $vars['master']);
+  $uw      = entity_metadata_wrapper('user', $vars['user']);
+  $output  = '<div><div class="master-info">';
+  $output .= '<div class="subuser-notice">'
+          . t('Your are logged is as @user which is a sub-account to master-account @master',
+            array('@user' => $uw->name->value(), '@master' => $mw->name->value()))
+          . '</div>';
+
+  $output .= '<div class="title">' . t('Contact information for master-account') . '</div>';
+  $output .= kms_subuser_info_row(t('E-Mail'), $mw->mail->value());
+  $output .= kms_subuser_info_row(t('First name'), $mw->field_address->first_name->value());
+  $output .= kms_subuser_info_row(t('Last name'), $mw->field_address->last_name->value());
+  $output .= kms_subuser_info_row(t('Phone'), $mw->field_phone->value());
+  $output .= '</div>';
+
+  $output .= '<div class="user-info">';
+  $output .= '<div class="title">' . t('Your profile information') . '</div>';
   $output .= kms_subuser_info_row(t('Username'), $uw->name->value());
   $output .= kms_subuser_info_row(t('E-Mail'), $uw->mail->value());
   $output .= kms_subuser_info_row(t('First name'), $uw->field_address->first_name->value());
   $output .= kms_subuser_info_row(t('Last name'), $uw->field_address->last_name->value());
   $output .= kms_subuser_info_row(t('Phone'), $uw->field_phone->value());
-  $output .= '</div>';
+  $output .= '</div></div>';
   return $output;
 }
 
