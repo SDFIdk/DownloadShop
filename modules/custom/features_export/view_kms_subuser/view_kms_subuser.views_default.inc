@@ -165,6 +165,72 @@ function view_kms_subuser_views_default_views() {
   $handler->display->display_options['defaults']['link_display'] = FALSE;
   $handler->display->display_options['link_display'] = 'custom_url';
   $handler->display->display_options['link_url'] = 'edit/profile';
+  $handler->display->display_options['defaults']['fields'] = FALSE;
+  /* Field: User: Name */
+  $handler->display->display_options['fields']['name']['id'] = 'name';
+  $handler->display->display_options['fields']['name']['table'] = 'users';
+  $handler->display->display_options['fields']['name']['field'] = 'name';
+  $handler->display->display_options['fields']['name']['label'] = 'Brugernavn';
+  $handler->display->display_options['fields']['name']['alter']['word_boundary'] = FALSE;
+  $handler->display->display_options['fields']['name']['alter']['ellipsis'] = FALSE;
+  $handler->display->display_options['fields']['name']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['name']['link_to_user'] = FALSE;
+  /* Field: User: Udløbsdato */
+  $handler->display->display_options['fields']['field_expire_date']['id'] = 'field_expire_date';
+  $handler->display->display_options['fields']['field_expire_date']['table'] = 'field_data_field_expire_date';
+  $handler->display->display_options['fields']['field_expire_date']['field'] = 'field_expire_date';
+  $handler->display->display_options['fields']['field_expire_date']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['field_expire_date']['settings'] = array(
+    'format_type' => 'subuser_date',
+    'fromto' => 'both',
+    'multiple_number' => '',
+    'multiple_from' => '',
+    'multiple_to' => '',
+  );
+  /* Field: User: Address - Full name */
+  $handler->display->display_options['fields']['field_address_name_line']['id'] = 'field_address_name_line';
+  $handler->display->display_options['fields']['field_address_name_line']['table'] = 'field_data_field_address';
+  $handler->display->display_options['fields']['field_address_name_line']['field'] = 'field_address_name_line';
+  $handler->display->display_options['fields']['field_address_name_line']['label'] = 'Navn';
+  $handler->display->display_options['fields']['field_address_name_line']['element_type'] = '0';
+  $handler->display->display_options['fields']['field_address_name_line']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['field_address_name_line']['element_wrapper_type'] = '0';
+  $handler->display->display_options['fields']['field_address_name_line']['element_default_classes'] = FALSE;
+  /* Field: User: Aktiv */
+  $handler->display->display_options['fields']['status']['id'] = 'status';
+  $handler->display->display_options['fields']['status']['table'] = 'users';
+  $handler->display->display_options['fields']['status']['field'] = 'status';
+  $handler->display->display_options['fields']['status']['label'] = 'Status';
+  $handler->display->display_options['fields']['status']['type'] = 'active-blocked';
+  $handler->display->display_options['fields']['status']['not'] = 0;
+  /* Field: uid - needed by the edit/delete actions */
+  $handler->display->display_options['fields']['uid']['id'] = 'uid';
+  $handler->display->display_options['fields']['uid']['table'] = 'users';
+  $handler->display->display_options['fields']['uid']['field'] = 'uid';
+  $handler->display->display_options['fields']['uid']['ui_name'] = 'uid - needed by the edit/delete actions';
+  $handler->display->display_options['fields']['uid']['label'] = '';
+  $handler->display->display_options['fields']['uid']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['uid']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['uid']['link_to_user'] = FALSE;
+  /* Field: Global: Custom text */
+  $handler->display->display_options['fields']['nothing_1']['id'] = 'nothing_1';
+  $handler->display->display_options['fields']['nothing_1']['table'] = 'views';
+  $handler->display->display_options['fields']['nothing_1']['field'] = 'nothing';
+  $handler->display->display_options['fields']['nothing_1']['label'] = 'Rediger';
+  $handler->display->display_options['fields']['nothing_1']['alter']['text'] = 'edit';
+  $handler->display->display_options['fields']['nothing_1']['alter']['make_link'] = TRUE;
+  $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/kms-subuser/nojs/[uid]/update';
+  $handler->display->display_options['fields']['nothing_1']['alter']['link_class'] = 'ctools-use-modal';
+  $handler->display->display_options['fields']['nothing_1']['alter']['strip_tags'] = TRUE;
+  /* Field: Global: Custom text */
+  $handler->display->display_options['fields']['nothing']['id'] = 'nothing';
+  $handler->display->display_options['fields']['nothing']['table'] = 'views';
+  $handler->display->display_options['fields']['nothing']['field'] = 'nothing';
+  $handler->display->display_options['fields']['nothing']['label'] = 'Slet';
+  $handler->display->display_options['fields']['nothing']['alter']['text'] = 'delete';
+  $handler->display->display_options['fields']['nothing']['alter']['make_link'] = TRUE;
+  $handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/kms-subuser/nojs/[uid]/cancel';
+  $handler->display->display_options['fields']['nothing']['alter']['link_class'] = 'ctools-use-modal';
   $handler->display->display_options['block_description'] = 'Subusers';
   $translatables['kms_subuser'] = array(
     t('Master'),
@@ -190,6 +256,7 @@ function view_kms_subuser_views_default_views() {
     t('All'),
     t('Page'),
     t('Block'),
+    t('Navn'),
   );
   $export['kms_subuser'] = $view;
 
