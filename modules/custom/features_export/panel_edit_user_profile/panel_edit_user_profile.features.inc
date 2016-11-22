@@ -76,6 +76,22 @@ function panel_edit_user_profile_default_config_pages_type() {
     "metatags" : [],
     "rdf_mapping" : []
   }');
+  $items['my_subscriptions_rss'] = entity_import('config_pages_type', '{
+    "type" : "my_subscriptions_rss",
+    "label" : "My subscriptions RSS",
+    "weight" : "0",
+    "data" : {
+      "menu" : { "path" : "admin\\/config\\/people\\/my-subscriptions-rss", "type" : "6" },
+      "context" : { "group" : {
+          "config_pages:language" : 0,
+          "config_pages:host" : 0,
+          "config_pages:domain" : 0
+        }
+      }
+    },
+    "metatags" : [],
+    "rdf_mapping" : []
+  }');
   $items['my_subusers_info'] = entity_import('config_pages_type', '{
     "type" : "my_subusers_info",
     "label" : "My subusers info",

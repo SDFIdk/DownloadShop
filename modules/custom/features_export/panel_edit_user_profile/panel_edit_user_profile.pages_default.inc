@@ -1215,6 +1215,35 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $display->panels['right'][2] = 'new-33';
     $pane = new stdClass();
     $pane->pid = 'new-34';
+    $pane->panel = 'right';
+    $pane->type = 'content';
+    $pane->subtype = 'content';
+    $pane->shown = TRUE;
+    $pane->access = array();
+    $pane->configuration = array(
+      'bundle' => 'my_subscriptions_rss',
+      'view_mode' => 'full',
+      'context' => array(
+        0 => 'empty',
+      ),
+      'override_title' => 0,
+      'override_title_text' => '',
+    );
+    $pane->cache = array();
+    $pane->style = array(
+      'settings' => NULL,
+    );
+    $pane->css = array(
+      'css_id' => '',
+      'css_class' => 'feeds',
+    );
+    $pane->extras = array();
+    $pane->position = 3;
+    $pane->locks = array();
+    $display->content['new-34'] = $pane;
+    $display->panels['right'][3] = 'new-34';
+    $pane = new stdClass();
+    $pane->pid = 'new-35';
     $pane->panel = 'top';
     $pane->type = 'panels_mini';
     $pane->subtype = 'top';
@@ -1244,8 +1273,8 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->extras = array();
     $pane->position = 0;
     $pane->locks = array();
-    $display->content['new-34'] = $pane;
-    $display->panels['top'][0] = 'new-34';
+    $display->content['new-35'] = $pane;
+    $display->panels['top'][0] = 'new-35';
   $display->hide_title = PANELS_TITLE_FIXED;
   $display->title_pane = '0';
   $handler->conf['display'] = $display;
