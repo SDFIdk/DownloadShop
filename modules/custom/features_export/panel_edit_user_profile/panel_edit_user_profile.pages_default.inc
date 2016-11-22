@@ -936,7 +936,19 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->type = 'panels_mini';
     $pane->subtype = 'top';
     $pane->shown = TRUE;
-    $pane->access = array();
+    $pane->access = array(
+      'plugins' => array(
+        0 => array(
+          'name' => 'path_visibility',
+          'settings' => array(
+            'visibility_setting' => '1',
+            'paths' => '*/iframe',
+          ),
+          'context' => 'empty',
+          'not' => TRUE,
+        ),
+      ),
+    );
     $pane->configuration = array(
       'override_title' => 0,
       'override_title_text' => '',
