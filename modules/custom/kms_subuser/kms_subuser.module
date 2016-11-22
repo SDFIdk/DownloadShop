@@ -201,7 +201,8 @@ function kms_subuser_insert_form_submit(&$form, &$form_state) {
   $values = $form_state['values'];
   $name = trim($values['name']);
   $pass = trim($values['pass']);
-  $mail = empty(trim($values['mail'])) ? KMS_SUBUSER_FAKE_MAIL : trim($values['mail']);
+  $trimmed_mail = trim($values['mail']);
+  $mail = empty($trimmed_mail) ? KMS_SUBUSER_FAKE_MAIL : $trimmed_mail;
 
   $subuser = array(
     'name' => $name,
