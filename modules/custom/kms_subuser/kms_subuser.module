@@ -112,9 +112,10 @@ function kms_subuser_form($form, &$form_state, $master_user, $mode = 'insert') {
   $form['user_pass'] = array(
     '#type' => 'container',
     '#attributes' => array(
-      'class' => array('user-pass-wrapper'),
+      'class' => array('user-pass-wrapper form-row'),
     ),
   );
+ 
   $form['user_pass']['name'] = array(
     '#type' => 'textfield',
     '#title' => t('Username'),
@@ -123,6 +124,7 @@ function kms_subuser_form($form, &$form_state, $master_user, $mode = 'insert') {
     '#required' => TRUE,
     '#element_validate' => array('_kms_user_validate_username'),
   );
+
   $form['user_pass']['pass'] = array(
     '#type' => 'textfield',
     '#size' => 16,
@@ -130,6 +132,35 @@ function kms_subuser_form($form, &$form_state, $master_user, $mode = 'insert') {
     '#title' => t('Password'),
     '#required' => TRUE,
   );
+
+  $form['first_name'] = array(
+    '#prefix' => '<div class="form-row">',
+    '#type' => 'textfield',
+    '#title' => t('First name'),
+    '#size' => 20
+  );
+
+  $form['last_name'] = array(
+    '#suffix' => '</div>',
+    '#type' => 'textfield',
+    '#title' => t('Last name'),
+    '#size' => 20
+  );
+
+  $form['mail'] = array(
+    '#prefix' => '<div class="form-row">',
+    '#type' => 'textfield',
+    '#title' => t('Email address'),
+    '#size' => 20
+  );
+
+  $form['phone'] = array(
+    '#suffix' => '</div>',
+    '#type' => 'textfield',
+    '#title' => t('Phone number'),
+    '#size' => 20
+  );
+
   $form['user_expire'] = array(
     '#title' => t('Expire date'),
     '#type' => 'date_popup',
@@ -170,11 +201,12 @@ function kms_subuser_insert_form_submit(&$form, &$form_state) {
   $values = $form_state['values'];
   $name = trim($values['name']);
   $pass = trim($values['pass']);
+  $mail = trim($values['mail']);
 
   $subuser = array(
     'name' => $name,
     'pass' => $pass,
-    'mail' => KMS_SUBUSER_FAKE_MAIL,
+    'mail' => $mail,
     'init' => KMS_SUBUSER_FAKE_MAIL,
     'status' => 1,
     'access' => REQUEST_TIME,
@@ -236,6 +268,23 @@ function kms_subuser_update_form_submit(&$form, &$form_state) {
     $suwrapper->name->set($values['name']);
     $data['user']['name'] = $values['name'];
   }
+
+  // Set mail, fallback to fake email address if empty.
+  if (!empty($values['mail'])) {
+    $suwrapper->mail->set($values['mail']);
+  } else {
+    $suwrapper->mail->set(KMS_SUBUSER_FAKE_MAIL);
+  }
+
+  // Set phone number, can be empty.
+  $suwrapper->field_phone->set($values['phone']);
+
+  // Set first name, can be empty.
+  $suwrapper->field_address->first_name->set($values['first_name']);
+
+  // Set last name, can be empty.
+  $suwrapper->field_address->last_name->set($values['last_name']);
+
   // Set user remark.
   if (!empty($values['user_remark'])) {
     $suwrapper->field_user_remark->set($values['user_remark']);
@@ -1117,7 +1166,6 @@ function kms_subuser_update_form($form, &$form_state, $subuser) {
 
   // Delete unwanted form data.
   unset(
-    // $form['add_subuser'],
     $form['user_pass']['name']['#states'],
     $form['user_pass']['pass']['#states'],
     $form['user_expire']['#states'],
@@ -1147,6 +1195,28 @@ function kms_subuser_update_form($form, &$form_state, $subuser) {
     $form['user_remark']['#default_value']
       = $subuser->field_user_remark[LANGUAGE_NONE][0]['value'];
   }
+
+  // First name.
+  if (!empty($subuser->field_address[LANGUAGE_NONE][0]['first_name'])) {
+    $form['first_name']['#default_value']
+      = $subuser->field_address[LANGUAGE_NONE][0]['first_name'];
+  }
+
+  // Last name.
+  if (!empty($subuser->field_address[LANGUAGE_NONE][0]['last_name'])) {
+    $form['last_name']['#default_value']
+      = $subuser->field_address[LANGUAGE_NONE][0]['last_name'];
+  }
+
+  // User phone number.
+  if (!empty($subuser->field_phone[LANGUAGE_NONE][0]['value'])) {
+    $form['phone']['#default_value']
+      = $subuser->field_phone[LANGUAGE_NONE][0]['value'];
+  }
+
+  // User mail.
+  $form['mail']['#default_value'] = $subuser->mail == KMS_SUBUSER_FAKE_MAIL ? '' : $subuser->mail;
+
   // Change submit handler.
   $form['#submit'] = array('kms_subuser_update_form_submit');
   return $form;
