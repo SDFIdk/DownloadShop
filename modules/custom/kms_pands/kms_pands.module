@@ -58,7 +58,6 @@ function kms_pands_get_services() {
     'login' => $userObj->name->value(),
     'password' => $userObj->field_pass_clear->value(),
   )));
-
   libxml_use_internal_errors(TRUE);
   $xml = simplexml_load_file($url);
   if ($xml === FALSE) {

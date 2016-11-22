@@ -1140,7 +1140,6 @@ function kms_user_vbo_add_access_bundles(&$account, $context = array()) {
   }
 }
 
-
 /**
  * Clear all access bundles from a user.
  *
