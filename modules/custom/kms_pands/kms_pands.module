@@ -33,6 +33,7 @@ function kms_pands_get_products() {
     'login' => $userObj->name->value(),
     'password' => $userObj->field_pass_clear->value()
   )));
+  $url = preg_replace('/&amp;/', '&', $url);
   $result = file_get_contents($url);
   $data = json_decode($result);
 
