@@ -201,13 +201,13 @@ function kms_subuser_insert_form_submit(&$form, &$form_state) {
   $values = $form_state['values'];
   $name = trim($values['name']);
   $pass = trim($values['pass']);
-  $mail = trim($values['mail']);
+  $mail = empty(trim($values['mail'])) ? KMS_SUBUSER_FAKE_MAIL : trim($values['mail']);
 
   $subuser = array(
     'name' => $name,
     'pass' => $pass,
     'mail' => $mail,
-    'init' => KMS_SUBUSER_FAKE_MAIL,
+    'init' => $mail,
     'status' => 1,
     'access' => REQUEST_TIME,
     'roles' => kms_subuser_default_roles(),
