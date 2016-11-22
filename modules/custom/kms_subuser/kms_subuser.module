@@ -420,75 +420,23 @@ function theme_subuser_add_user_popup($vars) {
  *   HTML.
  */
 function theme_subuser_info($vars) {
-  $master_user = $vars['master_user'];
+  $mw = entity_metadata_wrapper('user', $vars['master']);
+  $uw = entity_metadata_wrapper('user', $vars['user']);
+  $output  = '<div class="user-info">';
+  $output .= '<div class="master-info">' . t('Your account is a sub-account to @master', 
+    array('@master' => $mw->field_address->first_name->value() . ' ' . $mw->field_address->last_name->value() . ' (' . $mw->name->value())) 
+    . ')</div>';
+  $output .= kms_subuser_info_row(t('Username'), $uw->name->value());
+  $output .= kms_subuser_info_row(t('E-Mail'), $uw->mail->value());
+  $output .= kms_subuser_info_row(t('First name'), $uw->field_address->first_name->value());
+  $output .= kms_subuser_info_row(t('Last name'), $uw->field_address->last_name->value());
+  $output .= kms_subuser_info_row(t('Phone'), $uw->field_phone->value());
+  $output .= '</div>';
+  return $output;
+}
 
-  $uwrapper = entity_metadata_wrapper('user', $master_user);
-//  $module_path = drupal_get_path('module', 'kms_subuser');
-
-  $output = array(
-    '#type' => 'container',
-    '#attributes' => array(
-      'id' => array('subuser-info'),
-    ),
-    'firstname' => array(
-      'label' => array(
-        '#markup' => t('First name'),
-      ),
-      'value' => array(
-        '#markup' => $uwrapper->field_address->first_name->value(),
-      ),
-    ),
-    'lastname' => array(
-      'label' => array(
-        '#markup' => t('Last name'),
-      ),
-      'value' => array(
-        '#markup' => $uwrapper->field_address->last_name->value(),
-      ),
-    ),
-    'usertype' => array(
-      'label' => array(
-        '#markup' => t('Company'),
-      ),
-      'value' => array(
-        '#markup' => implode(', ', _kms_csv_user_types($uwrapper)),
-      ),
-    ),
-    'phone' => array(
-      'label' => array(
-        '#markup' => t('Phone'),
-      ),
-      'value' => array(
-        '#markup' => $uwrapper->field_phone->value(),
-      ),
-    ),
-    'mail' => array(
-      'label' => array(
-        '#markup' => t('Mail'),
-      ),
-      'value' => array(
-        '#markup' => $uwrapper->mail->value(),
-      ),
-    ),
-  );
-
-  array_walk($output, function(&$el) {
-    if (!is_array($el)) {
-      return;
-    }
-    if (array_key_exists('label', $el)) {
-      $el['label']['#type'] = 'markup';
-      $el['label']['#prefix'] = '<label>';
-      $el['label']['#suffix'] = ':</label>';
-    }
-    if (array_key_exists('value', $el)) {
-      $el['value']['#type'] = 'markup';
-      $el['value']['#prefix'] = '<p>';
-      $el['value']['#suffix'] = '</p>';
-    }
-  });
-
-  return drupal_render($output);
+function kms_subuser_info_row($fn, $fv) {
+  return '<div><div class="label">' . $fn . '</div><div>' . $fv . '</div></div>';
 }
 
 /**

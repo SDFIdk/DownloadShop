@@ -41,6 +41,25 @@ function panel_edit_user_profile_default_config_pages_type() {
     "metatags" : [],
     "rdf_mapping" : []
   }');
+  $items['my_profile_info_subuser'] = entity_import('config_pages_type', '{
+    "type" : "my_profile_info_subuser",
+    "label" : "My profile info (subuser)",
+    "weight" : "0",
+    "data" : {
+      "menu" : {
+        "path" : "admin\\/config\\/people\\/my-profile-info-subuser",
+        "type" : "6"
+      },
+      "context" : { "group" : {
+          "config_pages:language" : 0,
+          "config_pages:host" : 0,
+          "config_pages:domain" : 0
+        }
+      }
+    },
+    "metatags" : [],
+    "rdf_mapping" : []
+  }');
   $items['my_subscriptions_info'] = entity_import('config_pages_type', '{
     "type" : "my_subscriptions_info",
     "label" : "My subscriptions info",

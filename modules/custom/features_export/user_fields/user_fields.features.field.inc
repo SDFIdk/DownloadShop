@@ -227,19 +227,7 @@ function user_fields_field_default_fields() {
     ),
     'field_instance' => array(
       'bundle' => 'user',
-      'default_value' => array(
-        0 => array(
-          'element_key' => 'user|user|field_address|und|0',
-          'thoroughfare' => '',
-          'premise' => '',
-          'postal_code' => '',
-          'locality' => '',
-          'country' => 'DK',
-          'organisation_name' => '',
-          'first_name' => '',
-          'last_name' => '',
-        ),
-      ),
+      'default_value' => NULL,
       'deleted' => '0',
       'description' => '',
       'display' => array(
@@ -273,10 +261,14 @@ function user_fields_field_default_fields() {
             'SE' => 'SE',
             'US' => 'US',
           ),
+          'default_country' => '',
           'format_handlers' => array(
             'address' => 'address',
             'organisation' => 'organisation',
             'name-full' => 'name-full',
+            'address-optional' => 'address-optional',
+            'address-hide-postal-code' => 0,
+            'address-hide-street' => 0,
             'address-hide-country' => 0,
             'name-oneline' => 0,
           ),
@@ -365,16 +357,7 @@ function user_fields_field_default_fields() {
     ),
     'field_instance' => array(
       'bundle' => 'user',
-      'default_value' => array(
-        0 => array(
-          'element_key' => 'user|user|field_billing_address|und|0',
-          'thoroughfare' => '',
-          'premise' => '',
-          'postal_code' => '',
-          'locality' => '',
-          'country' => 'DK',
-        ),
-      ),
+      'default_value' => NULL,
       'deleted' => '0',
       'description' => '',
       'display' => array(
@@ -405,9 +388,13 @@ function user_fields_field_default_fields() {
           'available_countries' => array(
             'DK' => 'DK',
           ),
+          'default_country' => '',
           'format_handlers' => array(
             'address' => 'address',
             'address-hide-country' => 'address-hide-country',
+            'address-optional' => 'address-optional',
+            'address-hide-postal-code' => 0,
+            'address-hide-street' => 0,
             'organisation' => 0,
             'name-full' => 0,
             'name-oneline' => 0,

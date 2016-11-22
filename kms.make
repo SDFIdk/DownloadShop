@@ -67,7 +67,7 @@ projects[subuser][type] = "module"
 
 ;addressfield
 projects[addressfield][subdir] = "contrib"
-projects[addressfield][version] = "1.0-beta3"
+projects[addressfield][version] = "1.2"
 projects[addressfield][type] = "module"
 
 ;admin_menu
