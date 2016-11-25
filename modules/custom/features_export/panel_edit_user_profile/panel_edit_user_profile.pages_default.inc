@@ -142,7 +142,7 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->access = array();
     $pane->configuration = array(
       'override_title' => 1,
-      'override_title_text' => 'Brugeroplysninger',
+      'override_title_text' => 'Menu',
     );
     $pane->cache = array();
     $pane->style = array(
@@ -488,7 +488,7 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->access = array();
     $pane->configuration = array(
       'override_title' => 1,
-      'override_title_text' => 'Brugeroplysninger',
+      'override_title_text' => 'Menu',
     );
     $pane->cache = array();
     $pane->style = array(
@@ -810,8 +810,8 @@ function panel_edit_user_profile_default_page_manager_pages() {
       'depth' => 0,
       'expanded' => 0,
       'sort' => 0,
-      'override_title' => 0,
-      'override_title_text' => '',
+      'override_title' => 1,
+      'override_title_text' => 'Menu',
     );
     $pane->cache = array();
     $pane->style = array(
@@ -1091,7 +1091,7 @@ function panel_edit_user_profile_default_page_manager_pages() {
     $pane->access = array();
     $pane->configuration = array(
       'override_title' => 1,
-      'override_title_text' => 'Brugeroplysninger',
+      'override_title_text' => 'Menu',
     );
     $pane->cache = array();
     $pane->style = array(

@@ -227,13 +227,19 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
         ->execute()
         ->fetchAssoc();
         $form['field_contact_me'][LANGUAGE_NONE]['#default_value'] = $user_contact_me['field_contact_me_value'];
-
+        
+        /*
         $user_newsletter = db_select('field_data_field_newsletter', 'news')
         ->fields('news', array('field_newsletter_value'))
         ->condition('entity_id', $form['#user']->uid, '=')
         ->execute()
         ->fetchAssoc();
         $form['field_newsletter'][LANGUAGE_NONE]['#default_value'] = $user_newsletter['field_newsletter_value'];
+        */
+       
+        // Newsletters are moved to mailchimp.
+        // This field should be removed entirely.
+        $form['field_newsletter']['#access'] = FALSE;
 
         // No one should be able to change clear text password in admin area.
         $form['field_pass_clear']['#disabled'] = TRUE;
