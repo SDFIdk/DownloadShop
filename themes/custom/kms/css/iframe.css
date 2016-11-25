@@ -1,7 +1,7 @@
 /* line 1, ../sass/iframe.scss */
 body.page-edit-profile {
   background: none;
-  min-width: 900px;
+  min-width: 0;
 }
 /* line 5, ../sass/iframe.scss */
 body.page-edit-profile #page {
