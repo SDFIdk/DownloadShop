@@ -1970,6 +1970,7 @@ body.page-edit-profile {
     }
 
     #subuser-view-wrapper {
+      margin-top: 20px;
 
       input[type="text"] {
         width: 300px;
@@ -1988,6 +1989,18 @@ body.page-edit-profile {
 
           th:nth-last-child(-n+2) {
             width: 50px;
+          }
+
+          td:nth-last-child(1) {
+            a {
+              color: #c00;
+            }
+          }
+
+          td:nth-last-child(2) {
+            a {
+              color: #0c0;
+            }
           }
         }
 

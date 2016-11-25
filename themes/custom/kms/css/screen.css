@@ -2168,7 +2168,11 @@ body.page-edit-profile.page-edit-profile-subuser #subuser-popup button {
 body.page-edit-profile.page-edit-profile-subuser #subuser-popup p {
   display: inline-block;
 }
-/* line 1974, ../sass/screen.scss */
+/* line 1972, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper {
+  margin-top: 20px;
+}
+/* line 1975, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper input[type="text"] {
   width: 300px;
   padding: 5px 10px;
@@ -2177,38 +2181,46 @@ body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper input[typ
   border: 1px solid #ccc;
   border-radius: 5px;
 }
-/* line 1983, ../sass/screen.scss */
+/* line 1984, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper table {
   table-layout: fixed;
   width: 100%;
 }
-/* line 1989, ../sass/screen.scss */
+/* line 1990, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper table tr th:nth-last-child(-n+2) {
   width: 50px;
 }
-/* line 1994, ../sass/screen.scss */
+/* line 1995, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper table tr td:nth-last-child(1) a {
+  color: #c00;
+}
+/* line 2001, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper table tr td:nth-last-child(2) a {
+  color: #0c0;
+}
+/* line 2007, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper table th {
   background: #f1f3eb;
   padding: 10px 15px;
   text-align: left;
 }
-/* line 2000, ../sass/screen.scss */
+/* line 2013, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper table td {
   border-bottom: 1px solid #000;
   padding: 10px 15px;
   text-align: left;
 }
-/* line 2010, ../sass/screen.scss */
+/* line 2023, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content {
   height: 600px;
 }
-/* line 2013, ../sass/screen.scss */
+/* line 2026, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-header {
   background-color: #fff;
   padding: 20px;
   color: #000;
 }
-/* line 2019, ../sass/screen.scss */
+/* line 2032, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-title {
   font-size: 16px;
   font-weight: bold;
@@ -2216,27 +2228,27 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   overflow: hidden;
   white-space: nowrap;
 }
-/* line 2027, ../sass/screen.scss */
+/* line 2040, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content a.close {
   color: #000;
   float: right;
 }
-/* line 2032, ../sass/screen.scss */
+/* line 2045, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-content {
   padding: 0 20px 20px;
   overflow: auto;
   position: relative;
 }
-/* line 2037, ../sass/screen.scss */
+/* line 2050, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-content .form-item {
   margin-bottom: 20px;
 }
-/* line 2040, ../sass/screen.scss */
+/* line 2053, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-content .form-item label {
   width: auto;
   float: none;
 }
-/* line 2045, ../sass/screen.scss */
+/* line 2058, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-content .form-item input[type="text"] {
   width: 300px;
   padding: 5px 10px;
@@ -2245,21 +2257,21 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   border: 1px solid #ccc;
   border-radius: 5px;
 }
-/* line 2055, ../sass/screen.scss */
+/* line 2068, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-content .container-inline-date .date-padding {
   padding: 0;
   float: none;
 }
-/* line 2059, ../sass/screen.scss */
+/* line 2072, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-content .container-inline-date .date-padding label {
   display: none;
 }
-/* line 2064, ../sass/screen.scss */
+/* line 2077, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-content .resizable-textarea {
   margin-left: 0;
   margin-right: 0;
 }
-/* line 2068, ../sass/screen.scss */
+/* line 2081, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-content .resizable-textarea textarea {
   width: 500px;
   padding: 5px 10px;
@@ -2268,7 +2280,7 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   border: 1px solid #ccc;
   border-radius: 5px;
 }
-/* line 2079, ../sass/screen.scss */
+/* line 2092, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content input[type="submit"] {
   background: #97BC00;
   border: none;
@@ -2278,7 +2290,7 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   height: 37px;
 }
 
-/* line 2094, ../sass/screen.scss */
+/* line 2107, ../sass/screen.scss */
 .pane-mailchimp-signup-newsletter input[type="submit"] {
   background: #97BC00;
   border: none;
@@ -2287,16 +2299,16 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   color: #fff;
   height: 37px;
 }
-/* line 2103, ../sass/screen.scss */
+/* line 2116, ../sass/screen.scss */
 .pane-mailchimp-signup-newsletter .form-item {
   margin-bottom: 20px;
 }
-/* line 2106, ../sass/screen.scss */
+/* line 2119, ../sass/screen.scss */
 .pane-mailchimp-signup-newsletter .form-item label {
   width: auto;
   float: none;
 }
-/* line 2111, ../sass/screen.scss */
+/* line 2124, ../sass/screen.scss */
 .pane-mailchimp-signup-newsletter .form-item input[type="text"] {
   width: 300px;
   padding: 5px 10px;
