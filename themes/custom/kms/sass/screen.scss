@@ -1970,6 +1970,7 @@ body.page-edit-profile {
     }
 
     #subuser-view-wrapper {
+      margin-top: 20px;
 
       input[type="text"] {
         width: 300px;
@@ -1982,18 +1983,24 @@ body.page-edit-profile {
 
       table {
         table-layout: fixed;
-        margin-top: 50px;
+        width: 100%;
 
         tr {
 
-          th:nth-child(5),
-          th:nth-child(6) {
+          th:nth-last-child(-n+2) {
             width: 50px;
           }
 
-          td:nth-child(2),
-          th:nth-child(2) {
-            display: none;
+          td:nth-last-child(1) {
+            a {
+              color: #c00;
+            }
+          }
+
+          td:nth-last-child(2) {
+            a {
+              color: #0c0;
+            }
           }
         }
 
@@ -2096,7 +2103,7 @@ body.page-edit-profile {
 }
 
 .pane-mailchimp-signup-newsletter {
-   
+
   input[type="submit"] {
     background: #97BC00;
     border: none;
