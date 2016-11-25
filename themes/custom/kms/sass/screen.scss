@@ -1982,18 +1982,12 @@ body.page-edit-profile {
 
       table {
         table-layout: fixed;
-        margin-top: 50px;
+        width: 100%;
 
         tr {
 
-          th:nth-child(5),
-          th:nth-child(6) {
+          th:nth-last-child(-n+2) {
             width: 50px;
-          }
-
-          td:nth-child(2),
-          th:nth-child(2) {
-            display: none;
           }
         }
 
@@ -2096,7 +2090,7 @@ body.page-edit-profile {
 }
 
 .pane-mailchimp-signup-newsletter {
-   
+
   input[type="submit"] {
     background: #97BC00;
     border: none;
