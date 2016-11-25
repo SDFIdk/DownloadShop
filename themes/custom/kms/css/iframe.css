@@ -1,4 +1,9 @@
 /* line 1, ../sass/iframe.scss */
 body.page-edit-profile {
   background: none;
+  min-width: 900px;
+}
+/* line 5, ../sass/iframe.scss */
+body.page-edit-profile #page {
+  width: 100%;
 }

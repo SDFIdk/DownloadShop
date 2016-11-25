@@ -1747,6 +1747,9 @@ ul.controlToggle {
   }
 }
 
+
+
+
 /*iframe løsning*/
 body.page-edit-profile {
 
@@ -1755,13 +1758,13 @@ body.page-edit-profile {
     > .center-wrapper {
 
       > .panel-col-first {
-        width: 280px;
-        padding: 20px;
+        width: calc(25% - 30px);
+        padding: 15px;
       }
 
       > .panel-col-last {
         background: none;
-        width: 817px;
+        width: 75%;
         border-bottom: none;
 
         .pane-content {
@@ -1774,6 +1777,12 @@ body.page-edit-profile {
   .pane-kms-user-profile-pane {
 
     #user-profile-form {
+
+      fieldset {
+        border: none;
+        margin: 0;
+        padding: 0;
+      }
 
       .form-item {
         background: #f1f3eb;
@@ -1806,8 +1815,6 @@ body.page-edit-profile {
           border-radius: 5px;
         }
 
-
-
         em {
           display: inline-block;
           margin: 10px 20px;
@@ -1833,12 +1840,18 @@ body.page-edit-profile {
           }
         }
 
+        .confirm-parent,
+        .password-parent {
+          width: 100%;
+        }
+
         div.password-strength,
         div.password-confirm {
           float: none;
           position: absolute;
-          top: 55px;
+          top: 45px;
           right: 20px;
+          margin-top: 0;
         }
       }
 
@@ -2096,7 +2109,7 @@ body.page-edit-profile {
 }
 
 .pane-mailchimp-signup-newsletter {
-   
+
   input[type="submit"] {
     background: #97BC00;
     border: none;

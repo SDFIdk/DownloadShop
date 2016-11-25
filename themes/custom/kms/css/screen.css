@@ -1969,44 +1969,50 @@ ul.controlToggle li.csv button:hover {
 }
 
 /*iframe løsning*/
-/* line 1757, ../sass/screen.scss */
+/* line 1760, ../sass/screen.scss */
 body.page-edit-profile .panel-2col-stacked > .center-wrapper > .panel-col-first {
-  width: 280px;
-  padding: 20px;
+  width: calc(25% - 30px);
+  padding: 15px;
 }
-/* line 1762, ../sass/screen.scss */
+/* line 1765, ../sass/screen.scss */
 body.page-edit-profile .panel-2col-stacked > .center-wrapper > .panel-col-last {
   background: none;
-  width: 817px;
+  width: 75%;
   border-bottom: none;
 }
-/* line 1767, ../sass/screen.scss */
+/* line 1770, ../sass/screen.scss */
 body.page-edit-profile .panel-2col-stacked > .center-wrapper > .panel-col-last .pane-content {
   padding-top: 15px !important;
 }
-/* line 1778, ../sass/screen.scss */
+/* line 1781, ../sass/screen.scss */
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+/* line 1787, ../sass/screen.scss */
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item {
   background: #f1f3eb;
   margin: 5px 0;
   position: relative;
 }
-/* line 1783, ../sass/screen.scss */
+/* line 1792, ../sass/screen.scss */
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item label {
   padding: 10px 20px 0;
   font-size: 14px;
 }
-/* line 1787, ../sass/screen.scss */
+/* line 1796, ../sass/screen.scss */
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item label[for="edit-pass-pass2"] {
   background: none;
 }
-/* line 1792, ../sass/screen.scss */
+/* line 1801, ../sass/screen.scss */
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item select {
   width: 320px;
   display: inline-block;
   margin: 10px 20px;
   float: none;
 }
-/* line 1799, ../sass/screen.scss */
+/* line 1808, ../sass/screen.scss */
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item input[type="text"],
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item input[type="password"] {
   width: 300px;
@@ -2016,19 +2022,19 @@ body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item
   border: 1px solid #ccc;
   border-radius: 5px;
 }
-/* line 1811, ../sass/screen.scss */
+/* line 1818, ../sass/screen.scss */
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item em {
   display: inline-block;
   margin: 10px 20px;
 }
-/* line 1816, ../sass/screen.scss */
+/* line 1823, ../sass/screen.scss */
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item .description {
   display: inline-block;
   width: 400px;
   vertical-align: top;
   margin: 10px 20px;
 }
-/* line 1822, ../sass/screen.scss */
+/* line 1829, ../sass/screen.scss */
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item .description.password-suggestions {
   margin: 10px 20px;
   width: calc(100% - 60px);
@@ -2036,29 +2042,35 @@ body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item
   border: 1px solid #b4bba4;
   border-radius: 5px;
 }
-/* line 1830, ../sass/screen.scss */
+/* line 1837, ../sass/screen.scss */
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item .description em {
   display: inline;
   margin: 0;
 }
-/* line 1836, ../sass/screen.scss */
+/* line 1843, ../sass/screen.scss */
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item .confirm-parent,
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item .password-parent {
+  width: 100%;
+}
+/* line 1848, ../sass/screen.scss */
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item div.password-strength,
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item div.password-confirm {
   float: none;
   position: absolute;
-  top: 55px;
+  top: 45px;
   right: 20px;
+  margin-top: 0;
 }
-/* line 1847, ../sass/screen.scss */
+/* line 1860, ../sass/screen.scss */
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .field-type-addressfield legend {
   display: none !important;
 }
-/* line 1850, ../sass/screen.scss */
+/* line 1863, ../sass/screen.scss */
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .field-type-addressfield .form-item {
   width: 49.4%;
   display: inline-block;
 }
-/* line 1856, ../sass/screen.scss */
+/* line 1869, ../sass/screen.scss */
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form input[type="submit"] {
   margin: 20px 0;
   background: #97BC00;
@@ -2068,20 +2080,20 @@ body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form input[type
   color: #fff;
   height: 37px;
 }
-/* line 1866, ../sass/screen.scss */
+/* line 1879, ../sass/screen.scss */
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-type-checkbox,
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-type-radio {
   margin: 0;
   background: none;
 }
-/* line 1871, ../sass/screen.scss */
+/* line 1884, ../sass/screen.scss */
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-type-checkbox label,
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-type-radio label {
   background: none;
   padding: 10px 20px;
   font-size: 12px;
 }
-/* line 1877, ../sass/screen.scss */
+/* line 1890, ../sass/screen.scss */
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-type-checkbox input[type="checkbox"],
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-type-checkbox input[type="radio"],
 body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-type-radio input[type="checkbox"],
@@ -2092,14 +2104,14 @@ body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-type
   border: 1px solid #ccc;
   border-radius: 5px;
 }
-/* line 1890, ../sass/screen.scss */
+/* line 1903, ../sass/screen.scss */
 body.page-edit-profile .panel-col-first .panel-pane {
   background: #f1f3eb;
   overflow: hidden;
   margin: 0 0 10px;
   border-bottom: #d0d7c8 3px solid;
 }
-/* line 1896, ../sass/screen.scss */
+/* line 1909, ../sass/screen.scss */
 body.page-edit-profile .panel-col-first .panel-pane h2 {
   background: #b4bba4;
   margin: 0;
@@ -2107,13 +2119,13 @@ body.page-edit-profile .panel-col-first .panel-pane h2 {
   font-size: 18px;
   line-height: 1.6;
 }
-/* line 1904, ../sass/screen.scss */
+/* line 1917, ../sass/screen.scss */
 body.page-edit-profile .panel-col-first .panel-pane ul {
   margin: 0;
   padding: 0;
   background: #f1f3eb;
 }
-/* line 1909, ../sass/screen.scss */
+/* line 1922, ../sass/screen.scss */
 body.page-edit-profile .panel-col-first .panel-pane ul li {
   -webkit-transition: background 0.3s ease-in-out;
   -moz-transition: background 0.3s ease-in-out;
@@ -2125,11 +2137,11 @@ body.page-edit-profile .panel-col-first .panel-pane ul li {
   margin: 0;
   background: url(/profiles/gst2/themes/custom/gst2_theme/images/collapsed.gif) no-repeat 235px 10px;
 }
-/* line 1920, ../sass/screen.scss */
+/* line 1933, ../sass/screen.scss */
 body.page-edit-profile .panel-col-first .panel-pane ul li:hover {
   background-position: 228px 10px;
 }
-/* line 1924, ../sass/screen.scss */
+/* line 1937, ../sass/screen.scss */
 body.page-edit-profile .panel-col-first .panel-pane ul li a {
   display: block;
   background: url(/profiles/gst2/themes/custom/gst2_theme/images/arrow-grey.gif) no-repeat 19px 10px;
@@ -2137,23 +2149,23 @@ body.page-edit-profile .panel-col-first .panel-pane ul li a {
   text-decoration: none;
   color: #000;
 }
-/* line 1931, ../sass/screen.scss */
+/* line 1944, ../sass/screen.scss */
 body.page-edit-profile .panel-col-first .panel-pane ul li a:hover {
   color: #c2712b;
 }
-/* line 1935, ../sass/screen.scss */
+/* line 1948, ../sass/screen.scss */
 body.page-edit-profile .panel-col-first .panel-pane ul li a.active-trail {
   font-weight: 800;
 }
-/* line 1942, ../sass/screen.scss */
+/* line 1955, ../sass/screen.scss */
 body.page-edit-profile .panel-col-first .panel-pane p {
   padding: 15px;
 }
-/* line 1952, ../sass/screen.scss */
+/* line 1965, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #subuser-popup h2 {
   display: none;
 }
-/* line 1956, ../sass/screen.scss */
+/* line 1969, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #subuser-popup button {
   margin: 0 20px 10px 0;
   background: #97BC00;
@@ -2164,11 +2176,11 @@ body.page-edit-profile.page-edit-profile-subuser #subuser-popup button {
   height: 37px;
   display: inline-block;
 }
-/* line 1967, ../sass/screen.scss */
+/* line 1980, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #subuser-popup p {
   display: inline-block;
 }
-/* line 1974, ../sass/screen.scss */
+/* line 1987, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper input[type="text"] {
   width: 300px;
   padding: 5px 10px;
@@ -2177,44 +2189,44 @@ body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper input[typ
   border: 1px solid #ccc;
   border-radius: 5px;
 }
-/* line 1983, ../sass/screen.scss */
+/* line 1996, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper table {
   table-layout: fixed;
   margin-top: 50px;
 }
-/* line 1989, ../sass/screen.scss */
+/* line 2002, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper table tr th:nth-child(5),
 body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper table tr th:nth-child(6) {
   width: 50px;
 }
-/* line 1994, ../sass/screen.scss */
+/* line 2007, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper table tr td:nth-child(2),
 body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper table tr th:nth-child(2) {
   display: none;
 }
-/* line 2000, ../sass/screen.scss */
+/* line 2013, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper table th {
   background: #f1f3eb;
   padding: 10px 15px;
   text-align: left;
 }
-/* line 2006, ../sass/screen.scss */
+/* line 2019, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper table td {
   border-bottom: 1px solid #000;
   padding: 10px 15px;
   text-align: left;
 }
-/* line 2016, ../sass/screen.scss */
+/* line 2029, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content {
   height: 600px;
 }
-/* line 2019, ../sass/screen.scss */
+/* line 2032, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-header {
   background-color: #fff;
   padding: 20px;
   color: #000;
 }
-/* line 2025, ../sass/screen.scss */
+/* line 2038, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-title {
   font-size: 16px;
   font-weight: bold;
@@ -2222,27 +2234,27 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   overflow: hidden;
   white-space: nowrap;
 }
-/* line 2033, ../sass/screen.scss */
+/* line 2046, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content a.close {
   color: #000;
   float: right;
 }
-/* line 2038, ../sass/screen.scss */
+/* line 2051, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-content {
   padding: 0 20px 20px;
   overflow: auto;
   position: relative;
 }
-/* line 2043, ../sass/screen.scss */
+/* line 2056, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-content .form-item {
   margin-bottom: 20px;
 }
-/* line 2046, ../sass/screen.scss */
+/* line 2059, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-content .form-item label {
   width: auto;
   float: none;
 }
-/* line 2051, ../sass/screen.scss */
+/* line 2064, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-content .form-item input[type="text"] {
   width: 300px;
   padding: 5px 10px;
@@ -2251,21 +2263,21 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   border: 1px solid #ccc;
   border-radius: 5px;
 }
-/* line 2061, ../sass/screen.scss */
+/* line 2074, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-content .container-inline-date .date-padding {
   padding: 0;
   float: none;
 }
-/* line 2065, ../sass/screen.scss */
+/* line 2078, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-content .container-inline-date .date-padding label {
   display: none;
 }
-/* line 2070, ../sass/screen.scss */
+/* line 2083, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-content .resizable-textarea {
   margin-left: 0;
   margin-right: 0;
 }
-/* line 2074, ../sass/screen.scss */
+/* line 2087, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-content .resizable-textarea textarea {
   width: 500px;
   padding: 5px 10px;
@@ -2274,7 +2286,7 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   border: 1px solid #ccc;
   border-radius: 5px;
 }
-/* line 2085, ../sass/screen.scss */
+/* line 2098, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content input[type="submit"] {
   background: #97BC00;
   border: none;
@@ -2284,7 +2296,7 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   height: 37px;
 }
 
-/* line 2100, ../sass/screen.scss */
+/* line 2113, ../sass/screen.scss */
 .pane-mailchimp-signup-newsletter input[type="submit"] {
   background: #97BC00;
   border: none;
@@ -2293,16 +2305,16 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   color: #fff;
   height: 37px;
 }
-/* line 2109, ../sass/screen.scss */
+/* line 2122, ../sass/screen.scss */
 .pane-mailchimp-signup-newsletter .form-item {
   margin-bottom: 20px;
 }
-/* line 2112, ../sass/screen.scss */
+/* line 2125, ../sass/screen.scss */
 .pane-mailchimp-signup-newsletter .form-item label {
   width: auto;
   float: none;
 }
-/* line 2117, ../sass/screen.scss */
+/* line 2130, ../sass/screen.scss */
 .pane-mailchimp-signup-newsletter .form-item input[type="text"] {
   width: 300px;
   padding: 5px 10px;
