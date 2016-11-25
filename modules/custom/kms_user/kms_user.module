@@ -204,6 +204,9 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
             }
           }
         }
+ 
+        $form['#fieldgroups']['group_user_type']->weight = 6;
+
         // The terms and conditions must(!) be accepted on the register-form.
         // After that the terms and conditions can NOT be altered by the user.
         // So we change the default value to 'accepted',
@@ -268,6 +271,11 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
       case 'user_register_form':
         // They do not want a fieldset title on address.
         $form['field_address'][LANGUAGE_NONE][0]['#title'] = '';
+
+        // Newsletters are moved to mailchimp.
+        // This field should be removed entirely.
+        $form['field_newsletter']['#access'] = FALSE;
+
         // We need to store the new password.
         $form['#submit'][] = '_kms_user_insert_user_pass';
         // Store user data in Oracle.
