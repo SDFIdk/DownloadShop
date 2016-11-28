@@ -1,9 +1,11 @@
 /* line 1, ../sass/iframe.scss */
-body.page-edit-profile {
+body.page-edit-profile,
+body.page-add-profile {
   background: none;
   min-width: 0;
 }
-/* line 5, ../sass/iframe.scss */
-body.page-edit-profile #page {
+/* line 6, ../sass/iframe.scss */
+body.page-edit-profile #page,
+body.page-add-profile #page {
   width: 100%;
 }
