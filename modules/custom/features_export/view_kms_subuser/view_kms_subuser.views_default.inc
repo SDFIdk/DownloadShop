@@ -113,7 +113,7 @@ function view_kms_subuser_views_default_views() {
   $handler->display->display_options['fields']['nothing_1']['id'] = 'nothing_1';
   $handler->display->display_options['fields']['nothing_1']['table'] = 'views';
   $handler->display->display_options['fields']['nothing_1']['field'] = 'nothing';
-  $handler->display->display_options['fields']['nothing_1']['label'] = 'Rediger';
+  $handler->display->display_options['fields']['nothing_1']['label'] = 'Edit subuser';
   $handler->display->display_options['fields']['nothing_1']['alter']['text'] = 'edit';
   $handler->display->display_options['fields']['nothing_1']['alter']['make_link'] = TRUE;
   $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/kms-subuser/nojs/[uid]/update';
@@ -216,8 +216,8 @@ function view_kms_subuser_views_default_views() {
   $handler->display->display_options['fields']['nothing_1']['id'] = 'nothing_1';
   $handler->display->display_options['fields']['nothing_1']['table'] = 'views';
   $handler->display->display_options['fields']['nothing_1']['field'] = 'nothing';
-  $handler->display->display_options['fields']['nothing_1']['label'] = 'Rediger';
-  $handler->display->display_options['fields']['nothing_1']['alter']['text'] = 'edit';
+  $handler->display->display_options['fields']['nothing_1']['label'] = 'Edit subuser';
+  $handler->display->display_options['fields']['nothing_1']['alter']['text'] = 'Edit subuser;
   $handler->display->display_options['fields']['nothing_1']['alter']['make_link'] = TRUE;
   $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/kms-subuser/nojs/[uid]/update';
   $handler->display->display_options['fields']['nothing_1']['alter']['link_class'] = 'ctools-use-modal';
@@ -227,7 +227,7 @@ function view_kms_subuser_views_default_views() {
   $handler->display->display_options['fields']['nothing']['table'] = 'views';
   $handler->display->display_options['fields']['nothing']['field'] = 'nothing';
   $handler->display->display_options['fields']['nothing']['label'] = 'Slet';
-  $handler->display->display_options['fields']['nothing']['alter']['text'] = 'delete';
+  $handler->display->display_options['fields']['nothing']['alter']['text'] = 'Delete subuser';
   $handler->display->display_options['fields']['nothing']['alter']['make_link'] = TRUE;
   $handler->display->display_options['fields']['nothing']['alter']['path'] = 'admin/kms-subuser/nojs/[uid]/cancel';
   $handler->display->display_options['fields']['nothing']['alter']['link_class'] = 'ctools-use-modal';
@@ -249,14 +249,12 @@ function view_kms_subuser_views_default_views() {
     t('Uid'),
     t('Udløbsdato'),
     t('Status'),
-    t('Rediger'),
-    t('edit'),
-    t('Slet'),
-    t('delete'),
     t('All'),
     t('Page'),
     t('Block'),
     t('Navn'),
+    t('Edit subuser'),
+    t('Delete subuser'),
   );
   $export['kms_subuser'] = $view;
 

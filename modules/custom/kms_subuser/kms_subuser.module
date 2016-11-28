@@ -438,10 +438,18 @@ function theme_subuser_info($vars) {
   $output .= '<div class="user-info">';
   $output .= '<div class="title">' . t('Your profile information') . '</div>';
   $output .= kms_subuser_info_row(t('Username'), $uw->name->value());
-  $output .= kms_subuser_info_row(t('E-Mail'), $uw->mail->value());
-  $output .= kms_subuser_info_row(t('First name'), $uw->field_address->first_name->value());
-  $output .= kms_subuser_info_row(t('Last name'), $uw->field_address->last_name->value());
-  $output .= kms_subuser_info_row(t('Phone'), $uw->field_phone->value());
+  if (!empty($uw->mail->value()) && $uw->mail->value() !== 'subuser@fake.mail') {
+    $output .= kms_subuser_info_row(t('E-Mail'), $uw->mail->value());
+  }
+  if (!empty($uw->field_address->first_name->value())) {
+    $output .= kms_subuser_info_row(t('First name'), $uw->field_address->first_name->value());
+  }
+  if (!empty($uw->field_address->last_name->value())) {
+    $output .= kms_subuser_info_row(t('Last name'), $uw->field_address->last_name->value());
+  }
+  if (!empty($uw->field_phone->value())) {
+    $output .= kms_subuser_info_row(t('Phone'), $uw->field_phone->value());
+  }
   $output .= '</div></div>';
   return $output;
 }

@@ -81,7 +81,7 @@ function gst2_news_get_news_mailchimp_list() {
 function gst2_news_form_mailchimp_signup_subscribe_block_newsletter_form_alter(&$form, &$form_state, $form_id) {
   global $user;
 
-  if (!empty($user->mail)) {
+  if (!empty($user->mail && $user->mail !== 'subuser@fake.mail')) {
     $form['mergevars']['EMAIL']['#value'] = $user->mail;
     $form['mergevars']['EMAIL']['#disabled'] = TRUE;
 
@@ -107,11 +107,10 @@ function gst2_news_form_mailchimp_signup_subscribe_block_newsletter_form_alter(&
     }
   }
   else {
-    $link = l(t('Here'), 'user/login');
-    $form['#prefix'] = '<p>' . t('Only logged in members can subscribe and administer subscriptions, please login ' . $link . '.') . '</p>';
+    $form['#prefix'] = '<p>' . t('There is no email configured for you account, please contact your account administrator.') . '</p>';
     unset($form['mailchimp_lists']);
     unset($form['mergevars']);
-    unset($form['submit']);
+    unset($form['actions']);
   }
 
   $form['#submit'][] = 'news_subscription_custom_handler';
