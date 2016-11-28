@@ -81,7 +81,7 @@ function gst2_news_get_news_mailchimp_list() {
 function gst2_news_form_mailchimp_signup_subscribe_block_newsletter_form_alter(&$form, &$form_state, $form_id) {
   global $user;
 
-  if (!empty($user->mail && $user->mail !== 'subuser@fake.mail')) {
+  if (!empty($user->mail) && $user->mail !== 'subuser@fake.mail') {
     $form['mergevars']['EMAIL']['#value'] = $user->mail;
     $form['mergevars']['EMAIL']['#disabled'] = TRUE;
 
