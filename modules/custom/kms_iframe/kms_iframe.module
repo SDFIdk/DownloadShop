@@ -4,12 +4,17 @@ function kms_iframe_ctools_render_alter(&$info, &$page, &$context){
 
   // Add iframe css if the page is iframed
   if (kms_iframe_test()) {
-    $url = variable_get('kms_iframe_url', 'http://kortforsyningen.dev');
+    $url = variable_get('kms_iframe_url', 'http://kortforsyningen.dk');
     drupal_add_css(drupal_get_path('theme', 'kms') . '/css/iframe.css');
     drupal_add_http_header('X-Frame-Options', 'ALLOW-FROM ' . $url);
 
     $path = drupal_get_path('module', 'kms_iframe');
     drupal_add_js($path . '/js/iframeResizer.contentWindow.min.js', array('weight' => 1));
+    
+    $path = current_path();
+    if (strpos($path, 'edit/profile/subuser/iframe') === 0) {
+      drupal_add_css('body {min-height:850px;}', 'inline');
+    }
   }
 }
 
