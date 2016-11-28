@@ -9,6 +9,22 @@
  */
 function panel_edit_user_profile_default_config_pages_type() {
   $items = array();
+  $items['add_profile'] = entity_import('config_pages_type', '{
+    "type" : "add_profile",
+    "label" : "Add profile",
+    "weight" : "0",
+    "data" : {
+      "menu" : { "path" : "admin\\/config\\/people\\/my-profile-add", "type" : "6" },
+      "context" : { "group" : {
+          "config_pages:language" : 0,
+          "config_pages:host" : 0,
+          "config_pages:domain" : 0
+        }
+      }
+    },
+    "metatags" : [],
+    "rdf_mapping" : []
+  }');
   $items['my_products_info'] = entity_import('config_pages_type', '{
     "type" : "my_products_info",
     "label" : "My products info",

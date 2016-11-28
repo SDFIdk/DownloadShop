@@ -31,6 +31,18 @@ function kms_iframe_url_outbound_alter(&$path, &$options, $original_path) {
     $options['query']['destination']  = 'edit/profile/iframe'; 
   }
 
+  // Redirect to edit/profile when logging out
+  if (strpos($path, 'user/register') === 0) {
+    $path = 'add/profile/iframe';
+    $options['query']['destination']  = 'edit/profile/iframe';
+  }
+
+  // Redirect to edit/profile when logging out
+  if (strpos($path, 'user/password') === 0) {
+    $path = 'edit/profile/password/iframe';
+    $options['query']['destination']  = 'edit/profile/iframe';
+  }
+
 }
 
 /**
