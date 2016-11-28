@@ -217,7 +217,7 @@ function view_kms_subuser_views_default_views() {
   $handler->display->display_options['fields']['nothing_1']['table'] = 'views';
   $handler->display->display_options['fields']['nothing_1']['field'] = 'nothing';
   $handler->display->display_options['fields']['nothing_1']['label'] = 'Edit subuser';
-  $handler->display->display_options['fields']['nothing_1']['alter']['text'] = 'Edit subuser;
+  $handler->display->display_options['fields']['nothing_1']['alter']['text'] = 'Edit subuser';
   $handler->display->display_options['fields']['nothing_1']['alter']['make_link'] = TRUE;
   $handler->display->display_options['fields']['nothing_1']['alter']['path'] = 'admin/kms-subuser/nojs/[uid]/update';
   $handler->display->display_options['fields']['nothing_1']['alter']['link_class'] = 'ctools-use-modal';
