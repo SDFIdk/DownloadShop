@@ -2116,7 +2116,7 @@ body.page-edit-profile{
     #modalContent {
 
       .ctools-modal-content {
-        overflow: auto;
+        overflow: hidden;
 
         .modal-header {
           background-color: #fff;
@@ -2187,7 +2187,7 @@ body.page-edit-profile{
         }
 
         .container-inline-date {
-          overflow: auto;
+          overflow: hidden;
           position: relative;
           width: 100%;
 
@@ -2419,8 +2419,6 @@ body.page-edit-profile{
 
 .page-add-profile {
 
-
-
   .panel-2col-stacked {
 
     > .center-wrapper {
@@ -2448,6 +2446,15 @@ body.page-edit-profile{
           width: calc(100% - 60px);
           padding: 5px 15px;
           margin: 0 15px 10px;
+          background: #fff;
+          border: 1px solid #ccc;
+          border-radius: 5px;
+        }
+
+        textarea {
+          width: calc(100% - 30px);
+          padding: 5px 10px;
+          margin: 5px 15px;
           background: #fff;
           border: 1px solid #ccc;
           border-radius: 5px;
