@@ -2319,7 +2319,7 @@ body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper table td 
 }
 /* line 2118, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content {
-  overflow: auto;
+  overflow: hidden;
 }
 /* line 2121, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-header {
@@ -2391,7 +2391,7 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
 }
 /* line 2189, ../sass/screen.scss */
 body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .container-inline-date {
-  overflow: auto;
+  overflow: hidden;
   position: relative;
   width: 100%;
 }
@@ -2619,17 +2619,17 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   height: 37px;
 }
 
-/* line 2428, ../sass/screen.scss */
+/* line 2426, ../sass/screen.scss */
 .page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first {
   width: calc(50% - 30px);
   padding: 15px;
 }
-/* line 2432, ../sass/screen.scss */
+/* line 2430, ../sass/screen.scss */
 .page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first label {
   padding: 10px 15px 0;
   font-size: 14px;
 }
-/* line 2437, ../sass/screen.scss */
+/* line 2435, ../sass/screen.scss */
 .page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first input[type="text"],
 .page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first input[type="password"] {
   width: calc(100% - 60px);
@@ -2639,7 +2639,7 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   border: 1px solid #ccc;
   border-radius: 5px;
 }
-/* line 2447, ../sass/screen.scss */
+/* line 2445, ../sass/screen.scss */
 .page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first select {
   width: calc(100% - 60px);
   padding: 5px 15px;
@@ -2648,27 +2648,36 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   border: 1px solid #ccc;
   border-radius: 5px;
 }
-/* line 2456, ../sass/screen.scss */
+/* line 2454, ../sass/screen.scss */
+.page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first textarea {
+  width: calc(100% - 30px);
+  padding: 5px 10px;
+  margin: 5px 15px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+/* line 2463, ../sass/screen.scss */
 .page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first .description {
   margin: 0 15px;
 }
-/* line 2460, ../sass/screen.scss */
+/* line 2467, ../sass/screen.scss */
 .page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first .form-type-checkbox {
   margin: 10px 15px;
 }
-/* line 2463, ../sass/screen.scss */
+/* line 2470, ../sass/screen.scss */
 .page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first .form-type-checkbox label.option {
   font-size: 10px;
   padding: 0 15px;
 }
-/* line 2469, ../sass/screen.scss */
+/* line 2476, ../sass/screen.scss */
 .page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first a#terms_conditions {
   background-position: center center;
   position: relative;
   left: 0;
   color: transparent;
 }
-/* line 2476, ../sass/screen.scss */
+/* line 2483, ../sass/screen.scss */
 .page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first input[type="submit"] {
   margin: 10px 15px;
   background: #97BC00;
@@ -2679,36 +2688,36 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   height: 37px;
 }
 @media screen and (max-width: 945px) {
-  /* line 2428, ../sass/screen.scss */
+  /* line 2426, ../sass/screen.scss */
   .page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first {
     width: calc(100% - 30px);
   }
 }
 @media screen and (max-width: 700px) {
-  /* line 2428, ../sass/screen.scss */
+  /* line 2426, ../sass/screen.scss */
   .page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first {
     width: calc(100% - 30px);
   }
 }
-/* line 2494, ../sass/screen.scss */
+/* line 2501, ../sass/screen.scss */
 .page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-last {
   background: none;
   width: 0;
   border-bottom: none;
 }
 
-/* line 2506, ../sass/screen.scss */
+/* line 2513, ../sass/screen.scss */
 .my-services-list {
   margin-top: 20px;
   padding: 0;
 }
-/* line 2511, ../sass/screen.scss */
+/* line 2518, ../sass/screen.scss */
 .my-services-list .form-type-checkbox label {
   float: none;
   padding-top: 2px;
   margin-left: 6px;
 }
-/* line 2518, ../sass/screen.scss */
+/* line 2525, ../sass/screen.scss */
 .my-services-list fieldset {
   display: block;
   background: #e5e9e0;
@@ -2717,15 +2726,15 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   position: relative;
   margin-bottom: 10px;
 }
-/* line 2526, ../sass/screen.scss */
+/* line 2533, ../sass/screen.scss */
 .my-services-list fieldset.this-is-free-service legend a {
   color: #97bc00;
 }
-/* line 2530, ../sass/screen.scss */
+/* line 2537, ../sass/screen.scss */
 .my-services-list fieldset:last-child {
   margin-bottom: 0;
 }
-/* line 2535, ../sass/screen.scss */
+/* line 2542, ../sass/screen.scss */
 .my-services-list legend {
   position: absolute;
   background-color: #dae0d3;
@@ -2733,32 +2742,32 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   display: block;
   width: 100%;
 }
-/* line 2542, ../sass/screen.scss */
+/* line 2549, ../sass/screen.scss */
 .my-services-list legend a {
   display: block;
   padding: 6px 10px;
   color: #262626;
 }
-/* line 2549, ../sass/screen.scss */
+/* line 2556, ../sass/screen.scss */
 .my-services-list .fieldset-wrapper {
   display: none;
   padding-top: 10px;
 }
-/* line 2556, ../sass/screen.scss */
+/* line 2563, ../sass/screen.scss */
 .my-services-list > div > fieldset {
   border: none;
 }
-/* line 2559, ../sass/screen.scss */
+/* line 2566, ../sass/screen.scss */
 .my-services-list > div > fieldset > legend {
   background-color: #cbd2c0;
   position: relative;
 }
-/* line 2563, ../sass/screen.scss */
+/* line 2570, ../sass/screen.scss */
 .my-services-list > div > fieldset > legend a {
   font-weight: bold;
   font-size: 18px;
 }
-/* line 2568, ../sass/screen.scss */
+/* line 2575, ../sass/screen.scss */
 .my-services-list > div > fieldset > legend:after {
   content: "";
   position: absolute;
@@ -2777,41 +2786,41 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   transform: rotate(90deg);
   pointer-events: none;
 }
-/* line 2588, ../sass/screen.scss */
+/* line 2595, ../sass/screen.scss */
 .my-services-list > div > fieldset > .fieldset-wrapper {
   display: none;
 }
-/* line 2591, ../sass/screen.scss */
+/* line 2598, ../sass/screen.scss */
 .my-services-list > div > fieldset > .fieldset-wrapper > fieldset {
   position: relative;
   background-color: #f1f3eb;
   border: 4px solid #cbd2c0;
   min-height: 38px;
 }
-/* line 2597, ../sass/screen.scss */
+/* line 2604, ../sass/screen.scss */
 .my-services-list > div > fieldset > .fieldset-wrapper > fieldset .response,
 .my-services-list > div > fieldset > .fieldset-wrapper > fieldset .fieldset-wrapper {
   display: none;
 }
-/* line 2602, ../sass/screen.scss */
+/* line 2609, ../sass/screen.scss */
 .my-services-list > div > fieldset > .fieldset-wrapper > fieldset:not(.collapsed) .response, .my-services-list > div > fieldset > .fieldset-wrapper > fieldset:not(.collapsed) .fieldset-wrapper {
   display: block;
 }
-/* line 2607, ../sass/screen.scss */
+/* line 2614, ../sass/screen.scss */
 .my-services-list > div > fieldset > .fieldset-wrapper > fieldset.collapsed {
   border: none;
 }
-/* line 2611, ../sass/screen.scss */
+/* line 2618, ../sass/screen.scss */
 .my-services-list > div > fieldset > .fieldset-wrapper > fieldset .fieldset-wrapper {
   padding: 10px;
   margin-top: 50px;
 }
-/* line 2616, ../sass/screen.scss */
+/* line 2623, ../sass/screen.scss */
 .my-services-list > div > fieldset > .fieldset-wrapper > fieldset > legend {
   position: absolute;
   top: 0;
 }
-/* line 2620, ../sass/screen.scss */
+/* line 2627, ../sass/screen.scss */
 .my-services-list > div > fieldset > .fieldset-wrapper > fieldset > legend:after {
   content: "";
   position: absolute;
@@ -2830,11 +2839,11 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   transform: rotate(90deg);
   pointer-events: none;
 }
-/* line 2639, ../sass/screen.scss */
+/* line 2646, ../sass/screen.scss */
 .my-services-list > div > fieldset > .fieldset-wrapper > fieldset > legend a {
   padding-right: 20px;
 }
-/* line 2645, ../sass/screen.scss */
+/* line 2652, ../sass/screen.scss */
 .my-services-list > div > fieldset > .fieldset-wrapper > fieldset.collapsed > legend:after {
   -webkit-transform: rotate(0deg);
   -moz-transform: rotate(0deg);
@@ -2842,7 +2851,7 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   -o-transform: rotate(0deg);
   transform: rotate(0deg);
 }
-/* line 2660, ../sass/screen.scss */
+/* line 2667, ../sass/screen.scss */
 .my-services-list .collapsed > legend:after {
   -webkit-transform: rotate(0deg);
   -moz-transform: rotate(0deg);
