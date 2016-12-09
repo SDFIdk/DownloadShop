@@ -229,6 +229,8 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
         ->condition('entity_id', $form['#user']->uid, '=')
         ->execute()
         ->fetchAssoc();
+
+        $form['field_contact_me'][LANGUAGE_NONE]['#title'] = t('User profile survey consent');
         $form['field_contact_me'][LANGUAGE_NONE]['#default_value'] = $user_contact_me['field_contact_me_value'];
         
         /*
