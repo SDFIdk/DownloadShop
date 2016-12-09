@@ -2720,21 +2720,48 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
 /* line 2525, ../sass/screen.scss */
 .my-services-list fieldset {
   display: block;
-  background: #e5e9e0;
   border-width: 1px 0 1px 0;
   min-height: 40px;
   position: relative;
   margin-bottom: 10px;
 }
-/* line 2533, ../sass/screen.scss */
+/* line 2532, ../sass/screen.scss */
 .my-services-list fieldset.this-is-free-service legend a {
   color: #97bc00;
 }
-/* line 2537, ../sass/screen.scss */
+/* line 2536, ../sass/screen.scss */
 .my-services-list fieldset:last-child {
   margin-bottom: 0;
 }
-/* line 2542, ../sass/screen.scss */
+/* line 2540, ../sass/screen.scss */
+.my-services-list fieldset fieldset {
+  margin-bottom: 5px;
+}
+/* line 2545, ../sass/screen.scss */
+.my-services-list p {
+  margin-bottom: 20px;
+  color: #131313;
+  line-height: 18px;
+}
+/* line 2550, ../sass/screen.scss */
+.my-services-list b {
+  color: #131313;
+  line-height: 18px;
+}
+/* line 2555, ../sass/screen.scss */
+.my-services-list span.url-form > input {
+  background: #425136;
+  color: #fff;
+  border: 1px solid #e9ece2;
+  line-height: inherit;
+  font-size: 11px;
+  text-transform: uppercase;
+  padding: 6px 8px;
+  margin-top: 0;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+/* line 2568, ../sass/screen.scss */
 .my-services-list legend {
   position: absolute;
   background-color: #dae0d3;
@@ -2742,32 +2769,32 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   display: block;
   width: 100%;
 }
-/* line 2549, ../sass/screen.scss */
+/* line 2575, ../sass/screen.scss */
 .my-services-list legend a {
   display: block;
   padding: 6px 10px;
-  color: #262626;
+  color: #565656;
 }
-/* line 2556, ../sass/screen.scss */
+/* line 2582, ../sass/screen.scss */
 .my-services-list .fieldset-wrapper {
   display: none;
-  padding-top: 10px;
+  padding-top: 5px;
 }
-/* line 2563, ../sass/screen.scss */
+/* line 2589, ../sass/screen.scss */
 .my-services-list > div > fieldset {
   border: none;
 }
-/* line 2566, ../sass/screen.scss */
+/* line 2592, ../sass/screen.scss */
 .my-services-list > div > fieldset > legend {
   background-color: #cbd2c0;
   position: relative;
 }
-/* line 2570, ../sass/screen.scss */
+/* line 2596, ../sass/screen.scss */
 .my-services-list > div > fieldset > legend a {
   font-weight: bold;
   font-size: 18px;
 }
-/* line 2575, ../sass/screen.scss */
+/* line 2601, ../sass/screen.scss */
 .my-services-list > div > fieldset > legend:after {
   content: "";
   position: absolute;
@@ -2786,41 +2813,41 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   transform: rotate(90deg);
   pointer-events: none;
 }
-/* line 2595, ../sass/screen.scss */
+/* line 2621, ../sass/screen.scss */
 .my-services-list > div > fieldset > .fieldset-wrapper {
   display: none;
 }
-/* line 2598, ../sass/screen.scss */
+/* line 2624, ../sass/screen.scss */
 .my-services-list > div > fieldset > .fieldset-wrapper > fieldset {
   position: relative;
   background-color: #f1f3eb;
-  border: 4px solid #cbd2c0;
+  border: 2px solid #dae0d3;
   min-height: 38px;
 }
-/* line 2604, ../sass/screen.scss */
+/* line 2630, ../sass/screen.scss */
 .my-services-list > div > fieldset > .fieldset-wrapper > fieldset .response,
 .my-services-list > div > fieldset > .fieldset-wrapper > fieldset .fieldset-wrapper {
   display: none;
 }
-/* line 2609, ../sass/screen.scss */
+/* line 2635, ../sass/screen.scss */
 .my-services-list > div > fieldset > .fieldset-wrapper > fieldset:not(.collapsed) .response, .my-services-list > div > fieldset > .fieldset-wrapper > fieldset:not(.collapsed) .fieldset-wrapper {
   display: block;
 }
-/* line 2614, ../sass/screen.scss */
+/* line 2640, ../sass/screen.scss */
 .my-services-list > div > fieldset > .fieldset-wrapper > fieldset.collapsed {
   border: none;
 }
-/* line 2618, ../sass/screen.scss */
+/* line 2644, ../sass/screen.scss */
 .my-services-list > div > fieldset > .fieldset-wrapper > fieldset .fieldset-wrapper {
-  padding: 10px;
-  margin-top: 50px;
+  padding: 15px;
+  margin-top: 40px;
 }
-/* line 2623, ../sass/screen.scss */
+/* line 2649, ../sass/screen.scss */
 .my-services-list > div > fieldset > .fieldset-wrapper > fieldset > legend {
   position: absolute;
   top: 0;
 }
-/* line 2627, ../sass/screen.scss */
+/* line 2653, ../sass/screen.scss */
 .my-services-list > div > fieldset > .fieldset-wrapper > fieldset > legend:after {
   content: "";
   position: absolute;
@@ -2839,11 +2866,11 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   transform: rotate(90deg);
   pointer-events: none;
 }
-/* line 2646, ../sass/screen.scss */
+/* line 2672, ../sass/screen.scss */
 .my-services-list > div > fieldset > .fieldset-wrapper > fieldset > legend a {
   padding-right: 20px;
 }
-/* line 2652, ../sass/screen.scss */
+/* line 2678, ../sass/screen.scss */
 .my-services-list > div > fieldset > .fieldset-wrapper > fieldset.collapsed > legend:after {
   -webkit-transform: rotate(0deg);
   -moz-transform: rotate(0deg);
@@ -2851,7 +2878,7 @@ body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-con
   -o-transform: rotate(0deg);
   transform: rotate(0deg);
 }
-/* line 2667, ../sass/screen.scss */
+/* line 2693, ../sass/screen.scss */
 .my-services-list .collapsed > legend:after {
   -webkit-transform: rotate(0deg);
   -moz-transform: rotate(0deg);
