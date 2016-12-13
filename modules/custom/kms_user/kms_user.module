@@ -278,6 +278,8 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
         // This field should be removed entirely.
         $form['field_newsletter']['#access'] = FALSE;
 
+        $form['field_contact_me'][LANGUAGE_NONE]['#title'] = t('User profile survey consent');
+
         // We need to store the new password.
         $form['#submit'][] = '_kms_user_insert_user_pass';
         // Store user data in Oracle.
