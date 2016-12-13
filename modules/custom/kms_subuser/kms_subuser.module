@@ -228,6 +228,17 @@ function kms_subuser_insert_form_submit(&$form, &$form_state) {
   $suwrapper->field_pass_clear->set($pass);
   // Save user type (same as master).
   $suwrapper->field_user_type->set(array_keys(_kms_csv_user_types($uwrapper)));
+
+  // Set address values, can be empty.
+  $suwrapper->field_address = array(
+   'first_name' =>   $values['first_name'],
+   'last_name' =>   $values['last_name'],
+   'country' => 'DA'
+  );
+
+  // Set phone number, can be empty.
+  $suwrapper->field_phone->set($values['phone']);
+
   $suwrapper->save();
 
   // Save subuser relation.
@@ -260,7 +271,7 @@ function kms_subuser_update_form_submit(&$form, &$form_state) {
   $values = $form_state['values'];
 
   $subuser = user_load($values['subuser_uid']);
-//  $master = user_load($values['master_uid']);
+  
   $data = _kms_user_oracle_default_user_data($subuser);
 
   $suwrapper = entity_metadata_wrapper('user', $subuser);
@@ -280,11 +291,12 @@ function kms_subuser_update_form_submit(&$form, &$form_state) {
   // Set phone number, can be empty.
   $suwrapper->field_phone->set($values['phone']);
 
-  // Set first name, can be empty.
-  $suwrapper->field_address->first_name->set($values['first_name']);
-
-  // Set last name, can be empty.
-  $suwrapper->field_address->last_name->set($values['last_name']);
+  // Set address values, can be empty.
+  $suwrapper->field_address = array(
+   'first_name' =>   $values['first_name'],
+   'last_name' =>   $values['last_name'],
+   'country' => 'DA'
+  );
 
   // Set user remark.
   if (!empty($values['user_remark'])) {
