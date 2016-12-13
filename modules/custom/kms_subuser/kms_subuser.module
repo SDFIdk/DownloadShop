@@ -449,24 +449,29 @@ function theme_subuser_info($vars) {
   $output .= '<div class="title">' . t('Your profile information') . '</div>';
   $output .= kms_subuser_info_row(t('Username'), $uw->name->value());
   
+  $usertype = $uw->field_user_type->value();
+  if (!empty($usertype)) {
+    $output .= kms_subuser_info_row(t('User-type'), kms_subuser_info_type($usertype));
+  }
+
   $mail = $uw->mail->value();
   if (!empty($mail) && $mail !== 'subuser@fake.mail') {
-    $output .= kms_subuser_info_row(t('E-Mail'), $uw->mail->value());
+    $output .= kms_subuser_info_row(t('E-Mail'), $mail);
   }
 
   $first_name = $uw->field_address->first_name->value();
   if (!empty($first_name)) {
-    $output .= kms_subuser_info_row(t('First name'), $uw->field_address->first_name->value());
+    $output .= kms_subuser_info_row(t('First name'), $first_name);
   }
 
   $last_name = $uw->field_address->last_name->value();
   if (!empty($last_name)) {
-    $output .= kms_subuser_info_row(t('Last name'), $uw->field_address->last_name->value());
+    $output .= kms_subuser_info_row(t('Last name'), $last_name);
   }
 
   $field_phone = $uw->field_phone->value();
   if (!empty($field_phone)) {
-    $output .= kms_subuser_info_row(t('Phone'), $uw->field_phone->value());
+    $output .= kms_subuser_info_row(t('Phone'), $field_phone);
   }
   $output .= '</div></div>';
   return $output;
@@ -474,6 +479,15 @@ function theme_subuser_info($vars) {
 
 function kms_subuser_info_row($fn, $fv) {
   return '<div><div class="label">' . $fn . '</div><div>' . $fv . '</div></div>';
+}
+
+function kms_subuser_info_type($fv) {
+  $result = '';
+  foreach ($fv as $v) {
+    $result[] = $v->name;
+  }
+  $result = join(' > ', $result);
+  return $result;
 }
 
 /**
