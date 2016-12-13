@@ -1,0 +1,308 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function kms_usertype_update_menu() {
+  $items['admin/structure/taxonomy/update'] = array(
+    'title' => t('Update user type taxonomy tree'),
+    'page callback' => 'kms_usertype_update_page',
+    'type' => MENU_LOCAL_TASK,
+    'access arguments' => array('administer taxonomy'),
+  );
+
+  $items['user/homeless/export'] = array(
+    'title' => t('csv export of users without departement'),
+    'page callback' => 'kms_usertype_homeless_users_csv_list',
+    'type' => MENU_LOCAL_TASK,
+    'access arguments' => array('administer users'),
+  );
+  return $items;
+
+}
+
+function kms_usertype_get_ministries() {
+
+  $vocabulary = db_query('SELECT vid from {taxonomy_vocabulary} where name = :name', array(':name' => 'User type'));
+  $vid = $vocabulary->fetchField();
+
+  if (empty($vid)) {
+    return 'User type vocabulary was not found';
+  }
+
+  $stat_tid_result = db_query('SELECT tid from {taxonomy_term_data} where name = :name and vid = :vid', array(':name' => 'Stat', ':vid' => $vid));
+  $stat_tid = $stat_tid_result->fetchField();
+
+  if (empty($stat_tid)) {
+    return 'Stat term was not found';
+  }
+
+  // Find Children under the stat tid, this is the current ministry list
+  $ministry_list_result = db_query('SELECT th.tid, td.name from {taxonomy_term_hierarchy} th LEFT JOIN {taxonomy_term_data} td on td.tid = th.tid WHERE th.parent = :stat', array(':stat' => $stat_tid));
+  $ministry_list = $ministry_list_result->fetchAllAssoc('name');
+
+  return array(
+    'vid' => $vid,
+    'stat_tid' => $stat_tid,
+    'list' => $ministry_list,
+  );
+
+}
+
+function kms_usertype_update_page() {
+  $ministry_info = kms_usertype_get_ministries();
+
+  $ministry_list = $ministry_info['list'];
+  $stat_tid = $ministry_info['stat_tid'];
+  $vid = $ministry_info['vid'];
+
+  if (empty($ministry_list)) {
+    return 'no ministries was found';
+  }
+
+  $new_terms = include('terms-new.php');
+
+  $remove_terms = array();
+  $create_terms = array();
+
+  $closed_departments = array();
+
+  // loop trough new ministries and create the once that does not exist already
+  foreach($new_terms as $new_ministry => $new_departments) {
+    if (!in_array($new_ministry, array_keys($ministry_list))) {
+      // create new ministry under stat term
+      $ministry_new_term = new stdClass();
+      $ministry_new_term->name = $new_ministry;
+      $ministry_new_term->parent = $stat_tid;
+      $ministry_new_term->vid = $vid;
+      $saved_term = taxonomy_term_save($ministry_new_term);
+
+      // Add the new new ministry information to the list from the database
+      if ($saved_term) {
+        $ministry_info = new stdClass();
+        $ministry_info->name = $ministry_new_term->name;
+        $ministry_info->tid = $ministry_new_term->tid;
+        $ministry_info->new = true;
+        $ministry_list[$ministry_new_term->name] = $ministry_info;
+      }
+    }
+  }
+
+  foreach($ministry_list as $ministry) {
+    // If the ministry was just created new = true, no need to get children because it will not have any
+    if (empty($ministry->new)) {
+      $ministry_department_list_result = db_query('SELECT th.tid, td.name from {taxonomy_term_hierarchy} th LEFT JOIN {taxonomy_term_data} td on td.tid = th.tid WHERE th.parent = :ministry', array(':ministry' => $ministry->tid));
+      $ministry_department_list = $ministry_department_list_result->fetchAllAssoc('name');
+    }
+    else {
+      $ministry_department_list = array();
+    }
+
+    // If the ministry does no longer exist, delete the ministry and departments
+    if(empty($new_terms[$ministry->name])) {
+      $remove_terms[] = $ministry;
+
+      if (!empty($ministry_department_list)) {
+        $remove_terms = array_merge($remove_terms, $ministry_department_list);
+      }
+    }
+    // If the ministry still exists
+    else {
+      // delete removed departments
+      foreach ($ministry_department_list as $department) {
+        if (!in_array($department->name, $new_terms[$ministry->name])) {
+          $remove_terms[] = $department;
+          // add departments that no longer exists to an array, that we will save in a variable and use later
+          $closed_departments[] = $department->tid;
+        }
+      }
+      // create new departments
+      foreach ($new_terms[$ministry->name] as $department) {
+        if (!in_array($department, array_keys($ministry_department_list))) {
+          $create_terms[] = array('name' => $department, 'parent' => $ministry->tid);
+        }
+      }
+    }
+  }
+
+  // Do the actual deleting of terms
+  $deleted = 0;
+  foreach ($remove_terms as $remove_term) {
+    taxonomy_term_delete($remove_term->tid);
+    $deleted ++;
+  }
+
+  // Create new terms
+  $created = 0;
+  foreach ($create_terms as $create_term) {
+    $new_term = new stdClass();
+    $new_term->name = $create_term['name'];
+    $new_term->parent = $create_term['parent'];
+    $new_term->vid = $vid;
+    if (taxonomy_term_save($new_term)) {
+      $created ++;
+    }
+  }
+
+  // reset alphabetical, setting weight to 0
+  db_update('taxonomy_term_data')
+    ->fields(array('weight' => 0))
+    ->condition('vid', $vid)
+    ->execute();
+
+  // Ensure that Andet terms is in the bottom, setting them to weight 1
+  db_update('taxonomy_term_data')
+    ->fields(array('weight' => 1))
+    ->condition('vid', $vid)
+    ->condition('name', 'Andet')
+    ->execute();
+
+  variable_set('kms_usertype_update_closed_departments', $closed_departments);
+  if ($created == 0 && $deleted == 0) {
+    drupal_set_message('No taxonomies was created or updated, indicating that the update has already been run');
+  }
+  else {
+    drupal_set_message("Created $created new terms, and deleted $deleted");
+  }
+
+  drupal_goto('admin/structure/taxonomy/user_type');
+}
+
+
+/**
+ * Implements hook_cronapi().
+ */
+function kms_usertype_update_cronapi($op, $job = NULL) {
+  switch ($op) {
+    case 'list':
+      return array(
+        'kms_usertype_update_cron_job' => 'Update users without department',
+      );
+
+    case 'rule':
+      switch ($job) {
+        case 'kms_usertype_update_cron_job': return '5 * * * *';
+          break;
+      }
+      break;
+
+    case 'execute':
+      switch ($job) {
+        case 'kms_usertype_update_cron_job':
+          kms_usertype_update_cron_job();
+          break;
+      }
+      break;
+  }
+}
+
+function kms_usertype_homeless_users_csv_list() {
+  $ministry_info = kms_usertype_get_ministries();
+
+  $ministry_list = $ministry_info['list'];
+
+  $new_terms = include('terms-new.php');
+
+  $closed_department_tids = array();
+
+  // create the total list of closed departments by departments in each ministry
+  // and departements that does not exist in the new ministry departement list
+  foreach($ministry_list as $ministry) {
+    $ministry_department_list_result = db_query('SELECT th.tid, td.name from {taxonomy_term_hierarchy} th LEFT JOIN {taxonomy_term_data} td on td.tid = th.tid WHERE th.parent = :ministry', array(':ministry' => $ministry->tid));
+    $ministry_department_list = $ministry_department_list_result->fetchAllAssoc('name');
+
+    // If the ministry does no longer exist, delete the ministry and departments
+    if(empty($new_terms[$ministry->name])) {
+      if (!empty($ministry_department_list)) {
+        foreach($ministry_department_list as $department) {
+          $closed_department_tids[] = $department->tid;
+        }
+      }
+    }
+    // If the ministry still exists
+    else {
+      // delete removed departments
+      foreach ($ministry_department_list as $department) {
+        if (!in_array($department->name, $new_terms[$ministry->name])) {
+          $closed_department_tids[] = $department->tid;
+        }
+      }
+    }
+  }
+
+  // Find users that no longer has an existing organisation (orphans)
+  $orphan_users = db_select('field_data_field_user_type', 'fut')->
+    condition('fut.field_user_type_tid', $closed_department_tids, 'IN');
+  $orphan_users->join('taxonomy_term_data', 'td', 'td.tid = fut.field_user_type_tid');
+  $orphan_users->join('taxonomy_term_hierarchy', 'th', 'th.tid = fut.field_user_type_tid');
+  $orphan_users->join('taxonomy_term_data', 'td2', 'td2.tid = th.parent');
+  $orphan_users->join('users', 'u', 'u.uid = fut.entity_id');
+  $orphan_users->condition('u.status', 1);
+
+  $orphan_users->join('field_data_field_address', 'fda', 'fda.entity_id = fut.entity_id');
+  $orphan_users->
+    fields('u', array('mail'))->
+    fields('fda', array('field_address_first_name', 'field_address_last_name'))->
+    fields('td2', array('name'))->
+    fields('td', array('name'));
+
+  $orphans_list = $orphan_users->distinct()->execute()->fetchAll();
+
+  array_unshift($orphans_list, array('mail', 'fornavn', 'efternavn', 'ministerie', 'styrelse'));
+
+  // send response headers to the browser
+  drupal_add_http_header('Content-Type', 'text/csv');
+  drupal_add_http_header('Content-Disposition', 'attachment;filename=csvfile.csv');
+
+  $fp = fopen('php://output', 'w');
+  foreach($orphans_list as $line){
+    $trimmed_line = array_map('trim', (array) $line);
+    fputcsv($fp, $trimmed_line);
+  }
+
+  fclose($fp);
+  drupal_exit();
+
+}
+
+function kms_usertype_update_cron_job() {
+  $update_amount = kms_usertype_update_orphan_users();
+  $total_processed = variable_get('kms_usertype_update_processed', 0);
+  $new_total_processed = $total_processed + $update_amount;
+
+  variable_set('kms_usertype_update_processed', $new_total_processed);
+  watchdog('kms_usertype_update_cron', sprintf('%d users was updated and notified regarding change of usertype to Borger, total amount processed %d', $update_amount, $new_total_processed));
+}
+
+function kms_usertype_update_orphan_users() {
+
+  // Find users that no longer has an existing organisation (orphans)
+  $orphans_query = db_select('field_data_field_user_type', 'fut')->
+    fields('fut', array('entity_id'));
+  $orphans_query->leftJoin('taxonomy_term_data', 'td', 'td.tid = fut.field_user_type_tid');
+  $orphans_query->isNull('td.name');
+
+  $orphans_query->join('users', 'u', 'u.uid = fut.entity_id');
+  $orphans_query->condition('u.status', 1);
+
+  $orphans_list = $orphans_query->distinct()->range(0, variable_get('kms_usertype_update_update_limit', 1))->execute()->fetchAll();
+
+
+  $borger_tid_result = db_query('SELECT tid from {taxonomy_term_data} where name = :name and vid = :vid', array(':name' => 'Borger', ':vid' => 4));
+  $borger_tid = $borger_tid_result->fetchField();
+
+  $count = 0;
+  foreach ($orphans_list as $entity) {
+    $user_wrapper = entity_metadata_wrapper('user', $entity->entity_id);
+    // Set the field_user_type to the borger taxonomy
+    $user_wrapper->field_user_type = array($borger_tid);
+    print($entity->entity_id);
+
+    if(entity_save('user', $user_wrapper)) {
+      $count++;
+    }
+  }
+
+  return $count;
+}
+

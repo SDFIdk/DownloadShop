@@ -1,0 +1,5 @@
+name = KMS userlist update
+package = KMS
+description = "Updates usertypes according to new ministry departements"
+core = 7.x
+
