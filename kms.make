@@ -45,7 +45,7 @@ projects[hierarchical_select][subdir] = 'contrib'
 projects[hierarchical_select][download][branch] = '7.x-3.x'
 projects[hierarchical_select][download][type] = 'git'
 projects[hierarchical_select][download][url] = 'http://git.drupal.org/project/hierarchical_select.git'
-projects[hierarchical_select][download][revision] = 'b3e34d9c2a0493108481b78ea5ad75c432a1318d'
+projects[hierarchical_select][download][revision] = 'dced41ed3bd88db549db2a72811363d87cc459ff'
 
 ;colorbox
 projects[colorbox][subdir] = "contrib"
@@ -394,7 +394,7 @@ projects[node_export][version] = "3.0"
 projects[node_export][type] = "module"
 
 projects[uuid][subdir] = "contrib"
-projects[uuid][version] = "1.0-alpha5"
+projects[uuid][version] = "1.0-beta2"
 projects[uuid][type] = "module"
 
 ; shared accounts
