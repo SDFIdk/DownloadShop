@@ -165,6 +165,23 @@ function kms_usertype_update_page() {
     drupal_set_message("Created $created new terms, and deleted $deleted");
   }
 
+  // Create 'Ikke valgt / Ikke valgt' under state.
+  $term = new stdClass();
+  $term->name = 'Ikke valgt';
+  $term->uuid = 'dbf1447e-b79c-1634-87e4-f534c0ec1bec';
+  $term->weight = -1;
+  $term->parent = $stat_tid;
+  $term->vid = $vid;
+
+  taxonomy_term_save($term);
+
+  $term2 = new stdClass();
+  $term2->name = 'Ikke valgt';
+  $term2->uuid = 'bcab5c09-1de3-1634-9152-7e8faf96e478';
+  $term2->parent = $term->tid;
+  $term2->vid = $vid;
+  taxonomy_term_save($term2);
+
   drupal_goto('admin/structure/taxonomy/user_type');
 }
 
@@ -286,17 +303,15 @@ function kms_usertype_update_orphan_users() {
   $orphans_query->condition('u.status', 1);
 
   $orphans_list = $orphans_query->distinct()->range(0, variable_get('kms_usertype_update_update_limit', 1))->execute()->fetchAll();
-
-
-  $borger_tid_result = db_query('SELECT tid from {taxonomy_term_data} where name = :name and vid = :vid', array(':name' => 'Borger', ':vid' => 4));
-  $borger_tid = $borger_tid_result->fetchField();
+  
+  $entities = entity_uuid_load('taxonomy_term', array('bcab5c09-1de3-1634-9152-7e8faf96e478')); 
+  $term = reset($entities);
 
   $count = 0;
   foreach ($orphans_list as $entity) {
     $user_wrapper = entity_metadata_wrapper('user', $entity->entity_id);
     // Set the field_user_type to the borger taxonomy
-    $user_wrapper->field_user_type = array($borger_tid);
-    print($entity->entity_id);
+    $user_wrapper->field_user_type = array($term->tid);
 
     if(entity_save('user', $user_wrapper)) {
       $count++;

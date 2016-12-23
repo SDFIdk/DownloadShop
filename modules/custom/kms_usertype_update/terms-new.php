@@ -55,8 +55,8 @@ return array(
     'Andet',
   ),
 
-  'Folketinget  Folketingets' => array(
-    'Ombudsmand',
+  'Folketinget' => array(
+    'Folketingets Ombudsmand',
     'Rigsrevisionen',
     'Statsrevisorerne',
     'Andet',
@@ -195,7 +195,8 @@ return array(
     'Andet'
   ),
   
-  'Ældreministeriet Departement' => array(
+  'Ældreministeriet' => array(
+    'Departement',
     'Andet'
   )
 );
