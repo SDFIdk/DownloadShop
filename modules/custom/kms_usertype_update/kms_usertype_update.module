@@ -165,6 +165,23 @@ function kms_usertype_update_page() {
     drupal_set_message("Created $created new terms, and deleted $deleted");
   }
 
+  // Create 'Ikke valgt / Ikke valgt' under state.
+  $term = new stdClass();
+  $term->name = 'Ikke valgt';
+  $term->uuid = 'dbf1447e-b79c-1634-87e4-f534c0ec1bec';
+  $term->weight = -1;
+  $term->parent = $stat_tid;
+  $term->vid = $vid;
+
+  taxonomy_term_save($term);
+
+  $term2 = new stdClass();
+  $term2->name = 'Ikke valgt';
+  $term2->uuid = 'bcab5c09-1de3-1634-9152-7e8faf96e478';
+  $term2->parent = $term->tid;
+  $term2->vid = $vid;
+  taxonomy_term_save($term2);
+
   drupal_goto('admin/structure/taxonomy/user_type');
 }
 

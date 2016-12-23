@@ -464,33 +464,3 @@ function kms_update_7018(&$sandbox) {
 function kms_update_7019(&$sandbox) {
   module_enable(array('mailchimp', 'mailchimp_signup', 'gst2_news', 'kms_pands', 'kms_services', 'config_pages'));
 }
-
-/**
- * Add Terms user types
- *
- * @author Tom Helmer Hansen <tom@adapt.dk>
- */
-function kms_update_7020(&$sandbox) {
-  $vocab = taxonomy_vocabulary_machine_name_load('user_type');
-  $vid = $vocab->vid;
-  
-  $entities = entity_uuid_load('taxonomy_term', array('703aca16-cd37-4165-969c-278a33ace416')); 
-  $parent = reset($entities);
-
-  $term = new stdClass();
-  $term->name = 'Ikke valgt';
-  $term->uuid = 'dbf1447e-b79c-1634-87e4-f534c0ec1bec';
-  $term->weight = -1;
-  $term->parent = $parent->tid;
-  $term->vid = $vid;
-
-  taxonomy_term_save($term);
-
-  $term2 = new stdClass();
-  $term2->name = 'Ikke valgt';
-  $term2->uuid = 'bcab5c09-1de3-1634-9152-7e8faf96e478';
-  $term2->parent = $term->tid;
-  $term2->vid = $vid;
-  taxonomy_term_save($term2);
-
-}
