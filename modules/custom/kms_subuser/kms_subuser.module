@@ -1128,12 +1128,12 @@ function kms_subuser_cancel_form($form, &$form_state, $subuser) {
   );
   $form['actions']['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Delete'),
+    '#value' => t('Yes, delete subuser', array(), array('context' => 'Subuser')),
     '#submit' => array('kms_subuser_cancel_form_delete'),
   );
   $form['actions']['cancel'] = array(
     '#type' => 'submit',
-    '#value' => t('No'),
+    '#value' => t('No, do not delete subuser', array(), array('context' => 'Subuser')),
   );
 
   return $form;
