@@ -112,7 +112,7 @@ return array(
     'Kystdirektoratet',
     'Miljøstyrelsen',
     'Natur- og Miljøklagenævnet',
-    'NaturEhverstyrelsen',
+    'NaturErhverstyrelsen',
     'Naturstyrelsen',
     'Styrelsen for Vand- og Naturforvaltning',
     'Andet',
@@ -166,8 +166,11 @@ return array(
     'Departement',
     'Styrelsen for Forskning og Innovation',
     'Styrelsen for Videregående Uddannelser',
-    'Øvrige',
-    'Udenrigsministeriet  Departement',
+    'Andet',
+  ),
+  
+  'Udenrigsministeriet' => array(  
+    'Departement',
     'Andet',
   ),
 
