@@ -87,21 +87,21 @@ function gst2_news_form_mailchimp_signup_subscribe_block_newsletter_form_alter(&
 
     $list1 = $form['mailchimp_lists']['mailchimp_92769']['subscribe']['#return_value'];
     $subs1 = mailchimp_get_memberinfo($list1, $user->mail, TRUE);
-    if (!empty($subs1)) {
+    if (!empty($subs1) && $subs1['status'] == 'subscribed') {
       $form['mailchimp_lists']['mailchimp_92769']['subscribe']['#default_value'] = 1;
       $form['mailchimp_lists']['mailchimp_92769']['subscribe']['#attributes']['checked'] = 'checked';
     }
 
     $list2 = $form['mailchimp_lists']['mailchimp_92773']['subscribe']['#return_value'];
     $subs2 = mailchimp_get_memberinfo($list2, $user->mail, TRUE);
-    if (!empty($subs2)) {
+    if (!empty($subs2) && $subs2['status'] == 'subscribed') {
       $form['mailchimp_lists']['mailchimp_92773']['subscribe']['#default_value'] = 1;
       $form['mailchimp_lists']['mailchimp_92773']['subscribe']['#attributes']['checked'] = 'checked';
     }
 
     $list3 = $form['mailchimp_lists']['mailchimp_92765']['subscribe']['#return_value'];
     $subs3 = mailchimp_get_memberinfo($list3, $user->mail, TRUE);
-    if (!empty($subs3)) {
+    if (!empty($subs3) && $subs3['status'] == 'subscribed') {
       $form['mailchimp_lists']['mailchimp_92765']['subscribe']['#default_value'] = 1;
       $form['mailchimp_lists']['mailchimp_92765']['subscribe']['#attributes']['checked'] = 'checked';
     }
