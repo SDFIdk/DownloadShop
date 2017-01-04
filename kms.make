@@ -72,12 +72,12 @@ projects[addressfield][type] = "module"
 
 ;admin_menu
 projects[admin_menu][subdir] = "contrib"
-projects[admin_menu][version] = "3.0-rc3"
+projects[admin_menu][version] = "3.0-rc5"
 projects[admin_menu][type] = "module"
 
 ;background_process
 projects[background_process][subdir] = "contrib"
-projects[background_process][version] = "1.14"
+projects[background_process][version] = "1.16"
 projects[background_process][type] = "module"
 
 ;beautytips
@@ -92,7 +92,7 @@ projects[better_exposed_filters][type] = "module"
 
 ;boolean
 projects[boolean][subdir] = "contrib"
-projects[boolean][version] = "1.0"
+projects[boolean][version] = "1.1"
 projects[boolean][type] = "module"
 
 ;commerce
@@ -133,7 +133,7 @@ projects[content_access][type] = "module"
 
 ;ctools
 projects[ctools][subdir] = "contrib"
-projects[ctools][version] = "1.2"
+projects[ctools][version] = "1.12"
 projects[ctools][type] = "module"
 
 ;date
@@ -158,12 +158,12 @@ projects[email][type] = "module"
 
 ;entity
 projects[entity][subdir] = "contrib"
-projects[entity][version] = "1.0-rc3"
+projects[entity][version] = "1.8"
 projects[entity][type] = "module"
 
 ;entityreference
 projects[entityreference][subdir] = "contrib"
-projects[entityreference][version] = "1.0"
+projects[entityreference][version] = "1.2"
 projects[entityreference][type] = "module"
 
 ;features
