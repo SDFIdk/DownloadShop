@@ -20,12 +20,6 @@ projects[views][version] = "3.5"
 projects[views][patch][] = "http://drupal.org/files/views_1055616_81_cache.patch"
 projects[views][type] = "module"
 
-;ctools patch
-projects[ctools][subdir] = "contrib"
-projects[ctools][version] = "1.2"
-projects[ctools][patch][] = "https://www.drupal.org/files/1739718-fix-block-warning.patch"
-projects[ctools][type] = "module"
-
 ;config pages
 projects[config_pages][subdir] = "contrib"
 projects[config_pages][version] = "1.8"
