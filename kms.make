@@ -11,13 +11,12 @@ projects[hide_submit][type] = "module"
 ;admin_views -- patched
 projects[admin_views][subdir] = "contrib"
 projects[admin_views][version] = "1.0"
-projects[admin_views][patch][] = "http://drupal.org/files/issues/admin_views-enable-use-of-custom-views-2145183-1.patch"
+projects[admin_views][patch][] = "https://www.drupal.org/files/issues/admin_views-enable-use-of-custom-views-2145183-2.patch"
 projects[admin_views][type] = "module"
 
-;views -- patched
+;views
 projects[views][subdir] = "contrib"
-projects[views][version] = "3.5"
-projects[views][patch][] = "http://drupal.org/files/views_1055616_81_cache.patch"
+projects[views][version] = "3.14"
 projects[views][type] = "module"
 
 ;config pages
@@ -177,7 +176,7 @@ projects[field_permissions][type] = "module"
 
 ;filefield_sources
 projects[filefield_sources][subdir] = "contrib"
-projects[filefield_sources][version] = "1.7"
+projects[filefield_sources][version] = "1.10"
 projects[filefield_sources][type] = "module"
 
 ;google_analytics
@@ -217,7 +216,7 @@ projects[link][type] = "module"
 
 ;masquerade
 projects[masquerade][subdir] = "contrib"
-projects[masquerade][version] = "1.0-rc5"
+projects[masquerade][version] = "1.0-rc7"
 projects[masquerade][type] = "module"
 
 ;menu_block
@@ -242,7 +241,7 @@ projects[metatag][type] = "module"
 
 ;migrate
 projects[migrate][subdir] = "contrib"
-projects[migrate][version] = "2.4"
+projects[migrate][version] = "2.8"
 projects[migrate][type] = "module"
 
 ;references
@@ -252,12 +251,12 @@ projects[references][type] = "module"
 
 ;panels
 projects[panels][subdir] = "contrib"
-projects[panels][version] = "3.3"
+projects[panels][version] = "3.8"
 projects[panels][type] = "module"
 
 ;pathauto
 projects[pathauto][subdir] = "contrib"
-projects[pathauto][version] = "1.2"
+projects[pathauto][version] = "1.3"
 projects[pathauto][type] = "module"
 
 ;pm_existing_pages
