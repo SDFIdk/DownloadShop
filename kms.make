@@ -11,20 +11,13 @@ projects[hide_submit][type] = "module"
 ;admin_views -- patched
 projects[admin_views][subdir] = "contrib"
 projects[admin_views][version] = "1.0"
-projects[admin_views][patch][] = "http://drupal.org/files/issues/admin_views-enable-use-of-custom-views-2145183-1.patch"
+projects[admin_views][patch][] = "https://www.drupal.org/files/issues/admin_views-enable-use-of-custom-views-2145183-2.patch"
 projects[admin_views][type] = "module"
 
-;views -- patched
+;views
 projects[views][subdir] = "contrib"
-projects[views][version] = "3.5"
-projects[views][patch][] = "http://drupal.org/files/views_1055616_81_cache.patch"
+projects[views][version] = "3.14"
 projects[views][type] = "module"
-
-;ctools patch
-projects[ctools][subdir] = "contrib"
-projects[ctools][version] = "1.2"
-projects[ctools][patch][] = "https://www.drupal.org/files/1739718-fix-block-warning.patch"
-projects[ctools][type] = "module"
 
 ;config pages
 projects[config_pages][subdir] = "contrib"
@@ -72,12 +65,12 @@ projects[addressfield][type] = "module"
 
 ;admin_menu
 projects[admin_menu][subdir] = "contrib"
-projects[admin_menu][version] = "3.0-rc3"
+projects[admin_menu][version] = "3.0-rc5"
 projects[admin_menu][type] = "module"
 
 ;background_process
 projects[background_process][subdir] = "contrib"
-projects[background_process][version] = "1.14"
+projects[background_process][version] = "1.16"
 projects[background_process][type] = "module"
 
 ;beautytips
@@ -92,7 +85,7 @@ projects[better_exposed_filters][type] = "module"
 
 ;boolean
 projects[boolean][subdir] = "contrib"
-projects[boolean][version] = "1.0"
+projects[boolean][version] = "1.1"
 projects[boolean][type] = "module"
 
 ;commerce
@@ -133,7 +126,7 @@ projects[content_access][type] = "module"
 
 ;ctools
 projects[ctools][subdir] = "contrib"
-projects[ctools][version] = "1.2"
+projects[ctools][version] = "1.12"
 projects[ctools][type] = "module"
 
 ;date
@@ -158,12 +151,12 @@ projects[email][type] = "module"
 
 ;entity
 projects[entity][subdir] = "contrib"
-projects[entity][version] = "1.0-rc3"
+projects[entity][version] = "1.8"
 projects[entity][type] = "module"
 
 ;entityreference
 projects[entityreference][subdir] = "contrib"
-projects[entityreference][version] = "1.0"
+projects[entityreference][version] = "1.2"
 projects[entityreference][type] = "module"
 
 ;features
@@ -183,7 +176,7 @@ projects[field_permissions][type] = "module"
 
 ;filefield_sources
 projects[filefield_sources][subdir] = "contrib"
-projects[filefield_sources][version] = "1.7"
+projects[filefield_sources][version] = "1.10"
 projects[filefield_sources][type] = "module"
 
 ;google_analytics
@@ -223,7 +216,7 @@ projects[link][type] = "module"
 
 ;masquerade
 projects[masquerade][subdir] = "contrib"
-projects[masquerade][version] = "1.0-rc5"
+projects[masquerade][version] = "1.0-rc7"
 projects[masquerade][type] = "module"
 
 ;menu_block
@@ -248,7 +241,7 @@ projects[metatag][type] = "module"
 
 ;migrate
 projects[migrate][subdir] = "contrib"
-projects[migrate][version] = "2.4"
+projects[migrate][version] = "2.8"
 projects[migrate][type] = "module"
 
 ;references
@@ -258,12 +251,12 @@ projects[references][type] = "module"
 
 ;panels
 projects[panels][subdir] = "contrib"
-projects[panels][version] = "3.3"
+projects[panels][version] = "3.8"
 projects[panels][type] = "module"
 
 ;pathauto
 projects[pathauto][subdir] = "contrib"
-projects[pathauto][version] = "1.2"
+projects[pathauto][version] = "1.3"
 projects[pathauto][type] = "module"
 
 ;pm_existing_pages
