@@ -220,3 +220,42 @@ function kms_user_log_page($account) {
   return $header . '<div class="page-admin">' . $table . '</div>';
 }
 
+/**
+ * Implements hook_cronapi().
+ */
+function kms_user_log_cronapi() {
+  $items = array();
+  $items['kms_user_log_initialize'] = array(
+    'title' => t('Initialize user log data'),
+    'enabled' => FALSE
+  );
+  return $items;
+}
+
+function kms_user_log_initialize() {
+  $kms_user_log_processed_uid = variable_get('kms_user_log_processed_uid', 2);
+  if ($kms_user_log_processed_uid === FALSE ) {
+    return;
+  }
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'user')
+    ->propertyCondition('status', 1)
+    ->propertyCondition('uid', $kms_user_log_processed_uid, '>')
+    ->propertyOrderBy('uid')
+    ->range(0, 50)
+    ->addMetaData('account', user_load(1));
+
+  $result = $query->execute();
+  
+  $uid = FALSE;
+  if (!empty($result['user'])) {
+    foreach ($result['user'] as $uid => $arr) {
+      $account = user_load($uid); 
+      print_r($uid); echo PHP_EOL;
+      kms_user_log_create_entry($account);
+      usleep(100);
+    }
+  }
+  variable_set('kms_user_log_processed_uid', $uid);
+}
+
