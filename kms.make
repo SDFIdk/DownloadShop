@@ -321,7 +321,7 @@ projects[token][type] = "module"
 
 ;ultimate_cron
 projects[ultimate_cron][subdir] = "contrib"
-projects[ultimate_cron][version] = "1.9"
+projects[ultimate_cron][version] = "2.2"
 projects[ultimate_cron][type] = "module"
 
 ;views_bulk_operations

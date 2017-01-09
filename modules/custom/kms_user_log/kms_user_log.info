@@ -1,0 +1,4 @@
+name = KMS user log
+package = KMS
+description = "Create/view log for user changes"
+core = 7.x
