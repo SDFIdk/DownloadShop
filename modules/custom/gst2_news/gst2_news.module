@@ -85,6 +85,24 @@ function gst2_news_form_mailchimp_signup_subscribe_block_newsletter_form_alter(&
     $form['mergevars']['EMAIL']['#value'] = $user->mail;
     $form['mergevars']['EMAIL']['#disabled'] = TRUE;
 
+    $uw = entity_metadata_wrapper('user', $user);
+    $form['mergevars']['FNAME']['#value'] = $uw->field_address->first_name->value();
+    $form['mergevars']['LNAME']['#value'] = $uw->field_address->last_name->value();
+    $form['mergevars']['FNAME']['#type'] = 'hidden';
+    $form['mergevars']['LNAME']['#type'] = 'hidden';
+    
+    $usertype = $uw->field_user_type->value();
+
+    for ($i=0; $i<4; $i++) {
+      $t = $i+1;
+      if (!empty($usertype[$i])) {
+        $form['mergevars']["TYPE$t"]['#value'] = $usertype[$i]->name;
+      } else {
+        $form['mergevars']["TYPE$t"]['#value'] = '';
+      }
+      $form['mergevars']["TYPE$t"]['#type'] = 'hidden';
+    }
+
     $list1 = $form['mailchimp_lists']['mailchimp_92769']['subscribe']['#return_value'];
     $subs1 = mailchimp_get_memberinfo($list1, $user->mail, TRUE);
     if (!empty($subs1) && $subs1['status'] == 'subscribed') {
@@ -142,5 +160,49 @@ function news_subscription_custom_handler(&$form, &$form_state) {
     if ($subscription['subscribe'] === 0) {
       mailchimp_unsubscribe($form['mailchimp_lists'][$key]['subscribe']['#return_value'], $form_state['values']['mergevars']['EMAIL'], TRUE);
     }
+  }
+}
+
+function gst2_news_user_insert($edit, $account, $category) {
+  gst2_news_signup($account);
+}
+
+function gst2_news_user_update($edit, $account, $category) {
+  gst2_news_signup($account);
+}
+
+function gst2_news_signup($account) {
+
+  // If it's not a new user and the subscription status don't change, just skip.
+  // TODO: check if name or usertype has been changed
+  if (empty($account->is_new) &&
+     ($account->original->field_contact_me[LANGUAGE_NONE][0]['value'] == $account->field_contact_me[LANGUAGE_NONE][0]['value']) ) {
+    return;
+  }
+  
+  // If it's not the user updating their own profile, just skip.
+  if (empty($account->is_new) && ($account->uid != $GLOBALS['user']->uid)) {
+    return;
+  }
+
+  if (!empty($account->field_contact_me[LANGUAGE_NONE][0]['value'])) {
+    $uw = entity_metadata_wrapper('user', $account);
+    $merge_vars = array(
+      'EMAIL' => $account->mail,
+      'FNAME' => empty($uw->field_address->value()) ? '' : $uw->field_address->first_name->value(),
+      'LNAME' => empty($uw->field_address->value()) ? '' : $uw->field_address->last_name->value()
+    );
+    $usertype = $uw->field_user_type->value();
+    for ($i=0; $i<4; $i++) {
+      $t = $i+1;
+      if (!empty($usertype[$i])) {
+        $merge_vars["TYPE$t"] = $usertype[$i]->name;
+      } else {
+        $merge_vars["TYPE$t"] = '';
+      }
+    }
+    mailchimp_subscribe('8877f51385', $account->mail, $merge_vars);
+  } else {
+    mailchimp_unsubscribe('8877f51385', $account->mail);
   }
 }
