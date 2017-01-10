@@ -187,10 +187,11 @@ function gst2_news_signup($account) {
 
   if (!empty($account->field_contact_me[LANGUAGE_NONE][0]['value'])) {
     $uw = entity_metadata_wrapper('user', $account);
+    $address = $uw->field_address->value();
     $merge_vars = array(
       'EMAIL' => $account->mail,
-      'FNAME' => empty($uw->field_address->value()) ? '' : $uw->field_address->first_name->value(),
-      'LNAME' => empty($uw->field_address->value()) ? '' : $uw->field_address->last_name->value()
+      'FNAME' => empty($address) ? '' : $uw->field_address->first_name->value(),
+      'LNAME' => empty($address) ? '' : $uw->field_address->last_name->value()
     );
     $usertype = $uw->field_user_type->value();
     for ($i=0; $i<4; $i++) {
