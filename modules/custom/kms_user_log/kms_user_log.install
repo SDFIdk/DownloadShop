@@ -18,11 +18,13 @@ function kms_user_log_schema() {
       'uid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
       'aid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
       'created' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'checksum' => array('type' => 'varchar', 'length' => 40, 'not null' => TRUE, 'default' => ''),
       'data' => array('type' => 'blob', 'not null' => TRUE, 'serialize' => TRUE),
     ),
     'indexes' => array(
       'uid' => array('uid'),
       'created' => array('created'),
+      'checksum' => array('checksum'),
     ),
     'primary key' => array('lid'),
   );
