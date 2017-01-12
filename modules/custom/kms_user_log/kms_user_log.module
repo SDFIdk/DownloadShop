@@ -39,18 +39,21 @@ function kms_user_log_create_entry($account) {
 	  'theme',
 	  'pass',
 	);
-
+  
+  // Clone account to prevent data loss.
+  $data = clone $account;
 	foreach ($properties as $property) {
-	  if (property_exists($account, $property)) {
-	  	unset($account->{$property});
+	  if (property_exists($data, $property)) {
+	  	unset($data->{$property});
 	  }
   }
 
 	$entry = array(
-    'uid' => $account->uid,
+    'uid' => $data->uid,
     'aid' => $GLOBALS['user']->uid,
     'created' => REQUEST_TIME,
-    'data' => $account,
+    'checksum' => sha1($data),
+    'data' => $data,
 	);
 
   $success = drupal_write_record('kms_user_log', $entry);
@@ -242,7 +245,7 @@ function kms_user_log_initialize() {
     ->propertyCondition('status', 1)
     ->propertyCondition('uid', $kms_user_log_processed_uid, '>')
     ->propertyOrderBy('uid')
-    ->range(0, 50)
+    ->range(0, 200)
     ->addMetaData('account', user_load(1));
 
   $result = $query->execute();
@@ -251,7 +254,6 @@ function kms_user_log_initialize() {
   if (!empty($result['user'])) {
     foreach ($result['user'] as $uid => $arr) {
       $account = user_load($uid); 
-      print_r($uid); echo PHP_EOL;
       kms_user_log_create_entry($account);
       usleep(100);
     }

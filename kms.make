@@ -296,7 +296,7 @@ projects[simplehtmldom][type] = "module"
 
 ;smtp
 projects[smtp][subdir] = "contrib"
-projects[smtp][version] = "1.0-beta2"
+projects[smtp][version] = "1.6"
 projects[smtp][type] = "module"
 
 ;strongarm
