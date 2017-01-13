@@ -288,7 +288,12 @@ function kms_usertype_update_cron_job() {
   $new_total_processed = $total_processed + $update_amount;
 
   variable_set('kms_usertype_update_processed', $new_total_processed);
-  watchdog('kms_usertype_update_cron', sprintf('%d users was updated and notified regarding change of usertype to Borger, total amount processed %d', $update_amount, $new_total_processed));
+  watchdog('kms_usertype_update_cron', '@update_amount users was updated to Borger, total amount processed @new_total_processed', 
+    array(
+      '@update_amount' => $update_amount,
+      '@new_total_processed' => $new_total_processed
+    )
+  );
 }
 
 function kms_usertype_update_orphan_users() {

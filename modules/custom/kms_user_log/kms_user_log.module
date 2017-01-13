@@ -52,7 +52,7 @@ function kms_user_log_create_entry($account) {
     'uid' => $data->uid,
     'aid' => $GLOBALS['user']->uid,
     'created' => REQUEST_TIME,
-    'checksum' => sha1($data),
+    'checksum' => sha1(serialize($data)),
     'data' => $data,
 	);
 
