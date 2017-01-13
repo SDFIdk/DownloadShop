@@ -84,6 +84,7 @@ function gst2_news_form_mailchimp_signup_subscribe_block_newsletter_form_alter(&
   if (!empty($user->mail) && $user->mail !== 'subuser@fake.mail') {
     $form['mergevars']['EMAIL']['#value'] = $user->mail;
     $form['mergevars']['EMAIL']['#disabled'] = TRUE;
+    $form['mergevars']['EMAIL']['#title'] = t($form['mergevars']['EMAIL']['#title']);
 
     $uw = entity_metadata_wrapper('user', $user);
     $form['mergevars']['FNAME']['#value'] = $uw->field_address->first_name->value();
