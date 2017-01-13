@@ -331,7 +331,7 @@ projects[views_bulk_operations][type] = "module"
 
 ;views_data_export
 projects[views_data_export][subdir] = "contrib"
-projects[views_data_export][version] = "3.0-beta6"
+projects[views_data_export][version] = "3.1"
 projects[views_data_export][type] = "module"
 
 ;wysiwyg
