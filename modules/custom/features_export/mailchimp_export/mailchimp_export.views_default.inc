@@ -175,6 +175,8 @@ function mailchimp_export_views_default_views() {
     'page' => 'page',
     'default' => 0,
   );
+  $handler->display->display_options['use_batch'] = 'batch';
+  $handler->display->display_options['segment_size'] = '150';
   $translatables['export_users_with_consent'] = array(
     t('Master'),
     t('Export users to mailchimp'),
