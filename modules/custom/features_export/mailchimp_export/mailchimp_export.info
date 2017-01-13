@@ -1,8 +1,10 @@
 name = Mailchimp export
 core = 7.x
 package = Features
+php = 5.2.4
 dependencies[] = ctools
 dependencies[] = views
 features[ctools][] = views:views_default:3.0
 features[features_api][] = api:1
 features[views_view][] = export_users_with_consent
+mtime = 1484314709
