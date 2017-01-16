@@ -455,3 +455,33 @@ function kms_update_7017(&$sandbox) {
 function kms_update_7018(&$sandbox) {
   module_enable(array('taxonomy_manager'));
 }
+
+/**
+ * Enable mailchimp module.
+ *
+ * @author Tom Helmer Hansen <tom@adapt.dk>
+ */
+function kms_update_7019(&$sandbox) {
+  module_enable(array('mailchimp', 'mailchimp_signup', 'gst2_news', 'kms_pands', 'kms_services', 'config_pages', 'mailchimp_export'));
+}
+
+ // Solves 1-time migration described in GST-179
+
+function kms_update_7020(&$sandbox) {
+  $admins = array("tw2", "jolde", "aeh");
+  foreach ($admins as $admin) {
+    $account = user_load_by_name($admin);
+    $results = relation_query('user', $account->uid, 1)
+      ->entityCondition('bundle', 'subuser')
+      ->execute();
+    foreach ($results as $result) {
+      if ($relation = relation_load($result->rid, $result->vid)) {
+        $uid = (int) $relation->endpoints[LANGUAGE_NONE][0]['entity_id'];
+        echo "Deleting relation " . $result->rid . PHP_EOL;
+        relation_delete($result->rid);
+        echo "Removing subuser role from " . $uid . PHP_EOL;
+        user_multiple_role_edit(array($uid), 'remove_role', 9);
+      }
+    }
+  }
+}

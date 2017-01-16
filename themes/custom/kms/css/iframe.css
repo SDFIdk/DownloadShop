@@ -1,0 +1,20 @@
+/* line 1, ../sass/iframe.scss */
+body.page-edit-profile,
+body.page-add-profile {
+  background: none;
+  min-width: 0;
+}
+/* line 6, ../sass/iframe.scss */
+body.page-edit-profile #page,
+body.page-add-profile #page {
+  width: 100%;
+}
+
+/* line 10, ../sass/iframe.scss */
+html body.admin-menu {
+  margin-top: 0px !important;
+}
+/* line 13, ../sass/iframe.scss */
+html body.admin-menu #admin-menu {
+  display: none;
+}

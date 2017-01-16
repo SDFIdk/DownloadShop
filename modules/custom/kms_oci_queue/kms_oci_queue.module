@@ -349,12 +349,12 @@ function kms_oci_queue_get_job_ids($job_statuses = array()) {
 function kms_oci_queue_admin_page() {
   $options = array('query' => array('destination' => 'admin/reports/kms-oci-queue'));
   $prefix[] = l(
-    'Creator queue',
+    'Create queue from waiting jobs',
     'admin/ultimate-cron/service/start/kms_oci_queue_query_creator_run',
     $options
   );
   $prefix[] = l(
-    'Query queue',
+    'Process queue items marked as processing',
     'admin/ultimate-cron/service/start/ultimate_cron_queue_kms_oci_queue_query',
     $options
   );

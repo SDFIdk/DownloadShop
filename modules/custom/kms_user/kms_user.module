@@ -181,6 +181,7 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
     $form['account']['name']['#description'] = t(
       'Spaces are not allowed; punctuation is not allowed except for periods, hyphens, apostrophes, and underscores.'
     );
+    $form['account']['name']['#access'] = true;
 
     $form['field_terms_and_conditions']['#after_build'] = array('kms_user_form_after_build');
 
@@ -203,6 +204,9 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
             }
           }
         }
+ 
+        $form['#fieldgroups']['group_user_type']->weight = 6;
+
         // The terms and conditions must(!) be accepted on the register-form.
         // After that the terms and conditions can NOT be altered by the user.
         // So we change the default value to 'accepted',
@@ -225,14 +229,22 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
         ->condition('entity_id', $form['#user']->uid, '=')
         ->execute()
         ->fetchAssoc();
-        $form['field_contact_me'][LANGUAGE_NONE]['#default_value'] = $user_contact_me['field_contact_me_value'];
 
+        $form['field_contact_me'][LANGUAGE_NONE]['#title'] = t('User profile survey consent');
+        $form['field_contact_me'][LANGUAGE_NONE]['#default_value'] = $user_contact_me['field_contact_me_value'];
+        
+        /*
         $user_newsletter = db_select('field_data_field_newsletter', 'news')
         ->fields('news', array('field_newsletter_value'))
         ->condition('entity_id', $form['#user']->uid, '=')
         ->execute()
         ->fetchAssoc();
         $form['field_newsletter'][LANGUAGE_NONE]['#default_value'] = $user_newsletter['field_newsletter_value'];
+        */
+       
+        // Newsletters are moved to mailchimp.
+        // This field should be removed entirely.
+        $form['field_newsletter']['#access'] = FALSE;
 
         // No one should be able to change clear text password in admin area.
         $form['field_pass_clear']['#disabled'] = TRUE;
@@ -245,16 +257,7 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
           '#weight' => -100,
         );
 
-        // Add user settings to js.
-        drupal_add_js(
-          array(
-            'kms_user' => array(
-              'isSuperAdmin' => kms_user_is_superadmin($user),
-              'uid' => $user->uid,
-            ),
-          ),
-          'setting'
-        );
+        kms_user_js_settings();
 
         // Do not allow editing of user type to anybody else than super admin.
         if (!kms_user_is_superadmin($user)) {
@@ -270,6 +273,13 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
       case 'user_register_form':
         // They do not want a fieldset title on address.
         $form['field_address'][LANGUAGE_NONE][0]['#title'] = '';
+
+        // Newsletters are moved to mailchimp.
+        // This field should be removed entirely.
+        $form['field_newsletter']['#access'] = FALSE;
+
+        $form['field_contact_me'][LANGUAGE_NONE]['#title'] = t('User profile survey consent');
+
         // We need to store the new password.
         $form['#submit'][] = '_kms_user_insert_user_pass';
         // Store user data in Oracle.
@@ -283,6 +293,20 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
     $form['#validate'][] = '_kms_user_user_pass_validate';
   }
 
+}
+
+function kms_user_js_settings() {
+  global $user;
+  // Add user settings to js.
+  drupal_add_js(
+    array(
+      'kms_user' => array(
+        'isSuperAdmin' => kms_user_is_superadmin($user),
+        'uid' => $user->uid,
+      ),
+    ),
+    'setting'
+  );
 }
 
 function _kms_user_user_pass_validate($form, &$form_state) {
@@ -1133,7 +1157,6 @@ function kms_user_vbo_add_access_bundles(&$account, $context = array()) {
     kms_user_vbo_access_bundle_finished('add', $context);
   }
 }
-
 
 /**
  * Clear all access bundles from a user.

@@ -1,3 +1,4 @@
+@charset "UTF-8";
 /* Welcome to Compass.
  * In this file you should write your main styles. (or centralize your imports)
  * Import this file using the following HTML or equivalent:
@@ -103,7 +104,7 @@ h1, .commerce-product-title {
 }
 /* line 200, ../sass/screen.scss */
 #mini-panel-top .main-menu .pane-content li a:hover, #mini-panel-top .main-menu .pane-content li a.active {
-  background: url("../images/arrow-black.gif") no-repeat scroll 6px 10px #e5e7df;
+  background: url("../images/arrow-black.gif") no-repeat scroll 6px 10px #E5E7DF;
   color: black;
 }
 /* line 209, ../sass/screen.scss */
@@ -225,13 +226,11 @@ h1, .commerce-product-title {
   /* IE10+ */
   background: linear-gradient(to bottom, #dee3d1 0%, #eff2e7 100%);
   /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#dee3d1', endColorstr='#eff2e7',GradientType=0 );
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dee3d1', endColorstr='#eff2e7',GradientType=0 );
   /* IE6-8 */
   padding: 0px 10px;
-  -webkit-border-radius: 4px;
   -moz-border-radius: 4px;
-  -ms-border-radius: 4px;
-  -o-border-radius: 4px;
+  -webkit-border-radius: 4px;
   border-radius: 4px;
 }
 /* line 321, ../sass/screen.scss */
@@ -243,10 +242,8 @@ h1, .commerce-product-title {
 .panel-2col-stacked > .center-wrapper > .panel-col-last .pane-commerce-cart-cart .view-footer li {
   background: #fff;
   padding: 5px;
-  -webkit-border-radius: 4px;
   -moz-border-radius: 4px;
-  -ms-border-radius: 4px;
-  -o-border-radius: 4px;
+  -webkit-border-radius: 4px;
   border-radius: 4px;
   background: white;
   /* Old browsers */
@@ -264,7 +261,7 @@ h1, .commerce-product-title {
   /* IE10+ */
   background: linear-gradient(to bottom, #ffffff 0%, #f4f4f4 99%);
   /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#f4f4f4',GradientType=0 );
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#f4f4f4',GradientType=0 );
   /* IE6-8 */
   border: 1px solid #D5D5D5;
 }
@@ -326,7 +323,7 @@ h1, .commerce-product-title {
   /* IE10+ */
   background: linear-gradient(to bottom, #ffffff 0%, #f4f4f4 20%);
   /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#f4f4f4',GradientType=0 );
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#f4f4f4',GradientType=0 );
   /* IE6-8 */
   clear: both;
   overflow: auto;
@@ -390,7 +387,7 @@ h1, .commerce-product-title {
   /* IE10+ */
   background: linear-gradient(to bottom, #ffffff 0%, #f4f4f4 99%);
   /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#f4f4f4',GradientType=0 );
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#f4f4f4',GradientType=0 );
   /* IE6-8 */
   -moz-border-radius-topleft: 4px;
   -webkit-border-top-left-radius: 4px;
@@ -531,7 +528,7 @@ h1, .commerce-product-title {
   /* IE10+ */
   background: linear-gradient(to bottom, #ffffff 0%, #f4f4f4 20%);
   /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#f4f4f4',GradientType=0 );
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#f4f4f4',GradientType=0 );
   /* IE6-8 */
   float: left;
   margin-right: 5px;
@@ -1022,39 +1019,27 @@ div.messages.status em {
 }
 
 @-moz-keyframes fademeessage {
-  /* line 1025, ../sass/screen.scss */
   0% {
     background: #eff2e8;
   }
-
-  /* line 1028, ../sass/screen.scss */
   50% {
     background: #cfd2c6;
   }
-
-  /* line 1031, ../sass/screen.scss */
   100% {
     background: #eff2e8;
   }
 }
-
 @-webkit-keyframes fademeessage {
-  /* line 1036, ../sass/screen.scss */
   0% {
     background: #eff2e8;
   }
-
-  /* line 1039, ../sass/screen.scss */
   50% {
     background: #cfd2c6;
   }
-
-  /* line 1042, ../sass/screen.scss */
   100% {
     background: #eff2e8;
   }
 }
-
 /* line 1047, ../sass/screen.scss */
 .commerce-line-item-actions .form-submit {
   background: #97bc00;
@@ -1216,10 +1201,8 @@ span.file-size {
 
 /* line 1200, ../sass/screen.scss */
 input.form-text {
-  -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
-  -ms-border-radius: 3px;
-  -o-border-radius: 3px;
+  -webkit-border-radius: 3px;
   border-radius: 3px;
   height: 25px;
   background: white;
@@ -1238,17 +1221,15 @@ input.form-text {
   /* IE10+ */
   background: linear-gradient(to bottom, #ffffff 0%, #f4f4f4 9%, #ffffff 79%);
   /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#ffffff',GradientType=0 );
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ffffff',GradientType=0 );
   /* IE6-8 */
   padding: 0px 5px;
 }
 
 /* line 1207, ../sass/screen.scss */
 textarea.form-textarea {
-  -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
-  -ms-border-radius: 3px;
-  -o-border-radius: 3px;
+  -webkit-border-radius: 3px;
   border-radius: 3px;
   background: white;
   /* Old browsers */
@@ -1266,7 +1247,7 @@ textarea.form-textarea {
   /* IE10+ */
   background: linear-gradient(to bottom, #ffffff 0%, #f4f4f4 9%, #ffffff 79%);
   /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#ffffff',GradientType=0 );
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ffffff',GradientType=0 );
   /* IE6-8 */
   padding: 5px;
 }
@@ -1294,12 +1275,10 @@ input.form-submit {
   /* IE10+ */
   background: linear-gradient(to bottom, #f2f2f2 0%, #ffffff 12%, #ededed 91%, #f9f9f9 100%);
   /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#f2f2f2', endColorstr='#f9f9f9',GradientType=0 );
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f2f2f2', endColorstr='#f9f9f9',GradientType=0 );
   /* IE6-8 */
-  -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
-  -ms-border-radius: 3px;
-  -o-border-radius: 3px;
+  -webkit-border-radius: 3px;
   border-radius: 3px;
   border: none;
   height: 30px;
@@ -1329,7 +1308,7 @@ input.form-submit:hover {
   /* IE10+ */
   background: linear-gradient(to bottom, #f9f9f9 0%, #ededed 9%, #ffffff 88%, #f2f2f2 100%);
   /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#f9f9f9', endColorstr='#f2f2f2',GradientType=0 );
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f9f9f9', endColorstr='#f2f2f2',GradientType=0 );
   /* IE6-8 */
   color: #212121;
 }
@@ -1337,10 +1316,8 @@ input.form-submit:hover {
 /* Status messages */
 /* line 1236, ../sass/screen.scss */
 div.messages, tr.error {
-  -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
-  -ms-border-radius: 3px;
-  -o-border-radius: 3px;
+  -webkit-border-radius: 3px;
   border-radius: 3px;
   padding: 5px;
   color: #333 !important;
@@ -1352,14 +1329,12 @@ div.messages, tr.error {
 #terms_and_conditions {
   background: #fff;
   width: 700px;
-  -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
-  -ms-border-radius: 5px;
-  -o-border-radius: 5px;
+  -webkit-border-radius: 5px;
   border-radius: 5px;
-  -webkit-box-shadow: 0px 0px 5px #333333;
-  -moz-box-shadow: 0px 0px 5px #333333;
-  box-shadow: 0px 0px 5px #333333;
+  -moz-box-shadow: 0px 5px #333333;
+  -webkit-box-shadow: 0px 5px #333333;
+  box-shadow: 0px 5px #333333;
   padding: 10px;
   background: white;
   /* Old browsers */
@@ -1377,7 +1352,7 @@ div.messages, tr.error {
   /* IE10+ */
   background: linear-gradient(to bottom, #ffffff 1%, #dddddd 22%, #ffffff 100%);
   /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#ffffff',GradientType=0 );
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ffffff',GradientType=0 );
   /* IE6-8 */
   min-height: 150px;
   border: 1px solid #e0e0e0;
@@ -1411,7 +1386,7 @@ div.messages, tr.error {
   /* IE10+ */
   background: linear-gradient(to bottom, #ffffff 1%, #e5e5e5 13%, #ffffff 100%);
   /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#ffffff',GradientType=0 );
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#ffffff',GradientType=0 );
   /* IE6-8 */
 }
 
@@ -1482,7 +1457,7 @@ table.mydownloads thead th {
   /* IE10+ */
   background: linear-gradient(to bottom, #ffffff 0%, #f4f4f4 99%);
   /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#f4f4f4',GradientType=0 );
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#f4f4f4',GradientType=0 );
   /* IE6-8 */
 }
 /* line 1323, ../sass/screen.scss */
@@ -1538,7 +1513,7 @@ table.mydownloads div.product-details {
   /* IE10+ */
   background: linear-gradient(to bottom, #ffffff 0%, #f4f4f4 99%);
   /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#ffffff', endColorstr='#f4f4f4',GradientType=0 );
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#f4f4f4',GradientType=0 );
   /* IE6-8 */
 }
 /* line 1361, ../sass/screen.scss */
@@ -1552,10 +1527,8 @@ table.mydownloads div.product-details {
 }
 /* line 1368, ../sass/screen.scss */
 .page-cart .cart-add-more, .page-checkout .cart-add-more {
-  -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
-  -ms-border-radius: 3px;
-  -o-border-radius: 3px;
+  -webkit-border-radius: 3px;
   border-radius: 3px;
   background-color: #333333;
   padding: 7px 10px;
@@ -1601,10 +1574,8 @@ table.mydownloads div.product-details {
 /* line 1417, ../sass/screen.scss */
 #geosearch {
   margin-top: 15px;
-  -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
-  -ms-border-radius: 3px;
-  -o-border-radius: 3px;
+  -webkit-border-radius: 3px;
   border-radius: 3px;
   height: 30px;
   line-height: 25px;
@@ -1616,10 +1587,8 @@ table.mydownloads div.product-details {
 
 /* line 1428, ../sass/screen.scss */
 .ui-autocomplete.ui-menu {
-  -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
-  -ms-border-radius: 3px;
-  -o-border-radius: 3px;
+  -webkit-border-radius: 3px;
   border-radius: 3px;
   border: 1px solid #cccccc;
 }
@@ -1645,7 +1614,7 @@ table.mydownloads div.product-details {
   /* IE10+ */
   background: linear-gradient(to bottom, #f2f2f2 0%, #ffffff 12%, #ededed 91%, #f9f9f9 100%);
   /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#f2f2f2', endColorstr='#f9f9f9',GradientType=0 );
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f2f2f2', endColorstr='#f9f9f9',GradientType=0 );
   /* IE6-8 */
   border: 1px solid #CCCCCC;
   color: #333;
@@ -1925,10 +1894,8 @@ ul.controlToggle li.csv button:hover {
   font-size: 12px;
   font-weight: bold;
   padding: 8px 10px;
-  -webkit-border-radius: 3px;
   -moz-border-radius: 3px;
-  -ms-border-radius: 3px;
-  -o-border-radius: 3px;
+  -webkit-border-radius: 3px;
   border-radius: 3px;
 }
 /* line 1686, ../sass/screen.scss */
@@ -1999,4 +1966,923 @@ ul.controlToggle li.csv button:hover {
   border-bottom: 1px dotted #999999;
   padding-bottom: 9px;
   margin-bottom: 9px;
+}
+
+/*iframe løsning*/
+/* line 1756, ../sass/screen.scss */
+body.page-edit-profile .pane-user-login {
+  background: #f1f3eb;
+  overflow: hidden;
+  margin: 0 0 10px;
+  border-bottom: #d0d7c8 3px solid;
+  width: 25%;
+}
+@media screen and (max-width: 945px) {
+  /* line 1756, ../sass/screen.scss */
+  body.page-edit-profile .pane-user-login {
+    width: 33%;
+  }
+}
+@media screen and (max-width: 700px) {
+  /* line 1756, ../sass/screen.scss */
+  body.page-edit-profile .pane-user-login {
+    width: 100%;
+  }
+}
+/* line 1770, ../sass/screen.scss */
+body.page-edit-profile .pane-user-login h2 {
+  background: #b4bba4;
+  margin: 0;
+  padding: 5px 15px 5px 15px;
+  font-size: 18px;
+  line-height: 1.6;
+}
+/* line 1778, ../sass/screen.scss */
+body.page-edit-profile .pane-user-login label {
+  padding: 10px 15px 0;
+  font-size: 14px;
+}
+/* line 1783, ../sass/screen.scss */
+body.page-edit-profile .pane-user-login input[type="text"],
+body.page-edit-profile .pane-user-login input[type="password"] {
+  width: calc(100% - 60px);
+  padding: 5px 15px;
+  margin: 0 15px 10px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+/* line 1793, ../sass/screen.scss */
+body.page-edit-profile .pane-user-login ul {
+  margin: 0 15px;
+}
+/* line 1796, ../sass/screen.scss */
+body.page-edit-profile .pane-user-login ul li {
+  padding-bottom: 5px;
+}
+/* line 1801, ../sass/screen.scss */
+body.page-edit-profile .pane-user-login input[type="submit"] {
+  margin: 10px 15px;
+  background: #97BC00;
+  border: none;
+  border-radius: 5px;
+  min-width: 100px;
+  color: #fff;
+  height: 37px;
+}
+/* line 1816, ../sass/screen.scss */
+body.page-edit-profile .panel-2col-stacked > .center-wrapper > .panel-col-first {
+  width: calc(25% - 30px);
+  padding: 15px;
+}
+@media screen and (max-width: 945px) {
+  /* line 1816, ../sass/screen.scss */
+  body.page-edit-profile .panel-2col-stacked > .center-wrapper > .panel-col-first {
+    width: calc(33% - 30px);
+  }
+}
+@media screen and (max-width: 700px) {
+  /* line 1816, ../sass/screen.scss */
+  body.page-edit-profile .panel-2col-stacked > .center-wrapper > .panel-col-first {
+    width: calc(100% - 30px);
+  }
+}
+/* line 1828, ../sass/screen.scss */
+body.page-edit-profile .panel-2col-stacked > .center-wrapper > .panel-col-last {
+  background: none;
+  width: 75%;
+  border-bottom: none;
+}
+@media screen and (max-width: 945px) {
+  /* line 1828, ../sass/screen.scss */
+  body.page-edit-profile .panel-2col-stacked > .center-wrapper > .panel-col-last {
+    width: calc(67% - 30px);
+  }
+}
+@media screen and (max-width: 700px) {
+  /* line 1828, ../sass/screen.scss */
+  body.page-edit-profile .panel-2col-stacked > .center-wrapper > .panel-col-last {
+    width: 100%;
+  }
+}
+/* line 1840, ../sass/screen.scss */
+body.page-edit-profile .panel-2col-stacked > .center-wrapper > .panel-col-last .pane-content {
+  padding-top: 15px !important;
+}
+/* line 1845, ../sass/screen.scss */
+body.page-edit-profile .panel-2col-stacked > .center-wrapper > .panel-col-last .pane-page-title .pane-content {
+  padding: 0 15px;
+}
+/* line 1848, ../sass/screen.scss */
+body.page-edit-profile .panel-2col-stacked > .center-wrapper > .panel-col-last .pane-page-title .pane-content h1 {
+  margin: 0;
+  padding: 5px 15px 5px 0;
+  font-size: 22px;
+}
+/* line 1863, ../sass/screen.scss */
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+/* line 1869, ../sass/screen.scss */
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item {
+  background: #f1f3eb;
+  margin: 5px 0;
+  position: relative;
+}
+/* line 1874, ../sass/screen.scss */
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item label {
+  padding: 10px 20px 0;
+  font-size: 14px;
+}
+/* line 1878, ../sass/screen.scss */
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item label[for="edit-pass-pass2"] {
+  background: none;
+}
+/* line 1883, ../sass/screen.scss */
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item select {
+  width: 100%;
+  display: inline-block;
+  margin: 10px 15px;
+  float: none;
+}
+/* line 1890, ../sass/screen.scss */
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item input[type="text"],
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item input[type="password"] {
+  width: calc(40% - 45px);
+  padding: 5px 15px;
+  margin: 10px 0 10px 15px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+/* line 1900, ../sass/screen.scss */
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item em {
+  display: inline-block;
+  margin: 10px 20px;
+}
+/* line 1905, ../sass/screen.scss */
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item .description {
+  display: inline-block;
+  width: calc(60% - 40px);
+  vertical-align: top;
+  margin: 10px 15px;
+}
+/* line 1911, ../sass/screen.scss */
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item .description.password-suggestions {
+  margin: 10px 20px;
+  width: calc(100% - 60px);
+  padding: 10px;
+  border: 1px solid #b4bba4;
+  border-radius: 5px;
+}
+/* line 1918, ../sass/screen.scss */
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item .description.password-suggestions ul {
+  margin-top: 15px;
+  padding-left: 20px;
+}
+/* line 1924, ../sass/screen.scss */
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item .description em {
+  display: inline;
+  margin: 0;
+}
+/* line 1930, ../sass/screen.scss */
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item .confirm-parent,
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item .password-parent {
+  width: 100%;
+}
+/* line 1935, ../sass/screen.scss */
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item div.password-strength,
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-item div.password-confirm {
+  float: none;
+  position: absolute;
+  top: 45px;
+  right: 20px;
+  margin-top: 0;
+}
+/* line 1947, ../sass/screen.scss */
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .field-type-addressfield legend {
+  display: none !important;
+}
+/* line 1951, ../sass/screen.scss */
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .field-type-addressfield .form-item-field-address-und-0-last-name {
+  margin-top: -10px;
+}
+/* line 1956, ../sass/screen.scss */
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form input[type="submit"] {
+  margin: 20px 0;
+  background: #97BC00;
+  border: none;
+  border-radius: 5px;
+  min-width: 100px;
+  color: #fff;
+  height: 37px;
+}
+/* line 1966, ../sass/screen.scss */
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-type-checkbox,
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-type-radio {
+  margin: 0;
+  background: none;
+}
+/* line 1971, ../sass/screen.scss */
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-type-checkbox label,
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-type-radio label {
+  background: none;
+  padding: 10px 20px;
+  font-size: 12px;
+}
+/* line 1977, ../sass/screen.scss */
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-type-checkbox input[type="checkbox"],
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-type-checkbox input[type="radio"],
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-type-radio input[type="checkbox"],
+body.page-edit-profile .pane-kms-user-profile-pane #user-profile-form .form-type-radio input[type="radio"] {
+  padding: 5px 10px;
+  margin: 10px 0 10px 20px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+/* line 1990, ../sass/screen.scss */
+body.page-edit-profile .panel-col-first .panel-pane {
+  background: #f1f3eb;
+  overflow: hidden;
+  margin: 0 0 10px;
+  border-bottom: #d0d7c8 3px solid;
+}
+/* line 1996, ../sass/screen.scss */
+body.page-edit-profile .panel-col-first .panel-pane h2 {
+  background: #b4bba4;
+  margin: 0;
+  padding: 5px 15px 5px 15px;
+  font-size: 18px;
+  line-height: 1.6;
+}
+/* line 2004, ../sass/screen.scss */
+body.page-edit-profile .panel-col-first .panel-pane ul {
+  margin: 0;
+  padding: 0;
+  background: #f1f3eb;
+}
+/* line 2009, ../sass/screen.scss */
+body.page-edit-profile .panel-col-first .panel-pane ul li {
+  -webkit-transition: background 0.3s ease-in-out;
+  -moz-transition: background 0.3s ease-in-out;
+  transition: background 0.3s ease-in-out;
+  list-style: none;
+  border-bottom: 1px solid #b4bba4;
+  padding: 0;
+  line-height: 14px;
+  margin: 0;
+  background: url(../images/collapsed.gif) no-repeat 96% 10px;
+}
+/* line 2020, ../sass/screen.scss */
+body.page-edit-profile .panel-col-first .panel-pane ul li:hover {
+  background-position: 94% 10px;
+}
+/* line 2024, ../sass/screen.scss */
+body.page-edit-profile .panel-col-first .panel-pane ul li a {
+  display: block;
+  background: url(../images/arrow-grey.gif) no-repeat 19px 10px;
+  padding: 9px 20px 10px 45px;
+  text-decoration: none;
+  color: #000;
+}
+/* line 2031, ../sass/screen.scss */
+body.page-edit-profile .panel-col-first .panel-pane ul li a:hover {
+  color: #c2712b;
+}
+/* line 2035, ../sass/screen.scss */
+body.page-edit-profile .panel-col-first .panel-pane ul li a.active-trail {
+  font-weight: 800;
+}
+/* line 2042, ../sass/screen.scss */
+body.page-edit-profile .panel-col-first .panel-pane p {
+  padding: 15px;
+}
+/* line 2052, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #subuser-popup h2 {
+  display: none;
+}
+/* line 2056, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #subuser-popup button {
+  margin: 0 20px 10px 0;
+  background: #97BC00;
+  border: none;
+  border-radius: 5px;
+  min-width: 170px;
+  color: #fff;
+  height: 37px;
+  display: inline-block;
+}
+/* line 2067, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #subuser-popup p {
+  display: inline-block;
+}
+/* line 2074, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper input[type="text"] {
+  width: 300px;
+  padding: 5px 10px;
+  margin: 10px 0 10px 20px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+/* line 2083, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper table {
+  table-layout: fixed;
+  margin-top: 50px;
+}
+/* line 2089, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper table tr th:nth-last-child(-n+2) {
+  width: 50px;
+}
+/* line 2093, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper table tr td:nth-last-child(1) a {
+  color: #c00;
+}
+/* line 2097, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper table tr td:nth-last-child(2) a {
+  color: #0c0;
+}
+/* line 2102, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper table th {
+  background: #f1f3eb;
+  padding: 10px 15px;
+  text-align: left;
+}
+/* line 2108, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #subuser-view-wrapper table td {
+  border-bottom: 1px solid #000;
+  padding: 10px 15px;
+  text-align: left;
+}
+/* line 2118, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content {
+  overflow: hidden;
+}
+/* line 2121, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-header {
+  background-color: #fff;
+  padding: 20px;
+  color: #000;
+}
+/* line 2127, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .modal-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #000;
+  overflow: hidden;
+  white-space: nowrap;
+}
+/* line 2135, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content a.close {
+  color: #000;
+  float: right;
+}
+/* line 2140, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .form-row {
+  overflow: auto;
+  position: relative;
+}
+/* line 2144, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .form-row .form-item {
+  display: inline-block;
+  margin-bottom: 15px;
+  margin-left: 15px;
+  width: calc(50% - 30px);
+}
+/* line 2150, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .form-row .form-item label {
+  width: auto;
+  float: none;
+}
+/* line 2155, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .form-row .form-item input[type="text"] {
+  width: calc(100% - 15px);
+  padding: 5px 10px;
+  margin: 5px 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+/* line 2165, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .form-row .container-inline-date .date-padding {
+  padding: 0;
+  float: none;
+}
+/* line 2169, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .form-row .container-inline-date .date-padding label {
+  display: none;
+}
+/* line 2174, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .form-row .resizable-textarea {
+  margin-left: 0;
+  margin-right: 0;
+}
+/* line 2178, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .form-row .resizable-textarea textarea {
+  width: 500px;
+  padding: 5px 10px;
+  margin: 5px 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+/* line 2189, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .container-inline-date {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+/* line 2194, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .container-inline-date .form-item {
+  display: inline-block;
+  margin-bottom: 15px;
+  margin-left: 15px;
+  width: calc(100% - 15px);
+}
+/* line 2200, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .container-inline-date .form-item label {
+  width: 100%;
+}
+/* line 2204, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .container-inline-date .form-item .date-padding,
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .container-inline-date .form-item .description {
+  padding: 0;
+  width: 50%;
+  display: inline-block;
+}
+/* line 2210, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .container-inline-date .form-item .date-padding .form-item,
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .container-inline-date .form-item .description .form-item {
+  margin-left: 0;
+}
+/* line 2215, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .container-inline-date .form-item input[type="text"] {
+  width: calc(100% - 15px);
+  padding: 5px 10px;
+  margin: 5px 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+/* line 2226, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .form-type-textarea {
+  display: inline-block;
+  margin-bottom: 15px;
+  margin-left: 15px;
+  width: calc(100% - 30px);
+}
+/* line 2232, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .form-type-textarea label {
+  width: 100%;
+  float: none;
+}
+/* line 2236, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .form-type-textarea .resizable {
+  margin: 0;
+}
+/* line 2239, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content .form-type-textarea .resizable textarea {
+  width: 100%;
+  padding: 5px 10px;
+  margin: 5px 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+/* line 2250, ../sass/screen.scss */
+body.page-edit-profile.page-edit-profile-subuser #modalContent .ctools-modal-content input[type="submit"] {
+  background: #97BC00;
+  border: none;
+  border-radius: 5px;
+  min-width: 100px;
+  color: #fff;
+  height: 37px;
+}
+
+/* line 2265, ../sass/screen.scss */
+.pane-mailchimp-signup-newsletter .mailchimp-newsletter-wrapper,
+.pane-mailchimp-signup-newsletter .mailchimp-newsletter-mergefields {
+  background: #f1f3eb;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+}
+/* line 2272, ../sass/screen.scss */
+.pane-mailchimp-signup-newsletter .mailchimp-newsletter-wrapper .form-item,
+.pane-mailchimp-signup-newsletter .mailchimp-newsletter-mergefields .form-item {
+  margin-bottom: 0;
+}
+/* line 2277, ../sass/screen.scss */
+.pane-mailchimp-signup-newsletter input[type="submit"] {
+  background: #97BC00;
+  border: none;
+  border-radius: 5px;
+  min-width: 100px;
+  color: #fff;
+  height: 37px;
+}
+/* line 2286, ../sass/screen.scss */
+.pane-mailchimp-signup-newsletter .form-item {
+  margin-bottom: 20px;
+}
+/* line 2289, ../sass/screen.scss */
+.pane-mailchimp-signup-newsletter .form-item label {
+  width: auto;
+  float: none;
+}
+/* line 2294, ../sass/screen.scss */
+.pane-mailchimp-signup-newsletter .form-item input[type="text"] {
+  width: 300px;
+  padding: 5px 10px;
+  margin: 5px 0;
+  background: #EEE;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* line 2307, ../sass/screen.scss */
+.feeds .pane-content {
+  background: #f1f3eb;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  overflow: auto;
+}
+/* line 2314, ../sass/screen.scss */
+.feeds .pane-content .field-type-text-long {
+  margin-bottom: 30px;
+}
+/* line 2318, ../sass/screen.scss */
+.feeds .pane-content .field-type-text {
+  width: 60%;
+  float: left;
+}
+/* line 2323, ../sass/screen.scss */
+.feeds .pane-content .field-type-link-field {
+  width: 40%;
+  float: left;
+  margin-bottom: 30px;
+}
+/* line 2328, ../sass/screen.scss */
+.feeds .pane-content .field-type-link-field a {
+  font-size: 16px;
+  color: #000;
+  text-decoration: underline;
+}
+/* line 2333, ../sass/screen.scss */
+.feeds .pane-content .field-type-link-field a:after {
+  content: url(../images/rss.png);
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  padding: 5px;
+}
+
+/* line 2345, ../sass/screen.scss */
+.pane-info-subuser .master-info,
+.pane-info-subuser .user-info {
+  background: #f1f3eb;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  overflow: auto;
+}
+/* line 2355, ../sass/screen.scss */
+.pane-info-subuser .master-info > div.subuser-notice,
+.pane-info-subuser .user-info > div.subuser-notice {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+/* line 2360, ../sass/screen.scss */
+.pane-info-subuser .master-info > div.title,
+.pane-info-subuser .user-info > div.title {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+/* line 2365, ../sass/screen.scss */
+.pane-info-subuser .master-info > div > div,
+.pane-info-subuser .user-info > div > div {
+  width: 80%;
+  float: left;
+  margin-bottom: 10px;
+  height: 14px;
+  border-bottom: 1px solid #b4bba4;
+}
+/* line 2372, ../sass/screen.scss */
+.pane-info-subuser .master-info > div > div:first-child,
+.pane-info-subuser .user-info > div > div:first-child {
+  width: 20%;
+}
+
+/* line 2382, ../sass/screen.scss */
+.page-edit-profile-password .panel-1col {
+  margin: 0 15px 15px;
+  width: 50%;
+}
+@media screen and (max-width: 945px) {
+  /* line 2382, ../sass/screen.scss */
+  .page-edit-profile-password .panel-1col {
+    width: 100%;
+  }
+}
+@media screen and (max-width: 700px) {
+  /* line 2382, ../sass/screen.scss */
+  .page-edit-profile-password .panel-1col {
+    width: 100%;
+  }
+}
+/* line 2393, ../sass/screen.scss */
+.page-edit-profile-password .panel-1col label {
+  padding: 10px 15px 0;
+  font-size: 14px;
+}
+/* line 2398, ../sass/screen.scss */
+.page-edit-profile-password .panel-1col input[type="text"] {
+  width: calc(100% - 60px);
+  padding: 5px 15px;
+  margin: 0 15px 10px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+/* line 2407, ../sass/screen.scss */
+.page-edit-profile-password .panel-1col input[type="submit"] {
+  margin: 10px 15px;
+  background: #97BC00;
+  border: none;
+  border-radius: 5px;
+  min-width: 100px;
+  color: #fff;
+  height: 37px;
+}
+
+/* line 2426, ../sass/screen.scss */
+.page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first {
+  width: calc(50% - 30px);
+  padding: 15px;
+}
+/* line 2430, ../sass/screen.scss */
+.page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first label {
+  padding: 10px 15px 0;
+  font-size: 14px;
+}
+/* line 2435, ../sass/screen.scss */
+.page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first input[type="text"],
+.page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first input[type="password"] {
+  width: calc(100% - 60px);
+  padding: 5px 15px;
+  margin: 0 15px 10px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+/* line 2445, ../sass/screen.scss */
+.page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first select {
+  width: calc(100% - 60px);
+  padding: 5px 15px;
+  margin: 0 15px 10px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+/* line 2454, ../sass/screen.scss */
+.page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first textarea {
+  width: calc(100% - 30px);
+  padding: 5px 10px;
+  margin: 5px 15px;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+/* line 2463, ../sass/screen.scss */
+.page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first .description {
+  margin: 0 15px;
+}
+/* line 2467, ../sass/screen.scss */
+.page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first .form-type-checkbox {
+  margin: 10px 15px;
+}
+/* line 2470, ../sass/screen.scss */
+.page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first .form-type-checkbox label.option {
+  font-size: 10px;
+  padding: 0 15px;
+}
+/* line 2476, ../sass/screen.scss */
+.page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first a#terms_conditions {
+  background-position: center center;
+  position: relative;
+  left: 0;
+  color: transparent;
+}
+/* line 2483, ../sass/screen.scss */
+.page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first input[type="submit"] {
+  margin: 10px 15px;
+  background: #97BC00;
+  border: none;
+  border-radius: 5px;
+  min-width: 100px;
+  color: #fff;
+  height: 37px;
+}
+@media screen and (max-width: 945px) {
+  /* line 2426, ../sass/screen.scss */
+  .page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first {
+    width: calc(100% - 30px);
+  }
+}
+@media screen and (max-width: 700px) {
+  /* line 2426, ../sass/screen.scss */
+  .page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-first {
+    width: calc(100% - 30px);
+  }
+}
+/* line 2501, ../sass/screen.scss */
+.page-add-profile .panel-2col-stacked > .center-wrapper > .panel-col-last {
+  background: none;
+  width: 0;
+  border-bottom: none;
+}
+
+/* line 2513, ../sass/screen.scss */
+.my-services-list {
+  margin-top: 20px;
+  padding: 0;
+}
+/* line 2518, ../sass/screen.scss */
+.my-services-list .form-type-checkbox label {
+  float: none;
+  padding-top: 2px;
+  margin-left: 6px;
+}
+/* line 2525, ../sass/screen.scss */
+.my-services-list fieldset {
+  display: block;
+  border-width: 1px 0 1px 0;
+  min-height: 40px;
+  position: relative;
+  margin-bottom: 10px;
+}
+/* line 2532, ../sass/screen.scss */
+.my-services-list fieldset.this-is-free-service legend a {
+  color: #97bc00;
+}
+/* line 2536, ../sass/screen.scss */
+.my-services-list fieldset:last-child {
+  margin-bottom: 0;
+}
+/* line 2540, ../sass/screen.scss */
+.my-services-list fieldset fieldset {
+  margin-bottom: 5px;
+}
+/* line 2545, ../sass/screen.scss */
+.my-services-list p {
+  margin-bottom: 20px;
+  color: #131313;
+  line-height: 18px;
+}
+/* line 2550, ../sass/screen.scss */
+.my-services-list b {
+  color: #131313;
+  line-height: 18px;
+}
+/* line 2555, ../sass/screen.scss */
+.my-services-list span.url-form > input {
+  background: #425136;
+  color: #fff;
+  border: 1px solid #e9ece2;
+  line-height: inherit;
+  font-size: 11px;
+  text-transform: uppercase;
+  padding: 6px 8px;
+  margin-top: 0;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+/* line 2568, ../sass/screen.scss */
+.my-services-list legend {
+  position: absolute;
+  background-color: #dae0d3;
+  line-height: 27px;
+  display: block;
+  width: 100%;
+}
+/* line 2575, ../sass/screen.scss */
+.my-services-list legend a {
+  display: block;
+  padding: 6px 10px;
+  color: #565656;
+}
+/* line 2582, ../sass/screen.scss */
+.my-services-list .fieldset-wrapper {
+  display: none;
+  padding-top: 5px;
+}
+/* line 2589, ../sass/screen.scss */
+.my-services-list > div > fieldset {
+  border: none;
+}
+/* line 2592, ../sass/screen.scss */
+.my-services-list > div > fieldset > legend {
+  background-color: #cbd2c0;
+  position: relative;
+}
+/* line 2596, ../sass/screen.scss */
+.my-services-list > div > fieldset > legend a {
+  font-weight: bold;
+  font-size: 18px;
+}
+/* line 2601, ../sass/screen.scss */
+.my-services-list > div > fieldset > legend:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  background-image: url(../images/arrow-white.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 40px 40px;
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  -o-transform: rotate(90deg);
+  transform: rotate(90deg);
+  pointer-events: none;
+}
+/* line 2621, ../sass/screen.scss */
+.my-services-list > div > fieldset > .fieldset-wrapper {
+  display: none;
+}
+/* line 2624, ../sass/screen.scss */
+.my-services-list > div > fieldset > .fieldset-wrapper > fieldset {
+  position: relative;
+  background-color: #f1f3eb;
+  border: 2px solid #dae0d3;
+  min-height: 38px;
+}
+/* line 2630, ../sass/screen.scss */
+.my-services-list > div > fieldset > .fieldset-wrapper > fieldset .response,
+.my-services-list > div > fieldset > .fieldset-wrapper > fieldset .fieldset-wrapper {
+  display: none;
+}
+/* line 2635, ../sass/screen.scss */
+.my-services-list > div > fieldset > .fieldset-wrapper > fieldset:not(.collapsed) .response, .my-services-list > div > fieldset > .fieldset-wrapper > fieldset:not(.collapsed) .fieldset-wrapper {
+  display: block;
+}
+/* line 2640, ../sass/screen.scss */
+.my-services-list > div > fieldset > .fieldset-wrapper > fieldset.collapsed {
+  border: none;
+}
+/* line 2644, ../sass/screen.scss */
+.my-services-list > div > fieldset > .fieldset-wrapper > fieldset .fieldset-wrapper {
+  padding: 15px;
+  margin-top: 40px;
+}
+/* line 2649, ../sass/screen.scss */
+.my-services-list > div > fieldset > .fieldset-wrapper > fieldset > legend {
+  position: absolute;
+  top: 0;
+}
+/* line 2653, ../sass/screen.scss */
+.my-services-list > div > fieldset > .fieldset-wrapper > fieldset > legend:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 30px;
+  height: 35px;
+  background-image: url(../images/arrow-gray.svg);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 30px 30px;
+  -webkit-transform: rotate(90deg);
+  -moz-transform: rotate(90deg);
+  -ms-transform: rotate(90deg);
+  -o-transform: rotate(90deg);
+  transform: rotate(90deg);
+  pointer-events: none;
+}
+/* line 2672, ../sass/screen.scss */
+.my-services-list > div > fieldset > .fieldset-wrapper > fieldset > legend a {
+  padding-right: 20px;
+}
+/* line 2678, ../sass/screen.scss */
+.my-services-list > div > fieldset > .fieldset-wrapper > fieldset.collapsed > legend:after {
+  -webkit-transform: rotate(0deg);
+  -moz-transform: rotate(0deg);
+  -ms-transform: rotate(0deg);
+  -o-transform: rotate(0deg);
+  transform: rotate(0deg);
+}
+/* line 2693, ../sass/screen.scss */
+.my-services-list .collapsed > legend:after {
+  -webkit-transform: rotate(0deg);
+  -moz-transform: rotate(0deg);
+  -ms-transform: rotate(0deg);
+  -o-transform: rotate(0deg);
+  transform: rotate(0deg);
 }

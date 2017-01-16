@@ -1,0 +1,739 @@
+<?php
+
+/**
+ * @file
+ * Module requires big overhaul, changes made to implement custom panel pane
+ * only include restructured files/folders , formatting, cleaning up warnings
+ * and notices, but the architecture of how forms are rendered and usage of
+ * include files are still lousy and should be refactored with time.
+ */
+
+/**
+ * Implements hook_ctools_plugin_directory().
+ */
+function kms_services_ctools_plugin_directory($owner, $plugin_type) {
+  if ($owner == 'ctools' && $plugin_type == 'content_types') {
+    return 'plugins/' . $plugin_type;
+  }
+}
+
+function kms_services_help($path, $arg) {
+  switch ($path) {
+    case "admin/help#services_kms":
+      return '<p>' . t("Creates services module for KMS 'Kortforsyningen'") . '</p>';
+      break;
+  }
+}
+
+/**
+ * Implements hook_menu().
+ */
+function kms_services_menu() {
+
+  $items['kms_services/retrieve/%/%'] = array(
+    'title' => 'service retrieve',
+    'page callback' => 'kms_services_output',
+    'page arguments' => array(2, 3),
+    'access callback' => TRUE,
+    'file' => 'inc/capability.inc',
+  );
+
+  $items['kms_services/form/%/%'] = array(
+    'page callback' => 'kms_services_url_wrapper',
+    'page arguments' => array(2, 3),
+    'access callback' => TRUE,
+    'file' => 'inc/capability.inc',
+  );
+
+  $items['admin/config/kms_services'] = array(
+    'title' => 'KMS Services.',
+    'access arguments' => array('administer nodes'),
+    'page callback' => 'kms_services_free_service_list',
+    'file' => 'inc/services.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/config/kms_services/free_list'] = array(
+    'title' => 'Free service list.',
+    'access arguments' => array('administer nodes'),
+    'page callback' => 'kms_services_free_service_list',
+    'file' => 'inc/services.inc',
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/config/kms_services/geo'] = array(
+    'title' => 'Set Geosearch and RestGeokeys.',
+    'access arguments' => array('administer nodes'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('kms_services_geo_services_values_form'),
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  return $items;
+}
+
+function kms_services_geo_services_values_form($form, &$form_state) {
+  $gs = variable_get('kms_services_geosearch_text', '');
+  if (isset($gs['value'])) {
+    $gs = $gs['value'];
+  }
+  $form['kms_services_geosearch_text'] = array(
+    '#title' => t('Geosearch'),
+    '#type' => 'text_format',
+    '#format' => 'full_html',
+    '#default_value' => $gs,
+  );
+
+  $rg = variable_get('kms_services_restgeokeys_text', '');
+  if (isset($rg['value'])) {
+    $rg = $rg['value'];
+  }
+  $form['kms_services_restgeokeys_text'] = array(
+    '#title' => t('RestGeoKeys'),
+    '#type' => 'text_format',
+    '#format' => 'full_html',
+    '#default_value' => $rg,
+  );
+
+  return system_settings_form($form);
+}
+
+function kms_services_form($form, $arg1) {
+
+  include_once('inc/services.inc');
+  include_once('inc/host.string.inc');
+  include_once('inc/kms.user.inc');
+
+  global $user;
+  $uid = $user->uid;
+  // check if form should be rendered as public with default account
+  if ($arg1) {
+    $username = "YdelsesKatalog";
+  }
+  else {
+    $username = $user->name;
+  }
+
+  // Adds javascript and css file to form.
+  $form['#attached']['js'] = array(
+    drupal_get_path('module', 'kms_services') . '/js/fs.js',
+    drupal_get_path('module', 'kms_services') . '/js/hostString.js',
+    drupal_get_path('module', 'kms_services') . '/js/my_service.js',
+  );
+  if (ae_detect_ie() == FALSE) {
+    $form['#attached']['css'] = array(
+      drupal_get_path('module', 'kms_services') . '/css/services.css',
+    );
+  }
+  else {
+    $form['#attached']['css'] = array(
+      drupal_get_path('module', 'kms_services') . '/css/services-ie.css',
+    );
+  }
+  // Get service list.
+  $arr = getServiceList($username);
+  if ($arr == NULL) {
+    $form['error1'] = array(
+      '#markup' => 'You have no services for your account.',
+    );
+    return $form;
+  }
+  // Get list of serviceTypes.
+  $tempServiceList = $arr;
+  $typeList = array();
+  foreach ($tempServiceList as $ser) {
+    $typeList[$ser["type"]] = $ser["type"];
+  }
+  $form["tableStart"] = array(
+    '#markup' => '<table style="width:450px;vertical-align:top;"><tr><td style="width:150px;"><b>Service Type</b>',
+  );
+
+  // Sets checkboxes for All serviceTyppes (default: WMS)  --> stypes=all.
+  $stypes = array('all', 'wms', 'wmts', 'wfs', 'wcs', 'geo');
+
+  // Sets checkboxes for Free / Not Free  --> Arguments are: free & notfree | values are: true.
+  $cb_free = 1;
+  $cb_notFree = 1;
+  if (isset($_GET["free"]) && strtolower($_GET["free"]) == "true") {
+    $cb_free = 1;
+    $cb_notFree = 0;
+  }
+  elseif (isset($_GET["notfree"]) && strtolower($_GET["notfree"]) == "true") {
+    $cb_free = 0;
+    $cb_notFree = 1;
+  }
+
+  foreach ($typeList as $type) {
+    $cb_stype = 0;
+    if (isset($_GET['stypes']) && in_array(strtolower($_GET['stypes']), $stypes)) {
+      if ($_GET['stypes'] == 'all') {
+        $cb_stype = 1;
+      }
+      else if(strtolower($type) == strtolower($_GET['stypes'])) {
+        $cb_stype = 1;
+      }
+    }
+    else {
+      if ($type == "WMS") {
+        $cb_stype = 1;
+      }
+    }
+
+    $form['type-' . $type] = array(
+      '#type' => 'checkbox',
+      '#title' => t($type),
+      '#default_value' => $cb_stype,
+      '#attributes' => array(
+        'class' => array('service-type-checkbox')
+      ),
+    );
+  }
+  $form["tableMiddle"] = array(
+    '#markup' => '</td><td style="width:150px;vertical-align:top;"><b>Vilkår</b>',
+  );
+
+  $form['free'] = array(
+    '#type' => 'checkbox',
+    '#title' => t("Til fri brug"),
+    '#default_value' => $cb_free,
+    '#attributes' => array(
+      'class' => array('service-free-checkbox')
+    ),
+  );
+  $form['notFree'] = array(
+    '#type' => 'checkbox',
+    '#title' => t("Øvrige"),
+    '#default_value' => $cb_notFree,
+    '#attributes' => array(
+      'class' => array('service-free-checkbox')
+    ),
+  );
+  $form["tableMiddleRight"] = array(
+    '#markup' => '</td><td style="width:150px;vertical-align:top;"><b>Services</b>',
+  );
+  $form['myServices'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('My services'),
+    '#attributes' => array(
+      'class' => array('service-my-services-checkbox'),
+    ),
+    '#default_value' => 1,
+  );
+  $form['otherServices'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Other services'),
+    '#attributes' => array(
+      'class' => array('service-my-services-checkbox'),
+    ),
+    '#default_value' => 1,
+  );
+  $form['myServicesToggle'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('My services'),
+    '#attributes' => array(
+      'class' => array('service-my-services-checkbox'),
+    ),
+  );
+  $form["tableEnd"] = array(
+    '#markup' => '</td></tr></table>',
+  );
+  $form["searchDescriptionEnd"] = array(
+    '#markup' => '</p><hr>',
+  );
+  // Builds form.
+  $services = db_select('gst2_user_products', 'g')
+    ->fields('g')
+    ->condition('uid', $uid, '=')
+    ->execute()
+    ->fetchAll();
+
+  $all_services = $arr;
+
+  if (!empty($services)) {
+    foreach ($services as $service) {
+      $service_type = $service->product_type_name;
+      $service_name = $service->product_name;
+      $service_key = strtolower($service_type . '-' . $service_name);
+      if (!empty($all_services[$service_key])) {
+        $all_services[$service_key]['my_service'] = TRUE;
+      }
+    }
+  }
+
+  $form += kms_services_format_service_list($all_services, $username);
+  return $form;
+}
+
+function kms_services_form_hoststring() {
+  // Generel information.
+  $form['#attached']['css'] = array(
+    drupal_get_path('module', 'kms_services') . '/css/hoststring.css',
+  );
+  $form['#attached']['js'] = array(
+    drupal_get_path('module', 'kms_services') . '/js/hostString.js',
+  );
+  $serviceType = $_GET["type"];
+  $serviceName = $_GET["name"];
+  if (!isset($_GET["type"])) {
+    $serviceType = "";
+  }
+  if (!isset($_GET["name"])) {
+    $serviceName = "";
+  }
+  $form['serviceType'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Service Type:'),
+    '#default_value' => t($serviceType),
+  );
+  $form['serviceName'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Service Name:'),
+    '#default_value' => t($serviceName),
+  );
+  // Select which GIS to use.
+  $GISoptions = array(
+    0 => t("ArcMap"),
+    1 => t("AutoCad Map"),
+    2 => t("Gaia"),
+    3 => t("Geomedia"),
+    4 => t("MapInfo"),
+    5 => t("QGIS"),
+    6 => t("U-Dig"),
+  );
+  $form['mu1'] = array(
+    '#markup' => '<b>Vælg GIS program:</b>',
+  );
+  $form['GIS'] = array(
+    '#type' => 'radios',
+    '#options' => $GISoptions,
+    '#default_value' => 3,
+  );
+  // Radio options.
+  $identityOptions = array(
+    0 => t('24 timers login - Brug boksen i højre side.'),
+    1 => t("Anvend brugernavn/password."),
+  );
+  $form['mu2'] = array(
+    '#markup' => '<b>Vælg login metode:</b>',
+  );
+  $form['identity'] = array(
+    '#type' => 'radios',
+    '#options' => $identityOptions,
+    '#default_value' => 0,
+  );
+  $form['servicesUsername'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Username:'),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="identity"]' => array('value' => "1"),
+      ),
+    ),
+  );
+  $form['servicesPassword'] = array(
+    '#type' => 'password',
+    '#title' => t('Password:'),
+    '#states' => array(
+      'visible' => array(
+        ':input[name="identity"]' => array('value' => "1"),
+      ),
+    ),
+  );
+  $form['servicesSubmit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Lav URL'),
+    '#attributes' => array(
+      'class' => array('submitbuttonhoststring'),
+      'onclick' => 'addString()',
+    ),
+    '#post_render' => array('change_button'),
+  );
+  $form['mu3'] = array(
+    '#markup' => '<br><br><br><br>',
+  );
+  $form['servicesOutput'] = array(
+    '#type' => 'textarea',
+    '#prefix' => '<div id="servicesOutput">',
+    '#suffix' => '</div>',
+    '#value' => t(''),
+  );
+  return $form;
+}
+
+function change_button($markup, $element) {
+  $markup = str_replace('type="submit', 'type="button', $markup);
+  return $markup;
+}
+
+function ae_detect_ie() {
+  if (isset($_SERVER['HTTP_USER_AGENT']) && (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE 7')) !== FALSE) {
+    return TRUE;
+  }
+  else {
+    return FALSE;
+  }
+}
+
+function kms_services_return_button($name, $service_type, $service_name) {
+  $confirm_button = array(
+    'element' => array(
+      '#type' => 'button',
+      '#name' => 'confirm',
+      '#value' => $name,
+      '#id' => 'confirm',
+      '#attributes' => array(
+        'onclick' => 'Drupal.behaviors.collapse.retrieveform(this, "' . $service_type . '", "' . $service_name . '")',
+        'class' => array('ui-button')
+      ),
+    )
+  );
+
+  return $confirm_button;
+}
+
+/**
+ * Custom form to generate service url.
+ */
+function kms_services_url_form($form, &$form_state, $arg1, $arg2) {
+  module_load_include('inc', 'kms_services', 'inc/services');
+  module_load_include('inc', 'kms_services', 'inc/capability');
+
+  $form = array();
+
+  $render_button = array(
+    'element' => array(
+      '#type' => 'button',
+      '#name' => 'confirm',
+      '#value' => t('Render URL'),
+      '#id' => 'confirm',
+      '#attributes' => array(
+        'onclick' => 'Drupal.behaviors.collapse.generateurl(this)',
+        'class' => array('ui-button')
+      ),
+    )
+  );
+
+  $form['fieldset_url'] = array(
+    '#type' => 'fieldset',
+    '#collapsible' => TRUE,
+    '#suffix' => kms_services_theme_button($render_button),
+  );
+
+  if ($arg1 == NULL && $arg2 == NULL) {
+    // This section will be valid just in panel pane.
+    $service_list = getServiceList('YdelsesKatalog');
+    $services_types = array_intersect(kms_services_get_service_types($service_list), array(
+      'WMS',
+      'WFS'
+    ));
+    if (!isset($form_state['input']['service_type'])) {
+      $services_name = kms_services_get_service_names_by_type($service_list, current($services_types));
+    }
+    else {
+      $services_name = kms_services_get_service_names_by_type($service_list, $form_state['input']['service_type']);
+    }
+
+    $form['fieldset_url']['service_type'] = array(
+      '#title' => t("Tjenestetype"),
+      '#type' => 'select',
+      '#options' => $services_types,
+      '#id' => 'generate_url_service',
+      '#ajax' => array(
+        'callback' => 'kms_services_change_name_callback',
+        'method' => 'replace',
+        'wrapper' => 'generate_url_service_name',
+        'effect' => 'fade'
+      ),
+    );
+
+    $form['fieldset_url']['service_name'] = array(
+      '#title' => t("Servicenavn"),
+      '#type' => 'select',
+      '#options' => $services_name,
+      '#id' => 'generate_url_service_name',
+      '#prefix' => '<div id ="generate_url_service_name">',
+      '#suffix' => '</div>',
+    );
+
+    drupal_add_css('div.form-item-cities, div.form-item-username, div.form-item-password { display:none;  }', 'inline');
+
+    $form['#attached']['js'] = array(
+      drupal_get_path('module', 'kms_services') . '/js/fs.js',
+      drupal_get_path('module', 'kms_services') . '/js/hostString.js',
+    );
+
+  }
+  else {
+    $form['fieldset_url']['service_type'] = array(
+      '#type' => 'hidden',
+      '#value' => $arg1,
+    );
+    $form['fieldset_url']['service_name'] = array(
+      '#type' => 'hidden',
+      '#value' => $arg2,
+    );
+  }
+
+  $form['fieldset_url']['program_choice'] = array(
+    '#title' => t("GIS program"),
+    '#type' => 'radios',
+    '#options' => array(
+      'arcGIS' => 'ArcMap',
+      'AutoCad' => 'AutoCad Map',
+      'Gaia' => 'Gaia',
+      'Geomedia' => 'Geomedia',
+      'MapInfo' => 'MapInfo',
+      'QGIS' => 'QGIS',
+      'Udig' => 'U-Dig',
+    ),
+//    '#attributes' => array('onchange' => 'Drupal.behaviors.collapse.enablecities(this)'),
+  );
+
+  // Commented because it might be used in the future.
+  //$form['fieldset_url']['program_choice']['#after_build'][] = 'kms_services_process_form_radios';
+  /*
+    $form['fieldset_url']['cities'] = array(
+      '#type' => 'select',
+      '#title' => t("Choose region"),
+      '#options' => kms_service_option_callback(),
+      '#description' => t('Vælg kommune ved WFS forespørgsler'),
+    );
+  */
+  $form['fieldset_url']['usertype'] = array(
+    '#title' => t("Vælg din måde at identificere dig som bruger af Kortforsyningen"),
+    '#type' => 'radios',
+    '#options' => array(
+      '0' => 'Jeg anvender mit IP nummer',
+      '1' => 'Jeg anvender brugernavn og adgangskode ',
+    ),
+    '#attributes' => array('onchange' => 'Drupal.behaviors.collapse.enableuser(this)'),
+  );
+
+  $form['fieldset_url']['username'] = array(
+    '#type' => 'textfield',
+    '#attributes' => array(
+      'placeholder' => t('Username'),
+      'class' => array('form-uri-generate-username'),
+    ),
+  );
+
+  $form['fieldset_url']['password'] = array(
+    '#type' => 'textfield',
+    '#attributes' => array(
+      'placeholder' => t('Password'),
+      'class' => array('form-uri-generate-password'),
+    ),
+  );
+
+  return $form;
+}
+
+/**
+ * Return array of service types.
+ *
+ * @param $services
+ *  Array of services.
+ *
+ * $return $names
+ *   Array of services types.
+ */
+function kms_services_get_service_types($services) {
+  $types = array();
+  foreach ($services as $service) {
+    $types[$service['type']] = $service['type'];
+  }
+
+  return $types;
+}
+
+/**
+ * Return service types by service name.
+ *
+ * @param $services
+ *  Array of services.
+ * @param $type
+ *  Current service type.
+ *
+ * $return $names
+ *   Array of services for current service type.
+ */
+function kms_services_get_service_names_by_type($services, $type) {
+  $names = array();
+  foreach ($services as $service) {
+    if ($service['type'] == $type) {
+      $names[$service['name']] = $service['name'];
+    }
+  }
+
+  return $names;
+}
+
+/**
+ * Callback for service type select change. Need to update service names.
+ */
+function kms_services_change_name_callback($form, $form_state) {
+  return $form['fieldset_url']['service_name'];
+}
+
+function kms_services_login_form($form, &$form_state) {
+
+  $form['#prefix'] = '<div id="gst-login-wrapper" class="gst-login-wrap">';
+  $form['#prefix'] .= '<h2>' . t('Frigør IP adresse') . '</h2>';
+  $form['#prefix'] .= '<p>' . t('Få eksemplerne til at virke ved at frigøre din IP adresse i 24 timer') . '</p>';
+  $form['#prefix'] .= '<div id="ip_release_message"><p></p></div>';
+  $form['#suffix'] = '</div>';
+
+  $form['#attributes']['id'] = 'kms_services_login_form';
+  $form['#action'] = 'http://kortforsyningen.kms.dk/service';
+
+  $form['#attached']['js'] = array(
+    drupal_get_path('module', 'kms_services') . '/js/ip_release.js',
+  );
+
+  $form['result'] = array(
+    '#type' => 'html_tag',
+    '#tag' => 'div',
+    '#attributes' => array(
+      'id' => 'service_login_form_result',
+    ),
+    '#value' => '',
+  );
+
+  $form['login'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Brugernavn'),
+    '#required' => TRUE,
+    '#id' => 'kms_services_login_form_login',
+    '#prefix' => '<div class="kms_services_login_form_login_wrap">',
+    '#suffix' => '</div>',
+  );
+
+  $form['password'] = array(
+    '#type' => 'password',
+    '#title' => t('Password'),
+    '#required' => TRUE,
+    '#id' => 'kms_services_login_form_pass',
+    '#prefix' => '<div class="kms_services_login_form_pass_wrap">',
+    '#suffix' => '</div>',
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Login'),
+    '#id' => 'kms_services_login_form_submit',
+  );
+
+  $form['return'] = array(
+    '#type' => 'button',
+    '#value' => t('Re-Login'),
+    '#id' => 'kms_services_login_form_return',
+  );
+
+  $form['request'] = array(
+    '#type' => 'hidden',
+    '#value' => 'UnlockIP',
+    '#id' => 'kms_services_login_form_request',
+  );
+
+  $form['format'] = array(
+    '#type' => 'hidden',
+    '#value' => 'json',
+  );
+
+  return $form;
+}
+
+/*
+ * Custom callback to format services list in any place.
+ */
+function kms_services_format_service_list($services, $username) {
+  $typeTitleBreak = "";
+  $form = array();
+
+  foreach ($services as $service) {
+    $visisbleNameType = "type-" . $service["type"];
+    // Check if a new service type is starting.
+    if ($typeTitleBreak != $service["type"]) {
+      $form["typeTitle-" . $service["type"]] = array(
+        '#type' => 'container',
+        // '#children' => t('<h2>Service Type: '.$service["type"].'</h2>'),
+        '#states' => array(
+          'visible' => array(
+            ':input[name="' . $visisbleNameType . '"]' => array('checked' => TRUE),
+          ),
+        ),
+      );
+      $typeTitleBreak = $service["type"];
+    }
+    $titleBuilder = '<b>' . $service["type"] . '</b>: ' . $service["name"] . ' <i>(' . $service["title"] . ')</i>';
+
+    // Build substring of title so title isn't bigger than fieldset itself.
+    $titleLength = 150;
+    if (strlen($titleBuilder) > $titleLength) {
+      $titleBuilderSub = substr($titleBuilder, 0, $titleLength);
+    }
+    else {
+      $titleBuilderSub = $titleBuilder;
+    }
+    // Build odds and evens class array:
+    $class = array('service-fieldset-data');
+    // Color free services green.
+    if ($service["free"] == TRUE) {
+      $class = array('service-fieldset-data', 'this-is-free-service');
+    }
+
+    // Hide /Show my services.
+    if (isset($service['my_service']) && $service['my_service'] == TRUE) {
+      $class[] = 'this-is-my-service';
+    }
+    else {
+      $class[] = 'this-is-not-my-service';
+    }
+
+    $class[] = 'service-type-' . $service['type'];
+
+    $hasCapabilities = $service["capability"];
+    $form[$service["key"]] = array(
+      '#type' => 'fieldset',
+      '#title' => t($titleBuilderSub),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#tree' => TRUE,
+      '#attributes' => array(
+        'class' => $class,
+        'rel' => 'kms_services/retrieve/' . $service["name"] . '/' . $service["type"],
+      ),
+    );
+
+    // Hide /Show my services.
+    if (isset($service['my_service']) && $service['my_service'] == TRUE) {
+      $form[$service['key']]['#states']['visible'][':input[name="myServices"]']['checked'] = TRUE;
+    }
+    else {
+      $form[$service['key']]['#states']['visible'][':input[name="otherServices"]']['checked'] = TRUE;
+    }
+
+    // Hide / View free services.
+    if ($service["free"] == TRUE) {
+      $form[$service['key']]['#states']['visible'][':input[name="free"]']['checked'] = TRUE;
+    }
+    else {
+      $form[$service['key']]['#states']['visible'][':input[name="notFree"]']['checked'] = TRUE;
+    }
+
+    $form[$service['key']]['#states']['visible'][':input[name="' . $visisbleNameType . '"]']['checked'] = TRUE;
+
+    // Load capabilities if possible.
+    if ($hasCapabilities == TRUE) {
+      $form[$service["key"]]['info'] = array(
+        '#markup' => '<div class="response">Loading...</div>',
+      );
+    }
+    else {
+      $form[$service["key"]]['noData'] = array(
+        '#markup' => 'No data available for this service type.',
+      );
+    }
+  }
+  return $form;
+}

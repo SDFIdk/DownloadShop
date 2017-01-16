@@ -1,0 +1,263 @@
+<?php
+
+/**
+ * @file
+ * User log system.
+ */
+
+function kms_user_log_user_insert($edit, $account, $category) {
+  kms_user_log_create_entry($account);
+}
+
+function kms_user_log_user_update($edit, $account, $category) {
+  kms_user_log_create_entry($account);
+}
+
+function kms_user_log_create_entry($account) {
+	
+	// Unset values from the account object we don't need in the log.
+	$properties = array(
+		'metatags',
+		'rdf_mapping',
+		'logged_in_user',
+		'original',
+		'is_new',
+		'current_pass_required_values',
+		'notify',
+	  'picture_delete',
+	  'picture_upload',
+	  'cancel',
+	  'masquerade_users',
+	  'data',
+	  'uuid',
+	  'init',
+	  'picture',
+	  'timezone',
+	  'language',
+	  'signature_format',
+	  'signature',
+	  'theme',
+	  'pass',
+	);
+  
+  // Clone account to prevent data loss.
+  $data = clone $account;
+	foreach ($properties as $property) {
+	  if (property_exists($data, $property)) {
+	  	unset($data->{$property});
+	  }
+  }
+
+	$entry = array(
+    'uid' => $data->uid,
+    'aid' => $GLOBALS['user']->uid,
+    'created' => REQUEST_TIME,
+    'checksum' => sha1(serialize($data)),
+    'data' => $data,
+	);
+
+  $success = drupal_write_record('kms_user_log', $entry);
+
+}
+
+function kms_user_log_get($account) {
+
+  $query = db_select('kms_user_log', 'l')
+    ->fields('l', array('lid', 'aid', 'created', 'data'))
+    ->condition('uid', $account->uid)
+    ->orderBy('created', 'DESC') // Most recent first.
+    ->execute(); 
+  
+  $rows = array();
+  foreach ($query->fetchAll() as $entry) {
+  	$data = unserialize($entry->data);
+  	$admin = user_load($entry->aid);
+    $rows[] = array(
+    	'created' => array('data' => format_date($entry->created, 'custom', 'Y-m-d - H:i')),
+    	'aid' => array('data' => $admin->name),
+      'mail' => array('data' => $data->mail),
+      'usertype' => array('data' => kms_user_log_usertype($data->field_user_type)),
+      'bundles' => array('data' => kms_user_log_view_access_bundles($data->field_access_bundles)),
+      'permissions' => array('data' => kms_user_log_view_permissions($data)),
+    );
+  }
+  return $rows; 
+}
+
+/**
+ * Display usertype.
+ */
+function kms_user_log_usertype($field) {
+  if (empty($field[LANGUAGE_NONE])) { return ''; }
+  $terms = array();
+  foreach ($field[LANGUAGE_NONE] as $value) {
+  	$term = taxonomy_term_load($value['tid']);
+    $terms[] = truncate_utf8($term->name, 30, TRUE, TRUE);
+  }
+  return join(' &raquo; ', $terms);
+}
+
+function kms_user_log_view_access_bundles($field) {
+	if (empty($field[LANGUAGE_NONE])) { return ''; }
+	$bundles = kms_user_log_get_access_bundles();
+  foreach ($field[LANGUAGE_NONE] as $value) {
+    $bundles[$value['nid']]->status = TRUE;
+  }
+  $output = array();
+  
+  foreach ($bundles as $bundle) {
+  	$output[] = '<span title="'. $bundle->title .'" style="width: 10px; margin-right:3px; background-size: 100% !important; background-image:url(' 
+  	          . $bundle->icon
+  	          . ');" class="'. ($bundle->status ? 'bundle-active' : 'bundle-inactive') 
+  	          . '"></span>';
+  }
+
+	return join('', $output);  
+}
+
+function kms_user_log_get_access_bundles() {
+  $bundles = &drupal_static(__FUNCTION__);
+  if (!isset($bundles)) {
+    $query = new EntityFieldQuery();
+    $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'access_bundle')
+      ->propertyCondition('status', 1)
+      ->propertyOrderBy('nid')
+      ->addMetaData('account', user_load(1))
+      ->execute();
+    
+    $result = $query->execute();
+    
+    if (!empty($result['node'])) {
+      $nodes = node_load_multiple(array_keys($result['node']));
+    }
+    
+    $bundles = array();
+    foreach ($nodes as $node) {
+    	$color = taxonomy_term_load($node->field_colour[LANGUAGE_NONE][0]['tid']);
+      $bundles[$node->nid] = (object) array(
+      	'icon' => file_create_url($color->field_default_image[LANGUAGE_NONE][0]['uri']),
+      	'title' => str_replace('_', ' ', $node->title), 
+      	'status' => FALSE
+      );
+    }
+
+  }
+
+  return $bundles;
+}
+
+function kms_user_log_view_permissions($data) {
+  $fields = array(
+	  'field_bundle_webservices_geo' => 'geo',
+	  'field_bundle_webservices_plot' => 'plot',
+	  'field_bundle_webservices_wcs' => 'wcs',
+	  'field_bundle_webservices_wfs' => 'wfs',
+	  'field_bundle_webservices_wms' => 'wms',
+	  'field_bundle_webservices_wmts' => 'wmts',
+	  'field_applications' => 'applications',
+  );
+
+  $output = array();
+  foreach ($fields as $key => $title) {
+    //print_r($data->$key);
+    if (!empty($data->$key)) {
+      $output[] = $title;    	
+    }
+  }
+  
+  return join(', ', $output);
+}
+
+/**
+ * Implements hook_menu().
+ */
+function kms_user_log_menu() {
+  $items = array();
+
+  $items['user/%user/log'] = array(
+    'title' => t('History'),
+    'page callback' => 'kms_user_log_page',
+    'page arguments' => array(1),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer users'),
+    'type' => MENU_LOCAL_TASK,
+  );
+  
+  return $items;
+}
+
+/**
+ * Implements hook_admin_paths().
+ */
+function kms_user_log_admin_paths() {
+  $paths = array(
+    'user/*/log' => TRUE
+  );
+  return $paths;
+}
+
+/*
+ * @param $account
+ *   the account whose list is viewed.
+ */
+function kms_user_log_page($account) {
+  $header = '<h1>' . t('History') . '</h1>';
+  //$output .= print_r($log, TRUE);
+
+  $data['header'] = array(
+    'created' => array('data' => t('Date')),
+    'aid' => array('data' => t('Changed by')),
+    'mail' => array('data' => t('Mail')),
+    'usertype' => array('data' => t('User type')),
+    'bundles' => array('data' => t('Bundles')),
+    'permissions' => array('data' => t('Permissions')),
+  );  
+
+  $rows = kms_user_log_get($account);
+
+  // Create table listing from data
+  $table = theme('table', array('header' => $data['header'], 'rows' => $rows));
+
+  return $header . '<div class="page-admin">' . $table . '</div>';
+}
+
+/**
+ * Implements hook_cronapi().
+ */
+function kms_user_log_cronapi() {
+  $items = array();
+  $items['kms_user_log_initialize'] = array(
+    'title' => t('Initialize user log data'),
+    'enabled' => FALSE
+  );
+  return $items;
+}
+
+function kms_user_log_initialize() {
+  $kms_user_log_processed_uid = variable_get('kms_user_log_processed_uid', 2);
+  if ($kms_user_log_processed_uid === FALSE ) {
+    return;
+  }
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'user')
+    ->propertyCondition('status', 1)
+    ->propertyCondition('uid', $kms_user_log_processed_uid, '>')
+    ->propertyOrderBy('uid')
+    ->range(0, 200)
+    ->addMetaData('account', user_load(1));
+
+  $result = $query->execute();
+  
+  $uid = FALSE;
+  if (!empty($result['user'])) {
+    foreach ($result['user'] as $uid => $arr) {
+      $account = user_load($uid); 
+      kms_user_log_create_entry($account);
+      usleep(100);
+    }
+  }
+  variable_set('kms_user_log_processed_uid', $uid);
+}
+

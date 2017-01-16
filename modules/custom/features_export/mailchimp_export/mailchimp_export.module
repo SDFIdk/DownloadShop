@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Mailchimp export feature.
+ */
+
+include_once 'mailchimp_export.features.inc';

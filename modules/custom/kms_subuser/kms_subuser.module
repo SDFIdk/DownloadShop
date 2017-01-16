@@ -112,9 +112,10 @@ function kms_subuser_form($form, &$form_state, $master_user, $mode = 'insert') {
   $form['user_pass'] = array(
     '#type' => 'container',
     '#attributes' => array(
-      'class' => array('user-pass-wrapper'),
+      'class' => array('user-pass-wrapper form-row'),
     ),
   );
+ 
   $form['user_pass']['name'] = array(
     '#type' => 'textfield',
     '#title' => t('Username'),
@@ -123,6 +124,7 @@ function kms_subuser_form($form, &$form_state, $master_user, $mode = 'insert') {
     '#required' => TRUE,
     '#element_validate' => array('_kms_user_validate_username'),
   );
+
   $form['user_pass']['pass'] = array(
     '#type' => 'textfield',
     '#size' => 16,
@@ -130,6 +132,35 @@ function kms_subuser_form($form, &$form_state, $master_user, $mode = 'insert') {
     '#title' => t('Password'),
     '#required' => TRUE,
   );
+
+  $form['first_name'] = array(
+    '#prefix' => '<div class="form-row">',
+    '#type' => 'textfield',
+    '#title' => t('First name'),
+    '#size' => 20
+  );
+
+  $form['last_name'] = array(
+    '#suffix' => '</div>',
+    '#type' => 'textfield',
+    '#title' => t('Last name'),
+    '#size' => 20
+  );
+
+  $form['mail'] = array(
+    '#prefix' => '<div class="form-row">',
+    '#type' => 'textfield',
+    '#title' => t('Email address'),
+    '#size' => 20
+  );
+
+  $form['phone'] = array(
+    '#suffix' => '</div>',
+    '#type' => 'textfield',
+    '#title' => t('Phone number'),
+    '#size' => 20
+  );
+
   $form['user_expire'] = array(
     '#title' => t('Expire date'),
     '#type' => 'date_popup',
@@ -170,12 +201,14 @@ function kms_subuser_insert_form_submit(&$form, &$form_state) {
   $values = $form_state['values'];
   $name = trim($values['name']);
   $pass = trim($values['pass']);
+  $trimmed_mail = trim($values['mail']);
+  $mail = empty($trimmed_mail) ? KMS_SUBUSER_FAKE_MAIL : $trimmed_mail;
 
   $subuser = array(
     'name' => $name,
     'pass' => $pass,
-    'mail' => KMS_SUBUSER_FAKE_MAIL,
-    'init' => KMS_SUBUSER_FAKE_MAIL,
+    'mail' => $mail,
+    'init' => $mail,
     'status' => 1,
     'access' => REQUEST_TIME,
     'roles' => kms_subuser_default_roles(),
@@ -195,6 +228,17 @@ function kms_subuser_insert_form_submit(&$form, &$form_state) {
   $suwrapper->field_pass_clear->set($pass);
   // Save user type (same as master).
   $suwrapper->field_user_type->set(array_keys(_kms_csv_user_types($uwrapper)));
+
+  // Set address values, can be empty.
+  $suwrapper->field_address = array(
+   'first_name' =>   $values['first_name'],
+   'last_name' =>   $values['last_name'],
+   'country' => 'DA'
+  );
+
+  // Set phone number, can be empty.
+  $suwrapper->field_phone->set($values['phone']);
+
   $suwrapper->save();
 
   // Save subuser relation.
@@ -227,7 +271,7 @@ function kms_subuser_update_form_submit(&$form, &$form_state) {
   $values = $form_state['values'];
 
   $subuser = user_load($values['subuser_uid']);
-//  $master = user_load($values['master_uid']);
+  
   $data = _kms_user_oracle_default_user_data($subuser);
 
   $suwrapper = entity_metadata_wrapper('user', $subuser);
@@ -236,6 +280,24 @@ function kms_subuser_update_form_submit(&$form, &$form_state) {
     $suwrapper->name->set($values['name']);
     $data['user']['name'] = $values['name'];
   }
+
+  // Set mail, fallback to fake email address if empty.
+  if (!empty($values['mail'])) {
+    $suwrapper->mail->set($values['mail']);
+  } else {
+    $suwrapper->mail->set(KMS_SUBUSER_FAKE_MAIL);
+  }
+
+  // Set phone number, can be empty.
+  $suwrapper->field_phone->set($values['phone']);
+
+  // Set address values, can be empty.
+  $suwrapper->field_address = array(
+   'first_name' =>   $values['first_name'],
+   'last_name' =>   $values['last_name'],
+   'country' => 'DA'
+  );
+
   // Set user remark.
   if (!empty($values['user_remark'])) {
     $suwrapper->field_user_remark->set($values['user_remark']);
@@ -244,11 +306,21 @@ function kms_subuser_update_form_submit(&$form, &$form_state) {
   // Set expire.
   if (!empty($values['user_expire'])) {
     $suwrapper->field_expire_date->set(strtotime($values['user_expire']));
-    if (strtotime($values['user_expire']) > time()) {
-      $suwrapper->status = 1;
-      $data['user']['disabled'] = '0';
-    }
   }
+  else {
+    $suwrapper->field_expire_date->set(null);
+  }
+
+  // Set the user to active if no expire date, or expire date is in the future, else disable
+  if (empty($values['user_expire']) || strtotime($values['user_expire']) > time()) {
+    $suwrapper->status = 1;
+    $data['user']['disabled'] = '0';
+  }
+  else {
+    $suwrapper->status = 0;
+    $data['user']['disabled'] = '1';
+  }
+
   // Set password and cleartext passwd.
   if (!empty($values['pass'])) {
     $suwrapper->field_pass_clear->set($values['pass']);
@@ -370,75 +442,64 @@ function theme_subuser_add_user_popup($vars) {
  *   HTML.
  */
 function theme_subuser_info($vars) {
-  $master_user = $vars['master_user'];
+  $mw      = entity_metadata_wrapper('user', $vars['master']);
+  $uw      = entity_metadata_wrapper('user', $vars['user']);
+  $output  = '<div><div class="master-info">';
+  $output .= '<div class="subuser-notice">'
+          . t('Your are logged is as @user which is a sub-account to master-account @master',
+            array('@user' => $uw->name->value(), '@master' => $mw->name->value()))
+          . '</div>';
 
-  $uwrapper = entity_metadata_wrapper('user', $master_user);
-//  $module_path = drupal_get_path('module', 'kms_subuser');
+  $output .= '<div class="title">' . t('Contact information for master-account') . '</div>';
+  $output .= kms_subuser_info_row(t('E-Mail'), $mw->mail->value());
+  $output .= kms_subuser_info_row(t('First name'), $mw->field_address->first_name->value());
+  $output .= kms_subuser_info_row(t('Last name'), $mw->field_address->last_name->value());
+  $output .= kms_subuser_info_row(t('Phone'), $mw->field_phone->value());
+  $output .= '</div>';
 
-  $output = array(
-    '#type' => 'container',
-    '#attributes' => array(
-      'id' => array('subuser-info'),
-    ),
-    'firstname' => array(
-      'label' => array(
-        '#markup' => t('First name'),
-      ),
-      'value' => array(
-        '#markup' => $uwrapper->field_address->first_name->value(),
-      ),
-    ),
-    'lastname' => array(
-      'label' => array(
-        '#markup' => t('Last name'),
-      ),
-      'value' => array(
-        '#markup' => $uwrapper->field_address->last_name->value(),
-      ),
-    ),
-    'usertype' => array(
-      'label' => array(
-        '#markup' => t('Company'),
-      ),
-      'value' => array(
-        '#markup' => implode(', ', _kms_csv_user_types($uwrapper)),
-      ),
-    ),
-    'phone' => array(
-      'label' => array(
-        '#markup' => t('Phone'),
-      ),
-      'value' => array(
-        '#markup' => $uwrapper->field_phone->value(),
-      ),
-    ),
-    'mail' => array(
-      'label' => array(
-        '#markup' => t('Mail'),
-      ),
-      'value' => array(
-        '#markup' => $uwrapper->mail->value(),
-      ),
-    ),
-  );
+  $output .= '<div class="user-info">';
+  $output .= '<div class="title">' . t('Your profile information') . '</div>';
+  $output .= kms_subuser_info_row(t('Username'), $uw->name->value());
+  
+  $usertype = $uw->field_user_type->value();
+  if (!empty($usertype)) {
+    $output .= kms_subuser_info_row(t('User-type'), kms_subuser_info_type($usertype));
+  }
 
-  array_walk($output, function(&$el) {
-    if (!is_array($el)) {
-      return;
-    }
-    if (array_key_exists('label', $el)) {
-      $el['label']['#type'] = 'markup';
-      $el['label']['#prefix'] = '<label>';
-      $el['label']['#suffix'] = ':</label>';
-    }
-    if (array_key_exists('value', $el)) {
-      $el['value']['#type'] = 'markup';
-      $el['value']['#prefix'] = '<p>';
-      $el['value']['#suffix'] = '</p>';
-    }
-  });
+  $mail = $uw->mail->value();
+  if (!empty($mail) && $mail !== 'subuser@fake.mail') {
+    $output .= kms_subuser_info_row(t('E-Mail'), $mail);
+  }
 
-  return drupal_render($output);
+  $first_name = $uw->field_address->first_name->value();
+  if (!empty($first_name)) {
+    $output .= kms_subuser_info_row(t('First name'), $first_name);
+  }
+
+  $last_name = $uw->field_address->last_name->value();
+  if (!empty($last_name)) {
+    $output .= kms_subuser_info_row(t('Last name'), $last_name);
+  }
+
+  $field_phone = $uw->field_phone->value();
+  if (!empty($field_phone)) {
+    $output .= kms_subuser_info_row(t('Phone'), $field_phone);
+  }
+  $output .= '</div></div>';
+  return $output;
+}
+
+function kms_subuser_info_row($fn, $fv) {
+  return '<div><div class="label">' . $fn . '</div><div>' . $fv . '</div></div>';
+}
+
+function kms_subuser_info_type($fv) {
+  $result = '';
+  foreach ($fv as $v) {
+    $result[] = $v->name;
+  }
+  $result = join(' > ', $result);
+  return $result;
 }
 
 /**
@@ -563,16 +624,13 @@ function kms_subuser_form_user_profile_form_alter(&$form, &$form_state, $form_id
     '%subuser is a subuser of %master',
     array('%subuser' => $account->name, '%master' => $master_user->name)
   );
-  // Prevent editing of user name.
-  $form['account']['name']['#disabled'] = TRUE;
+
+  // Allow edit of user name
+  $form['account']['name']['#access'] = true;
   // Manipulate form.
   $form['#after_build'][] = 'kms_subuser_user_profile_after_build';
   // Make sure that subuser role always is set.
   array_unshift($form['#submit'], 'kms_subuser_profile_submit');
-  // If the logged in user is a subuser strip down form.
-  if (kms_subuser_is_subuser($user)) {
-    unset($form['actions']);
-  }
 }
 
 /**
@@ -628,9 +686,7 @@ function kms_subuser_user_profile_after_build($form, &$form_state) {
     'field_debtor_nr',
     'field_webservices_extra',
     'field_kms_user_id',
-    'field_address',
     'field_contact_me',
-    'field_phone',
     'field_user_type_info',
     'field_user_type',
     'masquerade',
@@ -642,11 +698,8 @@ function kms_subuser_user_profile_after_build($form, &$form_state) {
     }
   }
   // Hide account elements.
-  $form['account']['mail']['#access'] = FALSE;
   $form['account']['roles']['#access'] = FALSE;
   $form['account']['status']['#access'] = FALSE;
-  $form['account']['pass']['#access'] = FALSE;
-  $form['account']['current_pass']['#access'] = FALSE;
   // Make sure that user remark is shown.
   $form['field_user_remark']['#access'] = TRUE;
 
@@ -1075,12 +1128,12 @@ function kms_subuser_cancel_form($form, &$form_state, $subuser) {
   );
   $form['actions']['submit'] = array(
     '#type' => 'submit',
-    '#value' => t('Delete'),
+    '#value' => t('Yes, delete subuser', array(), array('context' => 'Subuser')),
     '#submit' => array('kms_subuser_cancel_form_delete'),
   );
   $form['actions']['cancel'] = array(
     '#type' => 'submit',
-    '#value' => t('No'),
+    '#value' => t('No, do not delete subuser', array(), array('context' => 'Subuser')),
   );
 
   return $form;
@@ -1125,7 +1178,6 @@ function kms_subuser_update_form($form, &$form_state, $subuser) {
 
   // Delete unwanted form data.
   unset(
-    // $form['add_subuser'],
     $form['user_pass']['name']['#states'],
     $form['user_pass']['pass']['#states'],
     $form['user_expire']['#states'],
@@ -1155,6 +1207,28 @@ function kms_subuser_update_form($form, &$form_state, $subuser) {
     $form['user_remark']['#default_value']
       = $subuser->field_user_remark[LANGUAGE_NONE][0]['value'];
   }
+
+  // First name.
+  if (!empty($subuser->field_address[LANGUAGE_NONE][0]['first_name'])) {
+    $form['first_name']['#default_value']
+      = $subuser->field_address[LANGUAGE_NONE][0]['first_name'];
+  }
+
+  // Last name.
+  if (!empty($subuser->field_address[LANGUAGE_NONE][0]['last_name'])) {
+    $form['last_name']['#default_value']
+      = $subuser->field_address[LANGUAGE_NONE][0]['last_name'];
+  }
+
+  // User phone number.
+  if (!empty($subuser->field_phone[LANGUAGE_NONE][0]['value'])) {
+    $form['phone']['#default_value']
+      = $subuser->field_phone[LANGUAGE_NONE][0]['value'];
+  }
+
+  // User mail.
+  $form['mail']['#default_value'] = $subuser->mail == KMS_SUBUSER_FAKE_MAIL ? '' : $subuser->mail;
+
   // Change submit handler.
   $form['#submit'] = array('kms_subuser_update_form_submit');
   return $form;
@@ -1195,10 +1269,15 @@ function kms_subuser_insert_form($form, &$form_state) {
  * Implements hook_user_update().
  */
 function kms_subuser_user_update(&$edit, $account, $category) {
-  // Clone permissions (bundles, permissions etc.)
+  $source = entity_metadata_wrapper('user', $account);
   $subuser_uids = subuser_load_all($account);
   foreach ($subuser_uids as $uid) {
     $user = user_load($uid);
+    // Update subuser type.
+    $target = entity_metadata_wrapper('user', $user);
+    $target->field_user_type->set($source->field_user_type->value());
+    $target->save();
+    // Clone permissions (bundles, permissions etc.)
     kms_permissions_clone_perms($account, $user);
   }
 }

@@ -11,14 +11,18 @@ projects[hide_submit][type] = "module"
 ;admin_views -- patched
 projects[admin_views][subdir] = "contrib"
 projects[admin_views][version] = "1.0"
-projects[admin_views][patch][] = "http://drupal.org/files/issues/admin_views-enable-use-of-custom-views-2145183-1.patch"
+projects[admin_views][patch][] = "https://www.drupal.org/files/issues/admin_views-enable-use-of-custom-views-2145183-2.patch"
 projects[admin_views][type] = "module"
 
-;views -- patched
+;views
 projects[views][subdir] = "contrib"
-projects[views][version] = "3.5"
-projects[views][patch][] = "http://drupal.org/files/views_1055616_81_cache.patch"
+projects[views][version] = "3.14"
 projects[views][type] = "module"
+
+;config pages
+projects[config_pages][subdir] = "contrib"
+projects[config_pages][version] = "1.8"
+projects[config_pages][type] = "module"
 
 ;filefield_paths
 projects[filefield_paths][type] = 'module'
@@ -34,7 +38,7 @@ projects[hierarchical_select][subdir] = 'contrib'
 projects[hierarchical_select][download][branch] = '7.x-3.x'
 projects[hierarchical_select][download][type] = 'git'
 projects[hierarchical_select][download][url] = 'http://git.drupal.org/project/hierarchical_select.git'
-projects[hierarchical_select][download][revision] = 'b3e34d9c2a0493108481b78ea5ad75c432a1318d'
+projects[hierarchical_select][download][revision] = 'dced41ed3bd88db549db2a72811363d87cc459ff'
 
 ;colorbox
 projects[colorbox][subdir] = "contrib"
@@ -56,17 +60,17 @@ projects[subuser][type] = "module"
 
 ;addressfield
 projects[addressfield][subdir] = "contrib"
-projects[addressfield][version] = "1.0-beta3"
+projects[addressfield][version] = "1.2"
 projects[addressfield][type] = "module"
 
 ;admin_menu
 projects[admin_menu][subdir] = "contrib"
-projects[admin_menu][version] = "3.0-rc3"
+projects[admin_menu][version] = "3.0-rc5"
 projects[admin_menu][type] = "module"
 
 ;background_process
 projects[background_process][subdir] = "contrib"
-projects[background_process][version] = "1.14"
+projects[background_process][version] = "1.16"
 projects[background_process][type] = "module"
 
 ;beautytips
@@ -81,7 +85,7 @@ projects[better_exposed_filters][type] = "module"
 
 ;boolean
 projects[boolean][subdir] = "contrib"
-projects[boolean][version] = "1.0"
+projects[boolean][version] = "1.1"
 projects[boolean][type] = "module"
 
 ;commerce
@@ -122,7 +126,7 @@ projects[content_access][type] = "module"
 
 ;ctools
 projects[ctools][subdir] = "contrib"
-projects[ctools][version] = "1.2"
+projects[ctools][version] = "1.12"
 projects[ctools][type] = "module"
 
 ;date
@@ -147,12 +151,12 @@ projects[email][type] = "module"
 
 ;entity
 projects[entity][subdir] = "contrib"
-projects[entity][version] = "1.0-rc3"
+projects[entity][version] = "1.8"
 projects[entity][type] = "module"
 
 ;entityreference
 projects[entityreference][subdir] = "contrib"
-projects[entityreference][version] = "1.0"
+projects[entityreference][version] = "1.2"
 projects[entityreference][type] = "module"
 
 ;features
@@ -172,7 +176,7 @@ projects[field_permissions][type] = "module"
 
 ;filefield_sources
 projects[filefield_sources][subdir] = "contrib"
-projects[filefield_sources][version] = "1.7"
+projects[filefield_sources][version] = "1.10"
 projects[filefield_sources][type] = "module"
 
 ;google_analytics
@@ -212,7 +216,7 @@ projects[link][type] = "module"
 
 ;masquerade
 projects[masquerade][subdir] = "contrib"
-projects[masquerade][version] = "1.0-rc5"
+projects[masquerade][version] = "1.0-rc7"
 projects[masquerade][type] = "module"
 
 ;menu_block
@@ -237,7 +241,7 @@ projects[metatag][type] = "module"
 
 ;migrate
 projects[migrate][subdir] = "contrib"
-projects[migrate][version] = "2.4"
+projects[migrate][version] = "2.8"
 projects[migrate][type] = "module"
 
 ;references
@@ -247,12 +251,12 @@ projects[references][type] = "module"
 
 ;panels
 projects[panels][subdir] = "contrib"
-projects[panels][version] = "3.3"
+projects[panels][version] = "3.8"
 projects[panels][type] = "module"
 
 ;pathauto
 projects[pathauto][subdir] = "contrib"
-projects[pathauto][version] = "1.2"
+projects[pathauto][version] = "1.3"
 projects[pathauto][type] = "module"
 
 ;pm_existing_pages
@@ -292,7 +296,7 @@ projects[simplehtmldom][type] = "module"
 
 ;smtp
 projects[smtp][subdir] = "contrib"
-projects[smtp][version] = "1.0-beta2"
+projects[smtp][version] = "1.6"
 projects[smtp][type] = "module"
 
 ;strongarm
@@ -317,7 +321,7 @@ projects[token][type] = "module"
 
 ;ultimate_cron
 projects[ultimate_cron][subdir] = "contrib"
-projects[ultimate_cron][version] = "1.9"
+projects[ultimate_cron][version] = "2.2"
 projects[ultimate_cron][type] = "module"
 
 ;views_bulk_operations
@@ -327,7 +331,7 @@ projects[views_bulk_operations][type] = "module"
 
 ;views_data_export
 projects[views_data_export][subdir] = "contrib"
-projects[views_data_export][version] = "3.0-beta6"
+projects[views_data_export][version] = "3.1"
 projects[views_data_export][type] = "module"
 
 ;wysiwyg
@@ -364,8 +368,8 @@ libraries[colorbox][download][tag] =  1.5.14
 
 ; Beautytips
 libraries[beautytips_ie_lib][download][type] = "get"
-libraries[beautytips_ie_lib][download][url] = "https://explorercanvas.googlecode.com/files/excanvas_r3.zip"
-libraries[beautytips_ie_lib][download][md5] = "81a041b98c477f92ed772f2fac0835ad"
+libraries[beautytips_ie_lib][download][url] = "https://cdn.jsdelivr.net/excanvas/r3/excanvas.js"
+libraries[beautytips_ie_lib][download][md5] = "d6daf9202fd54f3df4e95369715a4eab"
 libraries[beautytips_ie_lib][directory_name] = "excanvas_r3"
 libraries[beautytips_ie_lib][destination] = "modules/contrib/beautytips/other_libs"
 
@@ -383,7 +387,7 @@ projects[node_export][version] = "3.0"
 projects[node_export][type] = "module"
 
 projects[uuid][subdir] = "contrib"
-projects[uuid][version] = "1.0-alpha5"
+projects[uuid][version] = "1.0-beta2"
 projects[uuid][type] = "module"
 
 ; shared accounts
@@ -397,3 +401,14 @@ projects[sharedaccounts][download][branch] = '7.x-2.x'
 projects[taxonomy_manager][subdir] = "contrib"
 projects[taxonomy_manager][version] = "1.0"
 projects[taxonomy_manager][type] = "module"
+
+; mailchimp
+projects[mailchimp][subdir] = "contrib"
+projects[mailchimp][version] = "3.6"
+projects[mailchimp][type] = "module"
+
+; MailChimp library
+libraries[mailchimp][download][type] = "get"
+libraries[mailchimp][download][url] = "https://bitbucket.org/mailchimp/mailchimp-api-php/get/2.0.6.zip"
+libraries[mailchimp][directory_name] = "mailchimp"
+libraries[mailchimp][destination] = "libraries"

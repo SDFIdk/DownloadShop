@@ -1,0 +1,33 @@
+<?php
+
+/**
+ * @file
+ * Install file for the KMS user log.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function kms_user_log_schema() {
+  $schema = array();
+  
+  $schema['kms_user_log'] = array(
+    'description' => 'The base table for the user log.',
+    'fields' => array(
+	  'lid' => array( 'type' => 'serial', 'not_null' => TRUE, 'unsigned' => TRUE),
+      'uid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+      'aid' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+      'created' => array('type' => 'int', 'not null' => TRUE, 'default' => 0),
+      'checksum' => array('type' => 'varchar', 'length' => 40, 'not null' => TRUE, 'default' => ''),
+      'data' => array('type' => 'blob', 'not null' => TRUE, 'serialize' => TRUE),
+    ),
+    'indexes' => array(
+      'uid' => array('uid'),
+      'created' => array('created'),
+      'checksum' => array('checksum'),
+    ),
+    'primary key' => array('lid'),
+  );
+
+  return $schema;
+}

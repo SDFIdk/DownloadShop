@@ -1,0 +1,16 @@
+body.page-edit-profile,
+body.page-add-profile {
+  background: none;
+  min-width: 0;
+
+  #page {
+    width: 100%;
+  }
+}
+html body.admin-menu {
+  margin-top: 0px !important;
+
+  #admin-menu {
+    display: none;
+  }
+}
