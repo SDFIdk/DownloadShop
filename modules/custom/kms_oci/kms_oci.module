@@ -182,7 +182,7 @@ function kms_oci_insert($data, $table, $cid = FALSE) {
 function kms_oci_filter_query_data(&$data) {
   // Only use variables with non empty string values.
   $data = array_filter($data, function($v){
-    return $v !== '';
+    return $v == 0 || !empty($v);
   });
 }
 

@@ -352,8 +352,8 @@ EOD;
       $sql_col = strtolower($col);
       $sql_data['insert'][$sql_col] = $sql_col == 'userid' ? 'v_userid' : "*$sql_col*";
       if ($sql_col != 'userid') {
-        // Only add update keys if they exist in the data array, and the value is not an empty string
-        if (isset($data[$sql_col]) && $data[$sql_col] !== '') {
+        // Add update keys if they exist in the data array.
+        if (isset($data[$sql_col])) {
           $sql_data['update'][$sql_col] = "t.$sql_col = *$sql_col*";
         }
       }
