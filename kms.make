@@ -323,6 +323,8 @@ projects[token][type] = "module"
 projects[ultimate_cron][subdir] = "contrib"
 projects[ultimate_cron][version] = "2.3"
 projects[ultimate_cron][type] = "module"
+; Fix for postgres upsert problem until https://www.drupal.org/node/2487269 is resolved
+projects[ultimate_cron][patch][] = "patches/ultimate_cron-upsert.patch"
 
 ;views_bulk_operations
 projects[views_bulk_operations][subdir] = "contrib"
