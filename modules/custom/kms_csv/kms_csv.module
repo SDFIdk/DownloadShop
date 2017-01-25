@@ -746,7 +746,7 @@ function _kms_csv_return_today($date) {
 
   $beginOfDay = strtotime("midnight - 1 day", time());
   
-  if ($date == FALSE) {
+  if ($date !== FALSE) {
     $beginOfDay = $date;
   } 
 
