@@ -101,3 +101,28 @@ function _kms_csv_default_insert($type, $unid) {
   drupal_write_record('kms_csv_cron_point', $data);
 }
 
+
+/**
+ * Delete old translations for subscriber error.
+ *
+ * @author Tom Helmer Hansen <tom@adapt.dk>
+ */
+function kms_csv_update_7002(&$sandbox) {
+  _kms_csv_create_users(strtotime('2017-01-16'));
+  _kms_csv_create_downloads(strtotime('2017-01-16'));
+
+  _kms_csv_create_users(strtotime('2017-01-17'));
+  _kms_csv_create_downloads(strtotime('2017-01-17'));
+
+  _kms_csv_create_users(strtotime('2017-01-18'));
+  _kms_csv_create_downloads(strtotime('2017-01-18'));
+
+  _kms_csv_create_users(strtotime('2017-01-19'));
+  _kms_csv_create_downloads(strtotime('2017-01-19'));
+
+  _kms_csv_create_users(strtotime('2017-01-20'));
+  _kms_csv_create_downloads(strtotime('2017-01-20'));
+
+  _kms_csv_create_users(strtotime('2017-01-21'));
+  _kms_csv_create_downloads(strtotime('2017-01-21'));
+}

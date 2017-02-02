@@ -324,7 +324,7 @@ projects[ultimate_cron][subdir] = "contrib"
 projects[ultimate_cron][version] = "2.3"
 projects[ultimate_cron][type] = "module"
 ; Fix for postgres upsert problem until https://www.drupal.org/node/2487269 is resolved
-projects[ultimate_cron][patch][] = "patches/ultimate_cron-upsert.patch"
+projects[ultimate_cron][patch][] = "https://www.drupal.org/files/issues/ultimate_cron-upsert_postgres-2846284-1.patch"
 
 ;views_bulk_operations
 projects[views_bulk_operations][subdir] = "contrib"

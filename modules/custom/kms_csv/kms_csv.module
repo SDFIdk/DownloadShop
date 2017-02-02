@@ -84,7 +84,7 @@ function kms_csv_job(){
  * Create CSV output for users.
  *
  */
-function _kms_csv_create_users() {
+function _kms_csv_create_users($date = FALSE) {
 
   $headers = _kms_csv_generate_data_users_headers();
   $file = file_directory_temp() . '/' . uniqid();
@@ -95,7 +95,7 @@ function _kms_csv_create_users() {
     // Select last
   $last_id = db_query('SELECT MAX(uid) FROM {users}')->fetchField();
 
-  $today = _kms_csv_return_today();
+  $today = _kms_csv_return_today($date);
 
   $query = db_select('users', 'u')
   ->condition('created', array($today['beginOfDay'], $today['endOfDay']), 'BETWEEN')
@@ -110,7 +110,7 @@ function _kms_csv_create_users() {
      _kms_csv_generate_data_users_row($record['uid'], $file);
   }
 
-  _kms_csv_transfer_file($file, 'kortforsyningen_users');
+  _kms_csv_transfer_file($file, 'kortforsyningen_users', $date);
 
   // Update lastprocessed
   db_update('kms_csv_cron_point')
@@ -126,14 +126,14 @@ function _kms_csv_create_users() {
  * @param array $settings
  *
  */
-function _kms_csv_create_downloads() {
+function _kms_csv_create_downloads($date = FALSE) {
 
   // Select last
   $last_id = db_query('SELECT MAX(order_id) FROM {commerce_order}')->fetchField();
 
   $query = db_select('commerce_order', 'o');
 
-  $today = _kms_csv_return_today();
+  $today = _kms_csv_return_today($date);
 
   $query
   ->condition('o.status', 'completed', '=')
@@ -156,7 +156,7 @@ function _kms_csv_create_downloads() {
       _kms_csv_generate_data_download_rows($record['order_id'], $file);
   }
 
-  _kms_csv_transfer_file($file, 'shop_downloads');
+  _kms_csv_transfer_file($file, 'shop_downloads', $date);
 
   // Update lastprocessed
   db_update('kms_csv_cron_point')
@@ -470,12 +470,11 @@ function _kms_csv_generate_data_orders_rows($oid, $file){
  * @param string $type
  *
  */
-function _kms_csv_transfer_file($file, $type) {
+function _kms_csv_transfer_file($file, $type, $date) {
 
   date_default_timezone_set("Europe/Copenhagen");
 
-  $day = date("d_m_Y", strtotime("yesterday"));
-  //print_r(drupal_realpath("public://"));
+  $day = date("d_m_Y", $date == FALSE ? strtotime("yesterday") : $date);
 
   if (copy($file, drupal_realpath("public://kms_csv/{$type}_{$day}.csv"))) {
     watchdog('CSV', 'File created successfully');
@@ -483,26 +482,6 @@ function _kms_csv_transfer_file($file, $type) {
     watchdog('CSV', 'Error occured while trying to write the file');
   }
 
-  /* Allow upload to remote FTP server
-
-  $settings['username'] = variable_get('kms_csv_ftp_username','');
-  $settings['password'] = variable_get('kms_csv_ftp_password','');
-  $settings['advanced']['hostname']= variable_get('kms_csv_ftp_hostname','');
-  $settings['advanced']['port']= variable_get('kms_csv_ftp_port','');
-
-  $day =  format_date(time(), 'custom', 'd_m_y');
-
-  try {
-    // Copy the files.
-    $ftp = FileTransferFTP::factory($jail, $settings);
-    $ftp->connect();
-	  $ftp->copyFile($file, "file_{$type}_{$day}.csv");
-  }
-  catch(Exception $e) {
-	 print($e);
-   watchdog('FTP', 'FTP failed during connect or filetransfer ');
-  }
-  */
 }
 
 /**
@@ -674,9 +653,6 @@ function _kms_csv_generate_data_users_row($uid, $file){
   //Survey
   $row[] = $yes_no[$uwrapper->field_contact_me->value()];
 
-  //Deprecated function to convert from utf to latin1, no longer used by new system
-  //kms_csv_convert_row2latin1($row);
-
   fputcsv($handle, $row, ';');
 
   fclose($handle);
@@ -764,11 +740,16 @@ function kms_csv_ajax_callback($order_id, $element_id) {
  * Calculate timestamp values for begining and end of yesterday.
  * @return array $today
  */
-function _kms_csv_return_today() {
+function _kms_csv_return_today($date) {
 
   date_default_timezone_set("Europe/Copenhagen");
 
   $beginOfDay = strtotime("midnight - 1 day", time());
+  
+  if ($date !== FALSE) {
+    $beginOfDay = $date;
+  } 
+
   $endOfDay   = strtotime("tomorrow", $beginOfDay) - 1;
 
   return array('beginOfDay'=>$beginOfDay, 'endOfDay'=>$endOfDay);
@@ -814,71 +795,6 @@ function kms_csv_file_link($variables) {
   }
 
   return '<span class="file">' . l($icon, $url, $options) . ' ' .     l($link_text, $url, $options) . '</span>';
-}
-
-
-
-/**
- * Create CSV output for downloads (OLD).
- *
- */
-function _kms_csv_create_downloads_deprecated() {
-
-  $headers = _kms_csv_generate_data_download_headers();
-  $file = file_directory_temp() . '/' . uniqid();
-  $handle = fopen($file, 'w'); // Create the file.
-  fputcsv($handle, $headers, ';'); // Write the labels to the header r
-
-  $today = _kms_csv_return_today();
-
-  // Select last
-  $last_id = db_query('SELECT MAX(counter_id) FROM {kms_download_count}')->fetchField();
-
-  $result = db_query('SELECT element_id, COUNT(counter_id) as download_count
-              FROM {kms_download_count}
-            WHERE download_on > :beginOfDay AND download_on < :endOfDay
-            GROUP BY element_id', array(':beginOfDay' => $today['beginOfDay'], ':endOfDay' => $today['endOfDay']));
-  foreach ($result as $record) {
-
-    $row = array();
-
-    $query = db_select('kms_download_count', 'd')
-      ->condition('d.element_id', $record->element_id, '=')
-        ->fields('d');
-      $result_od = $query->execute();
-
-    while($od = $result_od->fetchAssoc()) {
-        $last_download = $od['download_on'];
-    $order_id = $od['order_id'];
-    }
-
-    // OrderID
-    $row[] = $order_id;
-
-    // ElementID
-    $row[] = $record->element_id;
-
-    // Last download
-    $row[] = $last_download;
-
-    // Count
-    $row[] = $record->download_count;
-
-    fputcsv($handle, $row, ';');
-
-  }
-
-  fclose($handle);
-
-  _kms_csv_transfer_file($file, 'downloads');
-
-  if(!isset($last_id)) $last_id = 0;
-  // Update lastprocessed
-  db_update('kms_csv_cron_point')
-    ->condition('type', 3, '=')
-    ->fields(array('unid' => $last_id, 'updated' => time()))
-    ->execute();
-
 }
 
 function _kms_csv_get_referencing_node_id($product) {
