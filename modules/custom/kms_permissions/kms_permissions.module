@@ -2428,7 +2428,7 @@ function _kms_permissions_get_all_permissions_by_uid($uid, $options = array()) {
  * @param array $array
  *        webservice ID's
  * @return array
- */
+ */  
 function _kms_permissions_webservice_return_list_array($array){
 
   $webservices = array();
@@ -2504,7 +2504,6 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
   if (empty($service)) {
     return;
   }
-
   $keyname = '';
   $link = 'null';
   $typeName = '';
@@ -2519,7 +2518,7 @@ function _kms_permissions_webservice_get_service_array_by_type($service, $all_se
       if (empty($all_services[$key])) {
         continue;
       }
-      if($type == 'predefined_datacollections'){
+      if ($type == 'predefined_datacollections'){
         //Get link pro predefined datacollections because it's node content type - product display
         $link = $GLOBALS['base_url'] . '/' . drupal_get_path_alias("node/".$value[$keyv]);
         $typeName = 'Predefined datacollections';
@@ -2601,13 +2600,16 @@ function _kms_permissions_webservice_get_services_array_by_bid($bid, $webService
 
   if(!empty($permissions['predefined_datacollections']) && is_array($permissions['predefined_datacollections'])) {
     array_walk($permissions['predefined_datacollections'], function($v) use(&$sids, $webServiceListAll) {
-      $sids['predefined_datacollections_'.$v['id']]['ProductTypeId'] = 'null';
-      $sids['predefined_datacollections_'.$v['id']]['ProductID'] = $v['id'];
-      $sids['predefined_datacollections_'.$v['id']]['ProductName'] = $webServiceListAll['predefined_datacollections_'.$v['id']];
-      $sids['predefined_datacollections_'.$v['id']]['ProductDescription'] = kms_permissions_get_node_description($v['id']);
-      $sids['predefined_datacollections_'.$v['id']]['ProductTypeName'] = 'Predefined datacollections';
-      $sids['predefined_datacollections_'.$v['id']]['ProductLink'] = $GLOBALS['base_url'] . '/' . drupal_get_path_alias("node/".$v['id']);
-      $sids['predefined_datacollections_'.$v['id']]['ProductKorttype'] = kms_permissions_get_product_display_field_korttype_value($v['id']);
+      $status = kms_permissions_get_node_status($v['id']);
+      if ($status) {
+        $sids['predefined_datacollections_'.$v['id']]['ProductTypeId'] = 'null';
+        $sids['predefined_datacollections_'.$v['id']]['ProductID'] = $v['id'];
+        $sids['predefined_datacollections_'.$v['id']]['ProductName'] = $webServiceListAll['predefined_datacollections_'.$v['id']];
+        $sids['predefined_datacollections_'.$v['id']]['ProductDescription'] = kms_permissions_get_node_description($v['id']);
+        $sids['predefined_datacollections_'.$v['id']]['ProductTypeName'] = 'Predefined datacollections';
+        $sids['predefined_datacollections_'.$v['id']]['ProductLink'] = $GLOBALS['base_url'] . '/' . drupal_get_path_alias("node/".$v['id']);
+        $sids['predefined_datacollections_'.$v['id']]['ProductKorttype'] = kms_permissions_get_product_display_field_korttype_value($v['id']);
+      }
     });
   }
 
@@ -2645,6 +2647,20 @@ function kms_permissions_get_node_description($nid){
   }
 
   return check_markup($result[0]->body_value, $result[0]->body_format);
+}
+
+/**
+ * Get node status.
+ *
+ * @param $nid
+ */
+function kms_permissions_get_node_status($nid) {
+  $query = db_select('node', 'n')
+    ->fields('n', array('status'))
+    ->condition('n.nid', $nid)
+    ->execute();
+  $result = $query->fetchObject();
+  return ($result->status == 1);
 }
 
 /**
