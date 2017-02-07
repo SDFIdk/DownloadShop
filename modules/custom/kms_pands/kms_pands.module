@@ -26,26 +26,12 @@ function kms_pands_get_products($user) {
     }
   }
 
-  // Get products for user.
-  // Use data from prod when not running Oracle locally.
-  /*
-  $userObj = entity_metadata_wrapper('user', user_load($user->uid));
-  $base_url = variable_get('kms_pands_product_url', 'http://test.download.kortforsyningen.dk/system-status/getuserdata/permissions');
-  $url = url($base_url, array('query' => array(
-    'login' => $userObj->name->value(),
-    'password' => $userObj->field_pass_clear->value()
-  )));
-  $result = file_get_contents($url);
-  $data = json_decode($result);
-  $products = $data->products;
-  */
-
   $userObj = user_load($user->uid);
   // Get all ID's of webservices from user account
   $all_services = array();
   $all_services['bundles'] = $userObj->field_access_bundles[LANGUAGE_NONE];
   $all_services['predefined_datacollections'] = (isset($userObj->field_predefined_datacollections[LANGUAGE_NONE]) ? $userObj->field_predefined_datacollections[LANGUAGE_NONE] : '');
-  $all_services['ftp'] = kms_pands_min_side_query();
+  $all_services['ftp'] = kms_pands_ftp_products($userObj);
   $all_services['applications'] = isset($userObj->field_applications[LANGUAGE_NONE]) ? $userObj->field_applications[LANGUAGE_NONE] : '';
   $all_services['main_services'] = _kms_permissions_get_separate_webservices_by_uid($user->uid);
   $webservices = _kms_permissions_webservice_return_list_array($all_services);
@@ -67,11 +53,28 @@ function kms_pands_get_products($user) {
   return $products;
 }
 
-function kms_pands_min_side_query() {
+/**
+ * Get FTP products. 
+ */
+
+function kms_pands_ftp_products($userObj) {
+  // Use permissions from the predefined dataset.
+  // Only bundle permissions are fetched as user-specific permissions are not used atm.
+  $b = empty($userObj->field_access_bundles[LANGUAGE_NONE]) ? array() : $userObj->field_access_bundles[LANGUAGE_NONE];
+  $predefined_datacollections = array();
+  foreach($b as $index) {
+    foreach ($index as $key => $value) {
+      $collections = _kms_permissions_get_permissions_by_bid($value);
+      foreach ($collections['predefined_datacollections'] as $collection) {
+        $predefined_datacollections[$collection['id']] = (int) $collection['id'];
+      } 
+    }
+  }
   $query = db_select('field_data_field_min_side', 'ms');
   $query->leftJoin('field_data_body', 'b', 'ms.entity_id = b.entity_id');
   $query->fields('ms', array('entity_id', 'field_min_side_url', 'field_min_side_title'));
   $query->fields('b', array('body_value', 'body_summary'));
+  $query->condition('ms.entity_id', $predefined_datacollections, 'IN');
   $result = $query->execute()->fetchAll();
   return $result;
 }
