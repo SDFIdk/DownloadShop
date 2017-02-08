@@ -75,6 +75,7 @@ function kms_pands_ftp_products($userObj) {
   $query->fields('ms', array('entity_id', 'field_min_side_url', 'field_min_side_title'));
   $query->fields('b', array('body_value', 'body_summary'));
   $query->condition('ms.entity_id', $predefined_datacollections, 'IN');
+  $query->orderBy('ms.field_min_side_title');
   $result = $query->execute()->fetchAll();
   return $result;
 }
