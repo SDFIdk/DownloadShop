@@ -22,7 +22,7 @@ function mailchimp_export_views_default_views() {
 
   /* Display: Master */
   $handler = $view->new_display('default', 'Master', 'default');
-  $handler->display->display_options['title'] = 'Export users to mailchimp';
+  $handler->display->display_options['title'] = 'Export users with consent';
   $handler->display->display_options['use_more_always'] = FALSE;
   $handler->display->display_options['access']['type'] = 'perm';
   $handler->display->display_options['access']['perm'] = 'administer users';
@@ -157,9 +157,11 @@ function mailchimp_export_views_default_views() {
 
   /* Display: Page */
   $handler = $view->new_display('page', 'Page', 'page');
+  $handler->display->display_options['defaults']['title'] = FALSE;
+  $handler->display->display_options['title'] = 'Export users (consent)';
   $handler->display->display_options['path'] = 'admin/people/users-with-consent';
   $handler->display->display_options['menu']['type'] = 'normal';
-  $handler->display->display_options['menu']['title'] = 'Export users to mailchimp';
+  $handler->display->display_options['menu']['title'] = 'Export users (consent)';
   $handler->display->display_options['menu']['weight'] = '0';
   $handler->display->display_options['menu']['name'] = 'management';
   $handler->display->display_options['menu']['context'] = 0;
@@ -175,11 +177,73 @@ function mailchimp_export_views_default_views() {
     'page' => 'page',
     'default' => 0,
   );
+  $handler->display->display_options['sitename_title'] = 0;
+  $handler->display->display_options['use_batch'] = 'batch';
+  $handler->display->display_options['segment_size'] = '150';
+
+  /* Display: News page */
+  $handler = $view->new_display('page', 'News page', 'page_1');
+  $handler->display->display_options['defaults']['title'] = FALSE;
+  $handler->display->display_options['title'] = 'Export users (news)';
+  $handler->display->display_options['defaults']['filter_groups'] = FALSE;
+  $handler->display->display_options['defaults']['filters'] = FALSE;
+  /* Filter criterion: User: Aktiv */
+  $handler->display->display_options['filters']['status']['id'] = 'status';
+  $handler->display->display_options['filters']['status']['table'] = 'users';
+  $handler->display->display_options['filters']['status']['field'] = 'status';
+  $handler->display->display_options['filters']['status']['value'] = '1';
+  $handler->display->display_options['filters']['status']['group'] = 1;
+  $handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
+  /* Filter criterion: User: Ja tak, jeg vil gerne modtage jeres nyhedsbrev (field_newsletter) */
+  $handler->display->display_options['filters']['field_newsletter_value']['id'] = 'field_newsletter_value';
+  $handler->display->display_options['filters']['field_newsletter_value']['table'] = 'field_data_field_newsletter';
+  $handler->display->display_options['filters']['field_newsletter_value']['field'] = 'field_newsletter_value';
+  $handler->display->display_options['filters']['field_newsletter_value']['value'] = array(
+    1 => '1',
+  );
+  $handler->display->display_options['filters']['field_newsletter_value']['group'] = 1;
+  $handler->display->display_options['path'] = 'admin/people/users-receiving-news';
+  $handler->display->display_options['menu']['type'] = 'normal';
+  $handler->display->display_options['menu']['title'] = 'Export users (news)';
+  $handler->display->display_options['menu']['weight'] = '0';
+  $handler->display->display_options['menu']['name'] = 'management';
+  $handler->display->display_options['menu']['context'] = 0;
+  $handler->display->display_options['menu']['context_only_inline'] = 0;
+
+  /* Display: News export */
+  $handler = $view->new_display('views_data_export', 'News export', 'views_data_export_2');
+  $handler->display->display_options['pager']['type'] = 'none';
+  $handler->display->display_options['pager']['options']['offset'] = '0';
+  $handler->display->display_options['style_plugin'] = 'views_data_export_csv';
+  $handler->display->display_options['defaults']['filter_groups'] = FALSE;
+  $handler->display->display_options['defaults']['filters'] = FALSE;
+  /* Filter criterion: User: Aktiv */
+  $handler->display->display_options['filters']['status']['id'] = 'status';
+  $handler->display->display_options['filters']['status']['table'] = 'users';
+  $handler->display->display_options['filters']['status']['field'] = 'status';
+  $handler->display->display_options['filters']['status']['value'] = '1';
+  $handler->display->display_options['filters']['status']['group'] = 1;
+  $handler->display->display_options['filters']['status']['expose']['operator'] = FALSE;
+  /* Filter criterion: User: Ja tak, jeg vil gerne modtage jeres nyhedsbrev (field_newsletter) */
+  $handler->display->display_options['filters']['field_newsletter_value']['id'] = 'field_newsletter_value';
+  $handler->display->display_options['filters']['field_newsletter_value']['table'] = 'field_data_field_newsletter';
+  $handler->display->display_options['filters']['field_newsletter_value']['field'] = 'field_newsletter_value';
+  $handler->display->display_options['filters']['field_newsletter_value']['value'] = array(
+    1 => '1',
+  );
+  $handler->display->display_options['filters']['field_newsletter_value']['group'] = 1;
+  $handler->display->display_options['path'] = 'admin/people/mailchimp';
+  $handler->display->display_options['displays'] = array(
+    'page_1' => 'page_1',
+    'default' => 0,
+    'page' => 0,
+  );
+  $handler->display->display_options['sitename_title'] = 0;
   $handler->display->display_options['use_batch'] = 'batch';
   $handler->display->display_options['segment_size'] = '150';
   $translatables['export_users_with_consent'] = array(
     t('Master'),
-    t('Export users to mailchimp'),
+    t('Export users with consent'),
     t('more'),
     t('Apply'),
     t('Reset'),
@@ -202,7 +266,11 @@ function mailchimp_export_views_default_views() {
     t('Type3'),
     t('Type4'),
     t('Page'),
+    t('Export users (consent)'),
     t('Data export'),
+    t('News page'),
+    t('Export users (news)'),
+    t('News export'),
   );
   $export['export_users_with_consent'] = $view;
 
