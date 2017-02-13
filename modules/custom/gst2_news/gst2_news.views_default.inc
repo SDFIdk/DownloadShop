@@ -45,17 +45,12 @@ function gst2_news_views_default_views() {
   $handler->display->display_options['pager']['options']['tags']['last'] = 'sidste »';
   $handler->display->display_options['style_plugin'] = 'default';
   $handler->display->display_options['row_plugin'] = 'fields';
-  /* Field: Content: Top image */
+  /* Field: Broken/missing handler */
   $handler->display->display_options['fields']['field_top_image']['id'] = 'field_top_image';
   $handler->display->display_options['fields']['field_top_image']['table'] = 'field_data_field_top_image';
   $handler->display->display_options['fields']['field_top_image']['field'] = 'field_top_image';
   $handler->display->display_options['fields']['field_top_image']['label'] = '';
   $handler->display->display_options['fields']['field_top_image']['element_label_colon'] = FALSE;
-  $handler->display->display_options['fields']['field_top_image']['click_sort_column'] = 'fid';
-  $handler->display->display_options['fields']['field_top_image']['settings'] = array(
-    'image_style' => 'news',
-    'image_link' => 'content',
-  );
   /* Field: Content: Title */
   $handler->display->display_options['fields']['title']['id'] = 'title';
   $handler->display->display_options['fields']['title']['table'] = 'node';

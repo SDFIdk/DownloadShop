@@ -174,37 +174,136 @@ function gst2_news_user_update($edit, $account, $category) {
 
 function gst2_news_signup($account) {
 
-  // If it's not a new user and the subscription status don't change, just skip.
-  // TODO: check if name or usertype has been changed
-  if (empty($account->is_new) &&
-     ($account->original->field_contact_me[LANGUAGE_NONE][0]['value'] == $account->field_contact_me[LANGUAGE_NONE][0]['value']) ) {
-    return;
-  }
-  
   // If it's not the user updating their own profile, just skip.
   if (empty($account->is_new) && ($account->uid != $GLOBALS['user']->uid)) {
     return;
   }
+  
+  $subscribed_email = FALSE;
+  $email_change = FALSE;
+
+  try {
+    $uw = entity_metadata_wrapper('user', $account);
+    if (empty($account->is_new)) {
+      $subscribed_email = $uw->mail->value();
+    }
+  } 
+  catch (EntityMetadataWrapperException $exc) {
+    watchdog(
+      'MODULE_NAME',
+      'EntityMetadataWrapper exception in %function() <pre>@trace</pre>',
+      array('%function' => __FUNCTION__, '@trace' => $exc->getTraceAsString()),
+      WATCHDOG_ERROR
+    );
+    return;
+  }
+
+  if (empty($account->is_new)) {
+    try {
+      $uwo = entity_metadata_wrapper('user', $account->original);
+      $subscribed_email = $uwo->mail->value();
+
+      if ($uw->mail->value() != $uwo->mail->value()) {
+        $email_change = TRUE; 
+      }
+    } 
+    catch (EntityMetadataWrapperException $exc) {
+      // No original  
+    }
+  }
+
+  // If it's not a new user and the user object don't change, just skip.
+  if (empty($account->is_new) && gst2_news_no_updates($uw, $uwo)) {
+    return;
+  }
+
+  $address = $uw->field_address->value();
+  $merge_vars = array(
+    'EMAIL' => $account->mail,
+    'FNAME' => empty($address) ? '' : $uw->field_address->first_name->value(),
+    'LNAME' => empty($address) ? '' : $uw->field_address->last_name->value()
+  );
+  $usertype = $uw->field_user_type->value();
+  for ($i=0; $i<4; $i++) {
+    $t = $i+1;
+    if (!empty($usertype[$i])) {
+      $merge_vars["TYPE$t"] = $usertype[$i]->name;
+    } else {
+      $merge_vars["TYPE$t"] = '';
+    }
+  }
 
   if (!empty($account->field_contact_me[LANGUAGE_NONE][0]['value'])) {
-    $uw = entity_metadata_wrapper('user', $account);
-    $address = $uw->field_address->value();
-    $merge_vars = array(
-      'EMAIL' => $account->mail,
-      'FNAME' => empty($address) ? '' : $uw->field_address->first_name->value(),
-      'LNAME' => empty($address) ? '' : $uw->field_address->last_name->value()
-    );
-    $usertype = $uw->field_user_type->value();
-    for ($i=0; $i<4; $i++) {
-      $t = $i+1;
-      if (!empty($usertype[$i])) {
-        $merge_vars["TYPE$t"] = $usertype[$i]->name;
-      } else {
-        $merge_vars["TYPE$t"] = '';
-      }
+    if ($email_change) {
+      mailchimp_unsubscribe('8877f51385', $subscribed_email, TRUE);  
     }
-    mailchimp_subscribe('8877f51385', $account->mail, $merge_vars);
+    mailchimp_subscribe('8877f51385', $uw->mail->value(), $merge_vars);
   } else {
-    mailchimp_unsubscribe('8877f51385', $account->mail);
+    if ($subscribed_email != FALSE) {
+      mailchimp_unsubscribe('8877f51385', $subscribed_email);
+    }
   }
+  
+  if ($subscribed_email != FALSE) {
+    // Update "Kortforsyningen Driftmeddelelser"
+    $subscribed = mailchimp_is_subscribed('79cf358102', $subscribed_email);
+    if ($subscribed) {
+      if ($email_change) {
+        mailchimp_unsubscribe('79cf358102', $subscribed_email, TRUE);  
+      }
+      mailchimp_subscribe('79cf358102', $uw->mail->value(), $merge_vars);
+    }
+
+    // Update "Nyheder"
+    $subscribed = mailchimp_is_subscribed('9cb71e8040', $subscribed_email);
+    if ($subscribed) {
+      if ($email_change) {
+        mailchimp_unsubscribe('9cb71e8040', $subscribed_email, TRUE);  
+      }
+      mailchimp_subscribe('9cb71e8040', $uw->mail->value(), $merge_vars);
+    }
+
+      // Update "Kortforsyningen PIP"
+    $subscribed = mailchimp_is_subscribed('fc2b05567b', $subscribed_email);
+    if ($subscribed) {
+      if ($email_change) {
+        mailchimp_unsubscribe('fc2b05567b', $subscribed_email, TRUE);  
+      }
+      mailchimp_subscribe('fc2b05567b', $uw->mail->value(), $merge_vars);
+    }
+  }
+
+}
+
+/**
+ * Utility function to check if the user object has been changed.
+ * Firstname, lastname, usertype and the contact me field is checked.
+ **/ 
+function gst2_news_no_updates($uw, $uwo) {
+  try {
+    $new = sha1(json_encode(array(
+      $uw->field_address->first_name->value(),
+      $uw->field_address->last_name->value(), 
+      $uw->field_user_type->value(),
+      $uw->field_contact_me->value(),
+      $uw->mail->value()
+    )));
+    $org = sha1(json_encode(array(
+      $uwo->field_address->first_name->value(),
+      $uwo->field_address->last_name->value(), 
+      $uwo->field_user_type->value(),
+      $uwo->field_contact_me->value(),
+      $uwo->mail->value()
+    )));
+    return ($new == $org);
+  } 
+  catch (EntityMetadataWrapperException $exc) {
+    watchdog(
+      'MODULE_NAME',
+      'EntityMetadataWrapper exception in %function() <pre>@trace</pre>',
+      array('%function' => __FUNCTION__, '@trace' => $exc->getTraceAsString()),
+      WATCHDOG_ERROR
+    );
+  }
+  return TRUE;
 }
