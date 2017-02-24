@@ -310,7 +310,13 @@ function kms_pands_product_list_form() {
           }
 
           if (!empty($product->ProductLink) && $product->ProductLink !== 'null' ) {
-            $description .= "<b>" . t('Link'). ":</b> " . l(t('Product link'), $product->ProductLink);
+            $path = current_path();
+            $match = 'iframe';
+            if (substr_compare($path, $match, strlen($path)-strlen($match), strlen($match)) === 0) {
+              $description .= "<b>" . t('Link'). ":</b> " . l(t('Product link'), $product->ProductLink, array('attributes' => array('target'=>'_download')));
+            } else {
+              $description .= "<b>" . t('Link'). ":</b> " . l(t('Product link'), $product->ProductLink);
+            }
           }
 
           $form[$group_name][$key]['noData'] = array(
