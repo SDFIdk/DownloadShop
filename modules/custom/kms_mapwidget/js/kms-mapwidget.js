@@ -295,10 +295,10 @@ function initMap(conf) {
     baselayer_service_layer = 'Ftk_f200';
   }
 
-  var skaermkort_url = ["http://a.kortforsyningen.kms.dk/topo_skaermkort",
-                        "http://b.kortforsyningen.kms.dk/topo_skaermkort",
-                        "http://c.kortforsyningen.kms.dk/topo_skaermkort",
-                        "http://d.kortforsyningen.kms.dk/topo_skaermkort"];
+  var skaermkort_url = ["//a.kortforsyningen.kms.dk/topo_skaermkort",
+                        "//b.kortforsyningen.kms.dk/topo_skaermkort",
+                        "//c.kortforsyningen.kms.dk/topo_skaermkort",
+                        "//d.kortforsyningen.kms.dk/topo_skaermkort"];
 
     var map = new OpenLayers.Map(
         'mapTag',
@@ -335,7 +335,7 @@ function initMap(conf) {
   } else {
     baselayer_generic = new OpenLayers.Layer.WMS (
       baselayer_name,
-      "http://kortforsyningen.kms.dk/" + baselayer_service_name + '?',
+      "//kortforsyningen.kms.dk/" + baselayer_service_name + '?',
       { layers: baselayer_service_layer,
         format: 'image/png',
         bgcolor: '0xFFFFFF',
@@ -357,7 +357,7 @@ function initMap(conf) {
       var layername = jQuery.trim(layers[i]);
       overlay = new OpenLayers.Layer.WMS (
         layername,
-        "http://kortforsyningen.kms.dk/" + conf.service_name + '?',
+        "//kortforsyningen.kms.dk/" + conf.service_name + '?',
         { layers: layername,
           format: 'image/png',
           bgcolor: '0xFFFFFF',
@@ -379,7 +379,7 @@ function initMap(conf) {
       // specific WMS baselayer
       baselayer_specific = new OpenLayers.Layer.WMS (
     		conf.name,
-    		"http://kortforsyningen.kms.dk/" + conf.service_name + '?',
+    		"//kortforsyningen.kms.dk/" + conf.service_name + '?',
     		{ layers: conf.service_layer,
     		  format: 'image/png',
     		  bgcolor: '0xFFFFFF',
