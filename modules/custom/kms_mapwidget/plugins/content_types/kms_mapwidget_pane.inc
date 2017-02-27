@@ -54,7 +54,7 @@ function kms_mapwidget_pane_render($subtype, $conf, $panel_args, $context) {
   );
 
   drupal_add_library('system', 'ui.autocomplete');
-  drupal_add_js('http://openlayers.org/api/2/OpenLayers.js');
+  drupal_add_js('https://openlayers.org/api/2/OpenLayers.js');
   drupal_add_css(drupal_get_path('module', $modulename).'/css/style.css');
   drupal_add_js(drupal_get_path('module', $modulename).'/js/json2.js');
   drupal_add_js(drupal_get_path('module', $modulename).'/js/jquery.cookie.js');
