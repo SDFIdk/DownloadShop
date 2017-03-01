@@ -381,7 +381,7 @@ function getCapabilityURL($service_name, $service_type) {
   else {
     global $user;
     $userObj = entity_metadata_wrapper('user', user_load($user->uid));
-    $url = url('//kortforsyningen.kms.dk/service', array('query' => array(
+    $url = url('https://kortforsyningen.kms.dk/service', array('query' => array(
       'request' => 'GetTicket',
       'login' => $userObj->name->value(),
       'password' => $userObj->field_pass_clear->value()
@@ -396,7 +396,7 @@ function getCapabilityURL($service_name, $service_type) {
   if ($version == FALSE) {
     return FALSE;
   }
-  $url = "//kortforsyningen.kms.dk/service?request=GetCapabilities&" 
+  $url = "https://kortforsyningen.kms.dk/service?request=GetCapabilities&" 
          . $version . "ticket=" . $ticket 
          . "&servicename=" . $service_name 
          . "&service=" . $service_type;
