@@ -624,7 +624,7 @@ function _kms_csv_generate_data_users_row($uid, $file){
     $type_list[$array_key_number] = $type;
     $array_key_number++;
   }
-
+  $empty_string = 'EMPTY';
   // Brugertype. level 1
   $row[] = $type_list[0];
   if($type_list[0] == "Forening/NGO") {
@@ -632,14 +632,14 @@ function _kms_csv_generate_data_users_row($uid, $file){
     $user_type_info = $uwrapper->field_user_type_info->value();
     $row[] = !empty($user_type_info) ? $user_type_info : '';
   } else {
-    $row[] = isset($type_list[1]) ? $type_list[1] : '';
+    $row[] = isset($type_list[1]) ? $type_list[1] : $empty_string;
   }
 
   // Brugertype. level 2
   // Brugertype. level 3
-  $row[] = isset($type_list[2]) ? $type_list[2] : '';
+  $row[] = isset($type_list[2]) ? $type_list[2] : $empty_string;
   // Brugertype. level 4
-  $row[] = isset($type_list[3]) ? $type_list[3] : '';
+  $row[] = isset($type_list[3]) ? $type_list[3] : $empty_string;
 
    // Oprettet
   $row[] = date($uwrapper->created->value());
