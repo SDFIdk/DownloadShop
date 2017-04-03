@@ -213,15 +213,15 @@ function _kms_csv_generate_data_download_rows($oid, $file){
   if($type_list[0] == "Forening/NGO") {
     // User type info.
     $user_type_info = $uwrapper->field_user_type_info->value();
-    $usertypelvl_2 = !empty($user_type_info) ? $user_type_info : '';
+    $usertypelvl_2 = !empty($user_type_info) ? $user_type_info : 'EMPTY';
   } else {
-    $usertypelvl_2 = isset($type_list[1]) ? $type_list[1] : '';
+    $usertypelvl_2 = isset($type_list[1]) ? $type_list[1] : 'EMPTY';
   }
 
   // $USERTYPELVL_3
-  $usertypelvl_3 = isset($type_list[2]) ? $type_list[2] : '';
+  $usertypelvl_3 = isset($type_list[2]) ? $type_list[2] : 'EMPTY';
   // $USERTYPELVL_4
-  $usertypelvl_4 = isset($type_list[3]) ? $type_list[3] : '';
+  $usertypelvl_4 = isset($type_list[3]) ? $type_list[3] : 'EMPTY';
   // Order id
   // Get line items.
   foreach ($order_wrapper->commerce_line_items as $delta => $line_item_wrapper) {
