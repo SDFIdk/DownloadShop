@@ -97,11 +97,11 @@ function _kms_csv_create_users($date = FALSE) {
 
   $today = _kms_csv_return_today($date);
 
-  $query = db_select('users', 'u')
-  ->condition('created', array($today['beginOfDay'], $today['endOfDay']), 'BETWEEN')
-  ->fields('u', array('uid'));
-
-  $result = $query->execute();
+  $query = db_select('users','pf');
+  $query->join('field_data_field_updated', 'fd', 'pf.uid = fd.entity_id');
+  $joined_query = $query->fields('pf',array('uid'))
+    ->condition('fd.field_updated_value', array($today['beginOfDay'], $today['endOfDay']),'BETWEEN');
+  $result = $joined_query->execute();
 
   while($record = $result->fetchAssoc()) {
     if(empty($record['uid'])) {
