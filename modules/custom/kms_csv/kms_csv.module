@@ -225,14 +225,16 @@ function _kms_csv_generate_data_download_rows($oid, $file){
   // Order id
   // Get line items.
   foreach ($order_wrapper->commerce_line_items as $delta => $line_item_wrapper) {
-
+    $filesize_array = array();
+    foreach ($line_item_wrapper->commerce_file_line_item_files->value() as $delta => $file) {
+      $filesize_array[$delta] = $file['filesize'];
+    }
     // Product
       $product = $line_item_wrapper->commerce_product->title->value();
     //Type and
     $data = unserialize($line_item_wrapper->field_selection->value());
     if(isset($data['product_id'])) {
       $product_display_id = _kms_csv_get_referencing_node_id($data['product_id']);
-
       if(!empty($product_display_id)){
         $product_display_wrapper = entity_metadata_wrapper('node', node_load($product_display_id));
 
@@ -295,7 +297,7 @@ function _kms_csv_generate_data_download_rows($oid, $file){
     }
 
     if($downloadtype != 'userdefined'){
-      foreach ($file_array as $file) {
+      foreach ($file_array as $key => $file) {
         // URL
         $url =  'http://download.kortforsyningen.dk/system/files/'.$folder.'/'.$file;
         $row = array( $orderid,
@@ -320,7 +322,8 @@ function _kms_csv_generate_data_download_rows($oid, $file){
                       '',
                       '',
                       '',
-                      $url
+                      $url,
+                      $filesize_array[$key]
                       );
         fputcsv($handle, $row, ';');
       }
@@ -348,7 +351,8 @@ function _kms_csv_generate_data_download_rows($oid, $file){
                       $bbox,
                       $datetime,
                       $deliverytime,
-                      $url
+                      $url,
+                      $filesize_array[$key] ? : ''
                       );
       fputcsv($handle, $row, ';');
     }
@@ -592,6 +596,7 @@ function _kms_csv_generate_data_download_headers() {
     'ORDERTIME',
     'DELIVERYTIME',
     'URL',
+    'DATASIZE',
   );
 }
 
