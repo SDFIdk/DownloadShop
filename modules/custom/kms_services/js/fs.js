@@ -125,7 +125,7 @@
         var passPar = 'password';
       }
 
-      $url =  'https://kortforsyningen.kms.dk/service?' +
+      $url =  'https://services.kortforsyningen.dk/service?' +
               'servicename=' + service_name +
               '&client=' + program_choice +
               '&request=GetCapabilities' +
