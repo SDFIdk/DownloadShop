@@ -15,11 +15,11 @@ function addString() {
   var status;
   var url = "";
   switch (type) {
-    case 'WMS': url = "https://kortforsyningen.kms.dk/?"; break;
+    case 'WMS': url = "https://services.kortforsyningen.dk/?"; break;
 
-    case 'WFS': url = "https://kortforsyningen.kms.dk/service?"; break;
+    case 'WFS': url = "https://services.kortforsyningen.dk/service?"; break;
 
-    case 'WMTS': url = "https://kortforsyningen.kms.dk/?"; break;
+    case 'WMTS': url = "https://services.kortforsyningen.dk/?"; break;
 
     default: status = false;
   }
