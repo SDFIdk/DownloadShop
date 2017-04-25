@@ -163,8 +163,8 @@ function kms_services_output($service_name, $service_type) {
 
   // Map Iframe.
   if ($service_type == "WMS" || $service_type == "WMTS") {
-    $markup = $markup . '<b>Korteksempel&nbsp;</b><a href="//servicelist.kortforsyningen.dk/show_sample.aspx?maptype=' . $service_type . '&servicename=' . $service_name . '&layerselector=true&screenmode=newwin" target="_blank">&Aring;ben kort i nyt vindue</a><p>
-  <iframe id="MyFrame" src="//servicelist.kortforsyningen.dk/show_sample.aspx?maptype=' . $service_type . '&servicename=' . $service_name . '&Screenwidth=580px&Screenheight=330px&&layerselector=true&screenmode=iframe"   style="width:600px;height:350px;border:1px;border-style:solid;" scrolling="no"></iframe></p>';
+    $markup = $markup . '<b>Korteksempel&nbsp;</b><a href="https://servicelist.kortforsyningen.dk/show_sample.aspx?maptype=' . $service_type . '&servicename=' . $service_name . '&layerselector=true&screenmode=newwin" target="_blank">&Aring;ben kort i nyt vindue</a><p>
+  <iframe id="MyFrame" src="https://servicelist.kortforsyningen.dk/show_sample.aspx?maptype=' . $service_type . '&servicename=' . $service_name . '&Screenwidth=580px&Screenheight=330px&&layerselector=true&screenmode=iframe"   style="width:600px;height:350px;border:1px;border-style:solid;" scrolling="no"></iframe></p>';
   }
 
   print $markup;
@@ -193,7 +193,7 @@ function getCapability($service_name, $service_type) {
   $service["description"] = "";
   $service["layer"] = array();
   $service["spatialReference"] = array();
-  $service["onlineResource"] = "//kortforsyningen.kms.dk/" . $service_name . "?";
+  $service["onlineResource"] = "https://kortforsyningen.kms.dk/" . $service_name . "?";
   $service["url"] = $url;
   $service["format"] = array();
   // determine which way to parse xml to $service.
@@ -237,7 +237,7 @@ function getWCS($service) {
     }
   }
   // WCS has different onlineResourceURL.
-  $service["onlineResource"] = "//kortforsyningen.kms.dk/" . $service["name"] . "?service=" . $service["type"];
+  $service["onlineResource"] = "https://kortforsyningen.kms.dk/" . $service["name"] . "?service=" . $service["type"];
   return $service;
 }
 
@@ -381,7 +381,7 @@ function getCapabilityURL($service_name, $service_type) {
   else {
     global $user;
     $userObj = entity_metadata_wrapper('user', user_load($user->uid));
-    $url = url('//kortforsyningen.kms.dk/service', array('query' => array(
+    $url = url('https://kortforsyningen.kms.dk/service', array('query' => array(
       'request' => 'GetTicket',
       'login' => $userObj->name->value(),
       'password' => $userObj->field_pass_clear->value()
@@ -396,7 +396,7 @@ function getCapabilityURL($service_name, $service_type) {
   if ($version == FALSE) {
     return FALSE;
   }
-  $url = "//kortforsyningen.kms.dk/service?request=GetCapabilities&" 
+  $url = "https://kortforsyningen.kms.dk/service?request=GetCapabilities&" 
          . $version . "ticket=" . $ticket 
          . "&servicename=" . $service_name 
          . "&service=" . $service_type;
