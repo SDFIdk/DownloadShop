@@ -88,7 +88,7 @@ function kms_pands_ftp_products($userObj) {
 function kms_pands_get_services($user) {
   $cache_id = __FUNCTION__ . $user->uid;
   $userObj = entity_metadata_wrapper('user', user_load($user->uid));
-  $base_url = variable_get('kms_pands_service_url', 'https://services.kortforsyningen.dk/service?request=GetServices?');
+  $base_url = variable_get('kms_pands_service_url', 'https://services.kortforsyningen.dk/service?request=GetServices');
   $url = url($base_url, array('query' => array(
     'login' => $userObj->name->value(),
     'password' => $userObj->field_pass_clear->value(),
