@@ -417,7 +417,10 @@ function getVersion($service_type, $service_name) {
   }
   // WFS.
   if ($service_type == "WFS") {
-    if (preg_match("^gmlsfp^", $service_name)) {
+    if ($service_name === 'mat_gml2_beta') {
+      return "version=2.0.0&";
+    }
+    elseif (preg_match("^gmlsfp^", $service_name)) {
       return "version=1.1.0&";
     }
     else {
