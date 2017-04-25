@@ -340,12 +340,22 @@ function kms_mapwidget_add_line_item ($data) {
       $line_item->field_li_type[LANGUAGE_NONE][0]['value'] = 0;
       $line_item->field_selection[LANGUAGE_NONE][0]['value'] = serialize($data);
       $line_item->commerce_file_line_item_files[LANGUAGE_NONE] = $downloads;
-      
+      $downloadsize = kms_mapwidget_download_size($downloads);
+      $downloadcount = count($downloads);
+
       $line_item->field_selection_text[LANGUAGE_NONE][0]['value'] 
         = t('Predefined selection') . ', ' 
         . $selection_type->name  . ', ' 
         . $dataformat->name      . ', ' 
-        . $koordinatsystem->name;
+        . $koordinatsystem->name . ', '
+        . format_plural($downloadcount,
+              '@count file, size: @size',
+              '@count files, total size: @size',
+              array(
+                '@count' => $downloadcount, 
+                '@size' => $downloadsize
+              )
+          );
 
       commerce_line_item_save($line_item);
 
@@ -371,6 +381,17 @@ function kms_mapwidget_add_line_item ($data) {
   }
 
 
+}
+
+function kms_mapwidget_download_size($downloads) {
+  $filesize = 0;
+  foreach ($downloads as $delta => $item) {
+    $file = file_load($item['fid']);
+    $filesize += $file->filesize;
+  }
+  $base = log($filesize) / log(1024);
+  $suffixes = array('B', 'kB', 'MB', 'GB', 'TB');   
+  return round(pow(1024, $base - floor($base)), 2) . $suffixes[floor($base)];
 }
 
 function kms_mapwidget_get_files ($folder,$files) {
