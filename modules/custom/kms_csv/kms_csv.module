@@ -97,11 +97,11 @@ function _kms_csv_create_users($date = FALSE) {
 
   $today = _kms_csv_return_today($date);
 
-  $query = db_select('users', 'u')
-  ->condition('created', array($today['beginOfDay'], $today['endOfDay']), 'BETWEEN')
-  ->fields('u', array('uid'));
-
-  $result = $query->execute();
+  $query = db_select('users','pf');
+  $query->join('field_data_field_updated', 'fd', 'pf.uid = fd.entity_id');
+  $joined_query = $query->fields('pf',array('uid'))
+    ->condition('fd.field_updated_value', array($today['beginOfDay'], $today['endOfDay']),'BETWEEN');
+  $result = $joined_query->execute();
 
   while($record = $result->fetchAssoc()) {
     if(empty($record['uid'])) {
@@ -225,14 +225,16 @@ function _kms_csv_generate_data_download_rows($oid, $file){
   // Order id
   // Get line items.
   foreach ($order_wrapper->commerce_line_items as $delta => $line_item_wrapper) {
-
+    $filesize_array = array();
+    foreach ($line_item_wrapper->commerce_file_line_item_files->value() as $delta => $file) {
+      $filesize_array[$delta] = $file['filesize'];
+    }
     // Product
       $product = $line_item_wrapper->commerce_product->title->value();
     //Type and
     $data = unserialize($line_item_wrapper->field_selection->value());
     if(isset($data['product_id'])) {
       $product_display_id = _kms_csv_get_referencing_node_id($data['product_id']);
-
       if(!empty($product_display_id)){
         $product_display_wrapper = entity_metadata_wrapper('node', node_load($product_display_id));
 
@@ -295,7 +297,7 @@ function _kms_csv_generate_data_download_rows($oid, $file){
     }
 
     if($downloadtype != 'userdefined'){
-      foreach ($file_array as $file) {
+      foreach ($file_array as $key => $file) {
         // URL
         $url =  'http://download.kortforsyningen.dk/system/files/'.$folder.'/'.$file;
         $row = array( $orderid,
@@ -320,7 +322,8 @@ function _kms_csv_generate_data_download_rows($oid, $file){
                       '',
                       '',
                       '',
-                      $url
+                      $url,
+                      $filesize_array[$key]
                       );
         fputcsv($handle, $row, ';');
       }
@@ -348,7 +351,8 @@ function _kms_csv_generate_data_download_rows($oid, $file){
                       $bbox,
                       $datetime,
                       $deliverytime,
-                      $url
+                      $url,
+                      $filesize_array[$key] ? : ''
                       );
       fputcsv($handle, $row, ';');
     }
@@ -592,6 +596,7 @@ function _kms_csv_generate_data_download_headers() {
     'ORDERTIME',
     'DELIVERYTIME',
     'URL',
+    'DATASIZE',
   );
 }
 
@@ -624,7 +629,7 @@ function _kms_csv_generate_data_users_row($uid, $file){
     $type_list[$array_key_number] = $type;
     $array_key_number++;
   }
-
+  $empty_string = 'EMPTY';
   // Brugertype. level 1
   $row[] = $type_list[0];
   if($type_list[0] == "Forening/NGO") {
@@ -632,14 +637,14 @@ function _kms_csv_generate_data_users_row($uid, $file){
     $user_type_info = $uwrapper->field_user_type_info->value();
     $row[] = !empty($user_type_info) ? $user_type_info : '';
   } else {
-    $row[] = isset($type_list[1]) ? $type_list[1] : '';
+    $row[] = isset($type_list[1]) ? $type_list[1] : $empty_string;
   }
 
   // Brugertype. level 2
   // Brugertype. level 3
-  $row[] = isset($type_list[2]) ? $type_list[2] : '';
+  $row[] = isset($type_list[2]) ? $type_list[2] : $empty_string;
   // Brugertype. level 4
-  $row[] = isset($type_list[3]) ? $type_list[3] : '';
+  $row[] = isset($type_list[3]) ? $type_list[3] : $empty_string;
 
    // Oprettet
   $row[] = date($uwrapper->created->value());
