@@ -193,7 +193,7 @@ function getCapability($service_name, $service_type) {
   $service["description"] = "";
   $service["layer"] = array();
   $service["spatialReference"] = array();
-  $service["onlineResource"] = "https://kortforsyningen.kms.dk/" . $service_name . "?";
+  $service["onlineResource"] = "https://services.kortforsyningen.dk/" . $service_name . "?";
   $service["url"] = $url;
   $service["format"] = array();
   // determine which way to parse xml to $service.
@@ -237,7 +237,7 @@ function getWCS($service) {
     }
   }
   // WCS has different onlineResourceURL.
-  $service["onlineResource"] = "https://kortforsyningen.kms.dk/" . $service["name"] . "?service=" . $service["type"];
+  $service["onlineResource"] = "https://services.kortforsyningen.dk/" . $service["name"] . "?service=" . $service["type"];
   return $service;
 }
 
@@ -381,7 +381,7 @@ function getCapabilityURL($service_name, $service_type) {
   else {
     global $user;
     $userObj = entity_metadata_wrapper('user', user_load($user->uid));
-    $url = url('https://kortforsyningen.kms.dk/service', array('query' => array(
+    $url = url('https://services.kortforsyningen.dk/service', array('query' => array(
       'request' => 'GetTicket',
       'login' => $userObj->name->value(),
       'password' => $userObj->field_pass_clear->value()
@@ -396,7 +396,7 @@ function getCapabilityURL($service_name, $service_type) {
   if ($version == FALSE) {
     return FALSE;
   }
-  $url = "https://kortforsyningen.kms.dk/service?request=GetCapabilities&" 
+  $url = "https://services.kortforsyningen.dk/service?request=GetCapabilities&" 
          . $version . "ticket=" . $ticket 
          . "&servicename=" . $service_name 
          . "&service=" . $service_type;

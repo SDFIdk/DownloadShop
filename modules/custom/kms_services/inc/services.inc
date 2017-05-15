@@ -91,7 +91,7 @@ function getServiceList($username) {
 }
 
 function serviceListURLBuilder($username, $password) {
-  $url = "https://kortforsyningen.kms.dk/service?request=GetServices&login=" . $username . "&password=" . $password;
+  $url = "https://services.kortforsyningen.dk/service?request=GetServices&login=" . $username . "&password=" . $password;
   return $url;
 }
 
