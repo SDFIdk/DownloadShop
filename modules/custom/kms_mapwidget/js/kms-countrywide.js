@@ -58,10 +58,10 @@ function initService() {
   // The resolutions - changes should only be done according to the tiling schemas
   var olResolutions = new Array(0.8,1.6,3.2,6.4,12.8,25.6,51.2,102.4,204.8,409.6,819.2,1638.4);
   
-  var skaermkort_url = ["//a.kortforsyningen.kms.dk/topo_skaermkort",
-                        "//b.kortforsyningen.kms.dk/topo_skaermkort",
-                        "//c.kortforsyningen.kms.dk/topo_skaermkort",
-                        "//d.kortforsyningen.kms.dk/topo_skaermkort"];
+  var skaermkort_url = ["//a.services.kortforsyningen.dk/topo_skaermkort",
+                        "//b.services.kortforsyningen.dk/topo_skaermkort",
+                        "//c.services.kortforsyningen.dk/topo_skaermkort",
+                        "//d.services.kortforsyningen.dk/topo_skaermkort"];
  
     var map = new OpenLayers.Map(
         'mapTag',
@@ -97,7 +97,7 @@ function initService() {
 
     oLayers[0] = new OpenLayers.Layer.WMS (
 		conf.name,
-		"//kortforsyningen.kms.dk/" + conf.service_name + '?',
+		"//services.kortforsyningen.dk/" + conf.service_name + '?',
 		{ layers: conf.service_layer, 
 		  format: 'image/png',
 		  bgcolor: '0xFFFFFF',

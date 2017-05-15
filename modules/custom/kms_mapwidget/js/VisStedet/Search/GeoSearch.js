@@ -58,7 +58,7 @@ VisStedet.Search.GeoSearch = VisStedet.Utils.Class (VisStedet.Search,{
      * (end)
      */    
     initialize: function (options) {
-        this.url = '//kortforsyningen.kms.dk/Geosearch?service=GEO';
+        this.url = '//services.kortforsyningen.dk/Geosearch?service=GEO';
         VisStedet.Search.prototype.initialize.apply(this, arguments);
     },
     

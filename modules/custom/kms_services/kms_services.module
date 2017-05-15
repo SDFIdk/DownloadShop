@@ -584,7 +584,7 @@ function kms_services_login_form($form, &$form_state) {
   $form['#suffix'] = '</div>';
 
   $form['#attributes']['id'] = 'kms_services_login_form';
-  $form['#action'] = 'http://kortforsyningen.kms.dk/service';
+  $form['#action'] = 'https://services.kortforsyningen.dk/service';
 
   $form['#attached']['js'] = array(
     drupal_get_path('module', 'kms_services') . '/js/ip_release.js',
