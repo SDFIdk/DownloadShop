@@ -1,3 +1,57 @@
+/* Modal dialog styling */
+
+div.modal {
+    background-color: white;
+    width:300px;
+    padding: 30px;
+    border-radius: 5px;
+    box-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+    border: 1px solid grey;
+    text-align: center;
+    display: none;
+}
+
+div.modal > div {
+    padding:10px;
+}
+
+div.modal-title {
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+div.modal-checkbox input {
+  margin-right:10px;
+}
+
+div.modal > div.modal-buttons {
+  padding-top: 30px;
+}
+
+div.modal-buttons > button {
+    padding:5px 20px;
+    margin: 0;
+    border-radius: 5px;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+
+div.modal-buttons > button.cancel {
+  background-color: darkred;
+  margin-right: 40px;
+}
+
+div.modal-buttons > button.confirm {
+  background-color: darkgreen;
+}
+
+div.modal-buttons > button.confirm:disabled {
+  background-color: darkgrey;
+  cursor: default;
+}
+
+
 div.select-desc {
     background-color: white;
     width:500px;
@@ -5,7 +59,6 @@ div.select-desc {
     border-radius: 5px;
     box-shadow: 1px 1px 3px rgba(0,0,0,0.8);
     border: 1px solid grey;
-    z-index: 999999 !important;
 }
 
 sup {
