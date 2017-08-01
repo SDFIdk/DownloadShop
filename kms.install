@@ -485,3 +485,42 @@ function kms_update_7020(&$sandbox) {
     }
   }
 }
+
+/**
+ * Remove 5639 (randzone_hoering2015_komwms) and 5640 (randzone_hoering2015_wms) permission from users
+ *
+ * @author Tom Helmer Hansen <tom@adapt.dk>
+ */
+function kms_update_7021() {
+  // Get all users uid with this permission
+  $geo_bundle = db_query("SELECT entity_id as uid FROM field_data_field_bundle_webservices_wms
+                WHERE field_bundle_webservices_wms_value IN ('5639','5640')
+                ORDER BY entity_id DESC")->fetchAll();
+  $count = 0;
+
+  if (!empty($geo_bundle)){
+    // Go through users
+    foreach ($geo_bundle as $uid) {
+      $count++;
+      // Load user object
+      $user_loaded = user_load($uid->uid);
+      // Check if user is loaded correctly
+      if (!empty($user_loaded) && isset($user_loaded->uid)){
+        // Go throght geo permissions
+        if (isset($user_loaded->field_bundle_webservices_wms[LANGUAGE_NONE]) && !empty($user_loaded->field_bundle_webservices_wms[LANGUAGE_NONE])){
+          foreach ($user_loaded->field_bundle_webservices_wms[LANGUAGE_NONE] as $key => $geo) {
+            // If value is 5639 or 5640
+            if ($geo['value'] == 5639 || $geo['value'] == 5640){
+              unset($user_loaded->field_bundle_webservices_wms[LANGUAGE_NONE][$key]);
+            }
+          }
+          // Save user object
+          user_save($user_loaded);
+        }
+      }
+    }
+  }
+
+  echo "$count users updated" . PHP_EOL;
+}
+
