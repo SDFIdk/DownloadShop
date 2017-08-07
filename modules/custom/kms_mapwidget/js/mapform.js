@@ -47,17 +47,21 @@
 
           // Trigger onClose action if cancel if user clicks cancel.
           $('button.cancel').click(function(e){
-            window.history.back();
+            var ref = document.referrer;
+            if (ref.match(/.*geodataprodukter.*/i)) {
+              window.history.back();
+            } else {
+              window.location.href = '/content/geodataprodukter';
+            }
             e.preventDefault();
           });
           
           // Enable the confirm button if checkbox is checked.
           $('div.modal-checkbox input').click(function () {
-            console.log('clicked');
             if ($('div.modal-checkbox input:checked').length > 0) {
-                $('button.confirm').removeAttr('disabled');
+              $('button.confirm').removeAttr('disabled');
             } else {
-                $('button.confirm').attr('disabled', 'disabled');
+              $('button.confirm').attr('disabled', 'disabled');
             }
           });
 
