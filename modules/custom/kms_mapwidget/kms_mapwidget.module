@@ -558,6 +558,22 @@ function kms_mapwidget_form_step_1(&$form, $form_state, $nw) {
     $form['step_1']['predefined']['#default_value'] = array(key($predefined_options));
   }
 
+  // Add greenlandic permission modul.
+  if (isset($nw->field_greenland_permission) && $nw->field_greenland_permission->value() == 1) {
+    $config = config_pages_config('greenland_permissions');
+    $content  = '<div class="modal-title">' . $config->field_modal_title->value() . '</div>';
+    $content .= '<div class="modal-text">' . $config->field_modal_text->value() . '</div>';
+    $content .= '<div class="modal-checkbox"><input type="checkbox">' . $config->field_modal_checkbox_text->value() . '</input></div>';
+    $content .= '<div class="modal-buttons">';
+    $content .= '<button class="cancel">' . t('Cancel') . '</button>';
+    $content .= '<button class="confirm" disabled>' . t('Confirm') . '</button>';
+    $content .= '</div>';
+    $form['greenland_permission'] = array(
+      '#type' => 'item',
+      '#markup' => '<div class="modal" id="greenland_permission">' . $content . '</div>'
+    );
+  }
+
   $form['#attached']['js'] = array(
     drupal_get_path('module', 'kms_mapwidget') . '/js/mapform.js',
     drupal_get_path('module', 'kms_mapwidget') . '/js/jquery.easyModal.js'
