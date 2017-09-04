@@ -132,25 +132,31 @@ function gst2_news_form_mailchimp_signup_subscribe_block_newsletter_form_alter(&
  * Custom subscription form handler to change user email or to unsubscribe it.
  */
 function news_subscription_custom_handler(&$form, &$form_state) {
-  if (empty($form_state['values']['mergevars']['EMAIL'])) {
+  $email = $form_state['values']['mergevars']['EMAIL'];
+
+  if (empty($email)) {
     form_set_error('EMAIL', t('Please specify email address.'));
     return;
   }
 
   global $user;
+  $existingUser = user_load($user->uid);
 
-  if (empty($user->mail) || $user->mail != $form_state['values']['mergevars']['EMAIL']) {
-    $existingUser = user_load($user->uid);
-    $existingUser->mail = $form_state['values']['mergevars']['EMAIL'];
+  if (empty($user->mail) || $user->mail != $email) {
+    $existingUser->mail = $email;
     user_save((object) array('uid' => $existingUser->uid), (array) $existingUser);
   }
 
   // Unsubscribe user from list.
   foreach ($form_state['values']['mailchimp_lists'] as $key => $subscription) {
     if ($subscription['subscribe'] === 0) {
-      mailchimp_unsubscribe($form['mailchimp_lists'][$key]['subscribe']['#return_value'], $form_state['values']['mergevars']['EMAIL'], TRUE);
+      mailchimp_unsubscribe($form['mailchimp_lists'][$key]['subscribe']['#return_value'], $email, TRUE);
     }
   }
+
+  // Update field_contact_me in $user object
+  $existingUser->field_contact_me[LANGUAGE_NONE][0]['value'] = !empty($form_state['values']['mailchimp_lists']['mailchimp_169701']['subscribe']) ? 1 : 0;
+  user_save((object) array('uid' => $existingUser->uid), (array) $existingUser);
 }
 
 /**
