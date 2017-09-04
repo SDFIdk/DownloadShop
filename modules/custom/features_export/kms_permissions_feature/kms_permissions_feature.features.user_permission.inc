@@ -1167,15 +1167,6 @@ function kms_permissions_feature_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: create panel-nodes.
-  $permissions['create panel-nodes'] = array(
-    'name' => 'create panel-nodes',
-    'roles' => array(
-      0 => 'superuser',
-    ),
-    'module' => 'panels_node',
-  );
-
   // Exported permission: create partner content.
   $permissions['create partner content'] = array(
     'name' => 'create partner content',
@@ -1353,15 +1344,6 @@ function kms_permissions_feature_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: delete any panel-nodes.
-  $permissions['delete any panel-nodes'] = array(
-    'name' => 'delete any panel-nodes',
-    'roles' => array(
-      0 => 'superuser',
-    ),
-    'module' => 'panels_node',
-  );
-
   // Exported permission: delete any partner content.
   $permissions['delete any partner content'] = array(
     'name' => 'delete any partner content',
@@ -1454,15 +1436,6 @@ function kms_permissions_feature_user_default_permissions() {
       0 => 'superuser',
     ),
     'module' => 'node',
-  );
-
-  // Exported permission: delete own panel-nodes.
-  $permissions['delete own panel-nodes'] = array(
-    'name' => 'delete own panel-nodes',
-    'roles' => array(
-      0 => 'superuser',
-    ),
-    'module' => 'panels_node',
   );
 
   // Exported permission: delete own partner content.
@@ -1794,16 +1767,6 @@ function kms_permissions_feature_user_default_permissions() {
       1 => 'superuser',
     ),
     'module' => 'node',
-  );
-
-  // Exported permission: edit any panel-nodes.
-  $permissions['edit any panel-nodes'] = array(
-    'name' => 'edit any panel-nodes',
-    'roles' => array(
-      0 => 'editor',
-      1 => 'superuser',
-    ),
-    'module' => 'panels_node',
   );
 
   // Exported permission: edit any partner content.
@@ -2388,15 +2351,6 @@ function kms_permissions_feature_user_default_permissions() {
     'module' => 'node',
   );
 
-  // Exported permission: edit own panel-nodes.
-  $permissions['edit own panel-nodes'] = array(
-    'name' => 'edit own panel-nodes',
-    'roles' => array(
-      0 => 'superuser',
-    ),
-    'module' => 'panels_node',
-  );
-
   // Exported permission: edit own partner content.
   $permissions['edit own partner content'] = array(
     'name' => 'edit own partner content',
@@ -2652,7 +2606,7 @@ function kms_permissions_feature_user_default_permissions() {
     'roles' => array(
       0 => 'superuser',
     ),
-    'module' => 'migrate_ui',
+    'module' => 'migrate',
   );
 
   // Exported permission: notify of path changes.
