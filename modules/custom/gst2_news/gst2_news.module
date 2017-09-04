@@ -104,25 +104,14 @@ function gst2_news_form_mailchimp_signup_subscribe_block_newsletter_form_alter(&
       $form['mergevars']["TYPE$t"]['#type'] = 'hidden';
     }
 
-    $list1 = $form['mailchimp_lists']['mailchimp_92769']['subscribe']['#return_value'];
-    $subs1 = mailchimp_get_memberinfo($list1, $user->mail, TRUE);
-    if (!empty($subs1) && $subs1['status'] == 'subscribed') {
-      $form['mailchimp_lists']['mailchimp_92769']['subscribe']['#default_value'] = 1;
-      $form['mailchimp_lists']['mailchimp_92769']['subscribe']['#attributes']['checked'] = 'checked';
-    }
-
-    $list2 = $form['mailchimp_lists']['mailchimp_92773']['subscribe']['#return_value'];
-    $subs2 = mailchimp_get_memberinfo($list2, $user->mail, TRUE);
-    if (!empty($subs2) && $subs2['status'] == 'subscribed') {
-      $form['mailchimp_lists']['mailchimp_92773']['subscribe']['#default_value'] = 1;
-      $form['mailchimp_lists']['mailchimp_92773']['subscribe']['#attributes']['checked'] = 'checked';
-    }
-
-    $list3 = $form['mailchimp_lists']['mailchimp_92765']['subscribe']['#return_value'];
-    $subs3 = mailchimp_get_memberinfo($list3, $user->mail, TRUE);
-    if (!empty($subs3) && $subs3['status'] == 'subscribed') {
-      $form['mailchimp_lists']['mailchimp_92765']['subscribe']['#default_value'] = 1;
-      $form['mailchimp_lists']['mailchimp_92765']['subscribe']['#attributes']['checked'] = 'checked';
+    $lists = array('mailchimp_92769', 'mailchimp_92773', 'mailchimp_92765', 'mailchimp_169701');
+    foreach ($lists as $list) {
+      $id = $form['mailchimp_lists'][$list]['subscribe']['#return_value'];
+      $subscribed = mailchimp_is_subscribed($id, $user->mail);
+      if ($subscribed) {
+        $form['mailchimp_lists'][$list]['subscribe']['#default_value'] = 1;
+        $form['mailchimp_lists'][$list]['subscribe']['#attributes']['checked'] = 'checked';
+      }
     }
   }
   else {
@@ -164,14 +153,23 @@ function news_subscription_custom_handler(&$form, &$form_state) {
   }
 }
 
+/**
+ * Implements hook_user_insert().
+ */
 function gst2_news_user_insert($edit, $account, $category) {
   gst2_news_signup($account);
 }
 
+/**
+ * Implements hook_user_update().
+ */
 function gst2_news_user_update($edit, $account, $category) {
   gst2_news_signup($account);
 }
 
+/**
+ * Function to
+ */
 function gst2_news_signup($account) {
 
   // If it's not the user updating their own profile, just skip.
