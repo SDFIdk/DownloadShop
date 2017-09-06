@@ -184,6 +184,11 @@ projects[google_analytics][subdir] = "contrib"
 projects[google_analytics][version] = "1.2"
 projects[google_analytics][type] = "module"
 
+;gtm
+projects[google_tag][subdir] = "contrib"
+projects[google_tag][version] = "1.2"
+projects[google_tag][type] = "module"
+
 ;honeypot
 projects[honeypot][subdir] = "contrib"
 projects[honeypot][version] = "1.13"

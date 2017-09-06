@@ -524,3 +524,10 @@ function kms_update_7021() {
   echo "$count users updated" . PHP_EOL;
 }
 
+/**
+ * Uninstall GA
+ */
+function kms_update_7022() {
+  module_disable(array('google_analytics'));
+  drupal_uninstall_modules(array('google_analytics'));
+}
