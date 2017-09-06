@@ -531,3 +531,24 @@ function kms_update_7022() {
   module_disable(array('google_analytics'));
   drupal_uninstall_modules(array('google_analytics'));
 }
+
+/**
+ * Remove some leftover crap in the system table that keeps throwing errors
+ */
+function kms_update_7023() {
+  $not_uninstalled_mods = array(
+    'view_product_links',
+    'jquery_update',
+    'securepages',
+    'ds',
+    'kms_hs',
+    'menu_token',
+    'adapt_metatag',
+    'adapt'
+  );
+
+  db_delete('system')
+    ->condition('name', $not_uninstalled_mods, 'IN')
+    ->condition('type', 'module')
+    ->execute();
+}
