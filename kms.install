@@ -525,17 +525,9 @@ function kms_update_7021() {
 }
 
 /**
- * Uninstall GA
- */
-function kms_update_7022() {
-  module_disable(array('google_analytics'));
-  drupal_uninstall_modules(array('google_analytics'));
-}
-
-/**
  * Remove some leftover crap in the system table that keeps throwing errors
  */
-function kms_update_7023() {
+function kms_update_7022() {
   $not_uninstalled_mods = array(
     'view_product_links',
     'jquery_update',
@@ -551,4 +543,12 @@ function kms_update_7023() {
     ->condition('name', $not_uninstalled_mods, 'IN')
     ->condition('type', 'module')
     ->execute();
+}
+
+/**
+ * Uninstall GA
+ */
+function kms_update_7023() {
+  module_disable(array('googleanalytics'));
+  drupal_uninstall_modules(array('googleanalytics'));
 }
