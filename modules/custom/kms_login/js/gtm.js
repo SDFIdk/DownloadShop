@@ -1,5 +1,5 @@
 (function ($) {
-  Drupal.behaviors.kms_login = {
+  Drupal.behaviors.kmsLogin = {
 
     attach: function (context, settings) {
       if (Drupal.settings.kms_login) {

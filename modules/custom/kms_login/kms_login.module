@@ -38,12 +38,7 @@ function kms_login_init() {
   if (!empty($_SESSION['kms_login'])) {
     global $user;
 
-    $uw = entity_metadata_wrapper('user', $user);
-    $types = $uw->field_user_type->value();
-    $gtm_type = array();
-    foreach ($types as $type) {
-      $gtm_type[] = $type->name;
-    }
+    $gtm_type = _kms_user_get_user_type();
     $gtm_type = implode(' > ', $gtm_type);
 
     // If the page is iframed add extra param
@@ -51,7 +46,6 @@ function kms_login_init() {
 
     }
 
-    // How does this jive with the redirect after login?
     drupal_add_js(drupal_get_path('module', 'kms_login') . '/js/gtm.js', 'file');
     drupal_add_js(array(
       'kms_login' => array(

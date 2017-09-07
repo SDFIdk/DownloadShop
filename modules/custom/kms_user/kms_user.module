@@ -1780,3 +1780,22 @@ function _kms_user_return_merged_service_list_array(){
 function _kms_user_return_predefined_datacollections_permissions_all(){
   return db_query("SELECT nid, title FROM {node} WHERE type = 'product_display'")->fetchAll(); 
 }
+
+/**
+ * Helper function to find user's type.
+ */
+function _kms_user_get_user_type($account = FALSE) {
+  if (!$account) {
+    global $user;
+    $account = $user;
+  }
+
+  $uw = entity_metadata_wrapper('user', $account);
+
+  $type = array();
+  foreach ($uw->field_user_type->value() as $utype) {
+    $type[] = $utype->name;
+  }
+
+  return $type;
+}
