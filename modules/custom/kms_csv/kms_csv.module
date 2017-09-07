@@ -27,17 +27,11 @@ function kms_csv_menu() {
   $items['kms/csv/run'] = array(
     'title' =>'CSV run',
     'description' => 'run',
-    'page callback' => 'kms_csv_run',
+    'page callback' => 'kms_csv_job',
     'access arguments' => array('csv run'),
   );
 
   return $items;
-}
-
-function kms_csv_run() {
-  _kms_csv_create_users();
-  //_kms_csv_create_orders();
-  _kms_csv_create_downloads();
 }
 
 /**
