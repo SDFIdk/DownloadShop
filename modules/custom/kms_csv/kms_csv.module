@@ -283,6 +283,12 @@ function _kms_csv_generate_data_download_rows($oid, $file){
       $opw = entity_metadata_wrapper('commerce_product', commerce_product_load($data['product_id']));
       $userdefined_file = $process_orderid.'.zip';
       $userdefined_folder = 'http://download.kortforsyningen.dk/sites/default/files/kfdownload/';
+
+      // Get file size
+      // @see _kms_mydownloads_get_file_size
+      $int_url = DRUPAL_ROOT . '/sites/default/files/kfdownload/'.$userdefined_file;
+      @$stat = stat($int_url);
+      $userdefined_filesize = $stat['size'];
     } else {
       if(isset($data['product_id'])) {
         $opw = entity_metadata_wrapper('commerce_product', commerce_product_load($data['product_id']));
@@ -346,7 +352,7 @@ function _kms_csv_generate_data_download_rows($oid, $file){
                       $datetime,
                       $deliverytime,
                       $url,
-                      $filesize_array[$key] ? : ''
+                      $userdefined_filesize
                       );
       fputcsv($handle, $row, ';');
     }
