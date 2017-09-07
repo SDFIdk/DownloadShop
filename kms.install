@@ -551,4 +551,6 @@ function kms_update_7022() {
 function kms_update_7023() {
   module_disable(array('googleanalytics'));
   drupal_uninstall_modules(array('googleanalytics'));
+
+  module_enable(array('google_tag'));
 }
