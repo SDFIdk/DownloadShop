@@ -42,9 +42,9 @@ function kms_login_init() {
     $gtm_type = implode(' > ', $gtm_type);
 
     // If the page is iframed add extra param
-    if (kms_iframe_test()) {
-
-    }
+//    if (kms_iframe_test()) {
+//
+//    }
 
     drupal_add_js(drupal_get_path('module', 'kms_login') . '/js/gtm.js', 'file');
     drupal_add_js(array(
