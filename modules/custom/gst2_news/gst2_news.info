@@ -16,5 +16,5 @@ features[mailchimp_signup][] = newsletter
 features[page_manager_pages][] = nyheder
 features[views_view][] = nyheder
 features_exclude[dependencies][ctools] = ctools
-mtime = 1504086458
+mtime = 1485263319
 project path = profiles/gst2/modules/custom

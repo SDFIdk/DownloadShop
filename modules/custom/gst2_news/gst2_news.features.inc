@@ -63,8 +63,7 @@ function gst2_news_default_mailchimp_signup() {
     "mc_lists" : {
       "79cf358102" : "79cf358102",
       "fc2b05567b" : "fc2b05567b",
-      "9cb71e8040" : "9cb71e8040",
-      "8877f51385" : "8877f51385"
+      "9cb71e8040" : "9cb71e8040"
     },
     "mode" : "1",
     "title" : "Newsletter",
@@ -81,66 +80,14 @@ function gst2_news_default_mailchimp_signup() {
           "public" : true,
           "show" : true,
           "order" : "1",
-          "default" : "",
-          "helptext" : "",
+          "default" : null,
+          "helptext" : null,
           "size" : "25",
           "tag" : "EMAIL",
           "id" : 0
         },
         "FNAME" : 0,
-        "LNAME" : 0,
-        "TYPE1" : {
-          "name" : "Type 1 (private)",
-          "req" : false,
-          "field_type" : "text",
-          "public" : false,
-          "show" : true,
-          "order" : "4",
-          "default" : "",
-          "helptext" : "",
-          "size" : "25",
-          "tag" : "TYPE1",
-          "id" : 3
-        },
-        "TYPE2" : {
-          "name" : "Type 2 (private)",
-          "req" : false,
-          "field_type" : "text",
-          "public" : false,
-          "show" : true,
-          "order" : "5",
-          "default" : "",
-          "helptext" : "",
-          "size" : "25",
-          "tag" : "TYPE2",
-          "id" : 4
-        },
-        "TYPE3" : {
-          "name" : "Type 3 (private)",
-          "req" : false,
-          "field_type" : "text",
-          "public" : false,
-          "show" : true,
-          "order" : "6",
-          "default" : "",
-          "helptext" : "",
-          "size" : "25",
-          "tag" : "TYPE3",
-          "id" : 5
-        },
-        "TYPE4" : {
-          "name" : "Type 4 (private)",
-          "req" : false,
-          "field_type" : "text",
-          "public" : false,
-          "show" : true,
-          "order" : "7",
-          "default" : "",
-          "helptext" : "",
-          "size" : "25",
-          "tag" : "TYPE4",
-          "id" : 6
-        }
+        "LNAME" : 0
       },
       "description" : "",
       "doublein" : 0,
