@@ -176,7 +176,6 @@ function kms_user_ctools_plugin_directory($module, $plugin) {
  */
 function kms_user_form_alter(&$form, &$form_state, $form_id) {
   global $user;
-
   if (in_array($form_id, array('user_register_form', 'user_profile_form'))) {
     $form['account']['name']['#element_validate'] = array('_kms_user_validate_username');
     $form['account']['name']['#description'] = t(
@@ -216,12 +215,6 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
         $form['field_terms_and_conditions'][LANGUAGE_NONE]['#default_value'] = 1;
         $form_state['field']['field_terms_and_conditions'][LANGUAGE_NONE]['instance']['default_value'][0]['value'] = 1;
         $form['field_terms_and_conditions']['#disabled'] = TRUE;
-
-        // If it's not the user updating their own profile, disable the field_contact_me.
-        // See gst2_news_signup() where the same check happens.
-        if ($form['#user']->uid != $user->uid) {
-          $form['field_contact_me']['#disabled'] = TRUE;
-        }
 
         // We need to store any changes to the password.
         $form['#submit'][] = '_kms_user_submit_update_user_pass';
