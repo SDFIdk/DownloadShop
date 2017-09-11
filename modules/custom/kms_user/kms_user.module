@@ -92,10 +92,12 @@ function kms_user_menu() {
  * Implements hook_menu_alter().
  */
 function kms_user_menu_alter(&$items) {
+  // User with role "appl user" cannot administer subsusers, nor can
+  // he edit his/her password
   $restricted_paths = variable_get(
     'kms_user_system_account_restricted_paths',
     array(
-      'edit/profile',
+      'edit/profile/subuser',
       'user/password',
       'user/register',
       'user/reset/%/%/%',
@@ -189,6 +191,7 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
     // Update user 'updated' time stamp.
     $form['#submit'][] = '_kms_user_update_timestamp';
     $form['field_updated']['#disabled'] = TRUE;
+
     switch ($form_id) {
       case 'user_profile_form':
         // Bundle in service list
@@ -258,11 +261,20 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
 
         // Show user name.
         $form['username'] = array(
-          '#type' => 'markup',
-          '#markup' => kms_user_render_username($user),
+          '#type' => 'item',
+          '#title' => t('Username'),
+          '#markup' => '<em id="username">' . $user->name . '</em>',
           '#disabled' => TRUE,
+          '#prefix' => '<div class="form-item" id="username-wrapper">',
+          '#suffix' => '</div>',
           '#weight' => -100,
         );
+
+        // If user has role "appl user" he/she cannot edit password
+        if (kms_user_is_system_account($user->roles)) {
+          $form['account']['pass']['#access'] = FALSE;
+          $form['username']['#description'] = t('Note: Since you are an application user you cannot change your password or create new users. If you want to change this please email support@sdfe.dk');
+        }
 
         kms_user_js_settings();
 
@@ -641,26 +653,6 @@ function kms_user_is_superadmin($user) {
     $user->uid == 1
     || in_array(KMS_USER_ROLES_SUPERUSER_ID, array_keys($user->roles))
   );
-}
-
-/**
- * Render the user name of a user object.
- *
- * @param object $user
- *   Drupal user object.
- *
- * @return string
- *   HTML.
- */
-function kms_user_render_username($user) {
-  $name = $user->name;
-  $label = t('Username');
-  return <<<EOD
-    <div class="form-item" id="username-wrapper">
-      <label for="username">$label</label>
-      <em id="username">$name</em>
-  </div>
-EOD;
 }
 
 /**
