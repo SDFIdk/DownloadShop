@@ -524,3 +524,4 @@ function kms_update_7021() {
   echo "$count users updated" . PHP_EOL;
 }
 
+// Adding some test lines
