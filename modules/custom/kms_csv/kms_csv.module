@@ -649,8 +649,9 @@ function _kms_csv_generate_data_users_row($uid, $file){
 
    // Oprettet
   $row[] = date($uwrapper->created->value());
-
-  $row[] = !empty($uwrapper->field_updated->value()) ? date($uwrapper->field_updated->value()) : '';
+  
+  $updated = $uwrapper->field_updated->value();
+  $row[] = !empty($updated) ? date($updated) : '';
 
   // Email
   $row[] =  $uwrapper->mail->value();
