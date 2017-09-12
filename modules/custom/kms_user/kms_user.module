@@ -264,7 +264,7 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
         );
 
         // If user has role "appl user" he/she cannot edit password
-        if (kms_user_is_system_account($user->roles)) {
+        if (kms_user_is_system_account($user->roles) && $form['#user']->uid == $user->uid) {
           $form['account']['pass']['#access'] = FALSE;
           $form['username']['#description'] = t('Note: Since you are an application user you cannot change your password or create new users. If you want to change this please email support@sdfe.dk');
         }
