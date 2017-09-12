@@ -559,7 +559,8 @@ function _kms_csv_generate_data_users_headers() {
     'USERTYPELVL_2',
     'USERTYPELVL_3',
     'USERTYPELVL_4',
-    'CREATIONDATE',
+    'VALID_FROM_DATE',
+    'VALID_UNTIL_DATE',
     'MAIL',
     'NEWSLETTER',
     'SURVEY',
@@ -648,6 +649,8 @@ function _kms_csv_generate_data_users_row($uid, $file){
 
    // Oprettet
   $row[] = date($uwrapper->created->value());
+
+  $row[] = !empty($uwrapper->field_updated->value()) ? $uwrapper->field_updated->value() : '';
 
   // Email
   $row[] =  $uwrapper->mail->value();
