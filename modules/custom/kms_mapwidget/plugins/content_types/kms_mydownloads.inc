@@ -69,7 +69,7 @@ function kms_mydownloads_render($subtype, $conf, $panel_args, $context) {
         if ($jobStatus != 'SUCCESS' && $jobStatus != 'ABORTED' && $jobStatus != 'FME_FAILURE') {
           $status = kms_mapwidget__fme_api('status', $jobid);
           // If no valid response, skip.
-          if (!$status) {
+          if (!$status || empty($status->serviceResponse->job->jobStatus)) {
             $visible = FALSE;
             continue;
           }
