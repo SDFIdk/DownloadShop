@@ -5,7 +5,8 @@
       if (Drupal.settings.kms_login) {
         dataLayer.push({
           'event': 'login',
-          'usertype': Drupal.settings.kms_login.type
+          'usertype': Drupal.settings.kms_login.type,
+          'site' : Drupal.settings.kms_login.site,
         });
       }
     }
