@@ -70,8 +70,10 @@ function kms_mydownloads_render($subtype, $conf, $panel_args, $context) {
           $status = kms_mapwidget__fme_api('status', $jobid);
           // If no valid response, skip.
           if (!$status) {
+            $visible = FALSE;
             continue;
           }
+          
           $jobStatus = $status->serviceResponse->job->jobStatus;
           $liw->field_fme_status = $jobStatus;
           $liw->field_finished = time() - 10;
