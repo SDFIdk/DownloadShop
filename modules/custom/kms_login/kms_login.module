@@ -36,20 +36,23 @@ function kms_login_init() {
   // Add data to JS settings. We'll pick this up in
   // gtm.js
   if (!empty($_SESSION['kms_login'])) {
-    global $user;
-
     $gtm_type = _kms_user_get_user_type();
     $gtm_type = implode(' > ', $gtm_type);
+    $origin = 'download.kortforsyningen.dk';
 
     // If the page is iframed add extra param
-//    if (kms_iframe_test()) {
-//
-//    }
+    // @see kms_iframe_test() but module is disabled atm
+    $path = current_path();
+    $match = 'iframe';
+    if (substr_compare($path, $match, strlen($path)-strlen($match), strlen($match)) === 0) {
+      $origin = 'kortforsyningen.dk';
+    }
 
     drupal_add_js(drupal_get_path('module', 'kms_login') . '/js/gtm.js', 'file');
     drupal_add_js(array(
       'kms_login' => array(
         'type' => $gtm_type,
+        'site' => $origin,
       )
     ), 'setting');
 
