@@ -179,10 +179,20 @@ projects[filefield_sources][subdir] = "contrib"
 projects[filefield_sources][version] = "1.10"
 projects[filefield_sources][type] = "module"
 
+;flood_control
+projects[flood_control][subdir] = "contrib"
+projects[flood_control][version] = "1.0"
+projects[flood_control][type] = "module"
+
 ;google_analytics
 projects[google_analytics][subdir] = "contrib"
 projects[google_analytics][version] = "1.2"
 projects[google_analytics][type] = "module"
+
+;gtm
+projects[google_tag][subdir] = "contrib"
+projects[google_tag][version] = "1.2"
+projects[google_tag][type] = "module"
 
 ;honeypot
 projects[honeypot][subdir] = "contrib"
@@ -208,11 +218,15 @@ projects[imce_wysiwyg][type] = "module"
 projects[libraries][subdir] = "contrib"
 projects[libraries][version] = "2.0"
 projects[libraries][type] = "module"
-
 ;link
 projects[link][subdir] = "contrib"
 projects[link][version] = "1.0"
 projects[link][type] = "module"
+
+;login_security
+projects[login_security][subdir] = "contrib"
+projects[login_security][version] = "1.9"
+projects[login_security][type] = "module"
 
 ;masquerade
 projects[masquerade][subdir] = "contrib"
@@ -243,6 +257,11 @@ projects[metatag][type] = "module"
 projects[migrate][subdir] = "contrib"
 projects[migrate][version] = "2.8"
 projects[migrate][type] = "module"
+
+;password_policy
+projects[password_policy][subdir] = "contrib"
+projects[password_policy][version] = "1.14"
+projects[password_policy][type] = "module"
 
 ;references
 projects[references][subdir] = "contrib"
