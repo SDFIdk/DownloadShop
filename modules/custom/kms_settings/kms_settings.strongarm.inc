@@ -13,6 +13,13 @@ function kms_settings_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'google_tag_container_id';
+  $strongarm->value = 'GTM-TV2MCV3';
+  $export['google_tag_container_id'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'hide_submit_abtext';
   $strongarm->value = '';
   $export['hide_submit_abtext'] = $strongarm;

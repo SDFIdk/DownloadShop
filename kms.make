@@ -189,6 +189,11 @@ projects[google_analytics][subdir] = "contrib"
 projects[google_analytics][version] = "1.2"
 projects[google_analytics][type] = "module"
 
+;gtm
+projects[google_tag][subdir] = "contrib"
+projects[google_tag][version] = "1.2"
+projects[google_tag][type] = "module"
+
 ;honeypot
 projects[honeypot][subdir] = "contrib"
 projects[honeypot][version] = "1.13"
@@ -213,7 +218,6 @@ projects[imce_wysiwyg][type] = "module"
 projects[libraries][subdir] = "contrib"
 projects[libraries][version] = "2.0"
 projects[libraries][type] = "module"
-
 ;link
 projects[link][subdir] = "contrib"
 projects[link][version] = "1.0"
