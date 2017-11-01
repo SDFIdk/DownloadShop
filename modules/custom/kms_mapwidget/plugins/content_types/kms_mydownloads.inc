@@ -21,14 +21,13 @@ $plugin = array(
 /**
  * Render the custom content type.
  */
-
 function kms_mydownloads_render($subtype, $conf, $panel_args, $context) {
-  
   global $user;
   $now = time();
 
   $block = new stdClass();
 
+  // Load all completed orders
   $orders = commerce_order_load_multiple(array(), 
   	array('uid' => $user->uid, 'status' => 'completed'));
   
@@ -51,8 +50,8 @@ function kms_mydownloads_render($subtype, $conf, $panel_args, $context) {
         continue;
       
       $data = unserialize($liw->field_selection->value());
-      $op = commerce_product_load($data['product_id']);
-      $opw = entity_metadata_wrapper('commerce_product', $op);
+      // $op = commerce_product_load($data['product_id']);
+      // $opw = entity_metadata_wrapper('commerce_product', $op);
       
       if ($data['type'] == 'predefined') {
         $extra .= _kms_mydownloads_date_format($remaining_order);
@@ -63,64 +62,70 @@ function kms_mydownloads_render($subtype, $conf, $panel_args, $context) {
         }
       }
 
-      if ($data['type'] == 'userdefined') {
-        if ($liw->field_jobid->value()) {
-          $jobid = $liw->field_jobid->value();
-          $jobStatus = $liw->field_fme_status->value();
-          
-          if ($jobStatus != 'SUCCESS' && $jobStatus != 'ABORTED' && $jobStatus != 'FME_FAILURE') {
-            $status = kms_mapwidget__fme_api('status',$jobid);
-            $jobStatus = $status->serviceResponse->job->jobStatus;
-            $liw->field_fme_status = $jobStatus;
-            $liw->field_finished = time() - 10;
-            $liw->save();
+      if ($data['type'] == 'userdefined' && $liw->field_jobid->value()) {
+        $jobid = $liw->field_jobid->value();
+        $jobStatus = $liw->field_fme_status->value();
+
+        if ($jobStatus != 'SUCCESS' && $jobStatus != 'ABORTED' && $jobStatus != 'FME_FAILURE') {
+          $status = kms_mapwidget__fme_api('status', $jobid);
+          // If no valid response, skip.
+          if (!$status || empty($status->serviceResponse->job->jobStatus)) {
+            $visible = FALSE;
+            continue;
           }
-
-          if ($jobStatus == 'SUCCESS' || $jobStatus == 'ABORTED' || $jobStatus == 'FME_FAILURE') {
-             $remaining = $liw->field_finished->value() - $now + ( 86400 * 7 );
-             $visible = $remaining > 0;
-           } else {
-             $visible = true;
-           }
-
-           if ($jobStatus == 'SUCCESS') {            
-             $extra .= _kms_mydownloads_date_format($remaining);
-             $extra .= kms_csv_file_link(array(
-               'file' => (object) array(
-                 'filemime' => 'application/zip',
-                 'filesize' => 0,
-                 'uri' => 'sites/default/files/kfdownload/' . $jobid . '.zip',
-                 'filename' => $jobid . '.zip' ),
-			    'order_id' =>  $ow->order_number->value(),
-				'element_id' => $liw->line_item_id->value(),  
-              'icon_directory' => 'sites/default/files')
-             ) . ' ' . _kms_mydownloads_get_file_size($jobid,0);
-
-           } else {
-             $extra .= t($jobStatus);
-           }
- 
+          
+          $jobStatus = $status->serviceResponse->job->jobStatus;
+          $liw->field_fme_status = $jobStatus;
+          $liw->field_finished = time() - 10;
+          $liw->save();
         }
-        
+
+        if ($jobStatus == 'SUCCESS' || $jobStatus == 'ABORTED' || $jobStatus == 'FME_FAILURE') {
+          $remaining = $liw->field_finished->value() - $now + (86400 * 7);
+          $visible = $remaining > 0;
+        } else {
+          $visible = true;
+        }
+
+        if ($jobStatus == 'SUCCESS') {
+          $extra .= _kms_mydownloads_date_format($remaining);
+          $extra .= kms_csv_file_link(array(
+                'file' => (object)array(
+                  'filemime' => 'application/zip',
+                  'filesize' => 0,
+                  'uri' => 'sites/default/files/kfdownload/' . $jobid . '.zip',
+                  'filename' => $jobid . '.zip'),
+                'order_id' => $ow->order_number->value(),
+                'element_id' => $liw->line_item_id->value(),
+                'icon_directory' => 'sites/default/files')
+            ) . ' ' . _kms_mydownloads_get_file_size($jobid, 0);
+
+        } else {
+          $extra .= t($jobStatus);
+        }
       }
       
       if ($visible) {
   	    $rows[] = array(
-  	      array( 
-            'data'  => $firstline ? $ow->order_number->value() : '',
-            'class' => $firstline ? array('order-first-line', 'order-specific') : array('order-nth-line', 'order-specific'),
-          ),
-          array( 
-            'data'  => $firstline ? format_date($ow->created->value(),'short') : '',
-            'class' => $firstline ? array('order-first-line', 'order-specific') : array('order-nth-line', 'order-specific'),
-          ),
-          array( 
-            'data'  => $liw->line_item_label->value() . '<div class="product-details">' . $liw->field_selection_text->value() . '</div>',
-            'class' => array('line-item-specific'),
-          ),
-          array( 
-            'data'  => $extra,
-            'class' => array('line-item-specific'),
+  	      'data-product-type' => array($data['type']),
+          'no_striping' => TRUE,
+  	      'data' => array(
+            array(
+              'data'  => $firstline ? $ow->order_number->value() : '',
+              'class' => $firstline ? array('order-first-line', 'order-specific') : array('order-nth-line', 'order-specific'),
+            ),
+            array(
+              'data'  => $firstline ? format_date($ow->created->value(),'short') : '',
+              'class' => $firstline ? array('order-first-line', 'order-specific') : array('order-nth-line', 'order-specific'),
+            ),
+            array(
+              'data'  => $liw->line_item_label->value() . '<div class="product-details">' . $liw->field_selection_text->value() . '</div>',
+              'class' => array('line-item-specific'),
+            ),
+            array(
+              'data'  => $extra,
+              'class' => array('line-item-specific'),
+            )
           )
   	    );
         $firstline = false;
@@ -128,17 +133,18 @@ function kms_mydownloads_render($subtype, $conf, $panel_args, $context) {
     }
   }
 
-  $block->content = theme_table( array ( 
-  	'header' => array(t('Order#'),t('Order date'),t('Product'),t('Download')), 
-  	'rows' => $rows,
-    'attributes' => array('class' => 'mydownloads'),
-    'sticky' => false,
-    'caption' => '',
-    'colgroups' => array(),
-    'empty' => ''
-  )).'<iframe name="filetargetframe" style="display:none"></iframe>';
-
-  //$block->content .= print_r($orders,true);
+  $block->content = array(
+    '#markup' => theme_table( array (
+      'header' => array(t('Order#'),t('Order date'),t('Product'),t('Download')),
+      'rows' => $rows,
+      'attributes' => array('class' => 'mydownloads', 'data-user-type' => implode(' > ', _kms_user_get_user_type())),
+      'sticky' => false,
+      'caption' => '',
+      'colgroups' => array(),
+      'empty' => ''
+    )).'<iframe name="filetargetframe" style="display:none"></iframe>',
+    '#attached' => array('js' => array(drupal_get_path('module', 'kms_mapwidget') . '/js/gtm.js'))
+  );
 
   return $block;
   

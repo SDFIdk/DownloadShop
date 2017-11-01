@@ -66,7 +66,6 @@ dependencies[] = xmlsitemap_node
 dependencies[] = googleanalytics
 dependencies[] = references
 dependencies[] = node_reference
-dependencies[] = jquery_update
 dependencies[] = libraries
 dependencies[] = metatag
 dependencies[] = smtp
@@ -74,8 +73,7 @@ dependencies[] = securepages
 dependencies[] = hide_submit
 
 ; Custom
-dependencies[] = adapt
-dependencies[] = adapt_metatag
+dependencies[] = _adapt
 dependencies[] = view_kms_subuser
 dependencies[] = panel_edit_user_profile
 dependencies[] = kms_subuser
