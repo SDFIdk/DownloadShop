@@ -62,7 +62,7 @@
               }
               return false;
             });
-              var service_to_expand = window.location.hash;
+              var service_to_expand = encodeURIComponent(window.location.hash);
               if(service_to_expand.length !== 0) {
                 service_to_expand = service_to_expand.replace(/_/g, '-');
                 $(service_to_expand + ' a').click();
