@@ -433,3 +433,8 @@ libraries[mailchimp][download][type] = "get"
 libraries[mailchimp][download][url] = "https://bitbucket.org/mailchimp/mailchimp-api-php/get/2.0.6.zip"
 libraries[mailchimp][directory_name] = "mailchimp"
 libraries[mailchimp][destination] = "libraries"
+
+; Module Filter
+projects[module_filter][type] = 'module'
+projects[module_filter][subdir] = 'contrib'
+projects[module_filter][version] = '2.1'
