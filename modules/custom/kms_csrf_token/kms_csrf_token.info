@@ -1,0 +1,4 @@
+name = KMS CSRF Token
+package = KMS
+description = "Adds a CSRF styled token for forms"
+core = 7.x

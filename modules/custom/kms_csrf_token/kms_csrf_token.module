@@ -1,0 +1,70 @@
+<?php
+/**
+ * @file
+ * Module that adds #token to forms and check the value on validation.
+ *
+ * Module that makes sure that forms gets the token and a value set on forms.
+ * When the form is submitted the token value is checked again to see if the
+ * token value is the same.
+ */
+
+/**
+ * Implements hook_form_alter().
+ */
+function kms_csrf_token_form_alter(&$form, &$form_state, $form_id) {
+  kms_csrf_token_add_token_on_form($form);
+}
+
+/**
+ * Given a form a token is added and the token is stored for later validation.
+ *
+ * @param $form
+ *   Drupal Form object.
+ */
+function kms_csrf_token_add_token_on_form(&$form) {
+  // Only add token if it is not there already.
+  if (isset($form['#token'])) {
+    return;
+  }
+
+  $form['anon_token'] = array(
+    '#type' => 'token',
+    '#default_value' => drupal_get_token()
+  );
+
+  // Add validation function on form.
+  $form['#validate'][] = 'kms_csrf_token_validate_anon_token';
+
+  // Store current session id.
+  // Touching $_SESSION alone seems to preserve the session id after login.
+  $sess_id = session_id();
+  if (isset($_SESSION)) {
+    $_SESSION['anon_session_id'] = $sess_id;
+  } else {
+    $_SESSION = array('anon_session_id' => $sess_id);
+  }
+}
+
+/**
+ * Validate anonymous token.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function kms_csrf_token_validate_anon_token($form, &$form_state) {
+  $token = '';
+  if (isset($form_state['values']['anon_token'])) {
+    $token = $form_state['values']['anon_token'];
+  }
+
+  if (!drupal_valid_token($token)) {
+    // Not a valid token!
+    $path = current_path();
+    $query = drupal_get_query_parameters();
+    $url = url($path, array('query' => $query));
+
+    // Setting this error will cause the form to fail validation.
+    form_set_error('form_token', t('The form has become outdated. Copy any unsaved work in the form below and then <a href="@link">reload this page</a>.', array('@link' => $url)));
+  }
+}
+
