@@ -3,112 +3,112 @@
 /**
  * Implements hook_resource().
  */
-function kms_service_resources_resource() {
-  $definitions = [
-    'kms_user' => [
-      'operations' => [
-        'create' => [
+function kms_service_resources_resource()
+{
+  $definitions = array(
+    'kms_user' => array(
+      'operations' => array(
+        'create' => array(
           'help' => 'Create a user',
           'callback' => '_kms_services_resources_user_resource_create',
-          'file' => [
+          'file' => array(
             'type' => 'inc',
             'module' => 'kms_services_resources',
             'name' => 'kms_services_resources.services',
-          ],
+          ),
           'access callback' => '_kms_services_resources_user_resource_access',
-          'access arguments' => ['create'],
+          'access arguments' => array('create'),
           'access arguments append' => FALSE,
-          'args' => [
-            [
+          'args' => array(
+            array(
               'name' => 'account',
               'type' => 'array',
               'description' => 'The user object',
               'source' => 'data',
               'optional' => FALSE,
-            ],
-          ],
-        ],
-      ],
-    ],
-    'kms_services' => [
-      'operations' => [
-        'index' => [
-          'file' => [
+            ),
+          ),
+        ),
+      ),
+    ),
+    'kms_services' => array(
+      'operations' => array(
+        'index' => array(
+          'file' => array(
             'type' => 'inc',
             'module' => 'kms_services_resources',
             'name' => 'kms_services_resources.services',
-          ],
+          ),
           'callback' => '_kms_services_resources_get_services_list',
-          'args' => [
-            [
+          'args' => array(
+            array(
               'name' => 'page',
               'optional' => TRUE,
               'type' => 'int',
               'description' => 'The zero-based index of the page to get, defaults to 0.',
               'default value' => 0,
-              'source' => ['param' => 'page'],
-            ],
-            [
+              'source' => array('param' => 'page'),
+            ),
+            array(
               'name' => 'fields',
               'optional' => TRUE,
               'type' => 'string',
               'description' => 'The fields to get.',
               'default value' => '*',
-              'source' => ['param' => 'fields'],
-            ],
-            [
+              'source' => array('param' => 'fields'),
+            ),
+            array(
               'name' => 'parameters',
               'optional' => TRUE,
               'type' => 'array',
               'description' => 'Parameters array',
-              'default value' => [],
-              'source' => ['param' => 'parameters'],
-            ],
-            [
+              'default value' => array(),
+              'source' => array('param' => 'parameters'),
+            ),
+            array(
               'name' => 'pagesize',
               'optional' => TRUE,
               'type' => 'int',
               'description' => 'Number of records to get per page.',
               'default value' => variable_get('services_node_index_page_size', 20),
-              'source' => ['param' => 'pagesize'],
-            ],
-          ],
-          'access arguments' => ['access content'],
-        ],
-      ],
-      'actions' => [
-        'getUsersWithSeperateServices' => [
-          'file' => [
+              'source' => array('param' => 'pagesize'),
+            ),
+          ),
+          'access arguments' => array('access content'),
+        ),
+      ),
+      'actions' => array(
+        'getUsersWithSeperateServices' => array(
+          'file' => array(
             'type' => 'inc',
             'module' => 'kms_services_resources',
             'name' => 'kms_services_resources.services',
-          ],
+          ),
           'help' => t('Get all users that has specified separate services'),
           'access callback' => '_kms_services_resources_user_resource_access',
-          'access arguments' => ['create'],
+          'access arguments' => array('create'),
           'access arguments append' => TRUE,
           'callback' => '_kms_services_resources_get_uids_by_separate_services',
-          'args' => [
-            [
+          'args' => array(
+            array(
               'name' => 'services',
               'type' => 'string',
               'description' => t('Array of services array(\'field_bundle_webservices_geo\' => array(1, 4218, 4458), \'field_bundle_webservices_wms\' => array(1614))'),
-              'source' => ['data' => 'services'],
+              'source' => array('data' => 'services'),
               'optional' => FALSE,
-            ],
-
-            [
+            ),
+            array(
               'name' => 'column_name',
               'type' => 'string',
               'description' => t('Optional column(s) to be shown. Defaults to value column if the argument is not set.'),
-              'source' => ['data' => 'column_name'],
+              'source' => array('data' => 'column_name'),
               'optional' => TRUE,
-            ],
-          ],
-        ],
-      ],
-    ],
-  ];
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 
   return $definitions;
 }
@@ -140,25 +140,26 @@ function kms_service_resources_resource() {
  * @return
  *   The user object of the newly created user.
  */
-function _kms_services_resources_user_resource_create($account) {
+function _kms_services_resources_user_resource_create($account)
+{
   // Validate our data.
   $validation = _kms_services_resources_user_resource_create_validate($account);
 
   // Handle validation fail.
   if (!empty($validation)) {
-    return services_error(t('Data could not be validated.'), 422, ['errors' => $validation]);
+    return services_error(t('Data could not be validated.'), 422, array('errors' => $validation));
   }
 
-  $new_user = [
+  $new_user = array(
     'name' => $account['name'],
     'pass' => $account['pass'],
     'mail' => $account['email'],
     'status' => $account['status'],
     'timezone' => NULL,
-    'roles' => [
+    'roles' => array(
       DRUPAL_AUTHENTICATED_RID => 'authenticated user',
-    ],
-  ];
+    ),
+  );
 
   // User type and terms & conditions.
   $new_user['field_terms_and_conditions']['und'][0]['value'] = 1;
@@ -196,20 +197,21 @@ function _kms_services_resources_user_resource_create($account) {
  * @return array
  *   Return error array. If empty array validation was without errors.
  */
-function _kms_services_resources_user_resource_create_validate($account) {
+function _kms_services_resources_user_resource_create_validate($account)
+{
   // Init. return var.
-  $errors = [];
+  $errors = array();
 
   // Is there any data at all ?
   if (empty($account) || !is_array($account) || (isset($account[0]) && $account[0] == NULL)) {
-    return ['No data was submitted'];
+    return array('No data was submitted');
   }
 
   // Required for creation.
-  $required_fields = ['name', 'email', 'user_type', 'terms_and_conditions'];
+  $required_fields = array('name', 'email', 'user_type', 'terms_and_conditions');
   foreach ($required_fields as $required_field) {
     if (!key_exists($required_field, $account)) {
-      $errors[] = t('Field missing @s', ['@s' => $required_field]);
+      $errors[] = t('Field missing @s', array('@s' => $required_field));
     }
   }
 
@@ -247,20 +249,21 @@ function _kms_services_resources_user_resource_create_validate($account) {
 /**
  * Access check callback for user resource.
  */
-function _kms_services_resources_user_resource_access($op = 'view', $args = []) {
+function _kms_services_resources_user_resource_access($op = 'view', $args = array())
+{
 
   return TRUE;
 
   // Adds backwards compatability with regression fixed in #1083242
   if (isset($args[0])) {
-    $args[0] = _services_access_value($args[0], ['account', 'data']);
+    $args[0] = _services_access_value($args[0], array('account', 'data'));
   }
 
   // Check if the user exists if appropriate.
   if ($op != 'create' && $op != 'register') {
     $account = user_load($args[0]);
     if (!$account) {
-      return services_error(t('There is no user with ID @uid.', ['@uid' => $args[0]]), 404);
+      return services_error(t('There is no user with ID @uid.', array('@uid' => $args[0])), 404);
     }
   }
 
@@ -274,8 +277,7 @@ function _kms_services_resources_user_resource_access($op = 'view', $args = []) 
     case 'register':
       if (!$user->uid && variable_get('user_register', USER_REGISTER_VISITORS_ADMINISTRATIVE_APPROVAL) != USER_REGISTER_ADMINISTRATORS_ONLY) {
         return TRUE;
-      }
-      else {
+      } else {
         return user_access('administer users');
       }
     case 'password_reset':
@@ -292,12 +294,13 @@ function _kms_services_resources_user_resource_access($op = 'view', $args = []) 
  *
  * @return array|mixed
  */
-function _kms_services_resources_get_services_list() {
+function _kms_services_resources_get_services_list()
+{
   $services = kms_permissions_get_service_list();
 
   // If nothing, return empty array.
   if (!$services) {
-    return [];
+    return array();
   }
 
   return $services;
@@ -313,7 +316,8 @@ function _kms_services_resources_get_services_list() {
  *
  * @return array
  */
-function _kms_services_resources_get_uids_by_separate_services($services, $column_name = NULL) {
+function _kms_services_resources_get_uids_by_separate_services($services, $column_name = NULL)
+{
 
   /**
    * Example JSON.
@@ -327,6 +331,6 @@ function _kms_services_resources_get_uids_by_separate_services($services, $colum
    */
 
   $uids = _kms_permissions_get_uids_by_separate_services($services, $column_name);
-  return [$uids];
+  return array($uids);
 
 }
