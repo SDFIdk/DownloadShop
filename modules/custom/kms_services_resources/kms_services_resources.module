@@ -5,12 +5,12 @@
  */
 function kms_services_resources_ctools_plugin_api($owner, $api) {
   if ($owner == 'services' && $api == 'services') {
-    return [
+    return array(
       'version' => 3,
       'file' => 'kms_services_resources.services.inc',
       // Optional parameter to indicate the file name to load.
       'path' => drupal_get_path('module', 'kms_services_resources'),
-    ];
+    );
   }
 }
 
@@ -18,7 +18,7 @@ function kms_services_resources_ctools_plugin_api($owner, $api) {
  * Implements hook_services_resources().
  */
 function kms_services_resources_services_resources() {
-  $resources = [];
+  $resources = array();
   module_load_include('inc', 'kms_services_resources', 'kms_services_resources.services');
   $resources += kms_service_resources_resource();
 
