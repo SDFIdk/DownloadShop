@@ -5,12 +5,12 @@
  */
 function kms_services_resources_ctools_plugin_api($owner, $api) {
   if ($owner == 'services' && $api == 'services') {
-    return array(
+    return [
       'version' => 3,
       'file' => 'kms_services_resources.services.inc',
       // Optional parameter to indicate the file name to load.
       'path' => drupal_get_path('module', 'kms_services_resources'),
-    );
+    ];
   }
 }
 

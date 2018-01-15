@@ -152,6 +152,173 @@ function kms_service_resources_resource() {
           'access arguments append' => TRUE,
           'callback' => '_kms_services_resources_ftp_scan_structure',
         ],
+
+        'getAccessBundles' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Find all default and active bundles from a given subtype.'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_services_resources_get_access_bundles',
+          'args' => [
+            [
+              'name' => 'subtype',
+              'type' => 'string',
+              'description' => t('Subtype'),
+              'source' => ['data' => 'subtype'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
+        'getPredefinedDataCollections' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Find all default and active bundles from a given subtype.'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_services_resources_get_predefined_data_collections',
+          'args' => [
+            [
+              'name' => 'bundle_nid',
+              'type' => 'integer',
+              'description' => t('Bundle NID'),
+              'source' => ['data' => 'bundle_nid'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'key_prefix',
+              'type' => 'string',
+              'description' => t('Key prefix'),
+              'source' => ['data' => 'key_prefix'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'flattened',
+              'type' => 'boolean',
+              'description' => t('Flattened'),
+              'source' => ['data' => 'flattened'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'permissions',
+              'type' => 'array',
+              'description' => t('Permissions'),
+              'source' => ['data' => 'permissions'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'field_access_userdefined_ranges',
+              'type' => 'array',
+              'description' => t('Field access userdefined ranges'),
+              'source' => ['data' => 'field_access_userdefined_ranges'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'field_max_download_size',
+              'type' => 'array',
+              'description' => t('Field max download size'),
+              'source' => ['data' => 'field_max_download_size'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'bounding_box',
+              'type' => 'array',
+              'description' => t('Bounding box'),
+              'source' => ['data' => 'bounding_box'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
+        'getBundle' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Get the bundle and entity metadata'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_services_resources_get_bundle',
+          'args' => [
+            [
+              'name' => 'bundle_nid',
+              'type' => 'integer',
+              'description' => t('Bundle NID'),
+              'source' => ['data' => 'bundle_nid'],
+              'optional' => FALSE,
+            ],
+          ],
+          'getBundlesByItemId' => [
+            'file' => [
+              'type' => 'inc',
+              'module' => 'kms_services_resources',
+              'name' => 'kms_services_resources.services',
+            ],
+            'help' => t('Get the bundle by item ID'),
+            'access callback' => '_kms_services_resources_get_bundles_by_item_id',
+            'access arguments append' => TRUE,
+            'callback' => '_kms_services_resources_get_bundle',
+            'args' => [
+              [
+                'name' => 'id',
+                'type' => 'integer',
+                'description' => t('Item ID'),
+                'source' => ['data' => 'id'],
+                'optional' => FALSE,
+              ],
+              [
+                'name' => 'item_type',
+                'type' => 'string',
+                'description' => t('Item type'),
+                'source' => ['data' => 'item_type'],
+                'optional' => FALSE,
+              ],
+            ],
+          ],
+        ],
+
+        'getPermissionsByBid' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Get the permission by a bundle ID'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_services_resources_get_permissions_by_bid',
+          'args' => [
+            [
+              'name' => 'bundle_nid',
+              'type' => 'integer',
+              'description' => t('Bundle NID'),
+              'source' => ['data' => 'bundle_nid'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'permissions',
+              'type' => 'array',
+              'description' => t('Permissions'),
+              'source' => ['data' => 'permissions'],
+              'optional' => TRUE,
+            ],
+            [
+              'name' => 'permissions',
+              'type' => 'array',
+              'description' => t('Permissions'),
+              'source' => ['data' => 'permissions'],
+              'optional' => TRUE,
+            ],
+          ],
+        ],
       ],
     ],
   ];
@@ -341,7 +508,7 @@ function _kms_services_resources_user_resource_access($op = 'view', $args = []) 
 function _kms_services_resources_get_services_list() {
 
   return [
-    'array'
+    'array',
   ];
 
   $services = kms_permissions_get_service_list();
@@ -390,7 +557,7 @@ function _kms_services_resources_get_uids_by_separate_services($services, $colum
  * @return array
  */
 function _kms_services_resources_status_check() {
-  return array('active' => true);
+  return ['active' => TRUE];
 }
 
 /**
@@ -418,4 +585,201 @@ function _kms_services_resources_get_application_list() {
  */
 function _kms_services_resources_ftp_scan_structure() {
   return kms_permissions_ftp_scan_structure();
+}
+
+/**
+ * Find all default and active bundles from a given subtype.
+ *
+ * @param string $subtype
+ *
+ * @return array
+ */
+function _kms_services_resources_get_access_bundles($subtype) {
+  if ($subtype == 'default') {
+    $field_info = field_info_instance('node', 'field_default_bundle', 'access_bundle');
+    // If field does not exist return empty array.
+    if (empty($field_info)) {
+      return [];
+    }
+    $default_value = 1;
+  }
+  else {
+    $default_value = 0;
+  }
+
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'access_bundle')
+    ->propertyCondition('status', 1)
+    ->fieldCondition('field_default_bundle', 'value', $default_value, '=')
+    ->addMetaData('account', user_load(1)); // Run the query as user 1.
+
+  $result = $query->execute();
+  $bids = [];
+
+  if ($result) {
+    foreach ($result['node'] as $bundle) {
+      $bids[] = $bundle->nid;
+    }
+  }
+
+  return $bids;
+}
+
+/**
+ * Get predefined data collections.
+ *
+ * @param integer $bundle_nid
+ * @param string $key_prefix
+ * @param boolean $flattened
+ * @param array $permissions
+ * @param array $field_access_userdefined_ranges
+ * @param array $field_max_download_size
+ * @param array $bounding_box
+ *
+ * @return array
+ */
+function _kms_services_resources_get_predefined_data_collections(
+  $bundle_nid,
+  $key_prefix,
+  $flattened,
+  $permissions,
+  $field_access_userdefined_ranges,
+  $field_max_download_size,
+  $bounding_box
+) {
+  $bundle = node_load($bundle_nid);
+
+  $field_predefined_datacollections = field_get_items('node',
+    $bundle,
+    'field_predefined_datacollections');
+
+  if (empty($field_predefined_datacollections)) {
+    return [];
+  }
+
+  foreach ($field_predefined_datacollections as $predefined) {
+    $pd_key = $key_prefix ? 'pd' . $predefined['target_id'] : $predefined['target_id'];
+
+    // If a user has access to userdefined ranges on a product on one bundle,
+    // there is always access.
+    if (isset($permissions['predefined_datacollections'][$pd_key])) {
+      $access_userdefined_ranges = ($permissions['predefined_datacollections'][$pd_key]['access_userdefined_ranges'] + $field_access_userdefined_ranges['value'] > 0 ? 1 : 0);
+    }
+    else {
+      $access_userdefined_ranges = $field_access_userdefined_ranges['value'];
+    }
+
+    // Only select min/max value if key exists to avoid notices.
+    if (isset($permissions['predefined_datacollections']) && isset($permissions['predefined_datacollections'][$pd_key])) {
+      if ($flattened) {
+        $permissions['predefined_datacollections'][$pd_key] = $predefined['target_id'];
+      }
+      else {
+        $permissions['predefined_datacollections'][$pd_key] = [
+          'access_userdefined_ranges' => $access_userdefined_ranges,
+          'max_download_size' => max(
+            $permissions['predefined_datacollections'][$pd_key]['max_download_size'],
+            $field_max_download_size['value']
+          ),
+          'id' => $predefined['target_id'],
+          'MINX' => min($permissions['predefined_datacollections'][$pd_key]['MINX'], $bounding_box['field_bundle_minx']),
+          'MINY' => min($permissions['predefined_datacollections'][$pd_key]['MINY'], $bounding_box['field_bundle_miny']),
+          'MAXX' => max($permissions['predefined_datacollections'][$pd_key]['MAXX'], $bounding_box['field_bundle_maxx']),
+          'MAXY' => max($permissions['predefined_datacollections'][$pd_key]['MAXY'], $bounding_box['field_bundle_maxy']),
+          'MAXPIXELWIDTH' => max(
+            $permissions['predefined_datacollections'][$pd_key]['MAXPIXELWIDTH'],
+            $bounding_box['field_bundle_maxpixelwidth']
+          ),
+          'MAXPIXELHEIGHT' => max(
+            $permissions['predefined_datacollections'][$pd_key]['MAXPIXELHEIGHT'],
+            $bounding_box['field_bundle_maxpixelheight']
+          ),
+          'FEATUREINFO' => '1',
+        ];
+      }
+    }
+    else {
+      if ($flattened) {
+        $permissions['predefined_datacollections'][$pd_key] = $predefined['target_id'];
+      }
+      else {
+        $permissions['predefined_datacollections'][$pd_key] = [
+          'access_userdefined_ranges' => $access_userdefined_ranges,
+          'max_download_size' => $field_max_download_size['value'],
+          'id' => $predefined['target_id'],
+          'MINX' => $bounding_box['field_bundle_minx'],
+          'MINY' => $bounding_box['field_bundle_miny'],
+          'MAXX' => $bounding_box['field_bundle_maxx'],
+          'MAXY' => $bounding_box['field_bundle_maxy'],
+          'MAXPIXELWIDTH' => $bounding_box['field_bundle_maxpixelwidth'],
+          'MAXPIXELHEIGHT' => $bounding_box['field_bundle_maxpixelheight'],
+          'FEATUREINFO' => '1',
+        ];
+      }
+    }
+  }
+
+  return [
+    'permissions' => $permissions,
+    'bounding_box' => $bounding_box,
+  ];
+}
+
+/**
+ * Get a bundle node and the entity metadata.
+ *
+ * @param int $nid
+ *
+ * @return array
+ */
+function _kms_services_resources_get_bundle($bundle_nid) {
+  $bundle_node = node_load($bundle_nid);
+  if (!$bundle_node) {
+    return services_error("Bundle node could not be loaded.");
+  }
+
+  $wrapper = entity_metadata_wrapper('node', $bundle_node);
+
+  return [
+    'bundle' => $bundle_node,
+    'wrapper' => $wrapper,
+  ];
+}
+
+/**
+ * Find what bundle(s) a given item is included in.
+ *
+ * @param integer $id
+ * @param string $item_type
+ *
+ * @return array
+ *   Bundles.
+ */
+function _kms_services_resources_get_bundles_by_item_id($id, $item_type) {
+  module_load_include('module', 'kms_permissions', 'kms_permissions');
+  return _kms_permissions_get_bundles_by_item_id($id, $item_type);
+}
+
+/**
+ * Get bundles by bundle ID and return nicely formatted array.
+ *
+ * @param integer $bid
+ * @param array $permissions
+ * @param array $options
+ *
+ * @return array
+ */
+function _kms_services_resources_get_permissions_by_bid($bid, $permissions = array(), $options = array()) {
+  // When they come from API call they will be null instead of an empty array.
+  if (!$permissions) {
+    $permissions = array();
+  }
+
+  // When they come from API call they will be null instead of an empty array.
+  if (!$options) {
+    $options = array();
+  }
+
+  return _kms_permissions_get_permissions_by_bid($bid, $permissions, $options);
 }
