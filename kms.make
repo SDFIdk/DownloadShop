@@ -303,6 +303,16 @@ projects[rules][subdir] = "contrib"
 projects[rules][version] = "2.2"
 projects[rules][type] = "module"
 
+;services
+projects[services][subdir] = "contrib"
+projects[services][version] = "3.20"
+projects[services][type] = "module"
+
+;services_api_key_auth
+projects[services_api_key_auth][subdir] = "contrib"
+projects[services_api_key_auth][version] = "1.3"
+projects[services_api_key_auth][type] = "module"
+
 ;sharedemail
 projects[sharedemail][subdir] = "contrib"
 projects[sharedemail][version] = "1.x-dev"
