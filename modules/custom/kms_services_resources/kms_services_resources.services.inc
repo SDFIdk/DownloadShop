@@ -255,32 +255,33 @@ function kms_service_resources_resource() {
               'source' => ['data' => 'bundle_nid'],
               'optional' => FALSE,
             ],
+          ]
+        ],
+
+        'getBundlesByItemId' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
           ],
-          'getBundlesByItemId' => [
-            'file' => [
-              'type' => 'inc',
-              'module' => 'kms_services_resources',
-              'name' => 'kms_services_resources.services',
+          'help' => t('Get the bundle by item ID'),
+          'access callback' => '_kms_services_resources_get_bundles_by_item_id',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_services_resources_get_bundle',
+          'args' => [
+            [
+              'name' => 'id',
+              'type' => 'integer',
+              'description' => t('Item ID'),
+              'source' => ['data' => 'id'],
+              'optional' => FALSE,
             ],
-            'help' => t('Get the bundle by item ID'),
-            'access callback' => '_kms_services_resources_get_bundles_by_item_id',
-            'access arguments append' => TRUE,
-            'callback' => '_kms_services_resources_get_bundle',
-            'args' => [
-              [
-                'name' => 'id',
-                'type' => 'integer',
-                'description' => t('Item ID'),
-                'source' => ['data' => 'id'],
-                'optional' => FALSE,
-              ],
-              [
-                'name' => 'item_type',
-                'type' => 'string',
-                'description' => t('Item type'),
-                'source' => ['data' => 'item_type'],
-                'optional' => FALSE,
-              ],
+            [
+              'name' => 'item_type',
+              'type' => 'string',
+              'description' => t('Item type'),
+              'source' => ['data' => 'item_type'],
+              'optional' => FALSE,
             ],
           ],
         ],
@@ -316,6 +317,129 @@ function kms_service_resources_resource() {
               'description' => t('Permissions'),
               'source' => ['data' => 'permissions'],
               'optional' => TRUE,
+            ],
+          ],
+        ],
+
+        'getUserWithAllFields' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Get the user with all the data'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_services_resources_get_user_with_all_fields',
+          'args' => [
+            [
+              'name' => 'uid',
+              'type' => 'integer',
+              'description' => t('User ID'),
+              'source' => ['data' => 'uid'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
+        'getWebserviceFields' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Get the webservice fields'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_services_resources_get_webservice_fields',
+        ],
+
+        'getMyPageWithFields' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Get the user with all the data'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_get_my_page_with_fields',
+          'args' => [
+            [
+              'name' => 'predefined_datacollections',
+              'type' => 'array',
+              'description' => t('Array of predefined collections'),
+              'source' => ['data' => 'predefined_datacollections'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'status',
+              'type' => 'integer',
+              'description' => t('Status of nodes: Published or unpublished'),
+              'source' => ['data' => 'status'],
+              'optional' => TRUE,
+            ],
+          ],
+        ],
+
+        'getUserEntityWrapperFieldValues' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Get the webservice fields'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_services_resources_get_user_entity_wrapper_field_values',
+          'args' => [
+            [
+              'name' => 'uid',
+              'type' => 'integer',
+              'description' => t('User ID'),
+              'source' => ['data' => 'uid'],
+              'optional' => FALSE,
+            ],
+
+            [
+              'name' => 'fields',
+              'type' => 'integer',
+              'description' => t('Array of field names'),
+              'source' => ['data' => 'fields'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
+        'getWebserviceListAll' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Get the webservice fields'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_get_webservice_list_all',
+        ],
+
+        'getWebserviceReturnListArray' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Get the webservice fields'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_webservice_return_list_array',
+          'args' => [
+            [
+              'name' => 'webservices',
+              'type' => 'array',
+              'description' => t('Webservice array'),
+              'source' => ['data' => 'webservices'],
+              'optional' => FALSE,
             ],
           ],
         ],
@@ -782,4 +906,116 @@ function _kms_services_resources_get_permissions_by_bid($bid, $permissions = arr
   }
 
   return _kms_permissions_get_permissions_by_bid($bid, $permissions, $options);
+}
+
+/**
+ * Get the user with all the fields.
+ *
+ * @param $uid
+ *
+ * @return mixed
+ */
+function _kms_services_resources_get_user_with_all_fields($uid) {
+  $user = user_load(intval($uid));
+
+  if (!$user) {
+    return services_error(t('Could not load user.'), 404);
+  }
+
+  return $user;
+}
+
+function _kms_services_resources_get_user_entity_wrapper_field_values($uid, $fields = array()) {
+  // Init vars.
+  $services = array();
+
+  // If empty fields sent from the API args.
+  if (!$fields) {
+    $fields = array();
+  }
+
+  $userObj = user_load(intval($uid));
+  if (!$userObj) {
+    return services_error(t('Could not load user.'), 404);
+  }
+
+  // Get the wrapper to get easier access to field values.
+  $userWrapper = entity_metadata_wrapper('user', $userObj->uid);
+
+  if (!empty($fields)) {
+    foreach($fields as $field) {
+
+      $sids = $userWrapper->$field->value();
+      if (!empty($sids)) {
+        array_walk($sids, function($sid) use (&$services) {
+          $services[$sid] = $sid;
+        });
+      }
+    }
+  }
+
+  return $services;
+}
+
+/**
+ * Get the webservice fields.
+ *
+ * @return array
+ */
+function _kms_services_resources_get_webservice_fields() {
+  return _kms_permissions_webservice_fields();
+}
+
+/**
+ * Get the MyPage nodes with fields from predefined datacollections.
+ *
+ * @param $predefined_datacollections
+ * @param int $status
+ */
+function _kms_service_resources_get_my_page_with_fields($predefined_datacollections, $status = null) {
+
+  // Set the status.
+  if (!$status) {
+    $status = NODE_NOT_PUBLISHED;
+  }
+  else {
+    $status = NODE_PUBLISHED;
+  }
+
+  // Handle if we get an empty
+  if (!$predefined_datacollections) {
+    $predefined_datacollections = array();
+  }
+
+  $query = db_select('field_data_field_min_side', 'ms');
+  $query->leftJoin('field_data_body', 'b', 'ms.entity_id = b.entity_id');
+  $query->leftJoin('node', 'n', 'ms.entity_id = n.nid');
+  $query->fields('ms', array('entity_id', 'field_min_side_url', 'field_min_side_title'));
+  $query->fields('b', array('body_value', 'body_summary'));
+  $query->condition('ms.entity_id', $predefined_datacollections, 'IN');
+  $query->condition('n.status', $status);
+  $query->orderBy('ms.field_min_side_title');
+  $result = $query->execute()->fetchAll();
+
+  return $result;
+}
+
+/**
+ * Get a list of webservices.
+ *
+ * @return array
+ */
+function _kms_service_resources_get_webservice_list_all() {
+  return _kms_user_return_websevice_list_all();
+}
+
+/**
+ * Get a formatted list of webservices correctly formatted.
+ *
+ * @param array $webservices
+ *
+ * @return array
+ */
+function _kms_service_resources_webservice_return_list_array($webservices) {
+  return _kms_permissions_webservice_return_list_array($webservices);
 }
