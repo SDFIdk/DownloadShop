@@ -443,6 +443,27 @@ function kms_service_resources_resource() {
             ],
           ],
         ],
+
+        'getFreeServices' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Get list of free services'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_kms_get_free_services',
+          'args' => [
+            [
+              'name' => 'full',
+              'type' => 'boolean',
+              'description' => t('Get full list'),
+              'source' => ['data' => 'full'],
+              'optional' => TRUE,
+            ],
+          ],
+        ],
       ],
     ],
   ];
@@ -1018,4 +1039,22 @@ function _kms_service_resources_get_webservice_list_all() {
  */
 function _kms_service_resources_webservice_return_list_array($webservices) {
   return _kms_permissions_webservice_return_list_array($webservices);
+}
+
+/**
+ * Get a list of the free webservices.
+ *
+ * @param bool $full
+ *
+ * @return array|bool
+ */
+function _kms_service_resources_kms_get_free_services($full = FALSE) {
+  module_load_include('inc', 'kms_services', 'inc/services');
+
+  // Clean up value when it comes from the API.
+  if (!$full) {
+    $full = FALSE;
+  }
+
+  return kms_services_get_free_services($full);
 }
