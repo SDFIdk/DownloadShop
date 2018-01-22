@@ -255,7 +255,7 @@ function kms_service_resources_resource() {
               'source' => ['data' => 'bundle_nid'],
               'optional' => FALSE,
             ],
-          ]
+          ],
         ],
 
         'getBundlesByItemId' => [
@@ -936,15 +936,15 @@ function _kms_services_resources_get_bundles_by_item_id($id, $item_type) {
  *
  * @return array
  */
-function _kms_services_resources_get_permissions_by_bid($bid, $permissions = array(), $options = array()) {
+function _kms_services_resources_get_permissions_by_bid($bid, $permissions = [], $options = []) {
   // When they come from API call they will be null instead of an empty array.
   if (!$permissions) {
-    $permissions = array();
+    $permissions = [];
   }
 
   // When they come from API call they will be null instead of an empty array.
   if (!$options) {
-    $options = array();
+    $options = [];
   }
 
   return _kms_permissions_get_permissions_by_bid($bid, $permissions, $options);
@@ -967,13 +967,13 @@ function _kms_services_resources_get_user_with_all_fields($uid) {
   return $user;
 }
 
-function _kms_services_resources_get_user_entity_wrapper_field_values($uid, $fields = array()) {
+function _kms_services_resources_get_user_entity_wrapper_field_values($uid, $fields = []) {
   // Init vars.
-  $services = array();
+  $services = [];
 
   // If empty fields sent from the API args.
   if (!$fields) {
-    $fields = array();
+    $fields = [];
   }
 
   $userObj = user_load(intval($uid));
@@ -985,11 +985,11 @@ function _kms_services_resources_get_user_entity_wrapper_field_values($uid, $fie
   $userWrapper = entity_metadata_wrapper('user', $userObj->uid);
 
   if (!empty($fields)) {
-    foreach($fields as $field) {
+    foreach ($fields as $field) {
 
       $sids = $userWrapper->$field->value();
       if (!empty($sids)) {
-        array_walk($sids, function($sid) use (&$services) {
+        array_walk($sids, function ($sid) use (&$services) {
           $services[$sid] = $sid;
         });
       }
@@ -1014,7 +1014,7 @@ function _kms_services_resources_get_webservice_fields() {
  * @param $predefined_datacollections
  * @param int $status
  */
-function _kms_service_resources_get_my_page_with_fields($predefined_datacollections, $status = null) {
+function _kms_service_resources_get_my_page_with_fields($predefined_datacollections, $status = NULL) {
 
   // Set the status.
   if (!$status) {
@@ -1026,14 +1026,18 @@ function _kms_service_resources_get_my_page_with_fields($predefined_datacollecti
 
   // Handle if we get an empty
   if (!$predefined_datacollections) {
-    $predefined_datacollections = array();
+    $predefined_datacollections = [];
   }
 
   $query = db_select('field_data_field_min_side', 'ms');
   $query->leftJoin('field_data_body', 'b', 'ms.entity_id = b.entity_id');
   $query->leftJoin('node', 'n', 'ms.entity_id = n.nid');
-  $query->fields('ms', array('entity_id', 'field_min_side_url', 'field_min_side_title'));
-  $query->fields('b', array('body_value', 'body_summary'));
+  $query->fields('ms', [
+    'entity_id',
+    'field_min_side_url',
+    'field_min_side_title',
+  ]);
+  $query->fields('b', ['body_value', 'body_summary']);
   $query->condition('ms.entity_id', $predefined_datacollections, 'IN');
   $query->condition('n.status', $status);
   $query->orderBy('ms.field_min_side_title');
@@ -1090,7 +1094,7 @@ function _kms_service_resources_kms_get_free_services($full = FALSE) {
  * @return array
  *   Return an array with bundles and permissions.
  */
-function _kms_service_resources_get_bundle_perms_by_uid($uid, $permissions = array(), $options = array()) {
+function _kms_service_resources_get_bundle_perms_by_uid($uid, $permissions = [], $options = []) {
   // This is a rework of _kms_permissions_get_bundle_perms_by_uid from the
   // kms_permission module as that function does not return anything and
   // we need to get the permissions back.
@@ -1098,31 +1102,24 @@ function _kms_service_resources_get_bundle_perms_by_uid($uid, $permissions = arr
   // Init. vars.
   $bundles = [];
 
-  $options += array(
+  $options += [
     'key_prefix' => TRUE,
     'flattened' => FALSE,
-  );
+  ];
 
-  $rows = kms_permissions_get_service_list();
-
-  return $rows;
-
-  //$all_perms = _kms_permissions_get_all_permissions_by_uid($uid, $options);
-
-  // return $all_perms;
+  // Get all the services.
+  $service_list = kms_permissions_get_service_list();
 
   // Load user.
   $user = user_load($uid);
 
-  // Get default bundles.
+  // Get default and users bundles.
   $default = _kms_permissions_get_access_bundles('default');
-
-  // Get users bundles.
   $field_access_bundles = field_get_items('user', $user, 'field_access_bundles');
 
   // Merge them.
   if (is_array($field_access_bundles)) {
-    array_walk($field_access_bundles, function(&$row) {
+    array_walk($field_access_bundles, function (&$row) {
       $row = $row['nid'];
     });
     $bundles = array_merge($field_access_bundles, $default);
@@ -1141,8 +1138,8 @@ function _kms_service_resources_get_bundle_perms_by_uid($uid, $permissions = arr
   }
 
   return [
-   'bundles' => $bundles,
-   'permissions' => $permissions
+    'bundles' => $bundles,
+    'permissions' => $permissions,
+    'service_list' => $service_list,
   ];
-
 }
