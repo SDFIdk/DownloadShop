@@ -464,6 +464,27 @@ function kms_service_resources_resource() {
             ],
           ],
         ],
+
+        'getBundlePermsForUser' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Get list of bundle permissions for a given user'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_get_bundle_perms_by_uid',
+          'args' => [
+            [
+              'name' => 'uid',
+              'type' => 'integer',
+              'description' => t('User ID'),
+              'source' => ['data' => 'uid'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
       ],
     ],
   ];
@@ -1057,4 +1078,71 @@ function _kms_service_resources_kms_get_free_services($full = FALSE) {
   }
 
   return kms_services_get_free_services($full);
+}
+
+/**
+ * Get the permissions for a given user ID.
+ *
+ * @param integer $uid
+ * @param array $permissions
+ * @param array $options
+ *
+ * @return array
+ *   Return an array with bundles and permissions.
+ */
+function _kms_service_resources_get_bundle_perms_by_uid($uid, $permissions = array(), $options = array()) {
+  // This is a rework of _kms_permissions_get_bundle_perms_by_uid from the
+  // kms_permission module as that function does not return anything and
+  // we need to get the permissions back.
+
+  // Init. vars.
+  $bundles = [];
+
+  $options += array(
+    'key_prefix' => TRUE,
+    'flattened' => FALSE,
+  );
+
+  $rows = kms_permissions_get_service_list();
+
+  return $rows;
+
+  //$all_perms = _kms_permissions_get_all_permissions_by_uid($uid, $options);
+
+  // return $all_perms;
+
+  // Load user.
+  $user = user_load($uid);
+
+  // Get default bundles.
+  $default = _kms_permissions_get_access_bundles('default');
+
+  // Get users bundles.
+  $field_access_bundles = field_get_items('user', $user, 'field_access_bundles');
+
+  // Merge them.
+  if (is_array($field_access_bundles)) {
+    array_walk($field_access_bundles, function(&$row) {
+      $row = $row['nid'];
+    });
+    $bundles = array_merge($field_access_bundles, $default);
+  }
+  else {
+    $bundles = $default;
+  }
+
+  // Collect the permissions. Note that $permissions are passed by reference.
+  if (!empty($bundles)) {
+    $bundles = array_unique($bundles);
+    // Get permissions from all bundles.
+    foreach ($bundles as $bid) {
+      _kms_permissions_get_permissions_by_bid($bid, $permissions, $options);
+    }
+  }
+
+  return [
+   'bundles' => $bundles,
+   'permissions' => $permissions
+  ];
+
 }
