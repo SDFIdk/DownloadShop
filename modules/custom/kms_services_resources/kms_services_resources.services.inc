@@ -527,6 +527,81 @@ function kms_service_resources_resource() {
             ],
           ],
         ],
+
+        'loadAllSubusers' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Load all related accounts'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_subuser_load_all',
+          'args' => [
+            [
+              'name' => 'uid',
+              'type' => 'integer',
+              'description' => t('The user ID to which all other accounts will be related.'),
+              'source' => ['data' => 'uid'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'children',
+              'type' => 'boolean',
+              'description' => t('(Optional) Boolean TRUE to load children of account, otherwise FALSE to load parent(s) of account'),
+              'source' => ['data' => 'children'],
+              'optional' => TRUE,
+            ],
+          ],
+        ],
+
+        'getSubuserRoles' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Load all related accounts'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_get_subuser_roles',
+        ],
+
+        'subuserInsert' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Insert a subuser '),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_subuser_insert',
+          'args' => [
+            [
+              'name' => 'uid',
+              'type' => 'integer',
+              'description' => t('The user ID to which all other accounts will be related.'),
+              'source' => ['data' => 'uid'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'values',
+              'type' => 'array',
+              'description' => t('An array of data that should be used to create the subuser.'),
+              'source' => ['data' => 'values'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'request_time',
+              'type' => 'string',
+              'description' => t('The time for the request'),
+              'source' => ['data' => 'request_time'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
       ],
     ],
   ];
@@ -1208,4 +1283,115 @@ function _kms_service_resources_is_subuser($uid) {
 function _kms_service_resources_is_superadmin($uid) {
   $user = user_load($uid);
   return kms_user_is_superadmin($user);
+}
+
+/**
+ * Load all related accounts.
+ *
+ * @param $account
+ *   The user account to which all other accounts will be related.
+ * @param $children
+ *   (Optional) Boolean TRUE to load children of account, otherwise FALSE to
+ *   load parent(s) of account.
+ *
+ * @return
+ *   An associative array of related accounts were key and value is user ID.
+ */
+function _kms_service_resources_subuser_load_all($uid, $children = TRUE) {
+  $account = user_load($uid);
+
+  return subuser_load_all($account, $children);
+}
+
+/**
+ * Get an array of sub user roles.
+ *
+ * @return array
+ */
+function _kms_service_resources_get_subuser_roles() {
+  return array(
+    DRUPAL_AUTHENTICATED_RID => 'authenticated user',
+    KMS_SUBUSER_ROLE_ID => KMS_SUBUSER_ROLE_NAME,
+  );
+}
+
+/**
+ * Insert a sub user.
+ *
+ * @param integer $uid
+ * @param array $values
+ * @param integer $request_time
+ *
+ * @return array
+ * @throws \Exception
+ * @throws \ServicesException
+ */
+function _kms_service_resources_subuser_insert($uid, $values, $request_time) {
+  module_load_include('module', 'kms_subuser', 'kms_subuser');
+
+  $user = user_load($uid);
+
+  $name = trim($values['name']);
+  $pass = trim($values['pass']);
+  $trimmed_mail = trim($values['mail']);
+  $mail = empty($trimmed_mail) ? KMS_SUBUSER_FAKE_MAIL : $trimmed_mail;
+
+  $subuser = array(
+    'name' => $name,
+    'pass' => $pass,
+    'mail' => $mail,
+    'init' => $mail,
+    'status' => 1,
+    'access' => $request_time,
+    'roles' => kms_subuser_default_roles(),
+  );
+
+  $uwrapper = entity_metadata_wrapper('user', $user);
+
+  // $account returns user object.
+  $account = user_save(NULL, $subuser);
+  $suwrapper = entity_metadata_wrapper('user', $account);
+
+  // Save user remark.
+  $suwrapper->field_user_remark->set($values['user_remark']);
+
+  // Save expire.
+  if (!empty($values['user_expire'])) {
+    $suwrapper->field_expire_date->set(strtotime($values['user_expire']));
+  }
+
+  // Save user type (same as master).
+  $suwrapper->field_user_type->set(array_keys(_kms_csv_user_types($uwrapper)));
+
+  // Set address values, can be empty.
+  $suwrapper->field_address = array(
+    'first_name' =>   $values['first_name'],
+    'last_name' =>   $values['last_name'],
+    'country' => 'DA'
+  );
+
+  // Set phone number, can be empty.
+  $suwrapper->field_phone->set($values['phone']);
+
+  $suwrapper->save();
+
+  // Save subuser relation.
+  kms_subuser_save_relation($user->uid, $account->uid);
+
+  // Clone permissions (bundles, permissions etc.)
+  kms_permissions_clone_perms($user, $account);
+
+  // Insert user data into oracle.
+  $account->pass = $pass;
+  kms_subuser_insert_account_oracle($user, $account);
+  $subuser = kms_subuser_load($account->uid);
+  if ($subuser) {
+    kms_subuser_send_mail('register_subuser', $subuser);
+    return [
+      'result' => 'register_subuser_ok'
+    ];
+  }
+  else {
+    services_error('There was a problem creating the subuser.', 422);
+  }
 }
