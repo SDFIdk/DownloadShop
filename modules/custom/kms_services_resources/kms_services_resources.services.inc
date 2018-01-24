@@ -485,6 +485,48 @@ function kms_service_resources_resource() {
             ],
           ],
         ],
+
+        'isSubuser' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Is a given user ID a sub user'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_is_subuser',
+          'args' => [
+            [
+              'name' => 'uid',
+              'type' => 'integer',
+              'description' => t('User ID'),
+              'source' => ['data' => 'uid'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
+        'isSuperAdmin' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Is a given user ID a sub user'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_is_superadmin',
+          'args' => [
+            [
+              'name' => 'uid',
+              'type' => 'integer',
+              'description' => t('User ID'),
+              'source' => ['data' => 'uid'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
       ],
     ],
   ];
@@ -1142,4 +1184,28 @@ function _kms_service_resources_get_bundle_perms_by_uid($uid, $permissions = [],
     'permissions' => $permissions,
     'service_list' => $service_list,
   ];
+}
+
+/**
+ * Return whether a given user is a subuser from the UID.
+ *
+ * @param integer $uid
+ *
+ * @return boolean
+ */
+function _kms_service_resources_is_subuser($uid) {
+  module_load_include('module', 'kms_subuser', 'kms_subuser');
+  return kms_subuser_is_subuser($uid);
+}
+
+/**
+ * Return whether as user with $uid is a super administrator.
+ *
+ * @param integer $uid
+ *
+ * @return bool
+ */
+function _kms_service_resources_is_superadmin($uid) {
+  $user = user_load($uid);
+  return kms_user_is_superadmin($user);
 }
