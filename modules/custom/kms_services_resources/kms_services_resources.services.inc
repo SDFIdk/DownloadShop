@@ -602,6 +602,33 @@ function kms_service_resources_resource() {
             ],
           ],
         ],
+        'subuserList' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('List subusers'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_subuser_list',
+          'args' => [
+            [
+              'name' => 'uid',
+              'type' => 'integer',
+              'description' => t('The user ID to which all other accounts will be related.'),
+              'source' => ['data' => 'uid'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'rid',
+              'type' => 'integer',
+              'description' => t('The role ID.'),
+              'source' => ['data' => 'rid'],
+              'optional' => TRUE,
+            ],
+          ],
+        ],
       ],
     ],
   ];
@@ -1309,10 +1336,10 @@ function _kms_service_resources_subuser_load_all($uid, $children = TRUE) {
  * @return array
  */
 function _kms_service_resources_get_subuser_roles() {
-  return array(
+  return [
     DRUPAL_AUTHENTICATED_RID => 'authenticated user',
     KMS_SUBUSER_ROLE_ID => KMS_SUBUSER_ROLE_NAME,
-  );
+  ];
 }
 
 /**
@@ -1336,7 +1363,7 @@ function _kms_service_resources_subuser_insert($uid, $values, $request_time) {
   $trimmed_mail = trim($values['mail']);
   $mail = empty($trimmed_mail) ? KMS_SUBUSER_FAKE_MAIL : $trimmed_mail;
 
-  $subuser = array(
+  $subuser = [
     'name' => $name,
     'pass' => $pass,
     'mail' => $mail,
@@ -1344,7 +1371,7 @@ function _kms_service_resources_subuser_insert($uid, $values, $request_time) {
     'status' => 1,
     'access' => $request_time,
     'roles' => kms_subuser_default_roles(),
-  );
+  ];
 
   $uwrapper = entity_metadata_wrapper('user', $user);
 
@@ -1364,11 +1391,11 @@ function _kms_service_resources_subuser_insert($uid, $values, $request_time) {
   $suwrapper->field_user_type->set(array_keys(_kms_csv_user_types($uwrapper)));
 
   // Set address values, can be empty.
-  $suwrapper->field_address = array(
-    'first_name' =>   $values['first_name'],
-    'last_name' =>   $values['last_name'],
-    'country' => 'DA'
-  );
+  $suwrapper->field_address = [
+    'first_name' => $values['first_name'],
+    'last_name' => $values['last_name'],
+    'country' => 'DA',
+  ];
 
   // Set phone number, can be empty.
   $suwrapper->field_phone->set($values['phone']);
@@ -1388,10 +1415,56 @@ function _kms_service_resources_subuser_insert($uid, $values, $request_time) {
   if ($subuser) {
     kms_subuser_send_mail('register_subuser', $subuser);
     return [
-      'result' => 'register_subuser_ok'
+      'result' => 'register_subuser_ok',
     ];
   }
   else {
     services_error('There was a problem creating the subuser.', 422);
   }
+}
+
+/**
+ * Get a list of sub users.
+ *
+ * @param integer $uid
+ * @param integer $rid
+ *
+ * @return array
+ */
+function _kms_service_resources_subuser_list($uid, $rid) {
+
+  // Get the role.
+  if (!$rid) {
+    $role = user_role_load_by_name('subuser');
+    if ($role) {
+      $rid = $role->rid;
+    }
+  }
+
+  // This is stolen from the KMS Subuser views.
+  $query = "SELECT
+    users.name AS users_name,
+    users.uid AS uid,
+    field_data_field_address.field_address_name_line AS field_data_field_address_field_address_name_line,
+    users.status AS users_status,
+    users.created AS users_created,
+    'user' AS field_data_field_expire_date_user_entity_type
+    FROM
+    {users} users
+    INNER JOIN {field_data_endpoints} field_data_endpoints ON users.uid = field_data_endpoints.endpoints_entity_id AND (field_data_endpoints.bundle = 'subuser' AND field_data_endpoints.endpoints_entity_type = 'user')
+    INNER JOIN {field_data_endpoints} field_data_endpoints2 ON field_data_endpoints.entity_id = field_data_endpoints2.entity_id AND (field_data_endpoints2.endpoints_entity_type = 'user' AND field_data_endpoints2.endpoints_r_index !=  field_data_endpoints.endpoints_r_index AND 1 = '1')
+    INNER JOIN {users} users_users ON field_data_endpoints2.endpoints_entity_id = users_users.uid AND field_data_endpoints2.endpoints_entity_type = 'user'
+    INNER JOIN {users_roles} users_roles ON users.uid = users_roles.uid
+    LEFT JOIN {field_data_field_address} field_data_field_address ON users.uid = field_data_field_address.entity_id AND field_data_field_address.entity_type = 'user'
+    WHERE (( (users_users.uid = :uid ) )AND(( (users_roles.rid = :rid) )))
+    ORDER BY users_created DESC";
+
+  $result = db_query($query, [':uid' => $uid, ':rid' => $rid]);
+
+  $data = [];
+  foreach ($result as $row) {
+    $data[] = (array) $row;
+  }
+
+  return $data;
 }
