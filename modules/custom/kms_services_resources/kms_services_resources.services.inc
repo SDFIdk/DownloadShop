@@ -602,6 +602,7 @@ function kms_service_resources_resource() {
             ],
           ],
         ],
+
         'subuserList' => [
           'file' => [
             'type' => 'inc',
@@ -627,6 +628,27 @@ function kms_service_resources_resource() {
               'source' => ['data' => 'rid'],
               'optional' => TRUE,
             ],
+          ],
+        ],
+
+        'subuserListFromView' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('List subusers from Views'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_subuser_list_views',
+          'args' => [
+            [
+              'name' => 'uid',
+              'type' => 'integer',
+              'description' => t('The user ID to which all other accounts will be related.'),
+              'source' => ['data' => 'uid'],
+              'optional' => FALSE,
+            ]
           ],
         ],
       ],
@@ -1467,4 +1489,18 @@ function _kms_service_resources_subuser_list($uid, $rid) {
   }
 
   return $data;
+}
+
+/**
+ * Get the Views HTML with sub user list.
+ *
+ * @param integer $uid
+ *
+ * @return string
+ */
+function _kms_service_resources_subuser_list_views($uid) {
+  $views_data = views_embed_view('kms_subuser', 'block_1', $uid);
+  $json_data = json_encode($views_data);
+
+  return $json_data;
 }
