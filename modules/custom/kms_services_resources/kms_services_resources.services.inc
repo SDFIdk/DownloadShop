@@ -1532,7 +1532,8 @@ function _kms_service_resources_subuser_list_views($uid) {
  */
 function _kms_service_resources_subuser_update($form_state) {
   module_load_include('module','kms_subuser', 'kms_subuser');
-  kms_subuser_update_form_submit([], $form_state);
+  $form = [];
+  kms_subuser_update_form_submit($form, $form_state);
 
   return TRUE;
 }
