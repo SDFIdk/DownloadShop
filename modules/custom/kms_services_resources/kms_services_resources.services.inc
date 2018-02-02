@@ -651,6 +651,27 @@ function kms_service_resources_resource() {
             ]
           ],
         ],
+
+        'subuserUserUpdate' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Update a subuser'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_subuser_update',
+          'args' => [
+            [
+              'name' => 'form_state',
+              'type' => 'array',
+              'description' => t('The form state values.'),
+              'source' => ['data' => 'form_state'],
+              'optional' => FALSE,
+            ]
+          ],
+        ],
       ],
     ],
   ];
@@ -1500,7 +1521,18 @@ function _kms_service_resources_subuser_list($uid, $rid) {
  */
 function _kms_service_resources_subuser_list_views($uid) {
   $views_data = views_embed_view('kms_subuser', 'block_1', $uid);
-  $json_data = json_encode($views_data);
+  $b64 = base64_encode($views_data);
+  return $b64;
+}
 
-  return $json_data;
+/**
+ * @param $form_state
+ *
+ * @return bool
+ */
+function _kms_service_resources_subuser_update($form_state) {
+  module_load_include('module','kms_subuser', 'kms_subuser');
+  kms_subuser_update_form_submit([], $form_state);
+
+  return TRUE;
 }
