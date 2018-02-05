@@ -672,6 +672,27 @@ function kms_service_resources_resource() {
             ]
           ],
         ],
+
+        'subuserUserDelete' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Delete a subuser'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_subuser_delete',
+          'args' => [
+            [
+              'name' => 'form_state',
+              'type' => 'array',
+              'description' => t('The form state values.'),
+              'source' => ['data' => 'form_state'],
+              'optional' => FALSE,
+            ]
+          ],
+        ],
       ],
     ],
   ];
@@ -1526,6 +1547,8 @@ function _kms_service_resources_subuser_list_views($uid) {
 }
 
 /**
+ * Update a subuser.
+ *
  * @param $form_state
  *
  * @return bool
@@ -1535,5 +1558,21 @@ function _kms_service_resources_subuser_update($form_state) {
   $form = [];
   kms_subuser_update_form_submit($form, $form_state);
 
-  return TRUE;
+  return ['result' => TRUE];
+}
+
+/**
+ * Delete a subuser.
+ *
+ * @param $from_state
+ *
+ * @return array
+ */
+function _kms_service_resources_subuser_delete($from_state) {
+  module_load_include('module','kms_subuser', 'kms_subuser');
+
+  $form = [];
+  kms_subuser_cancel_form_delete($form, $from_state);
+
+  return ['result' => TRUE];
 }
