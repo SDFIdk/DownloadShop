@@ -73,6 +73,11 @@ projects[background_process][subdir] = "contrib"
 projects[background_process][version] = "1.16"
 projects[background_process][type] = "module"
 
+;bakery
+projects[bakery][subdir] = "contrib"
+projects[bakery][version] = "2.0-alpha4"
+projects[bakery][type] = "module"
+
 ;beautytips
 projects[beautytips][subdir] = "contrib"
 projects[beautytips][version] = "2.0-beta2"
