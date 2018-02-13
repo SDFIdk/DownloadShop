@@ -1542,8 +1542,11 @@ function _kms_service_resources_subuser_list($uid, $rid) {
  */
 function _kms_service_resources_subuser_list_views($uid) {
   $views_data = views_embed_view('kms_subuser', 'block_1', $uid);
-  $b64 = base64_encode($views_data);
-  return $b64;
+  // All < and > are converted to \u003C and \u003E
+  // All " are converted to \u0022.
+  $json = json_encode($views_data, JSON_HEX_QUOT | JSON_HEX_TAG);
+
+  return $json;
 }
 
 /**
