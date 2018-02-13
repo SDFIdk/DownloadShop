@@ -1541,7 +1541,10 @@ function _kms_service_resources_subuser_list($uid, $rid) {
  * @return string
  */
 function _kms_service_resources_subuser_list_views($uid) {
-  $views_data = views_embed_view('kms_subuser', 'block_1', $uid);
+  // Get the views data. Bypass the access part as we are not logged in
+  // properly through the API.
+  $view = views_get_view('kms_subuser');
+  $views_data = $view->preview('block_1', array($uid));
   // All < and > are converted to \u003C and \u003E
   // All " are converted to \u0022.
   $json = json_encode($views_data, JSON_HEX_QUOT | JSON_HEX_TAG);
