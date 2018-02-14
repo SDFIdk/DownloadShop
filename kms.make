@@ -454,6 +454,6 @@ projects[services_sso_server_helper][type] = 'module'
 projects[services_sso_server_helper][subdir] = 'contrib'
 projects[services_sso_server_helper][download][branch] = '7.x-1.x'
 projects[services_sso_server_helper][download][type] = 'git'
-projects[services_sso_server_helper][download][url] = 'http://git.drupal.org/project/hierarchical_select.git'
+projects[services_sso_server_helper][download][url] = 'http://git.drupal.org/project/services_sso_server_helper.git'
 projects[services_sso_server_helper][download][revision] = '70c6f918a8739475583d06a4cd1a7a3a078b9f4f'
 projects[services_sso_server_helper][patch][] = "https://www.drupal.org/files/issues/services_sso_server_helper-7.x-1.3-SA-CONTRIB-2015-055-2475497-6-D7.patch"
