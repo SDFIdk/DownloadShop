@@ -5,6 +5,29 @@
  */
 function kms_service_resources_resource() {
   $definitions = [
+    'kms_password' => [
+      'actions' => [
+        'request_new_password' => [
+          'help' => 'Request a new password, given a user name or e-mail address',
+          'callback' => '_kms_services_resources_password_request_new_password',
+          'args' => [
+            [
+              'name' => 'name',
+              'type' => 'string',
+              'description' => 'A valid user name or e-mail address',
+              'source' => ['data' => 'name'],
+              'optional' => FALSE,
+            ],
+          ],
+          'access callback' => 'services_access_menu',
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources_password.services',
+          ],
+        ],
+      ],
+    ],
     'kms_user' => [
       'operations' => [
         'create' => [
@@ -648,7 +671,7 @@ function kms_service_resources_resource() {
               'description' => t('The user ID to which all other accounts will be related.'),
               'source' => ['data' => 'uid'],
               'optional' => FALSE,
-            ]
+            ],
           ],
         ],
 
@@ -669,7 +692,7 @@ function kms_service_resources_resource() {
               'description' => t('The form state values.'),
               'source' => ['data' => 'form_state'],
               'optional' => FALSE,
-            ]
+            ],
           ],
         ],
 
@@ -690,8 +713,72 @@ function kms_service_resources_resource() {
               'description' => t('The form state values.'),
               'source' => ['data' => 'form_state'],
               'optional' => FALSE,
-            ]
+            ],
           ],
+        ],
+
+        'getUserPassHash' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Get the user hashed password'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_get_user_hashed_password',
+          'args' => [
+            [
+              'name' => 'uid',
+              'type' => 'string',
+              'description' => t('User ID'),
+              'source' => ['data' => 'uid'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
+        'userPassRehash' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Rehash a user password'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_user_pass_rehash',
+          'args' => [
+            [
+              'name' => 'pass',
+              'type' => 'string',
+              'description' => t('The user password'),
+              'source' => ['data' => 'pass'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'timestamp',
+              'type' => 'string',
+              'description' => t('Timestamp'),
+              'source' => ['data' => 'timestamp'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'login',
+              'type' => 'string',
+              'description' => t('Login'),
+              'source' => ['data' => 'login'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'uid',
+              'type' => 'string',
+              'description' => t('User ID'),
+              'source' => ['data' => 'uid'],
+              'optional' => FALSE,
+            ],
+          ],
+
         ],
       ],
     ],
@@ -1544,7 +1631,7 @@ function _kms_service_resources_subuser_list_views($uid) {
   // Get the views data. Bypass the access part as we are not logged in
   // properly through the API.
   $view = views_get_view('kms_subuser');
-  $views_data = $view->preview('block_1', array($uid));
+  $views_data = $view->preview('block_1', [$uid]);
   // All < and > are converted to \u003C and \u003E
   // All " are converted to \u0022.
   $json = json_encode($views_data, JSON_HEX_QUOT | JSON_HEX_TAG);
@@ -1560,7 +1647,7 @@ function _kms_service_resources_subuser_list_views($uid) {
  * @return bool
  */
 function _kms_service_resources_subuser_update($form_state) {
-  module_load_include('module','kms_subuser', 'kms_subuser');
+  module_load_include('module', 'kms_subuser', 'kms_subuser');
   $form = [];
   kms_subuser_update_form_submit($form, $form_state);
 
@@ -1575,10 +1662,43 @@ function _kms_service_resources_subuser_update($form_state) {
  * @return array
  */
 function _kms_service_resources_subuser_delete($from_state) {
-  module_load_include('module','kms_subuser', 'kms_subuser');
+  module_load_include('module', 'kms_subuser', 'kms_subuser');
 
   $form = [];
   kms_subuser_cancel_form_delete($form, $from_state);
 
   return ['result' => TRUE];
+}
+
+/**
+ * Rehash the password.
+ *
+ * @param string $pass
+ * @param string $timestamp
+ * @param string $login
+ * @param string $uid
+ *
+ * @return array
+ */
+function _kms_service_resources_user_pass_rehash($pass, $timestamp, $login, $uid) {
+  $rehash = user_pass_rehash($pass, $timestamp, $login, $uid);
+
+  return ['result' => $rehash];
+}
+
+/**
+ * Only get the hashed password value.
+ *
+ * @param integer $uid
+ *
+ * @return mixed
+ */
+function _kms_service_resources_get_user_hashed_password($uid) {
+  $user = user_load($uid);
+
+  if (!$user) {
+    return '';
+  }
+
+  return $user->pass;
 }
