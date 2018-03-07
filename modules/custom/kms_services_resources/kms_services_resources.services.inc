@@ -778,6 +778,34 @@ function kms_service_resources_resource() {
               'optional' => FALSE,
             ],
           ],
+        ],
+
+        'getCSHSFormattedTermsByVocabularyName' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Get a CSHS formatted terms array from a given vocabulary name'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_get_cshs_formatted_terms_by_vocabulary_name',
+          'args' => [
+            [
+              'name' => 'vocabulary_name',
+              'type' => 'string',
+              'description' => t('The vocabulary name'),
+              'source' => ['data' => 'vocabulary_name'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'parent',
+              'type' => 'integer',
+              'description' => t('Parent ID'),
+              'source' => ['data' => 'parent'],
+              'optional' => TRUE,
+            ],
+          ],
 
         ],
       ],
@@ -1701,4 +1729,80 @@ function _kms_service_resources_get_user_hashed_password($uid) {
   }
 
   return $user->pass;
+}
+
+/**
+ * Get an array of formatted taxonomy terms valid for CSHS.
+ *
+ * @param string $vocabulary_name
+ * @param integer $parent
+ *
+ * @return array
+ */
+function _kms_service_resources_get_cshs_formatted_terms_by_vocabulary_name($vocabulary_name, $parent = 0) {
+
+  // Setup properties directly instead of calling _options_properties().
+  $properties = array(
+    'filter_xss' => FALSE,
+    'strip_tags' => TRUE,
+    'strip_tags_and_unescape' => TRUE,
+    'empty_option' => 'option_none',
+    'optgroups' => FALSE,
+  );
+
+  // Get all terms as options.
+  $options = array();
+  if ($vocabulary = taxonomy_vocabulary_machine_name_load($vocabulary_name)) {
+    if ($terms = taxonomy_get_tree($vocabulary->vid, $parent)) {
+      if (module_exists('i18n_taxonomy')) {
+        // Localize terms.
+        $terms = i18n_taxonomy_localize_terms($terms);
+      }
+      foreach ($terms as $term) {
+        $options[$term->tid] = array(
+          'name' => str_repeat('- ', $term->depth) . $term->name,
+          'parent_tid' => _kms_service_resources_shift_parent($term->parents),
+        );
+      }
+    }
+  }
+
+  // Sanitize the options.
+  _options_prepare_options($options, $properties);
+
+  // Always add an empty option.
+  $options = _kms_service_resources_add_none_option($options);
+
+  return $options;
+
+}
+
+/**
+ * Helper that returns the first tid of an array of parents from a term object.
+ *
+ * @param $parent_tids An array of all parents from a term object
+ * @return int|mixed The first parent tid
+ */
+function _kms_service_resources_shift_parent($parent_tids) {
+  if (count($parent_tids)) {
+    $parent_tids = array_values($parent_tids);
+    $parent_tid = array_shift($parent_tids);
+    return $parent_tid;
+  }
+  return 0;
+}
+
+/**
+ * Add an empty option.
+ *
+ * @param $options
+ *
+ * @return array
+ */
+function _kms_service_resources_add_none_option($options) {
+   return array(
+    '_none' => array(
+      'name' => t('- Please select -'), 'parent_tid' => 0
+    )
+  ) + $options;
 }
