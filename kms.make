@@ -383,7 +383,7 @@ projects[dbtng_migrator][type] = "module"
 ; _adapt
 projects[adapt_module][type] = 'module'
 projects[adapt_module][download][type] = 'svn'
-; todo move below this to github
+; todo move below to github
 projects[adapt_module][download][url] = 'svn+ssh://svnhost/data/subversion/drupal/global/tags/modules/_adapt-7.x-0.4'
 projects[adapt_module][directory_name] = "_adapt"
 projects[adapt_module][subdir] = "global"
