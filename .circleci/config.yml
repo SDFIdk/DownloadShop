@@ -120,7 +120,6 @@ jobs:
           at: ~/
       - run: |
           ls
-          echo "Deploy prod"
           echo "TODO"
 
 workflows:
