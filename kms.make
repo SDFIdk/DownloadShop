@@ -392,8 +392,9 @@ projects[adapt_module][subdir] = "global"
 ;; Ckeditor
 ;libraries[ckeditor][download][type] = 'svn'
 ;libraries[ckeditor][download][url] = 'svn+ssh://svnhost/data/subversion/drupal/global/tags/libraries/ckeditor-3.6.4'
-libraries[colorbox][download][type] = 'git'
-libraries[colorbox][download][url] = 'git@github.com:adaptdk/svn_pkg_ckeditor.git'
+libraries[ckeditor][download][type] = 'git'
+libraries[ckeditor][download][url] = 'git@github.com:adaptdk/svn_pkg_ckeditor.git'
+libraries[ckeditor][download][branch] = master
 libraries[ckeditor][directory_name] = "ckeditor"
 libraries[ckeditor][destination] = "libraries"
 
