@@ -381,12 +381,12 @@ projects[dbtng_migrator][version] = "1.4"
 projects[dbtng_migrator][type] = "module"
 
 ; _adapt
-projects[adapt_module][type] = 'module'
-projects[adapt_module][download][type] = 'svn'
+;projects[adapt_module][type] = 'module'
+;projects[adapt_module][download][type] = 'svn'
 ; todo move below to github
-projects[adapt_module][download][url] = 'svn+ssh://svnhost/data/subversion/drupal/global/tags/modules/_adapt-7.x-0.4'
-projects[adapt_module][directory_name] = "_adapt"
-projects[adapt_module][subdir] = "global"
+;projects[adapt_module][download][url] = 'svn+ssh://svnhost/data/subversion/drupal/global/tags/modules/_adapt-7.x-0.4'
+;projects[adapt_module][directory_name] = "_adapt"
+;projects[adapt_module][subdir] = "global"
 
 ; Libraries
 ;; Ckeditor
