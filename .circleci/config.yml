@@ -101,11 +101,12 @@ jobs:
       - run:
           name: Create symlinks
           command: |
-            cd ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM/htdocs/sites/default
+            BUILD_NUMBER=$( cat build_number.txt )
+            cd ~/kortforsyningen-downloadshop/build-$BUILD_NUMBER/htdocs/sites/default
             ln -s ../../../settings/test.settings.php settings.php
             ln -s ../../../../../assets/ftp/public ftp
             ln -s ../../../../../assets/files files
-            cd ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM/htdocs/sites/private
+            cd ~/kortforsyningen-downloadshop/build-$BUILD_NUMBER/htdocs/sites/private
             ln -s /data3/Statsaftalen Statsaftalen
 
       - run:
