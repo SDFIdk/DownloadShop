@@ -71,6 +71,12 @@ jobs:
             rsync -rv --exclude-from=excludes.git.txt ~/kortforsyningen-downloadshop/git/ ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM 
             rsync -rv --exclude-from=excludes.make.txt ~/kortforsyningen-downloadshop/make/ ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM/htdocs
       - run:
+          name: Copy themes folder
+          command: cp -r ~/kortforsyningen-downloadshop/themes ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM/htdocs/profiles/kms/
+      - run:
+          name: Copy custom modules folder
+          command: cp -r ~/kortforsyningen-downloadshop/modules/custom ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM/htdocs/profiles/kms/modules/
+      - run:
           name: List files in build folder
           command: ls ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM
       - run:
@@ -92,6 +98,16 @@ jobs:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/
+      - run:
+          name: Create symlinks
+          command: |
+            cd ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM/htdocs/sites/default
+            ln -s ../../../settings/test.settings.php settings.php
+            ln -s ../../../../../assets/ftp/public ftp
+            ln -s ../../../../../assets/files files
+            cd ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM/htdocs/sites/private
+            ln -s /data3/Statsaftalen Statsaftalen
+
       - run:
           name: Github authenticity fix & setup
           command: |

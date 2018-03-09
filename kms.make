@@ -381,17 +381,15 @@ projects[dbtng_migrator][version] = "1.4"
 projects[dbtng_migrator][type] = "module"
 
 ; _adapt
-;projects[adapt_module][type] = 'module'
-;projects[adapt_module][download][type] = 'svn'
-; todo move below to github
-;projects[adapt_module][download][url] = 'svn+ssh://svnhost/data/subversion/drupal/global/tags/modules/_adapt-7.x-0.4'
-;projects[adapt_module][directory_name] = "_adapt"
-;projects[adapt_module][subdir] = "global"
+projects[adapt_module][type] = 'module'
+projects[adapt_module][download][type] = 'git'
+projects[adapt_module][download][url] = 'git@github.com:adaptdk/svn_adapt_module.git'
+projects[adapt_module][download][branch] = '7.x-0.4'
+projects[adapt_module][directory_name] = "_adapt"
+projects[adapt_module][subdir] = "global"
 
 ; Libraries
 ;; Ckeditor
-;libraries[ckeditor][download][type] = 'svn'
-;libraries[ckeditor][download][url] = 'svn+ssh://svnhost/data/subversion/drupal/global/tags/libraries/ckeditor-3.6.4'
 libraries[ckeditor][download][type] = 'git'
 libraries[ckeditor][download][url] = 'git@github.com:adaptdk/svn_pkg_ckeditor.git'
 libraries[ckeditor][download][branch] = master
@@ -411,8 +409,6 @@ libraries[beautytips_ie_lib][directory_name] = "excanvas_r3"
 libraries[beautytips_ie_lib][destination] = "modules/contrib/beautytips/other_libs"
 
 ; Themes
-;projects[adapt_theme][download][type] = "svn"
-;projects[adapt_theme][download][url] = "svn+ssh://svnhost/data/subversion/drupal/global/tags/themes/adapt-7.x-0.2"
 projects[adapt_theme][download][type] = 'git'
 projects[adapt_theme][download][url] = 'git@github.com:adaptdk/svn_adapt_theme-7.x-0.2.git'
 projects[adapt_theme][directory_name] = "adapt"
