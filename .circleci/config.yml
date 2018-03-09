@@ -25,14 +25,12 @@ jobs:
           name: Clone DownloadShop_private
           command: |
             mkdir -p ~/kortforsyningen-downloadshop/git
-            ls
             git clone git@github.com:Kortforsyningen/DownloadShop_private.git ~/kortforsyningen-downloadshop/git
             cd ~/kortforsyningen-downloadshop/git
             git checkout -q --force $CIRCLE_BRANCH
             sed -i '15,17 s/^/;/' platform.make
             echo "projects[kms][download][type] = file" >> platform.make
             echo "projects[kms][download][url] = file:///home/circleci/kortforsyningen-downloadshop/kms.make" >> platform.make
-            cat platform.make
       - run:
           name: Drush make
           command: drush --nocolor make ~/kortforsyningen-downloadshop/git/platform.make make
@@ -68,22 +66,14 @@ jobs:
             ls ~/kortforsyningen-downloadshop
             rm ~/kortforsyningen-downloadshop/git/scripts
             mv ~/kortforsyningen-downloadshop/scripts ~/kortforsyningen-downloadshop/git/
-            rsync -rv --exclude-from=excludes.git.txt ~/kortforsyningen-downloadshop/git/ ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM 
-            rsync -rv --exclude-from=excludes.make.txt ~/kortforsyningen-downloadshop/make/ ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM/htdocs
+            rsync -r --exclude-from=excludes.git.txt ~/kortforsyningen-downloadshop/git/ ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM 
+            rsync -r --exclude-from=excludes.make.txt ~/kortforsyningen-downloadshop/make/ ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM/htdocs
       - run:
           name: Copy themes folder
           command: cp -r ~/kortforsyningen-downloadshop/themes ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM/htdocs/profiles/kms/
       - run:
           name: Copy custom modules folder
           command: cp -r ~/kortforsyningen-downloadshop/modules/custom ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM/htdocs/profiles/kms/modules/
-      - run:
-          name: List files in build folder
-          command: ls ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM
-      - run:
-          name: List files in htdcos
-          command: ls ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM/htdocs
-            
-
 
       - persist_to_workspace:
           # Must be an absolute path, or relative path from working_directory
@@ -136,7 +126,6 @@ jobs:
           # Must be absolute path or relative path from working_directory
           at: ~/
       - run: |
-          ls
           echo "TODO"
 
 workflows:
