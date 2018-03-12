@@ -1,0 +1,182 @@
+defaults: &defaults
+  working_directory: ~/kortforsyningen-downloadshop
+  docker:
+    - image: circleci/php:5.6-apache
+
+version: 2
+jobs:
+  build:
+    <<: *defaults
+    steps:
+      - checkout
+      - run:
+          name: Build number file
+          command: echo "${CIRCLE_BUILD_NUM}" > build_number.txt
+      - run: php -v
+      - run:
+          name: Install Composer
+          command: 'curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer'
+      - run: echo 'export PATH=~/.composer/vendor/bin:$PATH' >> $BASH_ENV
+      - run:
+          name: Install Drush
+          command: composer global require drush/drush:8.*
+      - run: drush status
+      - run:
+          name: Clone DownloadShop_private
+          command: |
+            mkdir -p ~/kortforsyningen-downloadshop/git
+            git clone git@github.com:Kortforsyningen/DownloadShop_private.git ~/kortforsyningen-downloadshop/git
+            cd ~/kortforsyningen-downloadshop/git
+            git checkout -q --force $CIRCLE_BRANCH
+            sed -i '15,17 s/^/;/' platform.make
+            echo "projects[kms][download][type] = file" >> platform.make
+            echo "projects[kms][download][url] = file:///home/circleci/kortforsyningen-downloadshop/kms.make" >> platform.make
+      - run:
+          name: Drush make
+          command: drush --nocolor make ~/kortforsyningen-downloadshop/git/platform.make make
+      - run:
+          name: Create exclude files list
+          command: |
+            touch excludes.git.txt
+            echo ".git" >> excludes.git.txt
+            echo "install.sh" >> excludes.git.txt
+            echo "build.sh" >> excludes.git.txt
+            echo "local_setup.sh" >> excludes.git.txt
+            echo "htdocs/sites/all/**" >> excludes.git.txt
+            echo "**.txt" >> excludes.git.txt
+            echo "**.gitignore" >> excludes.git.txt
+            echo "**.svnignore" >> excludes.git.txt
+            echo "web.config" >> excludes.git.txt
+            echo "**.patch" >> excludes.git.txt
+            echo "platform.make" >> excludes.git.txt
+            touch excludes.make.txt
+            echo ".git" >> excludes.make.txt
+            echo "scripts" >> excludes.make.txt
+            echo "**.txt" >> excludes.make.txt
+            echo "**.gitignore" >> excludes.make.txt
+            echo "**.svnignore" >> excludes.make.txt
+            echo "web.config" >> excludes.make.txt
+            echo "install.php" >> excludes.make.txt
+            echo "update.php" >> excludes.make.txt
+            echo "**.patch" >> excludes.make.txt
+      - run:
+          name: Create build-test-live folder
+          command: |
+            mkdir -p ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM/htdocs
+            rm ~/kortforsyningen-downloadshop/git/scripts
+            mv ~/kortforsyningen-downloadshop/scripts ~/kortforsyningen-downloadshop/git/
+            rsync -r --exclude-from=excludes.git.txt ~/kortforsyningen-downloadshop/git/ ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM 
+            rsync -r --exclude-from=excludes.make.txt ~/kortforsyningen-downloadshop/make/ ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM/htdocs
+      - run:
+          name: Copy themes folder
+          command: cp -r ~/kortforsyningen-downloadshop/themes ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM/htdocs/profiles/kms/
+      - run:
+          name: Copy custom modules folder
+          command: cp -r ~/kortforsyningen-downloadshop/modules/custom ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM/htdocs/profiles/kms/modules/
+
+      - persist_to_workspace:
+          # Must be an absolute path, or relative path from working_directory
+          root: ~/
+          # Must be relative path from root
+          paths:
+            - kortforsyningen-downloadshop
+
+  deploy-test:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          # Must be absolute path or relative path from working_directory
+          at: ~/
+      - run:
+          name: Create symlinks
+          command: |
+            BUILD_NUMBER=$( cat build_number.txt )
+            cd ~/kortforsyningen-downloadshop/build-$BUILD_NUMBER/htdocs/sites/default
+            ln -s ../../../settings/test.settings.php settings.php
+            ln -s ../../../../../assets/ftp/public ftp
+            ln -s ../../../../../assets/files files
+            cd ~/kortforsyningen-downloadshop/build-$BUILD_NUMBER/htdocs/sites/private
+            ln -s /data3/Statsaftalen Statsaftalen
+
+      - run:
+          name: Github authenticity fix & setup
+          command: |
+            git config --global user.email "circleci@adapt.dk"
+            git config --global user.name "Adapt CircleCi"
+            mkdir ~/.ssh/
+            echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+      - run:
+          name: Deloy to Github repo
+          command: |
+            BUILD_NUMBER=$( cat build_number.txt )
+            git clone -b test git@github.com:Kortforsyningen/DownloadShop_built.git
+            cd DownloadShop_built
+            git rm -r *
+            cp -r ~/kortforsyningen-downloadshop/build-$BUILD_NUMBER/* .
+            git add -A
+            git status
+            git commit -m "CircleCI ${BUILD_NUMBER}"
+            git push -u origin test
+
+  deploy-prod:
+    <<: *defaults
+    steps:
+      - attach_workspace:
+          # Must be absolute path or relative path from working_directory
+          at: ~/
+      - run:
+          name: Create symlinks
+          command: |
+            BUILD_NUMBER=$( cat build_number.txt )
+            cd ~/kortforsyningen-downloadshop/build-$BUILD_NUMBER/htdocs/sites/default
+            ln -s ../../../settings/live.settings.php settings.php
+            ln -s ../../../../../assets/ftp/public ftp
+            ln -s ../../../../../assets/files files
+            cd ~/kortforsyningen-downloadshop/build-$BUILD_NUMBER/htdocs/sites/private
+            ln -s /data3/Statsaftalen Statsaftalen
+
+      - run:
+          name: Github authenticity fix & setup
+          command: |
+            git config --global user.email "circleci@adapt.dk"
+            git config --global user.name "Adapt CircleCi"
+            mkdir ~/.ssh/
+            echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+      - run:
+          name: Deloy to Github repo
+          command: |
+            BUILD_NUMBER=$( cat build_number.txt )
+            git clone -b master git@github.com:Kortforsyningen/DownloadShop_built.git
+            cd DownloadShop_built
+            git rm -q -r *
+            cp -r ~/kortforsyningen-downloadshop/build-$BUILD_NUMBER/* .
+            git add -A
+            git status
+            git commit -m "CircleCI ${BUILD_NUMBER}"
+            git push -u origin master
+
+workflows:
+  version: 2
+  build-deploy:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only:
+                - test
+                - master
+      - deploy-prod:
+          type: approval
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - master
+      - deploy-test:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - test
