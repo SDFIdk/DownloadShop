@@ -798,6 +798,13 @@ function kms_service_resources_resource() {
               'source' => ['data' => 'vocabulary_name'],
               'optional' => FALSE,
             ],
+            [
+              'name' => 'parent',
+              'type' => 'integer',
+              'description' => t('Parent ID'),
+              'source' => ['data' => 'parent'],
+              'optional' => TRUE,
+            ],
           ],
         ],
 
