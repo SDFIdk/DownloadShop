@@ -806,8 +806,29 @@ function kms_service_resources_resource() {
               'optional' => TRUE,
             ],
           ],
-
         ],
+
+        'getUserByUuid' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Get a user by UUID'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_get_user_by_uuid',
+          'args' => [
+            [
+              'name' => 'uuid',
+              'type' => 'string',
+              'description' => t('The UUID for the user'),
+              'source' => ['data' => 'uuid'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
       ],
     ],
   ];
@@ -1750,6 +1771,10 @@ function _kms_service_resources_get_cshs_formatted_terms_by_vocabulary_name($voc
     'optgroups' => FALSE,
   );
 
+  if ($parent === null) {
+    $parent = 0;
+  }
+
   // Get all terms as options.
   $options = array();
   if ($vocabulary = taxonomy_vocabulary_machine_name_load($vocabulary_name)) {
@@ -1805,4 +1830,39 @@ function _kms_service_resources_add_none_option($options) {
       'name' => t('- Please select -'), 'parent_tid' => 0
     )
   ) + $options;
+}
+
+/**
+ * Get a user from a given UUID.
+ *
+ * @param string $uuid
+ *
+ * @return mixed
+ * @throws \ServicesException
+ */
+function _kms_service_resources_get_user_by_uuid($uuid) {
+
+  // Get the user ID from the UUID.
+  $user_uid = db_select('users', 'u')
+    ->fields('u', ['uid'])
+    ->condition('u.uuid', $uuid,'=')
+    ->execute()
+    ->fetchAssoc();
+
+  if (!$user_uid || !is_array($user_uid)) {
+    return services_error(t('User with the given UUID could not be found.'), 404);
+  }
+
+  // Get the user ID.
+  $uid = reset($user_uid);
+  if (!$uid) {
+    return services_error(t('User data did not contain correctly formatted result.'), 422);
+  }
+
+  $user = user_load($uid);
+  if (!$user) {
+    return services_error(t('User could not be loaded.'), 422);
+  }
+
+  return $user;
 }
