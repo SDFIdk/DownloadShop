@@ -166,7 +166,7 @@ workflows:
                 - test
                 - master
       - deploy-prod:
-          type: approval
+          #type: approval
           requires:
             - build
           filters:
