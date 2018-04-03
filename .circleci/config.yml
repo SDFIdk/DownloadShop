@@ -165,14 +165,17 @@ workflows:
               only:
                 - test
                 - master
-      - deploy-prod:
-          #type: approval
+      - hold:
+          type: approval
           requires:
-            - build
+           - build
           filters:
             branches:
               only:
                 - master
+      - deploy-prod:
+          requires:
+            - hold
       - deploy-test:
           requires:
             - build
