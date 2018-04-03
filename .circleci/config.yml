@@ -63,7 +63,6 @@ jobs:
           name: Create build-test-live folder
           command: |
             mkdir -p ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM/htdocs
-            ls ~/kortforsyningen-downloadshop
             rm ~/kortforsyningen-downloadshop/git/scripts
             mv ~/kortforsyningen-downloadshop/scripts ~/kortforsyningen-downloadshop/git/
             rsync -r --exclude-from=excludes.git.txt ~/kortforsyningen-downloadshop/git/ ~/kortforsyningen-downloadshop/build-$CIRCLE_BUILD_NUM 
@@ -125,8 +124,36 @@ jobs:
       - attach_workspace:
           # Must be absolute path or relative path from working_directory
           at: ~/
-      - run: |
-          echo "TODO"
+      - run:
+          name: Create symlinks
+          command: |
+            BUILD_NUMBER=$( cat build_number.txt )
+            cd ~/kortforsyningen-downloadshop/build-$BUILD_NUMBER/htdocs/sites/default
+            ln -s ../../../settings/live.settings.php settings.php
+            ln -s ../../../../../assets/ftp/public ftp
+            ln -s ../../../../../assets/files files
+            cd ~/kortforsyningen-downloadshop/build-$BUILD_NUMBER/htdocs/sites/private
+            ln -s /data3/Statsaftalen Statsaftalen
+
+      - run:
+          name: Github authenticity fix & setup
+          command: |
+            git config --global user.email "circleci@adapt.dk"
+            git config --global user.name "Adapt CircleCi"
+            mkdir ~/.ssh/
+            echo -e "Host github.com\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+      - run:
+          name: Deloy to Github repo
+          command: |
+            BUILD_NUMBER=$( cat build_number.txt )
+            git clone -b master git@github.com:Kortforsyningen/DownloadShop_built.git
+            cd DownloadShop_built
+            git rm -q -r *
+            cp -r ~/kortforsyningen-downloadshop/build-$BUILD_NUMBER/* .
+            git add -A
+            git status
+            git commit -m "CircleCI ${BUILD_NUMBER}"
+            git push -u origin master
 
 workflows:
   version: 2
@@ -138,14 +165,17 @@ workflows:
               only:
                 - test
                 - master
-      - deploy-prod:
+      - hold:
           type: approval
           requires:
-            - build
+           - build
           filters:
             branches:
               only:
                 - master
+      - deploy-prod:
+          requires:
+            - hold
       - deploy-test:
           requires:
             - build
