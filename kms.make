@@ -382,15 +382,19 @@ projects[dbtng_migrator][type] = "module"
 
 ; _adapt
 projects[adapt_module][type] = 'module'
-projects[adapt_module][download][type] = 'svn'
-projects[adapt_module][download][url] = 'svn+ssh://svnhost/data/subversion/drupal/global/tags/modules/_adapt-7.x-0.4'
+projects[adapt_module][download][type] = 'git'
+projects[adapt_module][download][url] = 'git@github.com:adaptdk/svn_adapt_module.git'
+projects[adapt_module][download][branch] = '7.x-0.4'
 projects[adapt_module][directory_name] = "_adapt"
 projects[adapt_module][subdir] = "global"
 
 ; Libraries
 ;; Ckeditor
-libraries[ckeditor][download][type] = 'svn'
-libraries[ckeditor][download][url] = 'svn+ssh://svnhost/data/subversion/drupal/global/tags/libraries/ckeditor-3.6.4'
+libraries[ckeditor][download][type] = 'git'
+libraries[ckeditor][download][url] = 'git@github.com:adaptdk/svn_pkg_ckeditor.git'
+libraries[ckeditor][download][branch] = master
+libraries[ckeditor][directory_name] = "ckeditor"
+libraries[ckeditor][destination] = "libraries"
 
 ;; Colorbox
 libraries[colorbox][download][type] = 'git'
@@ -405,8 +409,8 @@ libraries[beautytips_ie_lib][directory_name] = "excanvas_r3"
 libraries[beautytips_ie_lib][destination] = "modules/contrib/beautytips/other_libs"
 
 ; Themes
-projects[adapt_theme][download][type] = "svn"
-projects[adapt_theme][download][url] = "svn+ssh://svnhost/data/subversion/drupal/global/tags/themes/adapt-7.x-0.2"
+projects[adapt_theme][download][type] = 'git'
+projects[adapt_theme][download][url] = 'git@github.com:adaptdk/svn_adapt_theme-7.x-0.2.git'
 projects[adapt_theme][directory_name] = "adapt"
 projects[adapt_theme][type] = "theme"
 projects[adapt_theme][subdir] = "global"
@@ -448,3 +452,12 @@ libraries[mailchimp][destination] = "libraries"
 projects[module_filter][type] = 'module'
 projects[module_filter][subdir] = 'contrib'
 projects[module_filter][version] = '2.1'
+
+; Services SSO server helper
+projects[services_sso_server_helper][type] = 'module'
+projects[services_sso_server_helper][subdir] = 'contrib'
+projects[services_sso_server_helper][download][branch] = '7.x-1.x'
+projects[services_sso_server_helper][download][type] = 'git'
+projects[services_sso_server_helper][download][url] = 'http://git.drupal.org/project/services_sso_server_helper.git'
+projects[services_sso_server_helper][download][revision] = '70c6f918a8739475583d06a4cd1a7a3a078b9f4f'
+projects[services_sso_server_helper][patch][] = "https://www.drupal.org/files/issues/services_sso_server_helper-7.x-1.3-SA-CONTRIB-2015-055-2475497-6-D7.patch"

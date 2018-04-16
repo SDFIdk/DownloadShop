@@ -5,6 +5,29 @@
  */
 function kms_service_resources_resource() {
   $definitions = [
+    'kms_password' => [
+      'actions' => [
+        'request_new_password' => [
+          'help' => 'Request a new password, given a user name or e-mail address',
+          'callback' => '_kms_services_resources_password_request_new_password',
+          'args' => [
+            [
+              'name' => 'name',
+              'type' => 'string',
+              'description' => 'A valid user name or e-mail address',
+              'source' => ['data' => 'name'],
+              'optional' => FALSE,
+            ],
+          ],
+          'access callback' => 'services_access_menu',
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources_password.services',
+          ],
+        ],
+      ],
+    ],
     'kms_user' => [
       'operations' => [
         'create' => [
@@ -255,7 +278,7 @@ function kms_service_resources_resource() {
               'source' => ['data' => 'bundle_nid'],
               'optional' => FALSE,
             ],
-          ]
+          ],
         ],
 
         'getBundlesByItemId' => [
@@ -443,6 +466,369 @@ function kms_service_resources_resource() {
             ],
           ],
         ],
+
+        'getFreeServices' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Get list of free services'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_kms_get_free_services',
+          'args' => [
+            [
+              'name' => 'full',
+              'type' => 'boolean',
+              'description' => t('Get full list'),
+              'source' => ['data' => 'full'],
+              'optional' => TRUE,
+            ],
+          ],
+        ],
+
+        'getBundlePermsForUser' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Get list of bundle permissions for a given user'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_get_bundle_perms_by_uid',
+          'args' => [
+            [
+              'name' => 'uid',
+              'type' => 'integer',
+              'description' => t('User ID'),
+              'source' => ['data' => 'uid'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
+        'isSubuser' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Is a given user ID a sub user'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_is_subuser',
+          'args' => [
+            [
+              'name' => 'uid',
+              'type' => 'integer',
+              'description' => t('User ID'),
+              'source' => ['data' => 'uid'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
+        'isSuperAdmin' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Is a given user ID a sub user'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_is_superadmin',
+          'args' => [
+            [
+              'name' => 'uid',
+              'type' => 'integer',
+              'description' => t('User ID'),
+              'source' => ['data' => 'uid'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
+        'loadAllSubusers' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Load all related accounts'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_subuser_load_all',
+          'args' => [
+            [
+              'name' => 'uid',
+              'type' => 'integer',
+              'description' => t('The user ID to which all other accounts will be related.'),
+              'source' => ['data' => 'uid'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'children',
+              'type' => 'boolean',
+              'description' => t('(Optional) Boolean TRUE to load children of account, otherwise FALSE to load parent(s) of account'),
+              'source' => ['data' => 'children'],
+              'optional' => TRUE,
+            ],
+          ],
+        ],
+
+        'getSubuserRoles' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Load all related accounts'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_get_subuser_roles',
+        ],
+
+        'subuserInsert' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Insert a subuser '),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_subuser_insert',
+          'args' => [
+            [
+              'name' => 'uid',
+              'type' => 'integer',
+              'description' => t('The user ID to which all other accounts will be related.'),
+              'source' => ['data' => 'uid'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'values',
+              'type' => 'array',
+              'description' => t('An array of data that should be used to create the subuser.'),
+              'source' => ['data' => 'values'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'request_time',
+              'type' => 'string',
+              'description' => t('The time for the request'),
+              'source' => ['data' => 'request_time'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
+        'subuserList' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('List subusers'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_subuser_list',
+          'args' => [
+            [
+              'name' => 'uid',
+              'type' => 'integer',
+              'description' => t('The user ID to which all other accounts will be related.'),
+              'source' => ['data' => 'uid'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'rid',
+              'type' => 'integer',
+              'description' => t('The role ID.'),
+              'source' => ['data' => 'rid'],
+              'optional' => TRUE,
+            ],
+          ],
+        ],
+
+        'subuserListFromView' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('List subusers from Views'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_subuser_list_views',
+          'args' => [
+            [
+              'name' => 'uid',
+              'type' => 'integer',
+              'description' => t('The user ID to which all other accounts will be related.'),
+              'source' => ['data' => 'uid'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
+        'subuserUserUpdate' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Update a subuser'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_subuser_update',
+          'args' => [
+            [
+              'name' => 'form_state',
+              'type' => 'array',
+              'description' => t('The form state values.'),
+              'source' => ['data' => 'form_state'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
+        'subuserUserDelete' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Delete a subuser'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_subuser_delete',
+          'args' => [
+            [
+              'name' => 'form_state',
+              'type' => 'array',
+              'description' => t('The form state values.'),
+              'source' => ['data' => 'form_state'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
+        'getUserPassHash' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Get the user hashed password'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_get_user_hashed_password',
+          'args' => [
+            [
+              'name' => 'uid',
+              'type' => 'string',
+              'description' => t('User ID'),
+              'source' => ['data' => 'uid'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
+        'userPassRehash' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Rehash a user password'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_user_pass_rehash',
+          'args' => [
+            [
+              'name' => 'pass',
+              'type' => 'string',
+              'description' => t('The user password'),
+              'source' => ['data' => 'pass'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'timestamp',
+              'type' => 'string',
+              'description' => t('Timestamp'),
+              'source' => ['data' => 'timestamp'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'login',
+              'type' => 'string',
+              'description' => t('Login'),
+              'source' => ['data' => 'login'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'uid',
+              'type' => 'string',
+              'description' => t('User ID'),
+              'source' => ['data' => 'uid'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
+        'getCSHSFormattedTermsByVocabularyName' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Get a CSHS formatted terms array from a given vocabulary name'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_get_cshs_formatted_terms_by_vocabulary_name',
+          'args' => [
+            [
+              'name' => 'vocabulary_name',
+              'type' => 'string',
+              'description' => t('The vocabulary name'),
+              'source' => ['data' => 'vocabulary_name'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'parent',
+              'type' => 'integer',
+              'description' => t('Parent ID'),
+              'source' => ['data' => 'parent'],
+              'optional' => TRUE,
+            ],
+          ],
+        ],
+
+        'getUserByUuid' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Get a user by UUID'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_get_user_by_uuid',
+          'args' => [
+            [
+              'name' => 'uuid',
+              'type' => 'string',
+              'description' => t('The UUID for the user'),
+              'source' => ['data' => 'uuid'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
       ],
     ],
   ];
@@ -894,15 +1280,15 @@ function _kms_services_resources_get_bundles_by_item_id($id, $item_type) {
  *
  * @return array
  */
-function _kms_services_resources_get_permissions_by_bid($bid, $permissions = array(), $options = array()) {
+function _kms_services_resources_get_permissions_by_bid($bid, $permissions = [], $options = []) {
   // When they come from API call they will be null instead of an empty array.
   if (!$permissions) {
-    $permissions = array();
+    $permissions = [];
   }
 
   // When they come from API call they will be null instead of an empty array.
   if (!$options) {
-    $options = array();
+    $options = [];
   }
 
   return _kms_permissions_get_permissions_by_bid($bid, $permissions, $options);
@@ -925,13 +1311,13 @@ function _kms_services_resources_get_user_with_all_fields($uid) {
   return $user;
 }
 
-function _kms_services_resources_get_user_entity_wrapper_field_values($uid, $fields = array()) {
+function _kms_services_resources_get_user_entity_wrapper_field_values($uid, $fields = []) {
   // Init vars.
-  $services = array();
+  $services = [];
 
   // If empty fields sent from the API args.
   if (!$fields) {
-    $fields = array();
+    $fields = [];
   }
 
   $userObj = user_load(intval($uid));
@@ -943,11 +1329,11 @@ function _kms_services_resources_get_user_entity_wrapper_field_values($uid, $fie
   $userWrapper = entity_metadata_wrapper('user', $userObj->uid);
 
   if (!empty($fields)) {
-    foreach($fields as $field) {
+    foreach ($fields as $field) {
 
       $sids = $userWrapper->$field->value();
       if (!empty($sids)) {
-        array_walk($sids, function($sid) use (&$services) {
+        array_walk($sids, function ($sid) use (&$services) {
           $services[$sid] = $sid;
         });
       }
@@ -972,7 +1358,7 @@ function _kms_services_resources_get_webservice_fields() {
  * @param $predefined_datacollections
  * @param int $status
  */
-function _kms_service_resources_get_my_page_with_fields($predefined_datacollections, $status = null) {
+function _kms_service_resources_get_my_page_with_fields($predefined_datacollections, $status = NULL) {
 
   // Set the status.
   if (!$status) {
@@ -984,14 +1370,18 @@ function _kms_service_resources_get_my_page_with_fields($predefined_datacollecti
 
   // Handle if we get an empty
   if (!$predefined_datacollections) {
-    $predefined_datacollections = array();
+    $predefined_datacollections = [];
   }
 
   $query = db_select('field_data_field_min_side', 'ms');
   $query->leftJoin('field_data_body', 'b', 'ms.entity_id = b.entity_id');
   $query->leftJoin('node', 'n', 'ms.entity_id = n.nid');
-  $query->fields('ms', array('entity_id', 'field_min_side_url', 'field_min_side_title'));
-  $query->fields('b', array('body_value', 'body_summary'));
+  $query->fields('ms', [
+    'entity_id',
+    'field_min_side_url',
+    'field_min_side_title',
+  ]);
+  $query->fields('b', ['body_value', 'body_summary']);
   $query->condition('ms.entity_id', $predefined_datacollections, 'IN');
   $query->condition('n.status', $status);
   $query->orderBy('ms.field_min_side_title');
@@ -1018,4 +1408,461 @@ function _kms_service_resources_get_webservice_list_all() {
  */
 function _kms_service_resources_webservice_return_list_array($webservices) {
   return _kms_permissions_webservice_return_list_array($webservices);
+}
+
+/**
+ * Get a list of the free webservices.
+ *
+ * @param bool $full
+ *
+ * @return array|bool
+ */
+function _kms_service_resources_kms_get_free_services($full = FALSE) {
+  module_load_include('inc', 'kms_services', 'inc/services');
+
+  // Clean up value when it comes from the API.
+  if (!$full) {
+    $full = FALSE;
+  }
+
+  return kms_services_get_free_services($full);
+}
+
+/**
+ * Get the permissions for a given user ID.
+ *
+ * @param integer $uid
+ * @param array $permissions
+ * @param array $options
+ *
+ * @return array
+ *   Return an array with bundles and permissions.
+ */
+function _kms_service_resources_get_bundle_perms_by_uid($uid, $permissions = [], $options = []) {
+  // This is a rework of _kms_permissions_get_bundle_perms_by_uid from the
+  // kms_permission module as that function does not return anything and
+  // we need to get the permissions back.
+
+  // Init. vars.
+  $bundles = [];
+
+  $options += [
+    'key_prefix' => TRUE,
+    'flattened' => FALSE,
+  ];
+
+  // Get all the services.
+  $service_list = kms_permissions_get_service_list();
+
+  // Load user.
+  $user = user_load($uid);
+
+  // Get default and users bundles.
+  $default = _kms_permissions_get_access_bundles('default');
+  $field_access_bundles = field_get_items('user', $user, 'field_access_bundles');
+
+  // Merge them.
+  if (is_array($field_access_bundles)) {
+    array_walk($field_access_bundles, function (&$row) {
+      $row = $row['nid'];
+    });
+    $bundles = array_merge($field_access_bundles, $default);
+  }
+  else {
+    $bundles = $default;
+  }
+
+  // Collect the permissions. Note that $permissions are passed by reference.
+  if (!empty($bundles)) {
+    $bundles = array_unique($bundles);
+    // Get permissions from all bundles.
+    foreach ($bundles as $bid) {
+      _kms_permissions_get_permissions_by_bid($bid, $permissions, $options);
+    }
+  }
+
+  return [
+    'bundles' => $bundles,
+    'permissions' => $permissions,
+    'service_list' => $service_list,
+  ];
+}
+
+/**
+ * Return whether a given user is a subuser from the UID.
+ *
+ * @param integer $uid
+ *
+ * @return boolean
+ */
+function _kms_service_resources_is_subuser($uid) {
+  module_load_include('module', 'kms_subuser', 'kms_subuser');
+  return kms_subuser_is_subuser($uid);
+}
+
+/**
+ * Return whether as user with $uid is a super administrator.
+ *
+ * @param integer $uid
+ *
+ * @return bool
+ */
+function _kms_service_resources_is_superadmin($uid) {
+  $user = user_load($uid);
+  return kms_user_is_superadmin($user);
+}
+
+/**
+ * Load all related accounts.
+ *
+ * @param $account
+ *   The user account to which all other accounts will be related.
+ * @param $children
+ *   (Optional) Boolean TRUE to load children of account, otherwise FALSE to
+ *   load parent(s) of account.
+ *
+ * @return
+ *   An associative array of related accounts were key and value is user ID.
+ */
+function _kms_service_resources_subuser_load_all($uid, $children = TRUE) {
+  $account = user_load($uid);
+
+  return subuser_load_all($account, $children);
+}
+
+/**
+ * Get an array of sub user roles.
+ *
+ * @return array
+ */
+function _kms_service_resources_get_subuser_roles() {
+  return [
+    DRUPAL_AUTHENTICATED_RID => 'authenticated user',
+    KMS_SUBUSER_ROLE_ID => KMS_SUBUSER_ROLE_NAME,
+  ];
+}
+
+/**
+ * Insert a sub user.
+ *
+ * @param integer $uid
+ * @param array $values
+ * @param integer $request_time
+ *
+ * @return array
+ * @throws \Exception
+ * @throws \ServicesException
+ */
+function _kms_service_resources_subuser_insert($uid, $values, $request_time) {
+  module_load_include('module', 'kms_subuser', 'kms_subuser');
+
+  $user = user_load($uid);
+
+  $name = trim($values['name']);
+  $pass = trim($values['pass']);
+  $trimmed_mail = trim($values['mail']);
+  $mail = empty($trimmed_mail) ? KMS_SUBUSER_FAKE_MAIL : $trimmed_mail;
+
+  $subuser = [
+    'name' => $name,
+    'pass' => $pass,
+    'mail' => $mail,
+    'init' => $mail,
+    'status' => 1,
+    'access' => $request_time,
+    'roles' => kms_subuser_default_roles(),
+  ];
+
+  $uwrapper = entity_metadata_wrapper('user', $user);
+
+  // $account returns user object.
+  $account = user_save(NULL, $subuser);
+  $suwrapper = entity_metadata_wrapper('user', $account);
+
+  // Save user remark.
+  $suwrapper->field_user_remark->set($values['user_remark']);
+
+  // Save expire.
+  if (!empty($values['user_expire'])) {
+    $suwrapper->field_expire_date->set(strtotime($values['user_expire']));
+  }
+
+  // Save user type (same as master).
+  $suwrapper->field_user_type->set(array_keys(_kms_csv_user_types($uwrapper)));
+
+  // Set address values, can be empty.
+  $suwrapper->field_address = [
+    'first_name' => $values['first_name'],
+    'last_name' => $values['last_name'],
+    'country' => 'DA',
+  ];
+
+  // Set phone number, can be empty.
+  $suwrapper->field_phone->set($values['phone']);
+
+  $suwrapper->save();
+
+  // Save subuser relation.
+  kms_subuser_save_relation($user->uid, $account->uid);
+
+  // Clone permissions (bundles, permissions etc.)
+  kms_permissions_clone_perms($user, $account);
+
+  // Insert user data into oracle.
+  $account->pass = $pass;
+  kms_subuser_insert_account_oracle($user, $account);
+  $subuser = kms_subuser_load($account->uid);
+  if ($subuser) {
+    kms_subuser_send_mail('register_subuser', $subuser);
+    return [
+      'result' => 'register_subuser_ok',
+    ];
+  }
+  else {
+    services_error('There was a problem creating the subuser.', 422);
+  }
+}
+
+/**
+ * Get a list of sub users.
+ *
+ * @param integer $uid
+ * @param integer $rid
+ *
+ * @return array
+ */
+function _kms_service_resources_subuser_list($uid, $rid) {
+
+  // Get the role.
+  if (!$rid) {
+    $role = user_role_load_by_name('subuser');
+    if ($role) {
+      $rid = $role->rid;
+    }
+  }
+
+  // This is stolen from the KMS Subuser views.
+  $query = "SELECT
+    users.name AS users_name,
+    users.uid AS uid,
+    field_data_field_address.field_address_name_line AS field_data_field_address_field_address_name_line,
+    users.status AS users_status,
+    users.created AS users_created,
+    'user' AS field_data_field_expire_date_user_entity_type
+    FROM
+    {users} users
+    INNER JOIN {field_data_endpoints} field_data_endpoints ON users.uid = field_data_endpoints.endpoints_entity_id AND (field_data_endpoints.bundle = 'subuser' AND field_data_endpoints.endpoints_entity_type = 'user')
+    INNER JOIN {field_data_endpoints} field_data_endpoints2 ON field_data_endpoints.entity_id = field_data_endpoints2.entity_id AND (field_data_endpoints2.endpoints_entity_type = 'user' AND field_data_endpoints2.endpoints_r_index !=  field_data_endpoints.endpoints_r_index AND 1 = '1')
+    INNER JOIN {users} users_users ON field_data_endpoints2.endpoints_entity_id = users_users.uid AND field_data_endpoints2.endpoints_entity_type = 'user'
+    INNER JOIN {users_roles} users_roles ON users.uid = users_roles.uid
+    LEFT JOIN {field_data_field_address} field_data_field_address ON users.uid = field_data_field_address.entity_id AND field_data_field_address.entity_type = 'user'
+    WHERE (( (users_users.uid = :uid ) )AND(( (users_roles.rid = :rid) )))
+    ORDER BY users_created DESC";
+
+  $result = db_query($query, [':uid' => $uid, ':rid' => $rid]);
+
+  $data = [];
+  foreach ($result as $row) {
+    $data[] = (array) $row;
+  }
+
+  return $data;
+}
+
+/**
+ * Get the Views HTML with sub user list.
+ *
+ * @param integer $uid
+ *
+ * @return string
+ */
+function _kms_service_resources_subuser_list_views($uid) {
+  // Get the views data. Bypass the access part as we are not logged in
+  // properly through the API.
+  $view = views_get_view('kms_subuser');
+  $views_data = $view->preview('block_1', [$uid]);
+  // All < and > are converted to \u003C and \u003E
+  // All " are converted to \u0022.
+  $json = json_encode($views_data, JSON_HEX_QUOT | JSON_HEX_TAG);
+
+  return $json;
+}
+
+/**
+ * Update a subuser.
+ *
+ * @param $form_state
+ *
+ * @return bool
+ */
+function _kms_service_resources_subuser_update($form_state) {
+  module_load_include('module', 'kms_subuser', 'kms_subuser');
+  $form = [];
+  kms_subuser_update_form_submit($form, $form_state);
+
+  return ['result' => TRUE];
+}
+
+/**
+ * Delete a subuser.
+ *
+ * @param $from_state
+ *
+ * @return array
+ */
+function _kms_service_resources_subuser_delete($from_state) {
+  module_load_include('module', 'kms_subuser', 'kms_subuser');
+
+  $form = [];
+  kms_subuser_cancel_form_delete($form, $from_state);
+
+  return ['result' => TRUE];
+}
+
+/**
+ * Rehash the password.
+ *
+ * @param string $pass
+ * @param string $timestamp
+ * @param string $login
+ * @param string $uid
+ *
+ * @return array
+ */
+function _kms_service_resources_user_pass_rehash($pass, $timestamp, $login, $uid) {
+  $rehash = user_pass_rehash($pass, $timestamp, $login, $uid);
+
+  return ['result' => $rehash];
+}
+
+/**
+ * Only get the hashed password value.
+ *
+ * @param integer $uid
+ *
+ * @return mixed
+ */
+function _kms_service_resources_get_user_hashed_password($uid) {
+  $user = user_load($uid);
+
+  if (!$user) {
+    return '';
+  }
+
+  return $user->pass;
+}
+
+/**
+ * Get an array of formatted taxonomy terms valid for CSHS.
+ *
+ * @param string $vocabulary_name
+ * @param integer $parent
+ *
+ * @return array
+ */
+function _kms_service_resources_get_cshs_formatted_terms_by_vocabulary_name($vocabulary_name, $parent = 0) {
+
+  // Setup properties directly instead of calling _options_properties().
+  $properties = array(
+    'filter_xss' => FALSE,
+    'strip_tags' => TRUE,
+    'strip_tags_and_unescape' => TRUE,
+    'empty_option' => 'option_none',
+    'optgroups' => FALSE,
+  );
+
+  if ($parent === null) {
+    $parent = 0;
+  }
+
+  // Get all terms as options.
+  $options = array();
+  if ($vocabulary = taxonomy_vocabulary_machine_name_load($vocabulary_name)) {
+    if ($terms = taxonomy_get_tree($vocabulary->vid, $parent)) {
+      if (module_exists('i18n_taxonomy')) {
+        // Localize terms.
+        $terms = i18n_taxonomy_localize_terms($terms);
+      }
+      foreach ($terms as $term) {
+        $options[$term->tid] = array(
+          'name' => str_repeat('- ', $term->depth) . $term->name,
+          'parent_tid' => _kms_service_resources_shift_parent($term->parents),
+        );
+      }
+    }
+  }
+
+  // Sanitize the options.
+  _options_prepare_options($options, $properties);
+
+  // Always add an empty option.
+  $options = _kms_service_resources_add_none_option($options);
+
+  return $options;
+
+}
+
+/**
+ * Helper that returns the first tid of an array of parents from a term object.
+ *
+ * @param $parent_tids An array of all parents from a term object
+ * @return int|mixed The first parent tid
+ */
+function _kms_service_resources_shift_parent($parent_tids) {
+  if (count($parent_tids)) {
+    $parent_tids = array_values($parent_tids);
+    $parent_tid = array_shift($parent_tids);
+    return $parent_tid;
+  }
+  return 0;
+}
+
+/**
+ * Add an empty option.
+ *
+ * @param $options
+ *
+ * @return array
+ */
+function _kms_service_resources_add_none_option($options) {
+   return array(
+    '_none' => array(
+      'name' => t('- Please select -'), 'parent_tid' => 0
+    )
+  ) + $options;
+}
+
+/**
+ * Get a user from a given UUID.
+ *
+ * @param string $uuid
+ *
+ * @return mixed
+ * @throws \ServicesException
+ */
+function _kms_service_resources_get_user_by_uuid($uuid) {
+
+  // Get the user ID from the UUID.
+  $user_uid = db_select('users', 'u')
+    ->fields('u', ['uid'])
+    ->condition('u.uuid', $uuid,'=')
+    ->execute()
+    ->fetchAssoc();
+
+  if (!$user_uid || !is_array($user_uid)) {
+    return services_error(t('User with the given UUID could not be found.'), 404);
+  }
+
+  // Get the user ID.
+  $uid = reset($user_uid);
+  if (!$uid) {
+    return services_error(t('User data did not contain correctly formatted result.'), 422);
+  }
+
+  $user = user_load($uid);
+  if (!$user) {
+    return services_error(t('User could not be loaded.'), 422);
+  }
+
+  return $user;
 }
