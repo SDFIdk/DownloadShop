@@ -151,22 +151,22 @@ projects[email][type] = "module"
 
 ;entity
 projects[entity][subdir] = "contrib"
-projects[entity][version] = "1.8"
+projects[entity][version] = "1.9"
 projects[entity][type] = "module"
 
 ;entityreference
 projects[entityreference][subdir] = "contrib"
-projects[entityreference][version] = "1.2"
+projects[entityreference][version] = "1.5"
 projects[entityreference][type] = "module"
 
 ;features
 projects[features][subdir] = "contrib"
-projects[features][version] = "1.0"
+projects[features][version] = "2.10"
 projects[features][type] = "module"
 
 ;field_group
 projects[field_group][subdir] = "contrib"
-projects[field_group][version] = "1.1"
+projects[field_group][version] = "1.6"
 projects[field_group][type] = "module"
 
 ;field_permissions
@@ -176,7 +176,7 @@ projects[field_permissions][type] = "module"
 
 ;filefield_sources
 projects[filefield_sources][subdir] = "contrib"
-projects[filefield_sources][version] = "1.10"
+projects[filefield_sources][version] = "1.11"
 projects[filefield_sources][type] = "module"
 
 ;flood_control
