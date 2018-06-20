@@ -59,6 +59,102 @@ function kms_services_feature_default_services_endpoint() {
         'getApplicationList' => array(
           'enabled' => '1',
         ),
+        'getWebserviceFields' => array(
+          'enabled' => '1',
+        ),
+        'getMyPageWithFields' => array(
+          'enabled' => '1',
+        ),
+        'getUserEntityWrapperFieldValues' => array(
+          'enabled' => '1',
+        ),
+        'getWebserviceListAll' => array(
+          'enabled' => '1',
+        ),
+        'getWebserviceReturnListArray' => array(
+          'enabled' => '1',
+        ),
+        'getFreeServices' => array(
+          'enabled' => '1',
+        ),
+        'getBundlePermsForUser' => array(
+          'enabled' => '1',
+        ),
+        'isSubuser' => array(
+          'enabled' => '1',
+        ),
+        'isSuperAdmin' => array(
+          'enabled' => '1',
+        ),
+        'loadAllSubusers' => array(
+          'enabled' => '1',
+        ),
+        'getSubuserRoles' => array(
+          'enabled' => '1',
+        ),
+        'subuserInsert' => array(
+          'enabled' => '1',
+        ),
+        'subuserList' => array(
+          'enabled' => '1',
+        ),
+        'subuserListFromView' => array(
+          'enabled' => '1',
+        ),
+        'subuserUserUpdate' => array(
+          'enabled' => '1',
+        ),
+        'subuserUserDelete' => array(
+          'enabled' => '1',
+        ),
+        'getUserPassHash' => array(
+          'enabled' => '1',
+        ),
+        'userPassRehash' => array(
+          'enabled' => '1',
+        ),
+        'getCSHSFormattedTermsByVocabularyName' => array(
+          'enabled' => '1',
+        ),
+        'getUserByUuid' => array(
+          'enabled' => '1',
+        ),
+        'updateUserType' => array(
+          'enabled' => '1',
+        ),
+        'getBundles' => array(
+          'enabled' => '1',
+        ),
+        'getUsersWithSeperateServices' => array(
+          'enabled' => '1',
+        ),
+        'alive' => array(
+          'enabled' => '1',
+        ),
+        'getWebservicesList' => array(
+          'enabled' => '1',
+        ),
+        'ftpScanStructure' => array(
+          'enabled' => '1',
+        ),
+        'getAccessBundles' => array(
+          'enabled' => '1',
+        ),
+        'getPredefinedDataCollections' => array(
+          'enabled' => '1',
+        ),
+        'getBundle' => array(
+          'enabled' => '1',
+        ),
+        'getBundlesByItemId' => array(
+          'enabled' => '1',
+        ),
+        'getPermissionsByBid' => array(
+          'enabled' => '1',
+        ),
+        'getUserWithAllFields' => array(
+          'enabled' => '1',
+        ),
       ),
     ),
     'node' => array(
