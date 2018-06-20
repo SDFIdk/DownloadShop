@@ -1968,6 +1968,13 @@ function _kms_service_resources_get_bundles() {
     $nodes = node_load_multiple($nids);
 
     foreach ($nodes as $node) {
+      // Store uuid instead of id.
+      if (!empty($node->field_colour)) {
+        $tid = $node->field_colour[LANGUAGE_NONE][0]['tid'];
+        $term = taxonomy_term_load($tid);
+        $node->field_color[LANGUAGE_NONE][0]['uuid'] = $term->uuid;
+      }
+
       $data[] = $node;
     }
   }
