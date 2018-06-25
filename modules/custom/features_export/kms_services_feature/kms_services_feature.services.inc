@@ -169,6 +169,9 @@ function kms_services_feature_default_services_endpoint() {
         'update' => array(
           'enabled' => '1',
         ),
+        'delete' => array(
+          'enabled' => '1',
+        ),
         'index' => array(
           'enabled' => '1',
         ),

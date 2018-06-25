@@ -561,3 +561,18 @@ function kms_update_7023() {
 function kms_update_7024() {
   module_enable(array('services', 'rest_server', 'services_api_key_auth', 'kms_services_resources'));
 }
+
+/**
+ * Install services and kms_services_resources.
+ */
+function kms_update_7025() {
+  module_enable(array('uuid_services'));
+}
+
+/**
+ * disable again.
+ */
+function kms_update_7026() {
+  module_disable(array('uuid_services'));
+  drupal_uninstall_modules(array('uuid_services'));
+}

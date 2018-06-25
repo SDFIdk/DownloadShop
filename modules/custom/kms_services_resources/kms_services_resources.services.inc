@@ -1,7 +1,8 @@
 <?php
 
 /**
- * Implements hook_resource().
+ * Define resources.
+ * Gets called in kms_services_resources_services_resources().
  */
 function kms_service_resources_resource() {
   $definitions = [
@@ -1965,12 +1966,12 @@ function _kms_service_resources_get_bundles() {
 
       // Store uuid instead of id.
       if (!empty($node->field_predefined_datacollections)) {
-        $nids = array_column($node->field_predefined_datacollections[LANGUAGE_NONE], 'target_id');
-        $nodes = node_load_multiple($nids);
+        $PdNids = array_column($node->field_predefined_datacollections[LANGUAGE_NONE], 'target_id');
+        $PdNodes = node_load_multiple($PdNids);
 
         foreach ($node->field_predefined_datacollections[LANGUAGE_NONE] as $key => $target) {
-          $node = $nodes[$target['target_id']];
-          $node->field_predefined_datacollections[LANGUAGE_NONE][$key]['uuid'] = $node->uuid;
+          $PdNode = $PdNodes[$target['target_id']];
+          $node->field_predefined_datacollections[LANGUAGE_NONE][$key]['uuid'] = $PdNode->uuid;
         }
       }
 
