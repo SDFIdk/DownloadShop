@@ -1805,20 +1805,20 @@ function _kms_service_resources_get_user_hashed_password($uid) {
 function _kms_service_resources_get_cshs_formatted_terms_by_vocabulary_name($vocabulary_name, $parent = 0) {
 
   // Setup properties directly instead of calling _options_properties().
-  $properties = array(
+  $properties = [
     'filter_xss' => FALSE,
     'strip_tags' => TRUE,
     'strip_tags_and_unescape' => TRUE,
     'empty_option' => 'option_none',
     'optgroups' => FALSE,
-  );
+  ];
 
   if ($parent === null) {
     $parent = 0;
   }
 
   // Get all terms as options.
-  $options = array();
+  $options = [];
   if ($vocabulary = taxonomy_vocabulary_machine_name_load($vocabulary_name)) {
     if ($terms = taxonomy_get_tree($vocabulary->vid, $parent)) {
       if (module_exists('i18n_taxonomy')) {
@@ -1826,10 +1826,10 @@ function _kms_service_resources_get_cshs_formatted_terms_by_vocabulary_name($voc
         $terms = i18n_taxonomy_localize_terms($terms);
       }
       foreach ($terms as $term) {
-        $options[$term->tid] = array(
+        $options[$term->tid] = [
           'name' => str_repeat('- ', $term->depth) . $term->name,
           'parent_tid' => _kms_service_resources_shift_parent($term->parents),
-        );
+        ];
       }
     }
   }
@@ -1848,6 +1848,7 @@ function _kms_service_resources_get_cshs_formatted_terms_by_vocabulary_name($voc
  * Helper that returns the first tid of an array of parents from a term object.
  *
  * @param $parent_tids An array of all parents from a term object
+ *
  * @return int|mixed The first parent tid
  */
 function _kms_service_resources_shift_parent($parent_tids) {
@@ -1867,11 +1868,12 @@ function _kms_service_resources_shift_parent($parent_tids) {
  * @return array
  */
 function _kms_service_resources_add_none_option($options) {
-   return array(
-    '_none' => array(
-      'name' => t('- Please select -'), 'parent_tid' => 0
-    )
-  ) + $options;
+  return [
+      '_none' => [
+        'name' => t('- Please select -'),
+        'parent_tid' => 0,
+      ],
+    ] + $options;
 }
 
 /**
@@ -1887,7 +1889,7 @@ function _kms_service_resources_get_user_by_uuid($uuid) {
   // Get the user ID from the UUID.
   $user_uid = db_select('users', 'u')
     ->fields('u', ['uid'])
-    ->condition('u.uuid', $uuid,'=')
+    ->condition('u.uuid', $uuid, '=')
     ->execute()
     ->fetchAssoc();
 
@@ -1928,33 +1930,19 @@ function _kms_service_resources_update_user_type($id, $user_type_tid) {
     return services_error(t('User could not be loaded.'), 404);
   }
 
-  // Do we already have an entry ?
-  $user_type_entity = db_select('field_data_field_user_type', 'fdfut')
-    ->fields('fdfut', ['entity_type'])
-    ->condition('entity_type', 'user')
-    ->condition('entity_id', $id)
-    ->condition('field_user_type_tid', $user_type_tid)
-    ->execute()
-    ->fetchAssoc();
-
-  if (!$user_type_entity) {
-    db_insert('field_data_field_user_type')
-      ->fields(array(
-        'entity_type' => 'user',
-        'bundle' => 'user',
-        'deleted' => 0,
-        'entity_id' => $id,
-        'revision_id' => $id,
-        'language' => LANGUAGE_NONE,
-        'delta' => 0,
-        'field_user_type_tid' => intval($user_type_tid)
-      ))
-      ->execute();
-  }
+  // Wrap it and save it.
+  $user_wrapper = entity_metadata_wrapper('user', $user);
+  $user_wrapper->field_user_type->set([$user_type_tid]);
+  $user_wrapper->save();
 
   return $user;
 }
 
+/**
+ * Get a list of all the bundles (nodes).
+ *
+ * @return array
+ */
 function _kms_service_resources_get_bundles() {
   $data = [];
 
