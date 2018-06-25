@@ -1,7 +1,8 @@
 <?php
 
 /**
- * Implements hook_resource().
+ * Define resources.
+ * Gets called in kms_services_resources_services_resources().
  */
 function kms_service_resources_resource() {
   $definitions = [
