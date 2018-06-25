@@ -29,7 +29,7 @@ function kms_services_resources_services_resources() {
  * Implements hook_services_resources_alter().
  *
  * Copy of uuid_services_services_resources_alter(), but we only need this for nodes
- * in one endpoint.
+ * in one endpoint
  */
 function kms_services_resources_services_resources_alter(&$resources, &$endpoint) {
   if ($endpoint->name != 'users') {
