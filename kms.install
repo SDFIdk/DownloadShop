@@ -568,3 +568,11 @@ function kms_update_7024() {
 function kms_update_7025() {
   module_enable(array('uuid_services'));
 }
+
+/**
+ * disable again.
+ */
+function kms_update_7026() {
+  module_disable(array('uuid_services'));
+  drupal_uninstall_modules(array('uuid_services'));
+}
