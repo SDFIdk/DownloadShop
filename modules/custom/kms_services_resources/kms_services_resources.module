@@ -36,86 +36,86 @@ function kms_services_resources_services_resources_alter(&$resources, &$endpoint
     return;
   }
 
-  foreach (entity_get_info('node') as $entity_type => $entity_info) {
-    if (isset($entity_info['uuid']) && $entity_info['uuid'] == TRUE && (isset($resources[$entity_type]) || variable_get('uuid_services_support_all_entity_types', FALSE))) {
-      unset($resources[$entity_type]['operations']['create']);
+  $entity_info = entity_get_info('node');
+  $entity_type = 'node';
 
-      // Alter 'retrieve' method to use UUID enabled functions and arguments.
-      $resources[$entity_type]['operations']['retrieve']['help'] = t('Retrieve %label entities based on UUID.', array('%label' => $entity_info['label']));
-      $resources[$entity_type]['operations']['retrieve']['callback'] = '_kms_services_resources_entity_retrieve';
-      $resources[$entity_type]['operations']['retrieve']['access callback'] = '_kms_services_resources_entity_access';
-      $resources[$entity_type]['operations']['retrieve']['access arguments'] = array('view');
-      $resources[$entity_type]['operations']['retrieve']['access arguments append'] = TRUE;
-      $resources[$entity_type]['operations']['retrieve']['args'] = array(
-        // This argument isn't exposed in the service, only used internally..
-        array(
-          'name' => 'entity_type',
-          'description' => t('The entity type.'),
-          'type' => 'string',
-          'default value' => $entity_type,
-          'optional' => TRUE,
-        ),
-        array(
-          'name' => 'uuid',
-          'description' => t('The %label UUID.', array('%label' => $entity_info['label'])),
-          'type' => 'text',
-          'source' => array('path' => 0),
-        ),
-      );
+  unset($resources[$entity_type]['operations']['create']);
 
-      // Alter 'update' method to use UUID enabled functions and arguments.
-      $resources[$entity_type]['operations']['update']['help'] = t('Update or create %label entities based on UUID. The payload must be formatted according to the <a href="!url">OData protocol</a>.', array('%label' => $entity_info['label'], '!url' => 'http://www.odata.org/developers/protocols'));
-      $resources[$entity_type]['operations']['update']['callback'] = '_kms_services_resources_entity_update';
-      $resources[$entity_type]['operations']['update']['access callback'] = '_kms_services_resources_entity_access';
-      $resources[$entity_type]['operations']['update']['access arguments'] = array('update');
-      $resources[$entity_type]['operations']['update']['access arguments append'] = TRUE;
-      $resources[$entity_type]['operations']['update']['args'] = array(
-        // This argument isn't exposed in the service, only used internally..
-        array(
-          'name' => 'entity_type',
-          'description' => t('The entity type.'),
-          'type' => 'string',
-          'default value' => $entity_type,
-          'optional' => TRUE,
-        ),
-        array(
-          'name' => 'uuid',
-          'description' => t('The %label UUID.', array('%label' => $entity_info['label'])),
-          'type' => 'text',
-          'source' => array('path' => 0),
-        ),
-        array(
-          'name' => 'entity',
-          'description' => t('The %label entity object.', array('%label' => $entity_info['label'])),
-          'type' => 'struct',
-          'source' => 'data',
-        ),
-      );
+  // Alter 'retrieve' method to use UUID enabled functions and arguments.
+  $resources[$entity_type]['operations']['retrieve']['help'] = t('Retrieve %label entities based on UUID.', array('%label' => $entity_info['label']));
+  $resources[$entity_type]['operations']['retrieve']['callback'] = '_kms_services_resources_entity_retrieve';
+  $resources[$entity_type]['operations']['retrieve']['access callback'] = '_kms_services_resources_entity_access';
+  $resources[$entity_type]['operations']['retrieve']['access arguments'] = array('view');
+  $resources[$entity_type]['operations']['retrieve']['access arguments append'] = TRUE;
+  $resources[$entity_type]['operations']['retrieve']['args'] = array(
+    // This argument isn't exposed in the service, only used internally..
+    array(
+      'name' => 'entity_type',
+      'description' => t('The entity type.'),
+      'type' => 'string',
+      'default value' => $entity_type,
+      'optional' => TRUE,
+    ),
+    array(
+      'name' => 'uuid',
+      'description' => t('The %label UUID.', array('%label' => $entity_info['label'])),
+      'type' => 'text',
+      'source' => array('path' => 0),
+    ),
+  );
 
-      // Alter 'delete' method to use UUID enabled functions and arguments.
-      $resources[$entity_type]['operations']['delete']['help'] = t('Delete %label entities based on UUID.', array('%label' => $entity_info['label']));
-      $resources[$entity_type]['operations']['delete']['callback'] = '_kms_services_resources_entity_delete';
-      $resources[$entity_type]['operations']['delete']['access callback'] = '_kms_services_resources_entity_access';
-      $resources[$entity_type]['operations']['delete']['access arguments'] = array('delete');
-      $resources[$entity_type]['operations']['delete']['access arguments append'] = TRUE;
-      $resources[$entity_type]['operations']['delete']['args'] = array(
-        // This argument isn't exposed in the service, only used internally..
-        array(
-          'name' => 'entity_type',
-          'description' => t('The entity type.'),
-          'type' => 'string',
-          'default value' => $entity_type,
-          'optional' => TRUE,
-        ),
-        array(
-          'name' => 'uuid',
-          'description' => t('The %label UUID.', array('%label' => $entity_info['label'])),
-          'type' => 'text',
-          'source' => array('path' => 0),
-        ),
-      );
-    }
-  }
+  // Alter 'update' method to use UUID enabled functions and arguments.
+  $resources[$entity_type]['operations']['update']['help'] = t('Update or create %label entities based on UUID. The payload must be formatted according to the <a href="!url">OData protocol</a>.', array('%label' => $entity_info['label'], '!url' => 'http://www.odata.org/developers/protocols'));
+  $resources[$entity_type]['operations']['update']['callback'] = '_kms_services_resources_entity_update';
+  $resources[$entity_type]['operations']['update']['access callback'] = '_kms_services_resources_entity_access';
+  $resources[$entity_type]['operations']['update']['access arguments'] = array('update');
+  $resources[$entity_type]['operations']['update']['access arguments append'] = TRUE;
+  $resources[$entity_type]['operations']['update']['args'] = array(
+    // This argument isn't exposed in the service, only used internally..
+    array(
+      'name' => 'entity_type',
+      'description' => t('The entity type.'),
+      'type' => 'string',
+      'default value' => $entity_type,
+      'optional' => TRUE,
+    ),
+    array(
+      'name' => 'uuid',
+      'description' => t('The %label UUID.', array('%label' => $entity_info['label'])),
+      'type' => 'text',
+      'source' => array('path' => 0),
+    ),
+    array(
+      'name' => 'entity',
+      'description' => t('The %label entity object.', array('%label' => $entity_info['label'])),
+      'type' => 'struct',
+      'source' => 'data',
+    ),
+  );
+
+  // Alter 'delete' method to use UUID enabled functions and arguments.
+  $resources[$entity_type]['operations']['delete']['help'] = t('Delete %label entities based on UUID.', array('%label' => $entity_info['label']));
+  $resources[$entity_type]['operations']['delete']['callback'] = '_kms_services_resources_entity_delete';
+  $resources[$entity_type]['operations']['delete']['access callback'] = '_kms_services_resources_entity_access';
+  $resources[$entity_type]['operations']['delete']['access arguments'] = array('delete');
+  $resources[$entity_type]['operations']['delete']['access arguments append'] = TRUE;
+  $resources[$entity_type]['operations']['delete']['args'] = array(
+    // This argument isn't exposed in the service, only used internally..
+    array(
+      'name' => 'entity_type',
+      'description' => t('The entity type.'),
+      'type' => 'string',
+      'default value' => $entity_type,
+      'optional' => TRUE,
+    ),
+    array(
+      'name' => 'uuid',
+      'description' => t('The %label UUID.', array('%label' => $entity_info['label'])),
+      'type' => 'text',
+      'source' => array('path' => 0),
+    ),
+  );
+
 }
 
 /**
