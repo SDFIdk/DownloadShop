@@ -42,8 +42,8 @@ function kms_services_resources_services_resources_alter(&$resources, &$endpoint
 
       // Alter 'retrieve' method to use UUID enabled functions and arguments.
       $resources[$entity_type]['operations']['retrieve']['help'] = t('Retrieve %label entities based on UUID.', array('%label' => $entity_info['label']));
-      $resources[$entity_type]['operations']['retrieve']['callback'] = '_uuid_services_entity_retrieve';
-      $resources[$entity_type]['operations']['retrieve']['access callback'] = '_uuid_services_entity_access';
+      $resources[$entity_type]['operations']['retrieve']['callback'] = '_kms_services_resources_entity_retrieve';
+      $resources[$entity_type]['operations']['retrieve']['access callback'] = '_kms_services_resources_entity_access';
       $resources[$entity_type]['operations']['retrieve']['access arguments'] = array('view');
       $resources[$entity_type]['operations']['retrieve']['access arguments append'] = TRUE;
       $resources[$entity_type]['operations']['retrieve']['args'] = array(
@@ -65,8 +65,8 @@ function kms_services_resources_services_resources_alter(&$resources, &$endpoint
 
       // Alter 'update' method to use UUID enabled functions and arguments.
       $resources[$entity_type]['operations']['update']['help'] = t('Update or create %label entities based on UUID. The payload must be formatted according to the <a href="!url">OData protocol</a>.', array('%label' => $entity_info['label'], '!url' => 'http://www.odata.org/developers/protocols'));
-      $resources[$entity_type]['operations']['update']['callback'] = '_uuid_services_entity_update';
-      $resources[$entity_type]['operations']['update']['access callback'] = '_uuid_services_entity_access';
+      $resources[$entity_type]['operations']['update']['callback'] = '_kms_services_resources_entity_update';
+      $resources[$entity_type]['operations']['update']['access callback'] = '_kms_services_resources_entity_access';
       $resources[$entity_type]['operations']['update']['access arguments'] = array('update');
       $resources[$entity_type]['operations']['update']['access arguments append'] = TRUE;
       $resources[$entity_type]['operations']['update']['args'] = array(
@@ -94,8 +94,8 @@ function kms_services_resources_services_resources_alter(&$resources, &$endpoint
 
       // Alter 'delete' method to use UUID enabled functions and arguments.
       $resources[$entity_type]['operations']['delete']['help'] = t('Delete %label entities based on UUID.', array('%label' => $entity_info['label']));
-      $resources[$entity_type]['operations']['delete']['callback'] = '_uuid_services_entity_delete';
-      $resources[$entity_type]['operations']['delete']['access callback'] = '_uuid_services_entity_access';
+      $resources[$entity_type]['operations']['delete']['callback'] = '_kms_services_resources_entity_delete';
+      $resources[$entity_type]['operations']['delete']['access callback'] = '_kms_services_resources_entity_access';
       $resources[$entity_type]['operations']['delete']['access arguments'] = array('delete');
       $resources[$entity_type]['operations']['delete']['access arguments append'] = TRUE;
       $resources[$entity_type]['operations']['delete']['args'] = array(
@@ -123,7 +123,7 @@ function kms_services_resources_services_resources_alter(&$resources, &$endpoint
  *
  * @see entity_uuid_load()
  */
-function _uuid_services_entity_retrieve($entity_type, $uuid) {
+function _kms_services_resources_entity_retrieve($entity_type, $uuid) {
   try {
     $entities = entity_uuid_load($entity_type, array($uuid));
     $entity = reset($entities);
@@ -140,7 +140,7 @@ function _uuid_services_entity_retrieve($entity_type, $uuid) {
  *
  * @see entity_uuid_save()
  */
-function _uuid_services_entity_update($entity_type, $uuid, $entity) {
+function _kms_services_resources_entity_update($entity_type, $uuid, $entity) {
   try {
     $controller = entity_get_controller($entity_type);
     if ($controller instanceof EntityAPIControllerInterface) {
@@ -164,7 +164,7 @@ function _uuid_services_entity_update($entity_type, $uuid, $entity) {
  *
  * @see entity_uuid_delete()
  */
-function _uuid_services_entity_delete($entity_type, $uuid) {
+function _kms_services_resources_entity_delete($entity_type, $uuid) {
   try {
     $uuid_exist = (bool) entity_get_id_by_uuid($entity_type, array($uuid));
     if (!$uuid_exist) {
@@ -199,7 +199,7 @@ function _uuid_services_entity_delete($entity_type, $uuid) {
  *   1. <uuid>
  *   2. <entity> (only available if $op == 'update')
  */
-function _uuid_services_entity_access($op, $args) {
+function _kms_services_resources_entity_access($op, $args) {
   try {
     // Fetch the information we have to work with.
     $entity_type = $args[0];
