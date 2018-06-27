@@ -1,7 +1,8 @@
 <?php
 
 /**
- * Implements hook_resource().
+ * Define resources.
+ * Gets called in kms_services_resources_services_resources().
  */
 function kms_service_resources_resource() {
   $definitions = [
@@ -826,6 +827,48 @@ function kms_service_resources_resource() {
               'source' => ['data' => 'uuid'],
               'optional' => FALSE,
             ],
+          ],
+        ],
+
+        'updateUserType' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Update the user type by using the user ID'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_update_user_type',
+          'args' => [
+            [
+              'name' => 'id',
+              'type' => 'string',
+              'description' => t('The id for the user'),
+              'source' => ['data' => 'id'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'type',
+              'type' => 'string',
+              'description' => t('The type to set the user as'),
+              'source' => ['data' => 'type'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
+        'getBundles' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Get bundles'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_get_bundles',
+          'args' => [
           ],
         ],
 
@@ -1763,20 +1806,20 @@ function _kms_service_resources_get_user_hashed_password($uid) {
 function _kms_service_resources_get_cshs_formatted_terms_by_vocabulary_name($vocabulary_name, $parent = 0) {
 
   // Setup properties directly instead of calling _options_properties().
-  $properties = array(
+  $properties = [
     'filter_xss' => FALSE,
     'strip_tags' => TRUE,
     'strip_tags_and_unescape' => TRUE,
     'empty_option' => 'option_none',
     'optgroups' => FALSE,
-  );
+  ];
 
   if ($parent === null) {
     $parent = 0;
   }
 
   // Get all terms as options.
-  $options = array();
+  $options = [];
   if ($vocabulary = taxonomy_vocabulary_machine_name_load($vocabulary_name)) {
     if ($terms = taxonomy_get_tree($vocabulary->vid, $parent)) {
       if (module_exists('i18n_taxonomy')) {
@@ -1784,10 +1827,10 @@ function _kms_service_resources_get_cshs_formatted_terms_by_vocabulary_name($voc
         $terms = i18n_taxonomy_localize_terms($terms);
       }
       foreach ($terms as $term) {
-        $options[$term->tid] = array(
+        $options[$term->tid] = [
           'name' => str_repeat('- ', $term->depth) . $term->name,
           'parent_tid' => _kms_service_resources_shift_parent($term->parents),
-        );
+        ];
       }
     }
   }
@@ -1806,6 +1849,7 @@ function _kms_service_resources_get_cshs_formatted_terms_by_vocabulary_name($voc
  * Helper that returns the first tid of an array of parents from a term object.
  *
  * @param $parent_tids An array of all parents from a term object
+ *
  * @return int|mixed The first parent tid
  */
 function _kms_service_resources_shift_parent($parent_tids) {
@@ -1825,11 +1869,12 @@ function _kms_service_resources_shift_parent($parent_tids) {
  * @return array
  */
 function _kms_service_resources_add_none_option($options) {
-   return array(
-    '_none' => array(
-      'name' => t('- Please select -'), 'parent_tid' => 0
-    )
-  ) + $options;
+  return [
+      '_none' => [
+        'name' => t('- Please select -'),
+        'parent_tid' => 0,
+      ],
+    ] + $options;
 }
 
 /**
@@ -1845,7 +1890,7 @@ function _kms_service_resources_get_user_by_uuid($uuid) {
   // Get the user ID from the UUID.
   $user_uid = db_select('users', 'u')
     ->fields('u', ['uid'])
-    ->condition('u.uuid', $uuid,'=')
+    ->condition('u.uuid', $uuid, '=')
     ->execute()
     ->fetchAssoc();
 
@@ -1865,4 +1910,74 @@ function _kms_service_resources_get_user_by_uuid($uuid) {
   }
 
   return $user;
+}
+
+/**
+ * Update the field_user_type for a user with the given $user_type_id.
+ *
+ * @param $id
+ *   User ID
+ * @param $user_type_tid
+ *   User type Term ID.
+ *
+ * @return mixed
+ * @throws \Exception
+ * @throws \ServicesException
+ */
+function _kms_service_resources_update_user_type($id, $user_type_tid) {
+
+  $user = user_load($id);
+  if (!$user) {
+    return services_error(t('User could not be loaded.'), 404);
+  }
+
+  // Wrap it and save it.
+  $user_wrapper = entity_metadata_wrapper('user', $user);
+  $user_wrapper->field_user_type->set([$user_type_tid]);
+  $user_wrapper->save();
+
+  return $user;
+}
+
+/**
+ * Get a list of all the bundles (nodes).
+ *
+ * @return array
+ */
+function _kms_service_resources_get_bundles() {
+  $data = [];
+
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'access_bundle');
+
+  $result = $query->execute();
+  if (!empty($result['node'])) {
+    $nids = array_keys($result['node']);
+    $nodes = node_load_multiple($nids);
+
+    foreach ($nodes as $node) {
+      // Store uuid instead of id.
+      if (!empty($node->field_colour)) {
+        $tid = $node->field_colour[LANGUAGE_NONE][0]['tid'];
+        $term = taxonomy_term_load($tid);
+        $node->field_colour[LANGUAGE_NONE][0]['uuid'] = $term->uuid;
+      }
+
+      // Store uuid instead of id.
+      if (!empty($node->field_predefined_datacollections)) {
+        $PdNids = array_column($node->field_predefined_datacollections[LANGUAGE_NONE], 'target_id');
+        $PdNodes = node_load_multiple($PdNids);
+
+        foreach ($node->field_predefined_datacollections[LANGUAGE_NONE] as $key => $target) {
+          $PdNode = $PdNodes[$target['target_id']];
+          $node->field_predefined_datacollections[LANGUAGE_NONE][$key]['uuid'] = $PdNode->uuid;
+        }
+      }
+
+      $data[] = $node;
+    }
+  }
+
+  return $data;
 }

@@ -15,6 +15,25 @@ function kms_pands_ctools_plugin_directory($owner, $plugin_type) {
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function kms_pands_form_node_form_alter(&$form, &$form_state) {
+  $node = $form['#node'];
+  if (empty($node->uuid) || $node->type != 'product_display') {
+    return;
+  }
+
+  // Expose Uuid. Needed for manually copying over product displays
+  $form['uuid'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Uuid',
+    '#default_value' => $node->uuid,
+    '#weight' => 99,
+    '#disabled' => TRUE,
+  );
+}
+
+/**
  * Function kms_pands_get_products.
  */
 function kms_pands_get_products($user) {
