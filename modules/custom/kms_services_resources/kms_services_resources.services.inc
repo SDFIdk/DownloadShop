@@ -908,18 +908,6 @@ function _kms_services_resources_user_resource_retrieve($uid) {
 
   $account = _user_resource_retrieve($uid);
 
-  // Insert uuids for field_user_type
-  if (!empty($account->field_user_type[LANGUAGE_NONE])) {
-    foreach ($account->field_user_type[LANGUAGE_NONE] as $key => $type) {
-      $tid = $type['tid'];
-      $term = taxonomy_term_load($tid);
-      if ($term) {
-        $account->field_user_type[LANGUAGE_NONE][$key]['uuid'] = $term->uuid;
-      }
-    }
-  }
-
-
   return $account;
 }
 
