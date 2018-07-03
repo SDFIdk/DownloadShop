@@ -36,6 +36,14 @@ function kms_services_resources_services_resources_alter(&$resources, &$endpoint
     return;
   }
 
+  // Overwrite retrieve user method
+  $resources['user']['operations']['retrieve']['callback'] = '_kms_services_resources_user_resource_retrieve';
+  $resources['user']['operations']['retrieve']['file'] = [
+    'type' => 'inc',
+    'module' => 'kms_services_resources',
+    'name' => 'kms_services_resources.services',
+  ];
+
   $entity_info = entity_get_info('node');
   $entity_type = 'node';
 

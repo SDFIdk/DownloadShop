@@ -31,27 +31,6 @@ function kms_service_resources_resource() {
     ],
     'kms_user' => [
       'operations' => [
-        'retrieve' => array(
-          'help' => 'Retrieve a user',
-          'callback' => '_kms_services_resources_user_resource_retrieve',
-          'file' => [
-            'type' => 'inc',
-            'module' => 'kms_services_resources',
-            'name' => 'kms_services_resources.services',
-          ],
-          'access callback' => '_kms_services_resources_user_resource_access',
-          'access arguments' => array('view'),
-          'access arguments append' => TRUE,
-          'args' => array(
-            array(
-              'name' => 'uid',
-              'type' => 'int',
-              'description' => 'The uid of the user to retrieve.',
-              'source' => array('path' => 0),
-              'optional' => FALSE,
-            ),
-          ),
-        ),
         'create' => [
           'help' => 'Create a user',
           'callback' => '_kms_services_resources_user_resource_create',
