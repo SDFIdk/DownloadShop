@@ -1,8 +1,7 @@
 <?php
 
 /**
- * Define resources.
- * Gets called in kms_services_resources_services_resources().
+ * Implements hook_resource().
  */
 function kms_service_resources_resource() {
   $definitions = [
@@ -869,6 +868,27 @@ function kms_service_resources_resource() {
           'access arguments append' => TRUE,
           'callback' => '_kms_service_resources_get_bundles',
           'args' => [
+          ],
+        ],
+
+        'getNodeByNid' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Get a node by NID'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_get_node_by_nid',
+          'args' => [
+            [
+              'name' => 'nid',
+              'type' => 'string',
+              'description' => t('The nid for the node'),
+              'source' => ['data' => 'nid'],
+              'optional' => FALSE,
+            ],
           ],
         ],
 
@@ -1980,4 +2000,23 @@ function _kms_service_resources_get_bundles() {
   }
 
   return $data;
+}
+
+/**
+ * Get a node by its nid.
+ *
+ * Made as the normal node api load nodes using UUID.
+ *
+ * @param $nid
+ *
+ * @return bool|mixed
+ * @throws \ServicesException
+ */
+function _kms_service_resources_get_node_by_nid ($nid) {
+  $node = node_load($nid);
+  if (!$node) {
+    return services_error(t('Node could not be loaded.'), 404);
+  }
+
+  return $node;
 }
