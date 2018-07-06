@@ -180,6 +180,9 @@ function kms_services_feature_default_services_endpoint() {
     'taxonomy_term' => array(
       'alias' => 'taxonomy-terms',
       'operations' => array(
+        'retrieve' => array(
+          'enabled' => '1',
+        ),
         'index' => array(
           'enabled' => '1',
         ),
