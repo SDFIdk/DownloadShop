@@ -12,6 +12,8 @@ define('KMS_USER_VALIDATE_PASS_LENGTH', 32);
 define('KMS_USER_NODE_CONSENT_PAGE_NID', 254);
 define('KMS_USER_NODE_TERMS_PAGE_NID', 22);
 
+define('KMS_USER_LOGIN_SESSION_PREFIX', 'kms_user_login_');
+
 /**
  * Implements hook_init().
  */
@@ -255,6 +257,7 @@ function kms_user_get_step_header($form, &$form_state) {
     '#type' => 'fieldset',
     '#title' => '',
     '#value' => $stages_list,
+    '#weight' => -50,
   ];
 
   return $form;
@@ -413,6 +416,13 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
         break;
       case 'user_register_form':
 
+        $form['#attached']['css'][] = drupal_get_path('module', 'kms_user') . '/css/kms_user.css';
+
+        // Create the session key and get the step-stage we are currently on.
+        $session_key =  KMS_USER_LOGIN_SESSION_PREFIX . session_id();
+
+        drupal_add_js(drupal_get_path('module', 'kms_user') . '/js/gdpr_scroll.js');
+
         // They do not want a fieldset title on address.
         $form['field_address'][LANGUAGE_NONE][0]['#title'] = '';
 
@@ -423,35 +433,101 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
         $form['field_contact_me'][LANGUAGE_NONE]['#title'] = t('User profile survey consent');
 
         // Setup multistep form.
+
+        if (isset($_SESSION[$session_key]['next_stage'])) {
+          $form_state['stage'] = $_SESSION[$session_key]['next_stage'];
+          unset($_SESSION[$session_key]['next_stage']);
+        }
+
         if (!isset($form_state['stage'])) {
           $form_state['stage'] = 'user_info';
         }
 
+        $form['field_terms_and_conditions'][LANGUAGE_NONE]['#required'] = FALSE;
+
         // Get the step bar for register process.
         $form = kms_user_get_step_header($form, $form_state);
 
-        switch ($form_state['stage']) {
+        $stage_part = $form_state['stage'];
+
+        // Get the prefilled values.
+        $prefilled_name = (isset($_SESSION[$session_key]['user_info']['name'])) ?  $_SESSION[$session_key]['user_info']['name'] : '' ;
+        $prefilled_mail = (isset($_SESSION[$session_key]['user_info']['mail'])) ?  $_SESSION[$session_key]['user_info']['mail'] : '' ;
+        $prefilled_contact_me = (isset($_SESSION[$session_key]['user_info']['field_contact_me'][LANGUAGE_NONE][0]['value'])) ?  $_SESSION[$session_key]['user_info']['field_contact_me'][LANGUAGE_NONE][0]['value'] : '' ;
+        $prefilled_user_type = (isset($_SESSION[$session_key]['user_info']['field_user_type'][LANGUAGE_NONE][0]['tid'])) ?  $_SESSION[$session_key]['user_info']['field_user_type'][LANGUAGE_NONE][0]['tid'] : '' ;
+
+
+        switch ($stage_part) {
           case 'user_info':
+            // Remove the required on terms_and_conditions field and hide it.
+            $form['field_terms_and_conditions']['#prefix'] = '<div style="display: none;">';
+            $form['field_terms_and_conditions']['#suffix'] = '</div>';
+            $form['actions']['submit']['#value'] = t('Continue');
 
-            //$form['field_terms_and_conditions']['']
+            if ($prefilled_name) {
+              $form['account']['name']['#value'] = $prefilled_name;
+            }
 
+            if ($prefilled_mail) {
+              $form['account']['mail']['#value'] = $prefilled_mail;
+            }
+
+            if ($prefilled_user_type) {
+              $form['field_user_type'][LANGUAGE_NONE]['#default_value'] = $prefilled_user_type;
+            }
+
+            if ($prefilled_contact_me) {
+              $form['field_contact_me']['und']['#default_value'] = $prefilled_contact_me;
+            }
+
+            // These keep poppin' up for some reason. Shut them dowm.
             $form['field_bundle_webservices_oms']['#access'] = FALSE;
             $form['field_bundle_webservices_csw']['#access'] = FALSE;
             $form['field_bundle_webservices_cswt']['#access'] = FALSE;
 
+            // Register submit should be multistepped, so clear the submit
+            // functions and replace with our own.
             $form['#submit'] = [];
             $form['#submit'][] = '_kms_user_register_step_2';
             break;
           case 'consent':
+            // Oh yes. Let us unset these because they are in a fieldgroup and a
+            // group so we cannot use prefix and suffix. Drupal FAPI really
+            // sucks at this point, so lets unset them from the form and hope
+            // it does donkey kick us in the butt later.
+            unset($form['#groups']['group_master_data']);
+            unset($form['#fieldgroups']['group_master_data']);
+
+            if ($prefilled_name) {
+              $form['account']['name']['#value'] = $prefilled_name;
+            }
+
+            if ($prefilled_mail) {
+              $form['account']['mail']['#value'] = $prefilled_mail;
+            }
+
+            if ($prefilled_user_type) {
+              $form['field_user_type'][LANGUAGE_NONE]['#default_value'] = $prefilled_user_type;
+            }
+
+            if ($prefilled_contact_me) {
+              $form['field_contact_me']['und']['#default_value'] = $prefilled_contact_me;
+            }
+
+
             // Get the field we want to remove and hide them.
             $fields = kms_user_register_form_remove_fields_steps();
             kms_user_form_set_access_on_fields($form, $fields, FALSE);
 
-            // Hide
+
+            $form['account']['name']['#value'] = $prefilled_name;
+            $form['account']['mail']['#value'] = $prefilled_mail;
+            $form['field_contact_me']['und']['#default_value'] = $prefilled_contact_me;
+
+            // Hide services which cannot be prefixed / suffixed.
             $form['field_bundle_webservices_oms']['#access'] = FALSE;
             $form['field_bundle_webservices_csw']['#access'] = FALSE;
             $form['field_bundle_webservices_cswt']['#access'] = FALSE;
-            $form['#groups']['group_options']->group_master_data['#access'] = FALSE;
 
             // Load the consent page.
             $consent_page_nid = variable_get('kms_user_gdpr_consent');
@@ -467,18 +543,53 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
             $form['consent_check'] = [
               '#type' => 'checkbox',
               '#title' => t('Ja, jeg giver Styrelsen for Dataforsyning og Effektivisering mit samtykke.'),
-              '#required' => TRUE,
+              //'#required' => TRUE,
             ];
 
+            // Continue button
             $form['actions']['submit']['#value'] = t('Continue');
+            $form['actions']['submit']['#weight'] = 2;
 
+            // Go back button.
+            // Removes the validation and
+            $form['actions']['goback'] = array(
+              '#name' => 'goback',
+              '#type' => 'submit',
+              '#value' => t('Go back'),
+              '#weight' => 1,
+              '#limit_validation_errors' => array(),
+              '#submit' => array('_kms_user_register_step_back_to_1'),
+            );
+
+            // Register the submit call to the next multistep step.
             $form['#submit'] = [];
             $form['#submit'][] = '_kms_user_register_step_3';
-
             break;
 
           case 'terms':
+
+
+
             // Get the field we want to remove and hide them.
+            unset($form['#groups']['group_master_data']);
+            unset($form['#fieldgroups']['group_master_data']);
+
+            if ($prefilled_name) {
+              $form['account']['name']['#value'] = $prefilled_name;
+            }
+
+            if ($prefilled_mail) {
+              $form['account']['mail']['#value'] = $prefilled_mail;
+            }
+
+            if ($prefilled_user_type) {
+              $form['field_user_type'][LANGUAGE_NONE]['#default_value'] = $prefilled_user_type;
+            }
+
+            if ($prefilled_contact_me) {
+              $form['field_contact_me']['und']['#default_value'] = $prefilled_contact_me;
+            }
+
             $fields = kms_user_register_form_remove_fields_steps();
             kms_user_form_set_access_on_fields($form, $fields, FALSE);
 
@@ -491,17 +602,36 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
             $terms_page_nid = variable_get('kms_user_gdpr_terms');
             $node = node_load($terms_page_nid);
 
+
+            // Scroll-to is added so the user have to scroll to the end
+            // before the terms can be accepted.
             $form['terms_body'] = [
-              '#prefix' => '<div class="terms-body">',
-              '#markup' => $node->body[LANGUAGE_NONE][0]['value'],
+              '#prefix' => '<div id="terms-body" class="terms-body" style="height:400px; overflow: auto; overflow-y:scroll;">',
+              '#markup' => $node->body[LANGUAGE_NONE][0]['value'] . '<div id="scroll-to"></div>',
               '#suffix' => '</div>',
             ];
 
             $form['term_check'] = [
               '#type' => 'checkbox',
-              '#title' => t('I give my consent.'),
+              '#title' => t('Jeg accepterer ovenstående rettigheder og vilkår'),
               '#required' => TRUE,
+              '#attributes' => array('class' => array('button-submit'), 'id' => 'term-check'),
+              //'#disabled' => TRUE,
             ];
+
+            // Go back button.
+            // Removes the validation and
+            $form['actions']['goback'] = array(
+              '#name' => 'goback',
+              '#type' => 'submit',
+              '#value' => t('Go back'),
+              '#weight' => -1,
+              '#limit_validation_errors' => array(),
+              '#submit' => array('_kms_user_register_step_back_to_2'),
+              '#attributes' => array('class' => array('button-back')),
+            );
+
+            /// $form['actions']['submit']['#disabled'] = TRUE;
 
             // We need to store the new password.
             $form['#submit'][] = '_kms_user_insert_user_pass';
@@ -511,6 +641,10 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
 
             // Store user GDPR consent.
             $form['#submit'][] = '_kms_user_insert_gdpr_consent';
+
+            // Cleanup the session.
+            $form['#submit'][] = '_kms_user_insert_cleanup_session';
+
             break;
         }
         break;
@@ -522,6 +656,19 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
   }
 }
 
+function _kms_user_register_step_back_to_1(&$form, &$form_state) {
+  $form_state['stage'] = 'user_info';
+  $session_key =  KMS_USER_LOGIN_SESSION_PREFIX . session_id();
+  $_SESSION[$session_key]['next_stage'] = 'user_info';
+}
+
+function _kms_user_register_step_back_to_2(&$form, &$form_state) {
+  $form_state['stage'] = 'consent';
+  $session_key =  KMS_USER_LOGIN_SESSION_PREFIX . session_id();
+  $_SESSION[$session_key]['next_stage'] = 'consent';
+}
+
+
 /**
  * User register - Step 2.
  *
@@ -529,7 +676,16 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
  * @param $form_state
  */
 function _kms_user_register_step_2($form, &$form_state) {
+  $session_key =  KMS_USER_LOGIN_SESSION_PREFIX . session_id();
+  $stage_part = $form_state['stage'];
+
+  // Set the info on the session.
+  $_SESSION[$session_key][$stage_part] = $form_state['values'];
+
+  // Set the next stage.
   $form_state['stage'] = 'consent';
+
+  // Prevent submit.
   $form_state["rebuild"] = TRUE;
 }
 
@@ -540,12 +696,18 @@ function _kms_user_register_step_2($form, &$form_state) {
  * @param $form_state
  */
 function _kms_user_register_step_3($form, &$form_state) {
-  $form_state['stage'] = 'terms';
-  $form_state["rebuild"] = TRUE;
-}
 
-function _kms_user_register_step_4($form, &$form_state) {
-  drupal_debug('_kms_user_register_step_4');
+  $session_key =  KMS_USER_LOGIN_SESSION_PREFIX . session_id();
+  $stage_part = $form_state['stage'];
+
+  // Set the info on the session.
+  $_SESSION[$session_key][$stage_part] = $form_state['values'];
+
+  // Set the next stage.
+  $form_state['stage'] = 'terms';
+
+  // Prevent submit.
+  $form_state["rebuild"] = TRUE;
 }
 
 function kms_user_js_settings() {
@@ -865,12 +1027,26 @@ function _kms_user_insert_user_pass($form, &$form_state) {
 }
 
 /**
+ * Cleanup
+ *
+ * @param $form
+ * @param $form_state
+ */
+function _kms_user_insert_cleanup_session($form, &$form_state) {
+  $session_key =  KMS_USER_LOGIN_SESSION_PREFIX . session_id();
+  unset($_SESSION[$session_key]);
+}
+
+
+/**
  * Register when a user accepts GDPR and in which revisions.
  *
  * @param $form
  * @param $form_state
  */
 function _kms_user_insert_gdpr_consent($form, &$form_state) {
+
+
   $account = (object) $form_state['values'];
 
   // Early returns.
@@ -2175,4 +2351,35 @@ function kms_user_pass_reset_url($account) {
   $site_url = $conf['kms_site_url_download'] . '/';
   $url = url( $site_url ."user/reset-password-from-link/$account->uid/$timestamp/" . user_pass_rehash($account->pass, $timestamp, $account->login, $account->uid), array('absolute' => FALSE));
   return $url;
+}
+
+/**
+ * Get the user type term ID from user.
+ *
+ * @return array|null
+ */
+function _kms_user_get_user_type() {
+  // Init var.
+  $user_type = [];
+
+  // Load the current user.
+  global $user;
+
+  if (!$user) {
+    return $user_type;
+  }
+
+  // Load the user.
+  $user = user_load($user->uid);
+
+  if (!empty($user->field_user_type[LANGUAGE_NONE]) && !is_array($user->field_user_type[LANGUAGE_NONE])) {
+    return $user_type;
+  }
+
+
+  foreach ($user->field_user_type[LANGUAGE_NONE] as $term) {
+    $user_type[] = (int)$term['tid'];
+  }
+
+  return $user_type;
 }
