@@ -1230,6 +1230,9 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
     return;
   }
 
+  // We do not touch oracle anymore.
+  return;
+
   $user_new = (object) $form_state['values'];
   $user_original = $form['#user'];
   $w_new = entity_metadata_wrapper('user', $user_new);

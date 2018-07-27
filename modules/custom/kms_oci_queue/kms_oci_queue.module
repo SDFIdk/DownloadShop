@@ -700,7 +700,12 @@ function kms_oci_queue_json_pretty($json, $options = array()) {
       $result .= $token . $line_break;
     }
     elseif (!$in_literal && ($token == '}' || $token == ']')) {
-      $indent--;
+
+      // Make sure ident does get negative.
+      if ($indent > 0) {
+        $indent--;
+      }
+
       $prefix = str_repeat($ind, $indent);
       $result .= $line_break . $prefix . $token;
     }
