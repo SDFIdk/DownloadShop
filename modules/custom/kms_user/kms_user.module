@@ -415,7 +415,6 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
         }
         break;
       case 'user_register_form':
-
         $form['#attached']['css'][] = drupal_get_path('module', 'kms_user') . '/css/kms_user.css';
 
         // Create the session key and get the step-stage we are currently on.
@@ -456,7 +455,6 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
         $prefilled_contact_me = (isset($_SESSION[$session_key]['user_info']['field_contact_me'][LANGUAGE_NONE][0]['value'])) ?  $_SESSION[$session_key]['user_info']['field_contact_me'][LANGUAGE_NONE][0]['value'] : '' ;
         $prefilled_user_type = (isset($_SESSION[$session_key]['user_info']['field_user_type'][LANGUAGE_NONE][0]['tid'])) ?  $_SESSION[$session_key]['user_info']['field_user_type'][LANGUAGE_NONE][0]['tid'] : '' ;
 
-
         switch ($stage_part) {
           case 'user_info':
             // Remove the required on terms_and_conditions field and hide it.
@@ -491,6 +489,8 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
             $form['#submit'][] = '_kms_user_register_step_2';
             break;
           case 'consent':
+
+
             // Oh yes. Let us unset these because they are in a fieldgroup and a
             // group so we cannot use prefix and suffix. Drupal FAPI really
             // sucks at this point, so lets unset them from the form and hope
@@ -535,20 +535,22 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
 
             // Add the content of the node to the form as pure markup.
             $form['consent_body'] = [
-              '#prefix' => '<div class="consent-body">',
-              '#markup' => $node->body[LANGUAGE_NONE][0]['value'],
+              '#prefix' => '<div id="consent-body" class="consent-body" style="height:400px; overflow: auto; overflow-y:scroll;">',
+              '#markup' => $node->body[LANGUAGE_NONE][0]['value'] . '<div id="scroll-to"></div><br />',
               '#suffix' => '</div>',
             ];
 
             $form['consent_check'] = [
               '#type' => 'checkbox',
               '#title' => t('Ja, jeg giver Styrelsen for Dataforsyning og Effektivisering mit samtykke.'),
-              //'#required' => TRUE,
+              '#required' => TRUE,
+              '#attributes' => ['disabled' => 'disabled']
             ];
 
             // Continue button
             $form['actions']['submit']['#value'] = t('Continue');
             $form['actions']['submit']['#weight'] = 2;
+            $form['actions']['submit']['#attributes']['disabled'] = 'disabled';
 
             // Go back button.
             // Removes the validation and
@@ -567,8 +569,6 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
             break;
 
           case 'terms':
-
-
 
             // Get the field we want to remove and hide them.
             unset($form['#groups']['group_master_data']);
@@ -607,16 +607,18 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
             // before the terms can be accepted.
             $form['terms_body'] = [
               '#prefix' => '<div id="terms-body" class="terms-body" style="height:400px; overflow: auto; overflow-y:scroll;">',
-              '#markup' => $node->body[LANGUAGE_NONE][0]['value'] . '<div id="scroll-to"></div>',
+              '#markup' => $node->body[LANGUAGE_NONE][0]['value'] . '<div id="scroll-to"></div><br />',
               '#suffix' => '</div>',
+              '#attributes' => array('disabled' => 'disabled'),
             ];
+
+            $form['actions']['submit']['#attributes']['disabled'] = 'disabled';
 
             $form['term_check'] = [
               '#type' => 'checkbox',
               '#title' => t('Jeg accepterer ovenstående rettigheder og vilkår'),
               '#required' => TRUE,
-              '#attributes' => array('class' => array('button-submit'), 'id' => 'term-check'),
-              //'#disabled' => TRUE,
+              '#attributes' => array('class' => array('button-submit'), 'id' => 'term-check', 'disabled' => 'disabled'),
             ];
 
             // Go back button.
@@ -628,7 +630,6 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
               '#weight' => -1,
               '#limit_validation_errors' => array(),
               '#submit' => array('_kms_user_register_step_back_to_2'),
-              '#attributes' => array('class' => array('button-back')),
             );
 
             /// $form['actions']['submit']['#disabled'] = TRUE;
@@ -696,7 +697,6 @@ function _kms_user_register_step_2($form, &$form_state) {
  * @param $form_state
  */
 function _kms_user_register_step_3($form, &$form_state) {
-
   $session_key =  KMS_USER_LOGIN_SESSION_PREFIX . session_id();
   $stage_part = $form_state['stage'];
 
