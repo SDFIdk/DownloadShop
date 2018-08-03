@@ -64,7 +64,7 @@ function kms_oci_boot() {
 function kms_oci_set_conn($settings = array()) {
   // Quick fix to remove Oracle.
   $oci = FALSE;
-  return $oci;
+  //return $oci;
 
   if (!kms_oci_extension_is_loaded()) {
     return $oci;
@@ -120,6 +120,7 @@ function kms_oci_get_conn($cid = FALSE, $settings = array()) {
   if (!kms_oci_extension_is_loaded()) {
     return FALSE;
   }
+
   if ($cid) {
     static $oci_cid;
     if ($oci_cid[$cid]) {
@@ -187,6 +188,9 @@ function kms_oci_insert($data, $table, $cid = FALSE) {
     return;
   }
 
+  // 2018.08. Do not insert anything in the queue anymore.
+  return;
+
   kms_oci_filter_query_data($data);
 
   $query = kms_oci_generate_query('insert', $data, array('table' => $table));
@@ -203,6 +207,10 @@ function kms_oci_filter_query_data(&$data) {
 }
 
 function kms_oci_generate_query($type, $data, $conf = array()) {
+
+  // 2018.08. Do not insert anything in the queue anymore.
+  return;
+
   if (empty($type) || empty($data)) {
     return;
   }
@@ -236,6 +244,10 @@ function kms_oci_update_user($data, $table, $kms_userid) {
   if (!kms_oci_extension_is_loaded()) {
     return;
   }
+
+  // 2018.08. Do not insert anything in the queue anymore.
+  return;
+
   // Only use variables with values.
   kms_oci_filter_query_data($data);
 
@@ -334,6 +346,10 @@ function kms_oci_select_one($query, $data = array(), $type = 'assoc', $cid = FAL
  *   Nothing to return.
  */
 function kms_oci_query($query, $data = array(), $cid = FALSE) {
+
+  // 2018.08. Do not insert anything in the queue anymore.
+  return;
+
   if (!kms_oci_extension_is_loaded()) {
     return;
   }
@@ -419,11 +435,9 @@ function kms_oci_send_mail_error($error, $query = '', $data = array()) {
   }
   if (!empty($query)) {
     echo "Query:\n";
-    var_dump($query);
   }
   if (!empty($data)) {
     echo "Data:\n";
-    var_dump($data);
   }
   $debug = ob_get_clean();
 
@@ -564,7 +578,7 @@ function _kms_oci_settings_form() {
  */
 function kms_oci_extension_is_loaded(){
   // Quick fix to remove Oracle.
-  return FALSE;
+  // return FALSE;
   return extension_loaded(KMS_OCI_EXTENSION_NAME);
 }
 
@@ -577,8 +591,6 @@ function kms_oci_extension_is_loaded(){
  * @return boolean $is_up
  */
 function kms_oci_connection_is_up($conn_succes = NULL) {
-  // Quick fix to remove Oracle.
-  return FALSE;
   $is_up = &drupal_static(__FUNCTION__);
   if($conn_succes !== NULL && is_bool($conn_succes)) {
     $is_up = $conn_succes;
@@ -628,6 +640,8 @@ function kms_oci_test_error() {
  * @return void
  */
 function kms_oci_create_smuser_sql(){
+  // No longer do this.
+  return;
 
   $results = db_select('users', 'u')
   ->fields('u', array('uid'))
