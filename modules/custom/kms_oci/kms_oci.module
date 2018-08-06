@@ -250,7 +250,7 @@ function kms_oci_update_user($data, $table, $kms_userid) {
   array_walk($data, function($v, $k) use (&$values) {
     // If :userid is the same as $kms_userid then don't update :userid.
     if ($k == ':userid' && $v == $kms_userid) {
-      continue;
+      // continue;
     }
     $values[] = str_replace(':', '', $k) . " = $k";
   });
