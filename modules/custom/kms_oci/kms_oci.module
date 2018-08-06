@@ -20,6 +20,16 @@ function kms_oci_menu() {
 
   );
 
+  $items['admin/config/oci/check-connection'] = array(
+    'title' => 'Oracle (oci) check connection',
+    'description' => 'Check connection GST oracle integration',
+    'access arguments' => array('administer oci settings'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('_kms_oci_settings_check_connection_form'),
+    'type' => MENU_NORMAL_ITEM,
+
+  );
+
   return $items;
 }
 
@@ -50,6 +60,7 @@ function kms_oci_boot() {
  */
 function kms_oci_set_conn($settings = array()) {
   $oci = FALSE;
+
   if (!kms_oci_extension_is_loaded()) {
     return $oci;
   }
@@ -104,6 +115,7 @@ function kms_oci_get_conn($cid = FALSE, $settings = array()) {
   if (!kms_oci_extension_is_loaded()) {
     return FALSE;
   }
+
   if ($cid) {
     static $oci_cid;
     if ($oci_cid[$cid]) {
@@ -171,6 +183,9 @@ function kms_oci_insert($data, $table, $cid = FALSE) {
     return;
   }
 
+  // 2018.08. Do not insert anything in the queue anymore.
+  return;
+
   kms_oci_filter_query_data($data);
 
   $query = kms_oci_generate_query('insert', $data, array('table' => $table));
@@ -187,6 +202,10 @@ function kms_oci_filter_query_data(&$data) {
 }
 
 function kms_oci_generate_query($type, $data, $conf = array()) {
+
+  // 2018.08. Do not insert anything in the queue anymore.
+  return;
+
   if (empty($type) || empty($data)) {
     return;
   }
@@ -220,6 +239,10 @@ function kms_oci_update_user($data, $table, $kms_userid) {
   if (!kms_oci_extension_is_loaded()) {
     return;
   }
+
+  // 2018.08. Do not insert anything in the queue anymore.
+  return;
+
   // Only use variables with values.
   kms_oci_filter_query_data($data);
 
@@ -318,6 +341,10 @@ function kms_oci_select_one($query, $data = array(), $type = 'assoc', $cid = FAL
  *   Nothing to return.
  */
 function kms_oci_query($query, $data = array(), $cid = FALSE) {
+
+  // 2018.08. Do not insert anything in the queue anymore.
+  return;
+
   if (!kms_oci_extension_is_loaded()) {
     return;
   }
@@ -403,11 +430,9 @@ function kms_oci_send_mail_error($error, $query = '', $data = array()) {
   }
   if (!empty($query)) {
     echo "Query:\n";
-    var_dump($query);
   }
   if (!empty($data)) {
     echo "Data:\n";
-    var_dump($data);
   }
   $debug = ob_get_clean();
 
@@ -608,6 +633,8 @@ function kms_oci_test_error() {
  * @return void
  */
 function kms_oci_create_smuser_sql(){
+  // No longer do this.
+  return;
 
   $results = db_select('users', 'u')
   ->fields('u', array('uid'))
@@ -746,4 +773,69 @@ function kms_oci_get_conn_settings($cid = NULL) {
       break;
 
   }
+}
+
+function _kms_oci_settings_check_connection_form($form_state) {
+  $form = [];
+
+  $form['kms_oci_conn_user'] = array(
+    '#type' => 'textfield',
+    '#title' => t('User'),
+    '#description' => t('DB user'),
+    '#default_value' => variable_get('kms_oci_conn_user'),
+    '#required' => TRUE,
+  );
+
+  $form['kms_oci_conn_pass'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Password'),
+    '#description' => t('DB password'),
+    '#default_value' => variable_get('kms_oci_conn_pass'),
+    '#required' => TRUE,
+  );
+
+  $form['kms_oci_conn_host'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Host'),
+    '#default_value' => variable_get('kms_oci_conn_host'),
+    '#required' => TRUE,
+  );
+  $form['kms_oci_conn_db'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Db'),
+    '#default_value' => variable_get('kms_oci_conn_db'),
+    '#required' => TRUE,
+  );
+
+  $form['submit'] = array
+  (
+    '#type' => 'submit',
+    '#value' => t('Check connection')
+  );
+
+  return $form;
+}
+
+function _kms_oci_settings_check_connection_form_submit($form, &$form_state) {
+
+  $oci_is_loaded = kms_oci_extension_is_loaded();
+  if (!$oci_is_loaded) {
+    drupal_set_message('OCI Connection is not loaded', 'error');
+  }
+
+  $settings = [];
+  $settings['kms_oci_conn_user'] = $form_state['values']['kms_oci_conn_user'];
+  $settings['kms_oci_conn_pass'] = $form_state['values']['kms_oci_conn_pass'];
+  $settings['kms_oci_conn_host'] = $form_state['values']['kms_oci_conn_host'];
+  $settings['kms_oci_conn_db'] = $form_state['values']['kms_oci_conn_db'];
+
+  $oci = kms_oci_set_conn($settings);
+  if (!$oci) {
+    drupal_set_message('OCI connection not created', 'warning');
+  }
+  else {
+    drupal_set_message('OCI connection is created and working.');
+  }
+
+
 }
