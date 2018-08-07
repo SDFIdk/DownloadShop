@@ -183,9 +183,6 @@ function kms_oci_insert($data, $table, $cid = FALSE) {
     return;
   }
 
-  // 2018.08. Do not insert anything in the queue anymore.
-  return;
-
   kms_oci_filter_query_data($data);
 
   $query = kms_oci_generate_query('insert', $data, array('table' => $table));
@@ -202,9 +199,6 @@ function kms_oci_filter_query_data(&$data) {
 }
 
 function kms_oci_generate_query($type, $data, $conf = array()) {
-
-  // 2018.08. Do not insert anything in the queue anymore.
-  return;
 
   if (empty($type) || empty($data)) {
     return;
@@ -239,9 +233,6 @@ function kms_oci_update_user($data, $table, $kms_userid) {
   if (!kms_oci_extension_is_loaded()) {
     return;
   }
-
-  // 2018.08. Do not insert anything in the queue anymore.
-  return;
 
   // Only use variables with values.
   kms_oci_filter_query_data($data);
@@ -341,10 +332,6 @@ function kms_oci_select_one($query, $data = array(), $type = 'assoc', $cid = FAL
  *   Nothing to return.
  */
 function kms_oci_query($query, $data = array(), $cid = FALSE) {
-
-  // 2018.08. Do not insert anything in the queue anymore.
-  return;
-
   if (!kms_oci_extension_is_loaded()) {
     return;
   }
