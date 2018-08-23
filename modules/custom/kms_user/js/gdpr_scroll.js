@@ -1,6 +1,44 @@
 (function ($) {
   Drupal.behaviors.kms_user_gdpr_scroll = {
     attach: function (context, settings) {
+      // Do we have #scroll-to in the DOM.
+      var docContainsScrollTo = $('#scroll-to').length;
+      if (docContainsScrollTo) {
+
+        // Get placement.
+        var scrollToTop = $('#scroll-to').offset().top;
+        var scrollToTopBottom = scrollToTop + $('#scroll-to').outerHeight();
+
+        if ($('#consent-body').length) {
+          var consentBodyTop = $('#consent-body').offset().top;
+          var consentBodyBottom = consentBodyTop + $('#consent-body').outerHeight();
+        }
+
+        if ($('#terms-body').length) {
+          var consentBodyTop = $('#terms-body').offset().top;
+          var consentBodyBottom = consentBodyTop + $('#terms-body').outerHeight();
+        }
+
+        var viewportTop = $(window).scrollTop();
+        var viewportBottom = viewportTop + $(window).height();
+
+        // Is the #scroll-to visible.
+        var scrollTopVisible = false;
+        if (scrollToTop > viewportTop && scrollToTop < viewportBottom) {
+          scrollTopVisible = true;
+        }
+
+        if ($('#consent-body').length > 0 && scrollTopVisible) {
+          $('#edit-consent-check').removeAttr('disabled');
+          $('#edit-submit').removeAttr('disabled');
+        }
+
+        if ($('#terms-body').length > 0 && scrollTopVisible) {
+          $('#term-check').removeAttr('disabled');
+          $('#edit-submit').removeAttr('disabled');
+        }
+      }
+
       // Make sure that the consent body is read before you can accept.
       $('#consent-body').scroll(function () {
         var hT = $('#scroll-to').offset().top,
