@@ -517,8 +517,11 @@ function addGrid(map,conf) {
     $('#selection_message').append('<p>' + Drupal.t('Selection method') + ' :<span class="value"> ' + conf.product_type_title + ' - ' + conf.selection_type_title + '</span></p>');
     $('#selection_message').append('<p>' + Drupal.t('Dataformat') + ' :<span class="value"> ' + conf.dataformat_title + '</span></p>');
     $('#selection_message').append('<p>' + Drupal.t('Reference system') + ' :<span class="value"> ' + conf.koordinatsystem_title + '</span></p>');
-    $('#selection_message').append('<h3>' + Drupal.t('Selected items') + '</h3>');
-    jQuery('#selection_message').append('<ul></ul');
+    $('#selection_message').append('<h3>' + Drupal.t('Selected items') + '<p>' + selectLayer.selectedFeatures.length + Drupal.t(' of 100 allowed items') +'</p></h3>');
+    if (selectLayer.selectedFeatures.length > 100) {
+      $('#selection_message').append('<div class="messages error"><p>' + Drupal.t('Whoops you have selected too many items') + '</p></div>');
+    }
+    jQuery('#selection_message').append('<ul></ul>');
 
     for (var i=0; i<selectLayer.selectedFeatures.length; i++) {
 
@@ -534,7 +537,7 @@ function addGrid(map,conf) {
       jQuery('#selection_message ul').append('<li>' + filename + '</li>');
     }
 
-    if (selectLayer.selectedFeatures.length > 0) {
+    if (selectLayer.selectedFeatures.length > 0 && selectLayer.selectedFeatures.length <= 100) {
       $('.button-submit').removeAttr('disabled');
       $('.button-submit').css('background-color','#97bc00');
     } else {
