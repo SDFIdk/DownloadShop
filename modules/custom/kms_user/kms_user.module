@@ -244,9 +244,9 @@ function kms_user_get_step_header($form, &$form_state) {
   $current_step = (isset($form_stages[$form_state['stage']])) ? $form_stages[$form_state['stage']] : 1;
 
   $stages = [
-    1 => ['data' => '1. User info'],
-    2 => ['data' => '2. Consent'],
-    3 => ['data' => '3. Terms'],
+    1 => ['data' => t('1. User info')],
+    2 => ['data' => t('2. Consent')],
+    3 => ['data' => t('3. Terms')],
   ];
 
   $stages[$current_step]['class'] = ['active'];
