@@ -913,6 +913,48 @@ function kms_service_resources_resource() {
           ],
         ],
 
+        'checkUsername' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Check if username is already taken'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_check_username',
+          'args' => [
+            [
+              'name' => 'username',
+              'type' => 'string',
+              'description' => t('The username for the user'),
+              'source' => ['data' => 'username'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
+        'checkEmail' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Check if username is already taken'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_check_email',
+          'args' => [
+            [
+              'name' => 'email',
+              'type' => 'string',
+              'description' => t('The email for the user'),
+              'source' => ['data' => 'email'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
       ],
     ],
   ];
@@ -2074,4 +2116,38 @@ function _kms_service_resources_get_node_by_nid($nid) {
   }
 
   return $node;
+}
+
+/**
+ * Check if a username is taken or not.
+ *
+ * @param $username
+ *
+ * @return mixed
+ */
+function _kms_service_resources_check_username($username) {
+  $user = user_load_by_name($username);
+
+  if (!$user) {
+    return ['result' => TRUE];
+  }
+
+  return ['result' => FALSE];
+}
+
+/**
+ * Check if an email is taken or not.
+ *
+ * @param string $email
+ *
+ * @return array
+ */
+function _kms_service_resources_check_email($email) {
+  $user = user_load_by_mail($email);
+
+  if (!$user) {
+    return ['result' => TRUE];
+  }
+
+  return ['result' => FALSE];
 }
