@@ -940,7 +940,7 @@ function kms_service_resources_resource() {
             'module' => 'kms_services_resources',
             'name' => 'kms_services_resources.services',
           ],
-          'help' => t('Check if username is already taken'),
+          'help' => t('Check if email is already taken'),
           'access callback' => '_kms_services_resources_user_resource_access',
           'access arguments append' => TRUE,
           'callback' => '_kms_service_resources_check_email',
