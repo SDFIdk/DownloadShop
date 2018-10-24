@@ -10,13 +10,13 @@ projects[hide_submit][type] = "module"
 
 ;admin_views -- patched
 projects[admin_views][subdir] = "contrib"
-projects[admin_views][version] = "1.0"
-projects[admin_views][patch][] = "https://www.drupal.org/files/issues/admin_views-enable-use-of-custom-views-2145183-2.patch"
+projects[admin_views][version] = "1.6"
+;projects[admin_views][patch][] = "https://www.drupal.org/files/issues/admin_views-enable-use-of-custom-views-2145183-2.patch"
 projects[admin_views][type] = "module"
 
 ;views
 projects[views][subdir] = "contrib"
-projects[views][version] = "3.14"
+projects[views][version] = "3.20"
 projects[views][type] = "module"
 
 ;config pages
@@ -42,7 +42,7 @@ projects[hierarchical_select][download][revision] = 'dced41ed3bd88db549db2a72811
 
 ;colorbox
 projects[colorbox][subdir] = "contrib"
-projects[colorbox][version] = "2.8"
+projects[colorbox][version] = "2.13"
 projects[colorbox][type] = "module"
 
 ;colorbox_node
@@ -80,7 +80,7 @@ projects[beautytips][type] = "module"
 
 ;better_exposed_filters
 projects[better_exposed_filters][subdir] = "contrib"
-projects[better_exposed_filters][version] = "3.0-beta3"
+projects[better_exposed_filters][version] = "3.6"
 projects[better_exposed_filters][type] = "module"
 
 ;boolean
@@ -90,7 +90,7 @@ projects[boolean][type] = "module"
 
 ;commerce
 projects[commerce][subdir] = "contrib"
-projects[commerce][version] = "1.4"
+projects[commerce][version] = "1.14"
 projects[commerce][type] = "module"
 projects[commerce][patch][] = 'https://www.drupal.org/files/issues/2044231.checkout_order_created_date_update.patch'
 
@@ -131,12 +131,12 @@ projects[ctools][type] = "module"
 
 ;date
 projects[date][subdir] = "contrib"
-projects[date][version] = "2.6"
+projects[date][version] = "2.10"
 projects[date][type] = "module"
 
 ;devel
 projects[devel][subdir] = "contrib"
-projects[devel][version] = "1.3"
+projects[devel][version] = "1.6"
 projects[devel][type] = "module"
 
 ;diff
@@ -250,7 +250,7 @@ projects[menu_position][type] = "module"
 
 ;metatag
 projects[metatag][subdir] = "contrib"
-projects[metatag][version] = "1.0-beta2"
+projects[metatag][version] = "1.25"
 projects[metatag][type] = "module"
 
 ;migrate
@@ -265,7 +265,7 @@ projects[password_policy][type] = "module"
 
 ;references
 projects[references][subdir] = "contrib"
-projects[references][version] = "2.0"
+projects[references][version] = "2.2"
 projects[references][type] = "module"
 
 ;panels
@@ -295,12 +295,12 @@ projects[querypath][type] = "module"
 
 ;relation
 projects[relation][subdir] = "contrib"
-projects[relation][version] = "1.0-rc4"
+projects[relation][version] = "1.2"
 projects[relation][type] = "module"
 
 ;rules
 projects[rules][subdir] = "contrib"
-projects[rules][version] = "2.2"
+projects[rules][version] = "2.11"
 projects[rules][type] = "module"
 
 ;services
@@ -325,7 +325,7 @@ projects[simplehtmldom][type] = "module"
 
 ;smtp
 projects[smtp][subdir] = "contrib"
-projects[smtp][version] = "1.6"
+projects[smtp][version] = "1.7"
 projects[smtp][type] = "module"
 
 ;strongarm
@@ -357,7 +357,7 @@ projects[ultimate_cron][patch][] = "https://www.drupal.org/files/issues/ultimate
 
 ;views_bulk_operations
 projects[views_bulk_operations][subdir] = "contrib"
-projects[views_bulk_operations][version] = "3.0"
+projects[views_bulk_operations][version] = "3.5"
 projects[views_bulk_operations][type] = "module"
 
 ;views_data_export
@@ -422,7 +422,7 @@ projects[node_export][version] = "3.0"
 projects[node_export][type] = "module"
 
 projects[uuid][subdir] = "contrib"
-projects[uuid][version] = "1.0-beta2"
+projects[uuid][version] = "1.2"
 projects[uuid][type] = "module"
 
 ; shared accounts
@@ -439,7 +439,7 @@ projects[taxonomy_manager][type] = "module"
 
 ; mailchimp
 projects[mailchimp][subdir] = "contrib"
-projects[mailchimp][version] = "3.6"
+projects[mailchimp][version] = "5.2"
 projects[mailchimp][type] = "module"
 
 ; MailChimp library
