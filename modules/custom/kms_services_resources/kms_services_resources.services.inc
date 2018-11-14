@@ -1,8 +1,7 @@
 <?php
 
 /**
- * Define resources.
- * Gets called in kms_services_resources_services_resources().
+ * Implements hook_resource().
  */
 function kms_service_resources_resource() {
   $definitions = [
@@ -31,6 +30,27 @@ function kms_service_resources_resource() {
     ],
     'kms_user' => [
       'operations' => [
+        'retrieve' => [
+          'help' => 'Retrieve a user',
+          'callback' => '_kms_services_resources_user_resource_retrieve',
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments' => ['view'],
+          'access arguments append' => TRUE,
+          'args' => [
+            [
+              'name' => 'uid',
+              'type' => 'int',
+              'description' => 'The uid of the user to retrieve.',
+              'source' => ['path' => 0],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
         'create' => [
           'help' => 'Create a user',
           'callback' => '_kms_services_resources_user_resource_create',
@@ -872,6 +892,69 @@ function kms_service_resources_resource() {
           ],
         ],
 
+        'getNodeByNid' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Get a node by NID'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_get_node_by_nid',
+          'args' => [
+            [
+              'name' => 'nid',
+              'type' => 'string',
+              'description' => t('The nid for the node'),
+              'source' => ['data' => 'nid'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
+        'checkUsername' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Check if username is already taken'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_check_username',
+          'args' => [
+            [
+              'name' => 'username',
+              'type' => 'string',
+              'description' => t('The username for the user'),
+              'source' => ['data' => 'username'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
+        'checkEmail' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Check if email is already taken'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_check_email',
+          'args' => [
+            [
+              'name' => 'email',
+              'type' => 'string',
+              'description' => t('The email for the user'),
+              'source' => ['data' => 'email'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
       ],
     ],
   ];
@@ -907,6 +990,13 @@ function kms_service_resources_resource() {
  *   The user object of the newly created user.
  */
 function _kms_services_resources_user_resource_create($account) {
+
+  // Transfer field data.
+  $account['email'] = $account['mail'];
+  $account['terms_and_conditions'] = $account['field_terms_and_conditions'][LANGUAGE_NONE];
+  $account['user_type'] = $account['field_user_type'][LANGUAGE_NONE];
+  $account['contact_me'] = $account['field_contact_me'][LANGUAGE_NONE];
+
   // Validate our data.
   $validation = _kms_services_resources_user_resource_create_validate($account);
 
@@ -918,8 +1008,9 @@ function _kms_services_resources_user_resource_create($account) {
   $new_user = [
     'name' => $account['name'],
     'pass' => $account['pass'],
-    'mail' => $account['email'],
-    'status' => $account['status'],
+    'mail' => $account['mail'],
+    'init' => $account['mail'],
+    'status' => 1,
     'timezone' => NULL,
     'roles' => [
       DRUPAL_AUTHENTICATED_RID => 'authenticated user',
@@ -927,8 +1018,11 @@ function _kms_services_resources_user_resource_create($account) {
   ];
 
   // User type and terms & conditions.
-  $new_user['field_terms_and_conditions']['und'][0]['value'] = 1;
+  $new_user['field_terms_and_conditions']['und'][0]['value'] = (int) $account['field_terms_and_conditions']['und'];
   $new_user['field_user_type']['und'][0]['tid'] = $account['user_type'];
+  // $new_user['user_type']['und'][0]['tid'] = $account['field_user_type']['und'][0];
+
+  $new_user['notify'] = TRUE;
 
   // Encapsulate user save and handle errors.
   try {
@@ -950,8 +1044,18 @@ function _kms_services_resources_user_resource_create($account) {
     return services_error($error_message, $http_error_code);
   }
 
+  _kms_services_resources_user_resource_create_user_mail_notify('register_no_approval_required', $user);
+
   return $user;
 }
+
+function _kms_services_resources_user_resource_create_user_mail_notify($op, $account, $language = NULL) {
+  $params['account'] = $account;
+  $language = $language ? $language : user_preferred_language($account);
+
+  $mail = drupal_mail('kms_user', $op, $account->mail, $language, $params);
+}
+
 
 /**
  * Validate data that is sent to the user resource creation.
@@ -1139,6 +1243,19 @@ function _kms_services_resources_get_application_list() {
 function _kms_services_resources_ftp_scan_structure() {
   return kms_permissions_ftp_scan_structure();
 }
+
+/**
+ * Retrieve a user.
+ */
+function _kms_services_resources_user_resource_retrieve($uid) {
+    module_load_include('inc', 'services', 'resources/user_resource');
+
+    $account = _user_resource_retrieve($uid);
+
+    return $account;
+}
+
+
 
 /**
  * Find all default and active bundles from a given subtype.
@@ -1598,7 +1715,6 @@ function _kms_service_resources_get_subuser_roles() {
  */
 function _kms_service_resources_subuser_insert($uid, $values, $request_time) {
   module_load_include('module', 'kms_subuser', 'kms_subuser');
-
   $user = user_load($uid);
 
   $name = trim($values['name']);
@@ -1620,6 +1736,7 @@ function _kms_service_resources_subuser_insert($uid, $values, $request_time) {
 
   // $account returns user object.
   $account = user_save(NULL, $subuser);
+
   $suwrapper = entity_metadata_wrapper('user', $account);
 
   // Save user remark.
@@ -1814,7 +1931,7 @@ function _kms_service_resources_get_cshs_formatted_terms_by_vocabulary_name($voc
     'optgroups' => FALSE,
   ];
 
-  if ($parent === null) {
+  if ($parent === NULL) {
     $parent = 0;
   }
 
@@ -1980,4 +2097,57 @@ function _kms_service_resources_get_bundles() {
   }
 
   return $data;
+}
+
+/**
+ * Get a node by its nid.
+ *
+ * Made as the normal node api load nodes using UUID.
+ *
+ * @param $nid
+ *
+ * @return bool|mixed
+ * @throws \ServicesException
+ */
+function _kms_service_resources_get_node_by_nid($nid) {
+  $node = node_load($nid);
+  if (!$node) {
+    return services_error(t('Node could not be loaded.'), 404);
+  }
+
+  return $node;
+}
+
+/**
+ * Check if a username is taken or not.
+ *
+ * @param $username
+ *
+ * @return mixed
+ */
+function _kms_service_resources_check_username($username) {
+  $user = user_load_by_name($username);
+
+  if (!$user) {
+    return ['result' => TRUE];
+  }
+
+  return ['result' => FALSE];
+}
+
+/**
+ * Check if an email is taken or not.
+ *
+ * @param string $email
+ *
+ * @return array
+ */
+function _kms_service_resources_check_email($email) {
+  $user = user_load_by_mail($email);
+
+  if (!$user) {
+    return ['result' => TRUE];
+  }
+
+  return ['result' => FALSE];
 }

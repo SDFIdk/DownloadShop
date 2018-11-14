@@ -9,6 +9,11 @@ define('KMS_USER_CACHE_ID_ADMIN_VIEWS_PEOPLE_PERMS_FORM', 'kms_user:admin_views_
 define('KMS_USER_VALIDATE_NAME_LENGTH', 32);
 define('KMS_USER_VALIDATE_PASS_LENGTH', 32);
 
+define('KMS_USER_NODE_CONSENT_PAGE_NID', 254);
+define('KMS_USER_NODE_TERMS_PAGE_NID', 22);
+
+define('KMS_USER_LOGIN_SESSION_PREFIX', 'kms_user_login_');
+
 /**
  * Implements hook_init().
  */
@@ -35,7 +40,7 @@ function kms_user_watchdog(array $log_entry) {
     drupal_set_message(
       t(
         'You cannot access %uri as a system account.',
-        array('%uri' => $log_entry['message'])
+        ['%uri' => $log_entry['message']]
       ),
       'error'
     );
@@ -47,57 +52,108 @@ function kms_user_watchdog(array $log_entry) {
  * Implements hook_permission().
  */
 function kms_user_permission() {
-  return array(
-    'access kms user pages' => array(
+  return [
+    'access kms user pages' => [
       'title' => t('Access kms user pages'),
       'description' => t('Access kms user pages.'),
-    ),
-  );
+    ],
+  ];
 }
 
 /**
  * Implements hook_menu().
  */
 function kms_user_menu() {
-  $items = array();
+  $items = [];
 
-  $items['kms-user/ajax/refresh-admin-views-people'] = array(
+  $items['kms-user/ajax/refresh-admin-views-people'] = [
     'title' => 'Kms user refresh loaded admin views people view',
     'page callback' => 'kms_user_ajax_refresh_admin_views_people',
-    'access arguments' => array('access content'),
+    'access arguments' => ['access content'],
     'type' => MENU_CALLBACK,
-  );
-  $items['admin/kms-user/%ctools_js/filter-admin-views-people-perms'] = array(
+  ];
+  $items['admin/kms-user/%ctools_js/filter-admin-views-people-perms'] = [
     'title' => 'Filter users by permissions',
     'description' => 'Select permissions to filter by',
-    'access arguments' => array('access content'),
+    'access arguments' => ['access content'],
     'page callback' => 'kms_user_filter_admin_views_people_perms',
-    'page arguments' => array(2),
+    'page arguments' => [2],
     'type' => MENU_CALLBACK,
-  );
+  ];
 
   //Return json of webservices
-  $items['kms-user/json/webservices/%'] = array(
+  $items['kms-user/json/webservices/%'] = [
     'title' => 'json for webservices',
     'page callback' => '_kms_user_return_websevice_list',
-    'page arguments' => array(3),
+    'page arguments' => [3],
     'type' => MENU_CALLBACK,
-    'access arguments' => array('access content'),
-  );
+    'access arguments' => ['access content'],
+  ];
+
+  $items['admin/config/kms-user-gdpr'] = [
+    'title' => 'SDFE GDPR Settings',
+    'description' => 'GDPR and user settings page',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => ['kms_user_gdpr_system_settings_form'],
+    'access arguments' => ['administer users'],
+    'type' => MENU_NORMAL_ITEM,
+  ];
 
   return $items;
+}
+
+/**
+ * Implements hook_form().
+ *
+ * @return mixed
+ */
+function kms_user_gdpr_system_settings_form() {
+
+  // Get nodes of type page.
+  $result = db_select('node', 'n')
+    ->fields('n', ['nid', 'title'])
+    ->condition('type', 'page')
+    ->orderBy('title')
+    ->execute()
+    ->fetchAll();
+
+  // Create the options format.
+  $node_options = [];
+  foreach ($result as $row) {
+    $node_options[$row->nid] = $row->title . ' (ID ' . $row->nid . ')';
+  }
+
+  $form = [];
+
+  $form['kms_user_gdpr_consent'] = [
+    '#type' => 'select',
+    '#title' => t('Node for the consent'),
+    '#options' => $node_options,
+    '#default_value' => variable_get('kms_user_gdpr_consent', 254),
+    '#description' => t('Select the page that contain the GDPR consent - used as the second step on create login flow.'),
+    '#required' => TRUE,
+  ];
+
+  $form['kms_user_gdpr_terms'] = [
+    '#type' => 'select',
+    '#title' => t('Node for the terms'),
+    '#options' => $node_options,
+    '#default_value' => variable_get('kms_user_gdpr_terms', 22),
+    '#description' => t('Select the page that contain the terms & conditions - used as the second step on create login flow.'),
+    '#required' => TRUE,
+  ];
+
+  return system_settings_form($form);
 }
 
 /**
  * Implements hook_menu_alter().
  */
 function kms_user_menu_alter(&$items) {
-  // User with role "appl user" cannot administer subsusers, nor can
-  // he edit his/her password
   $restricted_paths = variable_get(
     'kms_user_system_account_restricted_paths',
-    array(
-      'edit/profile/subuser',
+    [
+      'edit/profile',
       'user/password',
       'user/register',
       'user/reset/%/%/%',
@@ -106,35 +162,36 @@ function kms_user_menu_alter(&$items) {
       'user/%user/cancel',
       'user/%user/cancel/confirm/%/%',
       'user/%user/view',
-    )
+    ]
   );
 
-  foreach($items as $path => &$item) {
-    if(in_array($path, $restricted_paths)) {
-      if (!empty($item['access callback']))
+  foreach ($items as $path => &$item) {
+    if (in_array($path, $restricted_paths)) {
+      if (!empty($item['access callback'])) {
         $item['access arguments'][] = $item['access callback'];
+      }
       $item['access callback'] = '_kms_user_access_callback_deny_system_account';
     }
   }
 }
 
 function kms_user_views_data() {
-  $data['users']['kms_edit_node'] = array(
-    'field' => array(
+  $data['users']['kms_edit_node'] = [
+    'field' => [
       'title' => t('Edit link (kms_user)'),
       'help' => t('Provide a simple link to edit the user (kms_user).'),
       'handler' => 'views_handler_field_kms_user_link_edit',
-    ),
-  );
+    ],
+  ];
 
-  $data['users']['exposed_services'] = array(
+  $data['users']['exposed_services'] = [
     'group' => t('Custom'),
     'title' => t('Webservices filter'),
     'help' => t('Custom web services filter'),
-    'filter' => array(
+    'filter' => [
       'handler' => 'kms_user_handler_filter_exposed_services',
-    ),
-  );
+    ],
+  ];
 
   return $data;
 }
@@ -165,7 +222,7 @@ function kms_user_cron() {
 function kms_user_ctools_plugin_directory($module, $plugin) {
   // we'll be nice and limit scandir() calls
   // if (in_array($owner, array('ctools', 'addressfield'))) {
-  if (in_array($module, array('ctools'))) {
+  if (in_array($module, ['ctools'])) {
     return "plugins/$plugin";
   }
   if ($module == 'kms_oci_queue') {
@@ -173,24 +230,108 @@ function kms_user_ctools_plugin_directory($module, $plugin) {
   }
 }
 
+function kms_user_get_step_header($form, &$form_state) {
+
+  $form_state['stage'] = isset($form_state['stage']) ? $form_state['stage'] : 1;
+
+  $form_stages = [
+    'user_info' => 1,
+    'consent' => 2,
+    'terms' => 3,
+  ];
+
+  // Set the current step.
+  $current_step = (isset($form_stages[$form_state['stage']])) ? $form_stages[$form_state['stage']] : 1;
+
+  $stages = [
+    1 => ['data' => t('1. User info')],
+    2 => ['data' => t('2. Consent')],
+    3 => ['data' => t('3. Terms')],
+  ];
+
+  $stages[$current_step]['class'] = ['active'];
+
+  $stages_list = theme('item_list', ['items' => $stages]);
+
+  $form['header'] = [
+    '#type' => 'fieldset',
+    '#title' => '',
+    '#value' => $stages_list,
+    '#weight' => -50,
+  ];
+
+  return $form;
+}
+
+function kms_user_form_set_access_on_fields(&$form, $fieldnames = [], $access = FALSE) {
+  if (empty($fieldnames)) {
+    return;
+  }
+
+  foreach ($fieldnames as $fieldname) {
+    if (isset($form['account'][$fieldname])) {
+
+      $form['account'][$fieldname]['#prefix'] = '<div style="display:none;">';
+      $form['account'][$fieldname]['#suffix'] = '</div>\'';
+    }
+    if (isset($form[$fieldname])) {
+      $form[$fieldname]['#prefix'] = '<div style="display:none;">';
+      $form[$fieldname]['#suffix'] = '</div>';
+
+    }
+  }
+}
+
+function kms_user_register_form_remove_fields_steps() {
+  $fields = [
+    'name',
+    'mail',
+    'field_user_remark',
+    'field_bundle_webservices_plot',
+    'field_bundle_webservices_geo',
+    'field_bundle_webservices_wcs',
+    'field_bundle_webservices_wfs',
+    'field_bundle_webservices_wms',
+    'field_bundle_webservices_oms',
+    'field_bundle_webservices_csw',
+    'field_bundle_webservices_cswt',
+    'field_bundle_webservices_wmts',
+    'field_terms_and_conditions',
+    'field_contact_me',
+    'field_ftp_permissions',
+    'field_applications',
+    'field_predefined_datacollections',
+    'field_access_bundles',
+    'field_user_type_info',
+    'field_user_type',
+    'group_bundles_n_services',
+    'group_webservices',
+    'group_access_bundles',
+    'field_terms_and_conditions',
+  ];
+
+  return $fields;
+}
+
 /**
  * Implements hook_form_alter().
  */
 function kms_user_form_alter(&$form, &$form_state, $form_id) {
+
   global $user;
-  if (in_array($form_id, array('user_register_form', 'user_profile_form'))) {
-    $form['account']['name']['#element_validate'] = array('_kms_user_validate_username');
+
+  if (in_array($form_id, ['user_register_form', 'user_profile_form'])) {
+    $form['account']['name']['#element_validate'] = ['_kms_user_validate_username'];
     $form['account']['name']['#description'] = t(
       'Spaces are not allowed; punctuation is not allowed except for periods, hyphens, apostrophes, and underscores.'
     );
-    $form['account']['name']['#access'] = true;
+    $form['account']['name']['#access'] = TRUE;
 
-    $form['field_terms_and_conditions']['#after_build'] = array('kms_user_form_after_build');
+    $form['field_terms_and_conditions']['#after_build'] = ['kms_user_form_after_build'];
 
     // Update user 'updated' time stamp.
     $form['#submit'][] = '_kms_user_update_timestamp';
     $form['field_updated']['#disabled'] = TRUE;
-
     switch ($form_id) {
       case 'user_profile_form':
         // Bundle in service list
@@ -207,7 +348,7 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
             }
           }
         }
- 
+
         $form['#fieldgroups']['group_user_type']->weight = 6;
 
         // The terms and conditions must(!) be accepted on the register-form.
@@ -228,14 +369,14 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
         // "field_contact_me", and "field_newsletter".
         // We must fetch the values and set the fields accordingly.
         $user_contact_me = db_select('field_data_field_contact_me', 'cme')
-        ->fields('cme', array('field_contact_me_value'))
-        ->condition('entity_id', $form['#user']->uid, '=')
-        ->execute()
-        ->fetchAssoc();
+          ->fields('cme', ['field_contact_me_value'])
+          ->condition('entity_id', $form['#user']->uid, '=')
+          ->execute()
+          ->fetchAssoc();
 
         $form['field_contact_me'][LANGUAGE_NONE]['#title'] = t('User profile survey consent');
         $form['field_contact_me'][LANGUAGE_NONE]['#default_value'] = $user_contact_me['field_contact_me_value'];
-        
+
         /*
         $user_newsletter = db_select('field_data_field_newsletter', 'news')
         ->fields('news', array('field_newsletter_value'))
@@ -244,7 +385,7 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
         ->fetchAssoc();
         $form['field_newsletter'][LANGUAGE_NONE]['#default_value'] = $user_newsletter['field_newsletter_value'];
         */
-       
+
         // Newsletters are moved to mailchimp.
         // This field should be removed entirely.
         $form['field_newsletter']['#access'] = FALSE;
@@ -253,21 +394,12 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
         $form['field_pass_clear']['#disabled'] = TRUE;
 
         // Show user name.
-        $form['username'] = array(
-          '#type' => 'item',
-          '#title' => t('Username'),
-          '#markup' => '<em id="username">' . $user->name . '</em>',
+        $form['username'] = [
+          '#type' => 'markup',
+          '#markup' => kms_user_render_username($user),
           '#disabled' => TRUE,
-          '#prefix' => '<div class="form-item" id="username-wrapper">',
-          '#suffix' => '</div>',
           '#weight' => -100,
-        );
-
-        // If user has role "appl user" he/she cannot edit password
-        if (kms_user_is_system_account($user->roles)) {
-          $form['account']['pass']['#access'] = FALSE;
-          $form['username']['#description'] = t('Note: Since you are an application user you cannot change your password or create new users. If you want to change this please email support@sdfe.dk');
-        }
+        ];
 
         kms_user_js_settings();
 
@@ -283,6 +415,13 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
         }
         break;
       case 'user_register_form':
+        $form['#attached']['css'][] = drupal_get_path('module', 'kms_user') . '/css/kms_user.css';
+
+        // Create the session key and get the step-stage we are currently on.
+        $session_key =  KMS_USER_LOGIN_SESSION_PREFIX . session_id();
+
+        drupal_add_js(drupal_get_path('module', 'kms_user') . '/js/gdpr_scroll.js');
+
         // They do not want a fieldset title on address.
         $form['field_address'][LANGUAGE_NONE][0]['#title'] = '';
 
@@ -292,31 +431,295 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
 
         $form['field_contact_me'][LANGUAGE_NONE]['#title'] = t('User profile survey consent');
 
-        // We need to store the new password.
-        $form['#submit'][] = '_kms_user_insert_user_pass';
-        // Store user data in Oracle.
-        $form['#submit'][] = '_kms_user_submit_insert_user_oracle';
+        // Setup multistep form.
+
+        if (isset($_SESSION[$session_key]['next_stage'])) {
+          $form_state['stage'] = $_SESSION[$session_key]['next_stage'];
+          unset($_SESSION[$session_key]['next_stage']);
+        }
+
+        if (!isset($form_state['stage'])) {
+          $form_state['stage'] = 'user_info';
+        }
+
+        $form['field_terms_and_conditions'][LANGUAGE_NONE]['#required'] = FALSE;
+
+        // Get the step bar for register process.
+        $form = kms_user_get_step_header($form, $form_state);
+
+        $stage_part = $form_state['stage'];
+
+        // Get the prefilled values.
+        $prefilled_name = (isset($_SESSION[$session_key]['user_info']['name'])) ?  $_SESSION[$session_key]['user_info']['name'] : '' ;
+        $prefilled_mail = (isset($_SESSION[$session_key]['user_info']['mail'])) ?  $_SESSION[$session_key]['user_info']['mail'] : '' ;
+        $prefilled_contact_me = (isset($_SESSION[$session_key]['user_info']['field_contact_me'][LANGUAGE_NONE][0]['value'])) ?  $_SESSION[$session_key]['user_info']['field_contact_me'][LANGUAGE_NONE][0]['value'] : '' ;
+        $prefilled_user_type = (isset($_SESSION[$session_key]['user_info']['field_user_type'][LANGUAGE_NONE][0]['tid'])) ?  $_SESSION[$session_key]['user_info']['field_user_type'][LANGUAGE_NONE][0]['tid'] : '' ;
+
+        switch ($stage_part) {
+          case 'user_info':
+            // Remove the required on terms_and_conditions field and hide it.
+            $form['field_terms_and_conditions']['#prefix'] = '<div style="display: none;">';
+            $form['field_terms_and_conditions']['#suffix'] = '</div>';
+            $form['actions']['submit']['#value'] = t('Continue');
+
+            if ($prefilled_name) {
+              $form['account']['name']['#value'] = $prefilled_name;
+            }
+
+            if ($prefilled_mail) {
+              $form['account']['mail']['#value'] = $prefilled_mail;
+            }
+
+            if ($prefilled_user_type) {
+              $form['field_user_type'][LANGUAGE_NONE]['#default_value'] = $prefilled_user_type;
+            }
+
+            if ($prefilled_contact_me) {
+              $form['field_contact_me']['und']['#default_value'] = $prefilled_contact_me;
+            }
+
+            // These keep poppin' up for some reason. Shut them dowm.
+            $form['field_bundle_webservices_oms']['#access'] = FALSE;
+            $form['field_bundle_webservices_csw']['#access'] = FALSE;
+            $form['field_bundle_webservices_cswt']['#access'] = FALSE;
+
+            // Register submit should be multistepped, so clear the submit
+            // functions and replace with our own.
+            $form['#submit'] = [];
+            $form['#submit'][] = '_kms_user_register_step_2';
+            break;
+          case 'consent':
+
+
+            // Oh yes. Let us unset these because they are in a fieldgroup and a
+            // group so we cannot use prefix and suffix. Drupal FAPI really
+            // sucks at this point, so lets unset them from the form and hope
+            // it does donkey kick us in the butt later.
+            unset($form['#groups']['group_master_data']);
+            unset($form['#fieldgroups']['group_master_data']);
+
+            if ($prefilled_name) {
+              $form['account']['name']['#value'] = $prefilled_name;
+            }
+
+            if ($prefilled_mail) {
+              $form['account']['mail']['#value'] = $prefilled_mail;
+            }
+
+            if ($prefilled_user_type) {
+              $form['field_user_type'][LANGUAGE_NONE]['#default_value'] = $prefilled_user_type;
+            }
+
+            if ($prefilled_contact_me) {
+              $form['field_contact_me']['und']['#default_value'] = $prefilled_contact_me;
+            }
+
+
+            // Get the field we want to remove and hide them.
+            $fields = kms_user_register_form_remove_fields_steps();
+            kms_user_form_set_access_on_fields($form, $fields, FALSE);
+
+
+            $form['account']['name']['#value'] = $prefilled_name;
+            $form['account']['mail']['#value'] = $prefilled_mail;
+            $form['field_contact_me']['und']['#default_value'] = $prefilled_contact_me;
+
+            // Hide services which cannot be prefixed / suffixed.
+            $form['field_bundle_webservices_oms']['#access'] = FALSE;
+            $form['field_bundle_webservices_csw']['#access'] = FALSE;
+            $form['field_bundle_webservices_cswt']['#access'] = FALSE;
+
+            // Load the consent page.
+            $consent_page_nid = variable_get('kms_user_gdpr_consent');
+            $node = node_load($consent_page_nid);
+
+            // Add the content of the node to the form as pure markup.
+            $form['consent_body'] = [
+              '#prefix' => '<div id="consent-body" class="consent-body" style="height:400px; overflow: auto; overflow-y:scroll;">',
+              '#markup' => $node->body[LANGUAGE_NONE][0]['value'] . '<div id="scroll-to"></div><br />',
+              '#suffix' => '</div>',
+            ];
+
+            $form['consent_check'] = [
+              '#type' => 'checkbox',
+              '#title' => t('Ja, jeg giver Styrelsen for Dataforsyning og Effektivisering mit samtykke.'),
+              '#required' => TRUE,
+              '#attributes' => ['disabled' => 'disabled']
+            ];
+
+            // Continue button
+            $form['actions']['submit']['#value'] = t('Continue');
+            $form['actions']['submit']['#weight'] = 2;
+            $form['actions']['submit']['#attributes']['disabled'] = 'disabled';
+
+            // Go back button.
+            // Removes the validation and
+            $form['actions']['goback'] = array(
+              '#name' => 'goback',
+              '#type' => 'submit',
+              '#value' => t('Go back'),
+              '#weight' => 1,
+              '#limit_validation_errors' => array(),
+              '#submit' => array('_kms_user_register_step_back_to_1'),
+            );
+
+            // Register the submit call to the next multistep step.
+            $form['#submit'] = [];
+            $form['#submit'][] = '_kms_user_register_step_3';
+            break;
+
+          case 'terms':
+
+            // Get the field we want to remove and hide them.
+            unset($form['#groups']['group_master_data']);
+            unset($form['#fieldgroups']['group_master_data']);
+
+            if ($prefilled_name) {
+              $form['account']['name']['#value'] = $prefilled_name;
+            }
+
+            if ($prefilled_mail) {
+              $form['account']['mail']['#value'] = $prefilled_mail;
+            }
+
+            if ($prefilled_user_type) {
+              $form['field_user_type'][LANGUAGE_NONE]['#default_value'] = $prefilled_user_type;
+            }
+
+            if ($prefilled_contact_me) {
+              $form['field_contact_me']['und']['#default_value'] = $prefilled_contact_me;
+            }
+
+            $fields = kms_user_register_form_remove_fields_steps();
+            kms_user_form_set_access_on_fields($form, $fields, FALSE);
+
+            // Hide
+            $form['field_bundle_webservices_oms']['#access'] = FALSE;
+            $form['field_bundle_webservices_csw']['#access'] = FALSE;
+            $form['field_bundle_webservices_cswt']['#access'] = FALSE;
+
+            // Load the terms page.
+            $terms_page_nid = variable_get('kms_user_gdpr_terms');
+            $node = node_load($terms_page_nid);
+
+
+            // Scroll-to is added so the user have to scroll to the end
+            // before the terms can be accepted.
+            $form['terms_body'] = [
+              '#prefix' => '<div id="terms-body" class="terms-body" style="height:400px; overflow: auto; overflow-y:scroll;">',
+              '#markup' => $node->body[LANGUAGE_NONE][0]['value'] . '<div id="scroll-to"></div><br />',
+              '#suffix' => '</div>',
+              '#attributes' => array('disabled' => 'disabled'),
+            ];
+
+            $form['actions']['submit']['#attributes']['disabled'] = 'disabled';
+
+            $form['term_check'] = [
+              '#type' => 'checkbox',
+              '#title' => t('Jeg accepterer ovenstående rettigheder og vilkår'),
+              '#required' => TRUE,
+              '#attributes' => array('class' => array('button-submit'), 'id' => 'term-check', 'disabled' => 'disabled'),
+            ];
+
+            // Go back button.
+            // Removes the validation and
+            $form['actions']['goback'] = array(
+              '#name' => 'goback',
+              '#type' => 'submit',
+              '#value' => t('Go back'),
+              '#weight' => -1,
+              '#limit_validation_errors' => array(),
+              '#submit' => array('_kms_user_register_step_back_to_2'),
+            );
+
+            /// $form['actions']['submit']['#disabled'] = TRUE;
+
+            // We need to store the new password.
+            $form['#submit'][] = '_kms_user_insert_user_pass';
+
+            // Store user data in Oracle.
+            $form['#submit'][] = '_kms_user_submit_insert_user_oracle';
+
+            // Store user GDPR consent.
+            $form['#submit'][] = '_kms_user_insert_gdpr_consent';
+
+            // Cleanup the session.
+            $form['#submit'][] = '_kms_user_insert_cleanup_session';
+
+            break;
+        }
         break;
     }
-
   }
 
-  if (in_array($form_id, array('user_pass', 'user_profile_form'))) {
+  if (in_array($form_id, ['user_pass', 'user_profile_form'])) {
     $form['#validate'][] = '_kms_user_user_pass_validate';
   }
+}
 
+function _kms_user_register_step_back_to_1(&$form, &$form_state) {
+  $form_state['stage'] = 'user_info';
+  $session_key =  KMS_USER_LOGIN_SESSION_PREFIX . session_id();
+  $_SESSION[$session_key]['next_stage'] = 'user_info';
+}
+
+function _kms_user_register_step_back_to_2(&$form, &$form_state) {
+  $form_state['stage'] = 'consent';
+  $session_key =  KMS_USER_LOGIN_SESSION_PREFIX . session_id();
+  $_SESSION[$session_key]['next_stage'] = 'consent';
+}
+
+
+/**
+ * User register - Step 2.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function _kms_user_register_step_2($form, &$form_state) {
+  $session_key =  KMS_USER_LOGIN_SESSION_PREFIX . session_id();
+  $stage_part = $form_state['stage'];
+
+  // Set the info on the session.
+  $_SESSION[$session_key][$stage_part] = $form_state['values'];
+
+  // Set the next stage.
+  $form_state['stage'] = 'consent';
+
+  // Prevent submit.
+  $form_state["rebuild"] = TRUE;
+}
+
+/**
+ * User register - Step 3.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function _kms_user_register_step_3($form, &$form_state) {
+  $session_key =  KMS_USER_LOGIN_SESSION_PREFIX . session_id();
+  $stage_part = $form_state['stage'];
+
+  // Set the info on the session.
+  $_SESSION[$session_key][$stage_part] = $form_state['values'];
+
+  // Set the next stage.
+  $form_state['stage'] = 'terms';
+
+  // Prevent submit.
+  $form_state["rebuild"] = TRUE;
 }
 
 function kms_user_js_settings() {
   global $user;
   // Add user settings to js.
   drupal_add_js(
-    array(
-      'kms_user' => array(
+    [
+      'kms_user' => [
         'isSuperAdmin' => kms_user_is_superadmin($user),
         'uid' => $user->uid,
-      ),
-    ),
+      ],
+    ],
     'setting'
   );
 }
@@ -328,17 +731,17 @@ function _kms_user_user_pass_validate($form, &$form_state) {
   $name = trim($form_state['values']['name']);
   _kms_user_user_pass_validate_chars($form_state['values']['pass']);
   // Try to load by email.
-  $users = user_load_multiple(array(), array('mail' => $name, 'status' => '1'));
+  $users = user_load_multiple([], ['mail' => $name, 'status' => '1']);
   $account = reset($users);
   if (!$account) {
     // No success, try to load by name.
-    $users = user_load_multiple(array(), array('name' => $name, 'status' => '1'));
+    $users = user_load_multiple([], ['name' => $name, 'status' => '1']);
     $account = reset($users);
   }
   if (strlen($form_state['values']['pass']) > KMS_USER_VALIDATE_PASS_LENGTH) {
     form_set_error(
       'pass',
-      t('Password should not exceed @len characters', array('@len' => KMS_USER_VALIDATE_PASS_LENGTH))
+      t('Password should not exceed @len characters', ['@len' => KMS_USER_VALIDATE_PASS_LENGTH])
     );
   }
 
@@ -364,9 +767,9 @@ function _kms_user_user_pass_validate_chars($value) {
       'pass',
       t(
         'Password contains invalid characters: %chars',
-        array(
+        [
           '%chars' => implode(', ', array_unique($match)),
-        )
+        ]
       )
     );
 
@@ -380,13 +783,14 @@ function _kms_user_user_pass_validate_chars($value) {
  *
  * @param string $type
  *   Type of pattern.
+ *
  * @return string
  *   Regex pattern string.
  */
 function _kms_user_validate_pattern_get($type) {
-  $patterns = array(
+  $patterns = [
     'credentials' => '#(\/)|(\\\\)|(=)|(\?)|(\&)|(\.)|(\@)|(\s)|([æøå])#uis',
-  );
+  ];
 
   if (!empty($patterns[$type])) {
     return $patterns[$type];
@@ -396,27 +800,27 @@ function _kms_user_validate_pattern_get($type) {
 }
 
 function kms_user_form_after_build($form_element) {
-    $terms_and_conditions = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+  $terms_and_conditions = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
 tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
 quis  nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
 consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
 cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
 proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
 
-    $form_element[LANGUAGE_NONE]["#description"] = '<a target="_blank" href="/content/vilkår-og-betingelser" id="terms_conditions">'.t('Read here').'</a>';
-    /*
-    $form_element[LANGUAGE_NONE]['#suffix'] = '<div id="terms_and_conditions" style="display:none;">' . $terms_and_conditions .'<a id="terms_and_conditions_close" class="close" href="#">close</a></div>'; */
+  $form_element[LANGUAGE_NONE]["#description"] = '<a target="_blank" href="/content/vilkår-og-betingelser" id="terms_conditions">' . t('Read here') . '</a>';
+  /*
+  $form_element[LANGUAGE_NONE]['#suffix'] = '<div id="terms_and_conditions" style="display:none;">' . $terms_and_conditions .'<a id="terms_and_conditions_close" class="close" href="#">close</a></div>'; */
 
-    drupal_add_js(drupal_get_path('module', 'kms_user') .'/js/jquery.lightbox_me.js');
-    drupal_add_js("jQuery(function() {
+  drupal_add_js(drupal_get_path('module', 'kms_user') . '/js/jquery.lightbox_me.js');
+  drupal_add_js("jQuery(function() {
                jQuery('#terms_and_conditions_link').click(function(e) {
                  jQuery('#terms_and_conditions').lightbox_me({ centered: true });
                  e.preventDefault();
-               }); });",'inline');
+               }); });", 'inline');
 
-      // On the user-register form users must be presented with a textfield if the user-type selected
-      // via Hiearchical Select is either 'NGO' (tid=3518) or 'Forening' (tid=3520)
-      drupal_add_js('jQuery(function() {
+  // On the user-register form users must be presented with a textfield if the user-type selected
+  // via Hiearchical Select is either 'NGO' (tid=3518) or 'Forening' (tid=3520)
+  drupal_add_js('jQuery(function() {
               jQuery("#hierarchical-select-0-wrapper").live("change-hierarchical-select", function() {
                     var Selected = jQuery("#edit-field-user-type-und-hierarchical-select-selects-0").val();
                     if (Selected == "3518" || Selected == "3520") {
@@ -428,9 +832,8 @@ proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
               }); });', 'inline');
 
 
-    return $form_element;
+  return $form_element;
 }
-
 
 /**
  * Form element validator.
@@ -477,16 +880,15 @@ function _kms_user_validate_chars($element, $pattern) {
       $element,
       t(
         '"!element" contains invalid characters: %chars',
-        array(
+        [
           '!element' => $element['#title'],
           '%chars' => implode(', ', array_unique($match)),
-        )
+        ]
       )
     );
 
     return;
   }
-
 }
 
 /**
@@ -507,10 +909,10 @@ function _kms_user_validate_length($element, $length) {
       $element,
       t(
         '"!element" should not exceed @len characters',
-        array(
+        [
           '!element' => $element['#title'],
           '@len' => $length,
-        )
+        ]
       )
     );
   }
@@ -536,7 +938,7 @@ function _kms_user_cron_expire_users() {
     AND
       u.status = 1
   ";
-  $result = db_query($query, array(':time' => time()));
+  $result = db_query($query, [':time' => time()]);
 
   foreach ($result as $row) {
     if (empty($row->uid)) {
@@ -555,7 +957,7 @@ function _kms_user_cron_expire_users() {
       'kms_user',
       t(
         'User: %user has been deactivated',
-        array('%user' => $user_w->name->value())
+        ['%user' => $user_w->name->value()]
       )
     );
   }
@@ -566,13 +968,13 @@ function _kms_user_update_timestamp($form, &$form_state) {
   // Update time stamp.
   $time = time();
   $user_updated = db_update('field_data_field_updated')
-  ->fields(array('field_updated_value' => $time))
-  ->condition('entity_id'  , $form['#user']->uid, '=')
-  ->execute();
+    ->fields(['field_updated_value' => $time])
+    ->condition('entity_id', $form['#user']->uid, '=')
+    ->execute();
   $user_updated_rev = db_update('field_revision_field_updated')
-  ->fields(array('field_updated_value' => $time))
-  ->condition('entity_id'  , $form['#user']->uid, '=')
-  ->execute();
+    ->fields(['field_updated_value' => $time])
+    ->condition('entity_id', $form['#user']->uid, '=')
+    ->execute();
 }
 
 function _kms_user_submit_update_user_pass($form, &$form_state) {
@@ -594,33 +996,89 @@ function _kms_user_insert_user_pass($form, &$form_state) {
 
   if ($new_pass && !kms_user_password_is_encrypted($new_pass)) {
     $pass_exists = db_select('field_data_field_pass_clear', 'fpc')
-      ->fields('fpc', array('field_pass_clear_value'))
+      ->fields('fpc', ['field_pass_clear_value'])
       ->condition('entity_id', $form['#user']->uid, '=')
       ->execute()
       ->fetchAssoc();
     if (!empty($pass_exists)) {
       // The password does exist in the target-table and we update that password
       $pass_updated = db_update('field_data_field_pass_clear')
-      ->fields(array('field_pass_clear_value' => $new_pass))
-      ->condition('entity_id', $form['#user']->uid, '=')
-      ->execute();
+        ->fields(['field_pass_clear_value' => $new_pass])
+        ->condition('entity_id', $form['#user']->uid, '=')
+        ->execute();
     }
     else {
       // The password does not exist in the target-table and we must insert it
       db_insert('field_data_field_pass_clear')
-      ->fields(array('entity_type' => 'user',
-		      'bundle' => 'user',
-		      'deleted' => 0,
-		      'entity_id' => $form['#user']->uid,
-		      'revision_id' => $form['#user']->uid,
-		      'language' => LANGUAGE_NONE,
-		      'delta' => 0,
-		      'field_pass_clear_value' => $new_pass,
-		      'field_pass_clear_format' => ''))
-      ->execute();
+        ->fields([
+          'entity_type' => 'user',
+          'bundle' => 'user',
+          'deleted' => 0,
+          'entity_id' => $form['#user']->uid,
+          'revision_id' => $form['#user']->uid,
+          'language' => LANGUAGE_NONE,
+          'delta' => 0,
+          'field_pass_clear_value' => $new_pass,
+          'field_pass_clear_format' => '',
+        ])
+        ->execute();
     }
   }
 }
+
+/**
+ * Cleanup
+ *
+ * @param $form
+ * @param $form_state
+ */
+function _kms_user_insert_cleanup_session($form, &$form_state) {
+  $session_key =  KMS_USER_LOGIN_SESSION_PREFIX . session_id();
+  unset($_SESSION[$session_key]);
+}
+
+
+/**
+ * Register when a user accepts GDPR and in which revisions.
+ *
+ * @param $form
+ * @param $form_state
+ */
+function _kms_user_insert_gdpr_consent($form, &$form_state) {
+
+
+  $account = (object) $form_state['values'];
+
+  // Early returns.
+  if (empty($account->uid)) {
+    return;
+  }
+
+  $consent_node = node_load(KMS_USER_NODE_CONSENT_PAGE_NID);
+  if (!$consent_node) {
+    return;
+  }
+
+  $terms_node = node_load(KMS_USER_NODE_TERMS_PAGE_NID);
+  if (!$terms_node) {
+    return;
+  }
+
+  // Setup fields and values.
+  $data = [
+    'uid' => $account->uid,
+    'consent_nid' => $consent_node->nid,
+    'consent_vid' => $consent_node->vid,
+    'terms_nid' => $terms_node->nid,
+    'terms_vid' => $terms_node->vid,
+    'timestamp' => time(),
+  ];
+
+  $nid = db_insert('user_gdpr_consents')
+    ->fields($data)
+    ->execute();
+}
+
 
 /**
  * Is the user a system account.
@@ -649,27 +1107,53 @@ function kms_user_is_superadmin($user) {
 }
 
 /**
+ * Render the user name of a user object.
+ *
+ * @param object $user
+ *   Drupal user object.
+ *
+ * @return string
+ *   HTML.
+ */
+function kms_user_render_username($user) {
+  $name = $user->name;
+  $label = t('Username');
+  return <<<EOD
+    <div class="form-item" id="username-wrapper">
+      <label for="username">$label</label>
+      <em id="username">$name</em>
+  </div>
+EOD;
+}
+
+/**
  * Submit handler that creates oci queue jobs.
  *
  * @param array $form
  * @param array $form_state
  */
 function _kms_user_submit_insert_user_oracle($form, &$form_state) {
+
+  $account = (object) $form_state['values'];;
+
+  // We do not touch oracle anymore.
+  return;
+
   if (!module_exists('kms_oci_queue')) {
     return;
   }
   global $user;
-  $account = (object)$form_state['values'];
+  $account = (object) $form_state['values'];
 
   if (empty($account->uid)) {
     return;
   }
 
-  $perm_options = array('key_prefix' => FALSE, 'flattened' => TRUE);
+  $perm_options = ['key_prefix' => FALSE, 'flattened' => TRUE];
   // If an account is being created by an logged in user then user bundles
   // and separate perms.
   if ($user->uid) {
-    $perms = array();
+    $perms = [];
     foreach (kms_permissions_get_bids_by_uid($account->uid) as $bid) {
       _kms_permissions_get_permissions_by_bid($bid, $perms, $perm_options);
     }
@@ -678,7 +1162,7 @@ function _kms_user_submit_insert_user_oracle($form, &$form_state) {
   // Otherwise it is a simple register form
   // with no separate permissions and bundle options.
   else {
-    $perms = array();
+    $perms = [];
     foreach (_kms_permissions_get_default_bundles() as $def_bid) {
       _kms_permissions_get_permissions_by_bid(
         $def_bid,
@@ -688,48 +1172,49 @@ function _kms_user_submit_insert_user_oracle($form, &$form_state) {
     }
   }
 
-  $jobs = array();
-  $data = _kms_oci_queue_create_insert_smuser_data($account);
+  $jobs = [];
+  // $data = _kms_oci_queue_create_insert_smuser_data($account);
+
   // Write user data.
-  kms_oci_queue_job_action_user_insert(
-    $jobs,
-    $data,
-    'Inserting user: @user_details.',
-    array('@user_details' => json_encode($data['user']))
-  );
+  //  kms_oci_queue_job_action_user_insert(
+  //    $jobs,
+  //    $data,
+  //    'Inserting user: @user_details.',
+  //    array('@user_details' => json_encode($data['user']))
+  //  );
 
   // Handle user permissions.
-  if (!empty($perms['services']) || !empty($perms['applications'])) {
-    $perms_diff = array(
-      'bundles' => KmsPermsDiff::defaultDiff(),
-      'separate' => KmsPermsDiff::defaultDiff(),
-    );
-    if (!empty($perms['services'])) {
-      $perms_diff['bundles']['services']['add'] =
-        $perms_diff['separate']['services']['add'] =
-          $perms['services'];
-    }
-    if (!empty($perms['applications'])) {
-      $perms_diff['bundles']['applications']['add'] =
-        $perms_diff['separate']['applications']['add'] =
-          $perms['applications'];
-    }
-    kms_oci_queue_job_action_perms_attach(
-      $jobs,
-      $account->uid,
-      $account,
-      $perms_diff,
-      'insert',
-      '',
-      array('@user' => $account->name)
-    );
-  }
+  //  if (!empty($perms['services']) || !empty($perms['applications'])) {
+  //    $perms_diff = array(
+  //      'bundles' => KmsPermsDiff::defaultDiff(),
+  //      'separate' => KmsPermsDiff::defaultDiff(),
+  //    );
+  //    if (!empty($perms['services'])) {
+  //      $perms_diff['bundles']['services']['add'] =
+  //        $perms_diff['separate']['services']['add'] =
+  //          $perms['services'];
+  //    }
+  //    if (!empty($perms['applications'])) {
+  //      $perms_diff['bundles']['applications']['add'] =
+  //        $perms_diff['separate']['applications']['add'] =
+  //          $perms['applications'];
+  //    }
+  //    kms_oci_queue_job_action_perms_attach(
+  //      $jobs,
+  //      $account->uid,
+  //      $account,
+  //      $perms_diff,
+  //      'insert',
+  //      '',
+  //      array('@user' => $account->name)
+  //    );
+  //  }
 
-  // Do we have any jobs to be done then group them.
-  if (!empty($jobs)) {
-    $job_group = new KmsOciQueueJobGroup();
-    $job_group->add($jobs);
-  }
+  //  // Do we have any jobs to be done then group them.
+  //  if (!empty($jobs)) {
+  //    $job_group = new KmsOciQueueJobGroup();
+  //    $job_group->add($jobs);
+  //  }
 
 }
 
@@ -745,7 +1230,10 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
     return;
   }
 
-  $user_new = (object)$form_state['values'];
+  // We do not touch oracle anymore.
+  return;
+
+  $user_new = (object) $form_state['values'];
   $user_original = $form['#user'];
   $w_new = entity_metadata_wrapper('user', $user_new);
   $w_original = entity_metadata_wrapper('user', $user_original);
@@ -755,14 +1243,14 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
   $user_data = $data['user_data'];
   $data_hash = md5(json_encode($user_data));
 
-  $jobs = array();
+  $jobs = [];
   // If user data has changed create a job for it.
   if ($data_hash != $user_original->data['kms_oci_queue_user_data_hash']) {
     kms_oci_queue_job_action_user_update(
       $jobs,
       $user_data,
       'Updating user: @user_details.',
-      array('@user_details' => json_encode($user_data['user']))
+      ['@user_details' => json_encode($user_data['user'])]
     );
   }
 
@@ -781,7 +1269,7 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
       $perms_diff,
       'update',
       '',
-      array('@user' => $user_new->name)
+      ['@user' => $user_new->name]
     );
     // If the user has any subuser clone permissions to them.
     $subusers = subuser_load_all($user_original);
@@ -808,32 +1296,32 @@ function _kms_user_submit_update_user_oracle($form, &$form_state) {
  *   Default user data.
  */
 function _kms_user_oracle_default_user_data($account) {
-  $data = array();
-  $data['user'] = array(
+  $data = [];
+  $data['user'] = [
     'userid' => $account->uid,
-    'name' =>  $account->name,
+    'name' => $account->name,
     'emailaddress' => $account->mail,
-  );
+  ];
 
   if (!empty($account->pass) && !kms_user_password_is_encrypted($account->pass)) {
     $data['user']['password'] = $account->pass;
   }
 
-  $data['user_extra'] = array(
+  $data['user_extra'] = [
     'duid' => $account->uid,
     'userid' => $account->uid,
-  );
+  ];
 
   if (!empty($data['user'])) {
-    $data['user'] += array(
+    $data['user'] += [
       'disabled' => '0',
       'firstname' => '',
       'lastname' => '',
       'telephonenumber' => '',
       'debitorno' => '',
-    );
+    ];
   }
-  $data['user_extra'] += array(
+  $data['user_extra'] += [
     'duid' => $account->uid,
     'userid' => $account->uid,
     'usertype' => '',
@@ -841,7 +1329,7 @@ function _kms_user_oracle_default_user_data($account) {
     'receive_newsletter' => '0',
     'accept_terms' => '1',
     'contact_me' => '0',
-  );
+  ];
 
   return $data;
 }
@@ -855,7 +1343,7 @@ function _kms_user_oracle_default_user_data($account) {
  * @return boolean
  */
 function kms_user_password_is_encrypted($pass) {
-  return (bool)preg_match('/^\$S\$[0-9a-fA-Z.\/]{52}$/i', $pass);
+  return (bool) preg_match('/^\$S\$[0-9a-fA-Z.\/]{52}$/i', $pass);
 }
 
 /**
@@ -870,7 +1358,7 @@ function kms_user_smuser_load($uid) {
   $smusers = &drupal_static(__FUNCTION__);
 
   if (empty($smusers)) {
-    $smusers = array();
+    $smusers = [];
   }
 
   if (empty($smusers[$uid])) {
@@ -878,10 +1366,10 @@ function kms_user_smuser_load($uid) {
     SELECT * FROM smuser_extra ue
     LEFT JOIN smuser u on u.userid = ue.userid
     WHERE ue.duid = :duid";
-    $result = kms_oci_select_one($query, array(':duid' => "$uid"));
+    $result = kms_oci_select_one($query, [':duid' => "$uid"]);
     $smusers[$uid] = new stdClass();
     if ($result) {
-      array_walk($result, function($v, $k) use (&$smusers, $uid) {
+      array_walk($result, function ($v, $k) use (&$smusers, $uid) {
         $prop = strtolower($k);
         $smusers[$uid]->$prop = $v;
       });
@@ -907,31 +1395,31 @@ function kms_user_smuser_delete($user) {
   $kms_userid = kms_user_get_userid($user);
   if (!empty($kms_userid)) {
     // Delete all oracle rows belonging to user.
-    $jobs = array();
-    $jobs[] = KmsOciQueueJob::create(array(
+    $jobs = [];
+    $jobs[] = KmsOciQueueJob::create([
       'action' => KMS_OCI_QUEUE_ACTION_USER_DELETE,
       'action_details' => format_string(
         'Deleting user: @user.',
-        array(
+        [
           '@user' => $user->name,
-        )
+        ]
       ),
-      'params' => array(
+      'params' => [
         'kms_id' => $kms_userid,
-      )
-    ));
-    $jobs[] = KmsOciQueueJob::create(array(
+      ],
+    ]);
+    $jobs[] = KmsOciQueueJob::create([
       'action' => KMS_OCI_QUEUE_ACTION_USER_DELETE,
       'action_details' => format_string(
         'Deleting user: @user.',
-        array(
+        [
           '@user' => $user->name,
-        )
+        ]
       ),
-      'params' => array(
+      'params' => [
         'kms_id' => $kms_userid,
-      )
-    ), 'kms_permissions');
+      ],
+    ], 'kms_permissions');
     $job_group = new KmsOciQueueJobGroup();
     $job_group->add($jobs);
   }
@@ -948,13 +1436,13 @@ function kms_user_user_delete($user) {
     drupal_set_message(
       t(
         '@count subusers were deleted.',
-        array('@count' => count($subusers))
+        ['@count' => count($subusers)]
       ),
       'status',
       FALSE
     );
     // Delete subusers in oracle.
-    foreach($subusers as $subuser_uid) {
+    foreach ($subusers as $subuser_uid) {
       kms_user_smuser_delete($subuser_uid);
     }
     // Delete subusers locally.
@@ -965,6 +1453,7 @@ function kms_user_user_delete($user) {
   kms_user_smuser_delete($user);
 
 }
+
 /**
  * Get kms user id from user.
  * If kms_user_id is specified use that otherwise user drupal user id.
@@ -979,7 +1468,7 @@ function kms_user_get_userid($user) {
   if (!empty($user->field_kms_user_id[LANGUAGE_NONE][0]['value'])) {
     $userid = $user->field_kms_user_id[LANGUAGE_NONE][0]['value'];
   }
-  return (string)$userid;
+  return (string) $userid;
 }
 
 /**
@@ -999,18 +1488,18 @@ function kms_user_smuser_deactivate($account) {
   $data['user']['disabled'] = 1;
   $data['user']['userid'] = kms_user_get_userid($account);
 
-  KmsOciQueueJob::create(array(
+  KmsOciQueueJob::create([
     'action' => KMS_OCI_QUEUE_ACTION_USER_SAVE,
     'action_details' => format_string(
       'Deactivating user: @user_details.',
-      array(
+      [
         '@user_details' => json_encode($data),
-      )
+      ]
     ),
-    'params' => array(
-      array($data['user'], 'smuser', FALSE),
-    )
-  ));
+    'params' => [
+      [$data['user'], 'smuser', FALSE],
+    ],
+  ]);
 
 }
 
@@ -1027,7 +1516,7 @@ function kms_user_smuser_exists($user) {
     $user = user_load($user);
   }
 
-  if(!kms_oci_extension_is_loaded()) {
+  if (!kms_oci_extension_is_loaded()) {
     return FALSE;
   }
 
@@ -1053,18 +1542,18 @@ function kms_user_smuser_exists($user) {
  * Implementation of hook_action_info().
  */
 function kms_user_action_info() {
-   return array(
-    'kms_user_vbo_add_access_bundles' => array(
+  return [
+    'kms_user_vbo_add_access_bundles' => [
       'label' => t('Add Access Bundles'),
       'type' => 'user',
       'configurable' => TRUE,
-    ),
-    'kms_user_vbo_clear_access_bundles' => array(
+    ],
+    'kms_user_vbo_clear_access_bundles' => [
       'label' => t('Clear Access Bundles'),
       'type' => 'user',
       'configurable' => FALSE,
-    ),
- );
+    ],
+  ];
 }
 
 /**
@@ -1077,12 +1566,12 @@ function kms_user_action_info() {
  *   Drupal form array.
  */
 function kms_user_vbo_add_access_bundles_form($context) {
-  $form['access_bundle'] = array(
+  $form['access_bundle'] = [
     '#type' => 'checkboxes',
     '#title' => t('Choose access bundles'),
     '#description' => t('Select one or more access bundles that the users can access.'),
     '#options' => kms_user_vbo_access_bundle_options(),
-  );
+  ];
 
   return $form;
 }
@@ -1098,9 +1587,9 @@ function kms_user_vbo_add_access_bundles_form($context) {
  * @return array
  */
 function kms_user_vbo_add_access_bundles_submit($form, $form_state) {
-  return array(
+  return [
     'access_bundle' => array_filter($form_state['values']['access_bundle']),
-  );
+  ];
 }
 
 /**
@@ -1113,7 +1602,7 @@ function kms_user_vbo_add_access_bundles_submit($form, $form_state) {
  *
  * @return void
  */
-function kms_user_vbo_add_access_bundles(&$account, $context = array()) {
+function kms_user_vbo_add_access_bundles(&$account, $context = []) {
   if (!kms_subuser_is_subuser($account)) {
     $uid = $context['user']->uid;
     // If it is the first user make sure that the uids variable is deleted.
@@ -1121,11 +1610,11 @@ function kms_user_vbo_add_access_bundles(&$account, $context = array()) {
       variable_del('kms_user_vbo_access_bundle_add_uids');
     }
     // Get processed uids.
-    $uids = variable_get('kms_user_vbo_access_bundle_add_uids', array());
+    $uids = variable_get('kms_user_vbo_access_bundle_add_uids', []);
     // Get user permissions.
     $user_perms = _kms_permissions_get_all_permissions_by_uid(
       $uid,
-      array('key_prefix' => FALSE, 'flattened' => TRUE)
+      ['key_prefix' => FALSE, 'flattened' => TRUE]
     );
 
     $user_diff = KmsPermsDiff::defaultDiff();
@@ -1160,13 +1649,13 @@ function kms_user_vbo_add_access_bundles(&$account, $context = array()) {
  *
  * @return void
  */
-function kms_user_vbo_clear_access_bundles(&$account, $context = array()) {
+function kms_user_vbo_clear_access_bundles(&$account, $context = []) {
   // If it is the first user make sure that the uids variable is deleted.
   if ($context['progress']['current'] == 1) {
     variable_del('kms_user_vbo_access_bundle_clear_uids');
   }
   // Get processed uids.
-  $uids = variable_get('kms_user_vbo_access_bundle_clear_uids', array());
+  $uids = variable_get('kms_user_vbo_access_bundle_clear_uids', []);
   // Add current uid to uids variable.
   $uids[] = $context['user']->uid;
   variable_set('kms_user_vbo_access_bundle_clear_uids', $uids);
@@ -1190,7 +1679,7 @@ function kms_user_vbo_clear_access_bundles(&$account, $context = array()) {
 function kms_user_vbo_access_bundle_finished($op, $context) {
   $uids = variable_get(
     sprintf('kms_user_vbo_access_bundle_%s_uids', $op),
-    array()
+    []
   );
   if (empty($uids)) {
     return;
@@ -1205,17 +1694,17 @@ function kms_user_vbo_access_bundle_finished($op, $context) {
         return;
       }
       // Create kms oci queue job that attaches bundle permissions to users.
-      $jobs = array();
+      $jobs = [];
       $job_group = new KmsOciQueueJobGroup();
       kms_oci_queue_job_action_bundles_attach(
         $jobs,
         $bids,
         $uids,
         'VBO: Bundles (@bids) added to users. Affects @count users.',
-        array(
+        [
           '@bids' => implode(', ', $bids),
           '@count' => $user_count,
-        )
+        ]
       );
       if ($user_count < 300) {
         $job_group->add($jobs);
@@ -1225,13 +1714,13 @@ function kms_user_vbo_access_bundle_finished($op, $context) {
     case 'clear':
       // Kms oci queue job. Remove all bundles except default
       // and keep separate permissions.
-      $jobs = array();
+      $jobs = [];
       $job_group = new KmsOciQueueJobGroup();
       kms_oci_queue_job_action_remove_all_bundles(
         $jobs,
         $uids,
         'VBO: All bundles (except default) are cleared from users. Affects @count users.',
-        array('@count' => $user_count)
+        ['@count' => $user_count]
       );
       $job_group->add($jobs);
       break;
@@ -1248,16 +1737,16 @@ function kms_user_vbo_access_bundle_options() {
   $query = new EntityFieldQuery();
 
   $query->entityCondition('entity_type', 'node')
-  ->entityCondition('bundle', 'access_bundle')
-  ->propertyCondition('status', 1)
-  ->addMetaData('account', user_load(1));
+    ->entityCondition('bundle', 'access_bundle')
+    ->propertyCondition('status', 1)
+    ->addMetaData('account', user_load(1));
 
   $result = $query->execute();
   $nids = array_keys($result['node']);
   $nodes = node_load_multiple($nids);
-  $options = array();
+  $options = [];
   $def_bundles = _kms_permissions_get_default_bundles();
-  array_walk($nodes, function($node, $nid) use(&$options, $def_bundles) {
+  array_walk($nodes, function ($node, $nid) use (&$options, $def_bundles) {
     // Ignore default bundles;
     if (in_array($nid, $def_bundles)) {
       return;
@@ -1276,11 +1765,12 @@ function kms_user_vbo_access_bundle_options() {
  * @param object $account
  *   Drupal user object
  * @param array $bundles
- *   Bundles to be added (optional). If $op = clear then it is not needed to be set.
+ *   Bundles to be added (optional). If $op = clear then it is not needed to be
+ *   set.
  *
  * @return void
  */
-function kms_user_access_bundle_administer($op, $account, $bundles = array()) {
+function kms_user_access_bundle_administer($op, $account, $bundles = []) {
   if (empty($account)) {
     return;
   }
@@ -1291,7 +1781,7 @@ function kms_user_access_bundle_administer($op, $account, $bundles = array()) {
   $w_bundles = array_filter($w->field_access_bundles->value());
   switch ($op) {
     case 'add':
-      array_walk($w_bundles, function($node) use (&$current_bundles){
+      array_walk($w_bundles, function ($node) use (&$current_bundles) {
         $current_bundles[$node->nid] = $node->nid;
       });
       $bundles = array_merge($current_bundles, $bundles);
@@ -1308,12 +1798,12 @@ function kms_user_access_bundle_administer($op, $account, $bundles = array()) {
 /**
  * Load people admin views and return it as JSON.
  */
-function kms_user_ajax_refresh_admin_views_people () {
+function kms_user_ajax_refresh_admin_views_people() {
   $view = views_get_view(KMS_USER_VIEW_NAME_ADMIN_VIEWS_USER);
   $view->set_display(KMS_USER_VIEW_DISPLAY_ADMIN_VIEWS_USER);
   $view->is_cacheable = FALSE;
   $view->execute();
-  drupal_json_output(array('view' => $view->render()));
+  drupal_json_output(['view' => $view->render()]);
   exit;
 }
 
@@ -1355,23 +1845,23 @@ function kms_user_filter_admin_views_people_perms($js = FALSE) {
   ctools_include('modal');
   ctools_include('ajax');
   // Add necessary form_state data.
-  $form_state = array(
+  $form_state = [
     'ajax' => TRUE,
-    'build_info' => array(
-      'args'  => array(
+    'build_info' => [
+      'args' => [
         'query' => drupal_get_query_parameters(),
-      ),
-    ),
-  );
+      ],
+    ],
+  ];
   // Create form output.
-    $form_state['title'] = t('Select permissions');
-    $output = ctools_modal_form_wrapper('kms_user_filter_admin_views_people_perms_form', $form_state);
+  $form_state['title'] = t('Select permissions');
+  $output = ctools_modal_form_wrapper('kms_user_filter_admin_views_people_perms_form', $form_state);
   // If form is executed remove modal popup.
 
   if (!empty($form_state['executed'])) {
-    $output = array();
+    $output = [];
     // Maybe use session in the future?
-//    $_SESSION['views']['admin_views_user']['kms_user_filter']['uids'] = $uids;
+    //    $_SESSION['views']['admin_views_user']['kms_user_filter']['uids'] = $uids;
 
     // Load view filtered by uids.
     $view = views_get_view(KMS_USER_VIEW_NAME_ADMIN_VIEWS_USER);
@@ -1381,9 +1871,9 @@ function kms_user_filter_admin_views_people_perms($js = FALSE) {
     // Set uids depending on filter status.
     $filter = $form_state['filter'];
     $service_count = $in_default_bundle_count = 0;
-    foreach($filter as $service_group) {
+    foreach ($filter as $service_group) {
       $service_count += count($service_group[LANGUAGE_NONE]);
-      foreach($service_group[LANGUAGE_NONE] as $sid) {
+      foreach ($service_group[LANGUAGE_NONE] as $sid) {
         if (kms_permissions_is_service_in_default_bundle($sid)) {
           $in_default_bundle_count++;
         }
@@ -1393,13 +1883,13 @@ function kms_user_filter_admin_views_people_perms($js = FALSE) {
     if ($in_default_bundle_count == $service_count) {
       $filter = 'all';
     }
-    $uids = $args = array();
+    $uids = $args = [];
     // If the filter is not set to all users get uids.
     if ($filter != 'all') {
       // Get all user ids from chosen services.
       $uids = _kms_user_get_users_from_services($filter);
       // If no users are presnet create an array with a very high uid so that the views get no matches.
-      $uids = !empty($uids) ? $uids : array(99999999999);
+      $uids = !empty($uids) ? $uids : [99999999999];
     }
     // If uids have been found then set views argument(s).
     if (!empty($uids)) {
@@ -1407,14 +1897,14 @@ function kms_user_filter_admin_views_people_perms($js = FALSE) {
       // If filter uid count is bigger than half of all user count
       // then filter excluding uids rather than including uids.
       if (count($uids) > (count($uids_all) / 2)) {
-        $args = array(
+        $args = [
           'all',
           implode('+', array_diff($uids_all, $uids)),
-        );
+        ];
       }
-    else {
+      else {
         // Otherwise just narrow result down with fuilter uids.
-        $args = array(implode('+', $uids));
+        $args = [implode('+', $uids)];
       }
     }
     // Set uid argument(s).
@@ -1425,29 +1915,29 @@ function kms_user_filter_admin_views_people_perms($js = FALSE) {
     // Get all available services.
     $service_list = kms_permissions_get_service_list();
     // Create services array from chosen services.
-    $services = array();
-    foreach($form_state['filter'] as $field_sids) {
+    $services = [];
+    foreach ($form_state['filter'] as $field_sids) {
       $field_sids = $field_sids[LANGUAGE_NONE];
-      array_walk($field_sids, function($sid) use ($service_list, &$services){
+      array_walk($field_sids, function ($sid) use ($service_list, &$services) {
         $entry = $service_list[$sid];
         $services[$entry['SERVICEID']] = sprintf("%s (%s)", $entry['SERVICENAME'], $entry['TYPENAME']);
       });
     }
     // Render array that shows what is filtering the user list.
-    $filter_status = array(
+    $filter_status = [
       '#type' => 'container',
-      '#attributes' => array(
-        'class' => array(),
-      ),
-      'span-services' => array(
+      '#attributes' => [
+        'class' => [],
+      ],
+      'span-services' => [
         '#theme' => 'html_tag',
         '#tag' => 'span',
         '#value' => t(
           'Users filtered by services: %services',
-          array('%services' => implode(', ', $services))
+          ['%services' => implode(', ', $services)]
         ),
-      ),
-    );
+      ],
+    ];
     // Js commands.
     $output[] = ajax_command_replace('a.ctools-use-modal-processed', render($filter_status));
     $output[] = ctools_modal_command_dismiss();
@@ -1461,7 +1951,7 @@ function kms_user_filter_admin_views_people_perms($js = FALSE) {
  * Drupal form function.
  * Used for popup filtering of permissions in people admin view.
  */
-function kms_user_filter_admin_views_people_perms_form ($form, &$form_state) {
+function kms_user_filter_admin_views_people_perms_form($form, &$form_state) {
   $form = &drupal_static(__FUNCTION__);
   if (!isset($form)) {
 
@@ -1474,17 +1964,17 @@ function kms_user_filter_admin_views_people_perms_form ($form, &$form_state) {
       $ws_fields = _kms_permissions_webservice_fields();
 
 
-      $form = array();
-      array_walk($ws_fields, function($ws_name) use($user_form, &$form) {
+      $form = [];
+      array_walk($ws_fields, function ($ws_name) use ($user_form, &$form) {
         $form[$ws_name] = $user_form[$ws_name];
       });
 
 
-      $form['submit'] = array(
+      $form['submit'] = [
         '#type' => 'submit',
-        '#value' => t('Filter', array(), array('context' => 'kms_user')),
-        '#weight' => 500
-      );
+        '#value' => t('Filter', [], ['context' => 'kms_user']),
+        '#weight' => 500,
+      ];
 
       cache_set(KMS_USER_CACHE_ID_ADMIN_VIEWS_PEOPLE_PERMS_FORM, $form, 'cache');
     }
@@ -1510,14 +2000,16 @@ function kms_user_filter_admin_views_people_perms_form_submit($form, &$form_stat
 
 /**
  * @param array $services
- *  Ex.: array('field_bundle_webservices_geo' => array(1, 4218, 4458), 'field_bundle_webservices_wms' => array(1614))
+ *  Ex.: array('field_bundle_webservices_geo' => array(1, 4218, 4458),
+ *   'field_bundle_webservices_wms' => array(1614))
+ *
  * @return array
  */
-function _kms_user_get_users_from_services($services, $column_name = null) {
+function _kms_user_get_users_from_services($services, $column_name = NULL) {
   // Merge user arrays function.
   $merge_uids = function ($uids_n_sids, &$users) {
-    foreach($uids_n_sids as $uid => $sids) {
-      if(empty($users[$uid])) {
+    foreach ($uids_n_sids as $uid => $sids) {
+      if (empty($users[$uid])) {
         $users[$uid] = $sids;
       }
       else {
@@ -1527,7 +2019,7 @@ function _kms_user_get_users_from_services($services, $column_name = null) {
     }
   };
   // The end result users array.
-  $users = array();
+  $users = [];
   // Users with separate services.
   $merge_uids(_kms_permissions_get_uids_by_separate_services($services, $column_name), $users);
   // Users with permissions in bundles.
@@ -1539,7 +2031,7 @@ function _kms_user_get_users_from_services($services, $column_name = null) {
     $service_count += count($sids);
   });
   // Filter all users with right amount of services compared with $service_count.
-  $users = array_filter($users, function($sids) use($service_count){
+  $users = array_filter($users, function ($sids) use ($service_count) {
     return count($sids) == $service_count;
   });
 
@@ -1551,6 +2043,7 @@ function _kms_user_get_users_from_services($services, $column_name = null) {
  *
  * @param $account
  * @param $user
+ *
  * @return array
  */
 function _kms_user_user_update_oci_queue_prepare_data($account, $user) {
@@ -1558,16 +2051,16 @@ function _kms_user_user_update_oci_queue_prepare_data($account, $user) {
   $userids['old'] = kms_user_get_userid($user);
   $userids['new'] = kms_user_get_userid($account);
   $user_data['user']['userid'] = $user_data['user_extra']['userid'] = $userids['new'];
-  return array(
+  return [
     'user_data' => $user_data,
     'userids' => $userids,
-  );
+  ];
 }
 
 function _kms_user_calculate_permissions_diff(EntityMetadataWrapper $w_new, EntityMetadataWrapper $w_original) {
   $diff_bundle_perms = KmsPermsDiff::diffBundlePerms($w_original, $w_new);
-  $bundle_diff = array();
-  foreach(array_keys($diff_bundle_perms) as $perm_type) {
+  $bundle_diff = [];
+  foreach (array_keys($diff_bundle_perms) as $perm_type) {
     // Make sure that 'remove' and 'add' are unique compared to each other.
     // 1. We don't want to remove items that also are being added.
     // 2. We don't want to add items that already is attached to user.
@@ -1576,10 +2069,10 @@ function _kms_user_calculate_permissions_diff(EntityMetadataWrapper $w_new, Enti
     $bundle_diff[$perm_type]['add'] = array_diff($diff_bundle_perms[$perm_type]['add'], $add_remove_dupes);
   }
 
-  return array(
+  return [
     'bundles' => $bundle_diff,
     'separate' => KmsPermsDiff::diffSeparatePerms($w_original, $w_new),
-  );
+  ];
 }
 
 /**
@@ -1594,22 +2087,22 @@ function kms_user_views_bulk_operations_form_alter(&$form, &$form_state, $vbo) {
     ctools_include('modal');
     ctools_modal_add_js();
 
-    $form['popup_link'] = array(
+    $form['popup_link'] = [
       '#type' => 'container',
-      '#attributes' => array(
-        'class' => array(),
-      ),
-      'popup_link' => array(
+      '#attributes' => [
+        'class' => [],
+      ],
+      'popup_link' => [
         '#theme' => 'link',
         '#text' => '<button id="kms-user-trigger-permission-filter">' . t('Filter current list by permissions') . '</button>',
         '#path' => 'admin/kms-user/nojs/filter-admin-views-people-perms',
-        '#options' => array(
-          'attributes' => array('class' => 'ctools-use-modal'),
+        '#options' => [
+          'attributes' => ['class' => 'ctools-use-modal'],
           'html' => TRUE,
           'query' => drupal_get_query_parameters(),
-        ),
-      ),
-    );
+        ],
+      ],
+    ];
   }
 }
 
@@ -1617,7 +2110,7 @@ function kms_user_views_bulk_operations_form_alter(&$form, &$form_state, $vbo) {
  * Implements hook_form_FORM_ID_alter().
  */
 function kms_user_form_user_register_form_alter(&$form, &$form_state) {
-  //Add validation for character lenght
+  //Add validation for character length.
   $form['#validate'][] = 'kms_user_username_length_validate';
 }
 
@@ -1625,7 +2118,7 @@ function kms_user_form_user_register_form_alter(&$form, &$form_state) {
  * Implements hook_form_FORM_ID_alter().
  */
 function kms_user_form_user_profile_form_alter(&$form, &$form_state) {
-  //Add validation for character lenght
+  //Add validation for character length.
   $form['#validate'][] = 'kms_user_username_length_validate';
 }
 
@@ -1634,8 +2127,8 @@ function kms_user_form_user_profile_form_alter(&$form, &$form_state) {
  */
 function kms_user_username_length_validate($form, &$form_state) {
   if (
-  (!empty($form_state['values']['name']) && strlen($form_state['values']['name']) > 32)
-      || (!empty($form_state['values']['pass']) && strlen($form_state['values']['pass']) > 32)
+    (!empty($form_state['values']['name']) && strlen($form_state['values']['name']) > 32)
+    || (!empty($form_state['values']['pass']) && strlen($form_state['values']['pass']) > 32)
   ) {
     form_set_error('name', t('Username and Password should not exceed 32 characters'));
   }
@@ -1646,9 +2139,9 @@ function kms_user_username_length_validate($form, &$form_state) {
  * Implements hook_views_api()
  */
 function kms_user_views_api() {
-  return array(
+  return [
     'api' => 3,
-  );
+  ];
 }
 
 /**
@@ -1656,18 +2149,18 @@ function kms_user_views_api() {
  * views uses.
  */
 function kms_user_views_handlers() {
-  return array(
-    'info' => array(
+  return [
+    'info' => [
       // path to handler files
       'path' => drupal_get_path('module', 'kms_user') . '/includes/handlers',
-    ),
-    'handlers' => array(
+    ],
+    'handlers' => [
       // register our custom filter, with the class/file name and parent class
-      'kms_user_handler_filter_exposed_services' => array(
+      'kms_user_handler_filter_exposed_services' => [
         'parent' => 'views_handler_filter',
-      ),
-    ),
-  );
+      ],
+    ],
+  ];
 }
 
 /**
@@ -1675,15 +2168,16 @@ function kms_user_views_handlers() {
  *
  * @param string $webid
  *        contains webservice type
+ *
  * @return json array
  */
 function _kms_user_return_websevice_list($webid) {
   //get all available services
   $service_list = _kms_user_return_merged_service_list_array();
   //Create new array with current service list type
-  $current_sev_list = array();
+  $current_sev_list = [];
   foreach ($service_list as $key => $value) {
-    if($key == $webid){
+    if ($key == $webid) {
       foreach ($value as $key2 => $value2) {
         $current_sev_list[$key2] = $value2;
       }
@@ -1695,9 +2189,7 @@ function _kms_user_return_websevice_list($webid) {
 }
 
 
-
-function _kms_user_usort_by_name($a, $b)
-{
+function _kms_user_usort_by_name($a, $b) {
   return $a['sort'] - $b['sort'];
 }
 
@@ -1709,16 +2201,17 @@ function _kms_user_usort_by_name($a, $b)
  */
 function _kms_user_return_websevice_list_all() {
   $array_list = _kms_user_return_merged_service_list_array();
-  $new_array = array();
-  $custom_services = array('ftp', 'applications', 'predefined_datacollections');
+
+  $new_array = [];
+  $custom_services = ['ftp', 'applications', 'predefined_datacollections'];
   $prefix = '';
   foreach ($array_list as $key => $value) {
-    if(in_array($key, $custom_services)){
-      $prefix = $key.'_';
+    if (in_array($key, $custom_services)) {
+      $prefix = $key . '_';
     }
 
     foreach ($value as $key2 => $value2) {
-      if(isset($value2['name'])){
+      if (isset($value2['name'])) {
         $new_array[$prefix . $key2] = $value2['name'];
       }
     }
@@ -1732,17 +2225,17 @@ function _kms_user_return_websevice_list_all() {
  * @return array $new_array
  *         containing all available webservice names and ID's
  */
-function _kms_user_return_merged_service_list_array(){
+function _kms_user_return_merged_service_list_array() {
   $service_list = kms_permissions_get_service_list();
   $service_list_aplication = kms_permissions_get_application_list();
   $service_list_ftp = _kms_permissions_ftp_return_ftp_permissions_all();
   $service_list_predefined = _kms_user_return_predefined_datacollections_permissions_all();
 
   //Create new array with current service list type
-  $current_sev_list = array();
+  $current_sev_list = [];
   foreach ($service_list as $key => $value) {
-      $current_sev_list[$value['TYPENAME']][$value['SERVICEID']]['name'] = $value['SERVICENAME'];
-      $current_sev_list[$value['TYPENAME']][$value['SERVICEID']]['id'] = $value['SERVICEID'];
+    $current_sev_list[$value['TYPENAME']][$value['SERVICEID']]['name'] = $value['SERVICENAME'];
+    $current_sev_list[$value['TYPENAME']][$value['SERVICEID']]['id'] = $value['SERVICEID'];
   }
 
   foreach ($service_list_aplication as $key => $value) {
@@ -1769,25 +2262,127 @@ function _kms_user_return_merged_service_list_array(){
  *
  * @return array
  */
-function _kms_user_return_predefined_datacollections_permissions_all(){
-  return db_query("SELECT nid, title FROM {node} WHERE type = 'product_display'")->fetchAll(); 
+function _kms_user_return_predefined_datacollections_permissions_all() {
+  return db_query("SELECT nid, title FROM {node} WHERE type = 'product_display'")->fetchAll();
 }
 
 /**
- * Helper function to find user's type.
+ * Implements hook_mail().
  */
-function _kms_user_get_user_type($account = FALSE) {
-  if (!$account) {
-    global $user;
-    $account = $user;
+function kms_user_mail($key, &$message, $params) {
+  // Setup lang and params.
+  $language = $message['language'];
+  $variables = ['user' => $params['account']];
+
+  $message['subject'] .= _kms_user_mail_text($key . '_subject', $language, $variables);
+  $message['body'][] =  _kms_user_mail_text($key . '_body', $language, $variables);
+}
+
+/**
+ * Create text string for the emails.
+ *
+ * @param $key
+ * @param null $language
+ * @param array $variables
+ * @param bool $replace
+ *
+ * @return mixed|null|string
+ */
+function _kms_user_mail_text($key, $language = NULL, $variables = [], $replace = TRUE) {
+  $langcode = isset($language) ? $language->language : NULL;
+
+  switch ($key) {
+    case 'register_no_approval_required_subject':
+      $text = t('Account details for [user:name] at [site:name]', [], ['langcode' => $langcode]);
+      break;
+    case 'register_no_approval_required_body':
+      $text = t("[user:name],
+
+Thank you for registering at [site:name]. You may now log in by clicking this link or copying and pasting it to your browser:
+
+[user:one-time-login-url]
+
+This link can only be used once to log in and will lead you to a page where you can set your password.
+
+After setting your password, you will be able to log in at [site:login-url] in the future using:
+
+username: [user:name]
+password: Your password
+
+--  [site:name] team", [], ['langcode' => $langcode]);
+      break;
   }
 
-  $uw = entity_metadata_wrapper('user', $account);
-
-  $type = array();
-  foreach ($uw->field_user_type->value() as $utype) {
-    $type[] = $utype->name;
+  if ($replace) {
+    // We do not sanitize the token replacement, since the output of this
+    // replacement is intended for an e-mail message, not a web browser.
+    return token_replace($text, $variables,
+      [
+        'language' => $language,
+        'callback' => 'kms_user_mail_tokens',
+        'sanitize' => FALSE,
+        'clear' => TRUE,
+      ]
+    );
   }
 
-  return $type;
+  return $text;
+}
+
+/**
+ * Implements hook_mail_tokens().
+ */
+function kms_user_mail_tokens(&$replacements, $data, $options) {
+  if (isset($data['user'])) {
+
+    global $conf;
+    $replacements['[user:one-time-login-url]'] = kms_user_pass_reset_url($data['user']);
+    $replacements['[site:login-url]'] = $conf['kms_site_url_download'];
+  }
+}
+
+/**
+ * Return pass reset URL.
+ *
+ * @param $account
+ *
+ * @return string
+ */
+function kms_user_pass_reset_url($account) {
+  $timestamp = REQUEST_TIME;
+  global $conf;
+  $site_url = $conf['kms_site_url_download'] . '/';
+  $url = url( $site_url ."user/reset-password-from-link/$account->uid/$timestamp/" . user_pass_rehash($account->pass, $timestamp, $account->login, $account->uid), array('absolute' => FALSE));
+  return $url;
+}
+
+/**
+ * Get the user type term ID from user.
+ *
+ * @return array|null
+ */
+function _kms_user_get_user_type() {
+  // Init var.
+  $user_type = [];
+
+  // Load the current user.
+  global $user;
+
+  if (!$user) {
+    return $user_type;
+  }
+
+  // Load the user.
+  $user = user_load($user->uid);
+
+  if (!empty($user->field_user_type[LANGUAGE_NONE]) && !is_array($user->field_user_type[LANGUAGE_NONE])) {
+    return $user_type;
+  }
+
+
+  foreach ($user->field_user_type[LANGUAGE_NONE] as $term) {
+    $user_type[] = (int)$term['tid'];
+  }
+
+  return $user_type;
 }

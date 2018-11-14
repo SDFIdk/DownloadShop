@@ -5,3 +5,49 @@
 .bundle-custom {
   background-color: #C8E8C8;
 }
+
+#edit-header .item-list {
+  background: #f4f4f3;
+  border: 1px solid #d7d7d7;
+  border-width: 1px 0 1px 0;
+  padding: 0px 10px;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+#edit-header .item-list ul {
+  padding-left: 105px;
+}
+
+#edit-header ul li {
+  display: inline-block;
+  padding: 4px 20px 4px 20px;
+  background-color: #C0FFEE;
+}
+
+#edit-header .item-list li {
+  background: #ffffff;
+  color: #8a8a8a;
+  padding: 10px 15px;
+  margin-right: 17px;
+  position: relative;
+}
+
+#edit-header .item-list li:after {
+  border-top: 18px solid transparent;
+  border-bottom: 18px solid transparent;
+  border-left: 17px solid #ffffff;
+  position: absolute;
+  top: 0px;
+  right: -17px;
+  content: "";
+}
+
+#edit-header .item-list li.active:after {
+  border-left: 17px solid #97bc00;
+}
+
+#edit-header .item-list li.active {
+  background: #97bc00;
+  color: #ffffff;
+}

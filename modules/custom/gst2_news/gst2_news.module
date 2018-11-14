@@ -237,7 +237,10 @@ function gst2_news_signup($account) {
     if ($email_change) {
       mailchimp_unsubscribe('8877f51385', $subscribed_email, TRUE);  
     }
-    mailchimp_subscribe('8877f51385', $uw->mail->value(), $merge_vars);
+
+    // Double and optin was added 2018.09.15 to prevent mailchip welcome mail
+    // from the new GDPR step form.
+    mailchimp_subscribe('8877f51385', $uw->mail->value(), $merge_vars, FALSE, FALSE);
   } else {
     if ($subscribed_email != FALSE) {
       mailchimp_unsubscribe('8877f51385', $subscribed_email);
