@@ -183,6 +183,9 @@ function kms_oci_insert($data, $table, $cid = FALSE) {
     return;
   }
 
+  // 2018.08. Do not insert anything in the queue anymore.
+  return;
+
   kms_oci_filter_query_data($data);
 
   $query = kms_oci_generate_query('insert', $data, array('table' => $table));
@@ -199,7 +202,6 @@ function kms_oci_filter_query_data(&$data) {
 }
 
 function kms_oci_generate_query($type, $data, $conf = array()) {
-
   if (empty($type) || empty($data)) {
     return;
   }
@@ -238,7 +240,7 @@ function kms_oci_update_user($data, $table, $kms_userid) {
   kms_oci_filter_query_data($data);
 
   $values = array();
-  array_walk($data, function($v, $k) use (&$values) {
+  array_walk($data, function($v, $k) use (&$values, $kms_userid) {
     // If :userid is the same as $kms_userid then don't update :userid.
     if ($k == ':userid' && $v == $kms_userid) {
       // continue;
@@ -255,7 +257,6 @@ function kms_oci_update_user($data, $table, $kms_userid) {
     ),
     $data
   );
-
 }
 
 function kms_oci_select($query, $data = array(), $cid = FALSE) {
@@ -332,6 +333,10 @@ function kms_oci_select_one($query, $data = array(), $type = 'assoc', $cid = FAL
  *   Nothing to return.
  */
 function kms_oci_query($query, $data = array(), $cid = FALSE) {
+
+  // 2018.08. Do not insert anything in the queue anymore.
+  return;
+
   if (!kms_oci_extension_is_loaded()) {
     return;
   }

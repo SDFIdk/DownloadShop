@@ -1,10 +1,9 @@
 name = view_kms_subuser
 core = 7.x
 package = Features
-php = 5.2.4
+version = 7.x-1.1
 dependencies[] = ctools
 dependencies[] = views
 features[ctools][] = views:views_default:3.0
-features[features_api][] = api:1
+features[features_api][] = api:2
 features[views_view][] = kms_subuser
-mtime = 1480062710

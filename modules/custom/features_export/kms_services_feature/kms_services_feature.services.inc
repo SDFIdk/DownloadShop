@@ -33,7 +33,7 @@ function kms_services_feature_default_services_endpoint() {
     ),
     'parsers' => array(
       'application/json' => TRUE,
-      'application/x-www-form-urlencoded' => FALSE,
+      'application/x-www-form-urlencoded' => TRUE,
       'application/xml' => FALSE,
       'multipart/form-data' => FALSE,
       'text/xml' => FALSE,
@@ -56,7 +56,37 @@ function kms_services_feature_default_services_endpoint() {
         ),
       ),
       'actions' => array(
+        'getUsersWithSeperateServices' => array(
+          'enabled' => '1',
+        ),
+        'alive' => array(
+          'enabled' => '1',
+        ),
         'getApplicationList' => array(
+          'enabled' => '1',
+        ),
+        'getWebservicesList' => array(
+          'enabled' => '1',
+        ),
+        'ftpScanStructure' => array(
+          'enabled' => '1',
+        ),
+        'getAccessBundles' => array(
+          'enabled' => '1',
+        ),
+        'getPredefinedDataCollections' => array(
+          'enabled' => '1',
+        ),
+        'getBundle' => array(
+          'enabled' => '1',
+        ),
+        'getBundlesByItemId' => array(
+          'enabled' => '1',
+        ),
+        'getPermissionsByBid' => array(
+          'enabled' => '1',
+        ),
+        'getUserWithAllFields' => array(
           'enabled' => '1',
         ),
         'getWebserviceFields' => array(
@@ -125,34 +155,13 @@ function kms_services_feature_default_services_endpoint() {
         'getBundles' => array(
           'enabled' => '1',
         ),
-        'getUsersWithSeperateServices' => array(
+        'getNodeByNid' => array(
           'enabled' => '1',
         ),
-        'alive' => array(
+        'checkUsername' => array(
           'enabled' => '1',
         ),
-        'getWebservicesList' => array(
-          'enabled' => '1',
-        ),
-        'ftpScanStructure' => array(
-          'enabled' => '1',
-        ),
-        'getAccessBundles' => array(
-          'enabled' => '1',
-        ),
-        'getPredefinedDataCollections' => array(
-          'enabled' => '1',
-        ),
-        'getBundle' => array(
-          'enabled' => '1',
-        ),
-        'getBundlesByItemId' => array(
-          'enabled' => '1',
-        ),
-        'getPermissionsByBid' => array(
-          'enabled' => '1',
-        ),
-        'getUserWithAllFields' => array(
+        'checkEmail' => array(
           'enabled' => '1',
         ),
       ),
@@ -180,6 +189,9 @@ function kms_services_feature_default_services_endpoint() {
     'taxonomy_term' => array(
       'alias' => 'taxonomy-terms',
       'operations' => array(
+        'retrieve' => array(
+          'enabled' => '1',
+        ),
         'index' => array(
           'enabled' => '1',
         ),
