@@ -184,6 +184,11 @@ projects[flood_control][subdir] = "contrib"
 projects[flood_control][version] = "1.0"
 projects[flood_control][type] = "module"
 
+;flood_unblock
+projects[flood_unblock][subdir] = "contrib"
+projects[flood_unblock][version] = "1.5"
+projects[flood_unblock][type] = "module"
+
 ;google_analytics
 projects[google_analytics][subdir] = "contrib"
 projects[google_analytics][version] = "1.2"
