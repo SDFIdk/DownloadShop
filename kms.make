@@ -51,7 +51,8 @@ projects[colorbox_node][subdir] = 'contrib'
 projects[colorbox_node][download][branch] = '7.x-3.x'
 projects[colorbox_node][download][type] = 'git'
 projects[colorbox_node][download][url] = 'http://git.drupal.org/project/colorbox_node.git'
-projects[colorbox_node][download][revision] = '898ec235c3d7fa43e8fb74edee2336dcbcba0957'
+projects[colorbox_node][download][revision] = 'dacbdbe0aa119c3a735a75ba3bd85731e95ff6c4'
+;projects[colorbox_node][download][revision] = '898ec235c3d7fa43e8fb74edee2336dcbcba0957'
 
 ;subuser
 projects[subuser][subdir] = "contrib"
