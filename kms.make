@@ -403,8 +403,10 @@ libraries[ckeditor][destination] = "libraries"
 
 ;; Colorbox
 libraries[colorbox][download][type] = 'git'
-libraries[colorbox][download][url] = 'git://github.com/jackmoore/colorbox.git'
+libraries[colorbox][download][url] = 'git@github.com:jackmoore/colorbox.git'
 libraries[colorbox][download][tag] =  1.6.4
+libraries[colorbox][directory_name] = "colorbox"
+libraries[colorbox][destination] = "libraries"
 
 ; Beautytips
 libraries[beautytips_ie_lib][download][type] = "get"
