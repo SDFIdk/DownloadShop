@@ -10,12 +10,12 @@
 function sdfe_greenland_permission_user_default_permissions() {
   $permissions = array();
 
-  // Exported permission: edit any greenland_permissions config_pages.
+  // Exported permission: 'edit any greenland_permissions config_pages'.
   $permissions['edit any greenland_permissions config_pages'] = array(
     'name' => 'edit any greenland_permissions config_pages',
     'roles' => array(
-      0 => 'product admin',
-      1 => 'superuser',
+      'product admin' => 'product admin',
+      'superuser' => 'superuser',
     ),
     'module' => 'config_pages',
   );

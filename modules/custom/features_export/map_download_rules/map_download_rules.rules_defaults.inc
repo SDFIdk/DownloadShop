@@ -13,8 +13,9 @@ function map_download_rules_default_rules_configuration() {
       "LABEL" : "Checkout complete",
       "PLUGIN" : "reaction rule",
       "WEIGHT" : "-5",
+      "OWNER" : "rules",
       "REQUIRES" : [ "rules", "kms_mapwidget", "commerce_checkout", "entity" ],
-      "ON" : [ "commerce_order_update" ],
+      "ON" : { "commerce_order_update" : [] },
       "IF" : [
         { "user_has_role" : {
             "account" : [ "site:current-user" ],
@@ -32,8 +33,9 @@ function map_download_rules_default_rules_configuration() {
   $items['rules_create_fme_request'] = entity_import('rules_config', '{ "rules_create_fme_request" : {
       "LABEL" : "Create FME requests",
       "PLUGIN" : "reaction rule",
+      "OWNER" : "rules",
       "REQUIRES" : [ "kms_mapwidget", "commerce_checkout" ],
-      "ON" : [ "commerce_checkout_complete" ],
+      "ON" : { "commerce_checkout_complete" : [] },
       "DO" : [
         { "LOOP" : {
             "USING" : { "list" : [ "commerce-order:commerce-line-items" ] },
@@ -47,8 +49,9 @@ function map_download_rules_default_rules_configuration() {
   $items['rules_fme_callback'] = entity_import('rules_config', '{ "rules_fme_callback" : {
       "LABEL" : "FME callback",
       "PLUGIN" : "reaction rule",
+      "OWNER" : "rules",
       "REQUIRES" : [ "rules", "kms_mapwidget" ],
-      "ON" : [ "kms_mapwidget_fme_callback_event" ],
+      "ON" : { "kms_mapwidget_fme_callback_event" : [] },
       "DO" : [
         { "mail" : {
             "to" : "[user:mail]",
@@ -63,8 +66,9 @@ function map_download_rules_default_rules_configuration() {
   $items['rules_fme_failure_callback'] = entity_import('rules_config', '{ "rules_fme_failure_callback" : {
       "LABEL" : "FME failure callback",
       "PLUGIN" : "reaction rule",
-      "REQUIRES" : [ "rules", "kms_mapwidget" ],
-      "ON" : [ "kms_mapwidget_fme_callback_event_failure" ],
+      "OWNER" : "rules",
+      "REQUIRES" : [ "rules", "php", "kms_mapwidget" ],
+      "ON" : { "kms_mapwidget_fme_callback_event_failure" : [] },
       "DO" : [
         { "mail" : {
             "to" : "[user:mail]",
@@ -87,8 +91,9 @@ function map_download_rules_default_rules_configuration() {
       "LABEL" : "Login in checkout",
       "PLUGIN" : "reaction rule",
       "WEIGHT" : "-10",
+      "OWNER" : "rules",
       "REQUIRES" : [ "kms_mapwidget", "rules" ],
-      "ON" : [ "user_login" ],
+      "ON" : { "user_login" : [] },
       "IF" : [
         { "kms_mapwidget_run_once_condition" : { "run_once_tag" : "CHECKOUT_LOGIN" } }
       ],
