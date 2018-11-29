@@ -22,3 +22,30 @@ function kms_user_update_7002() {
     taxonomy_term_save($term);
   }
 }
+
+/**
+ * Implements hook_schema().
+ */
+function kms_user_schema() {
+  $schema['user_gdpr_consents'] = array(
+    'description' => 'User approved consent and terms',
+    'fields' => array(
+      'ugcid'       => array('type' => 'serial'),
+      'uid'       => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+      'consent_nid'       => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+      'consent_vid'       => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+      'terms_nid'       => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+      'terms_vid'       => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
+      'timestamp' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => '0'),
+    ),
+  );
+
+  return $schema;
+}
+
+/**
+ * Add user_gdpr_consents table.
+ */
+function kms_user_update_7005() {
+  drupal_install_schema('kms_user');
+}
