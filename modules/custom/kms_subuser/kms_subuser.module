@@ -1310,7 +1310,6 @@ function kms_subuser_uids_add_subuser_uids(&$uids) {
 function kms_subuser_mail_tokens(&$replacements, $data, $options) {
   if (isset($data['user'])) {
     global $conf;
-    $replacements['[user:one-time-login-url]'] = kms_user_pass_reset_url($data['user']);
     $replacements['[site:login-url]'] = $conf['kms_site_url_download'];
   }
 }
