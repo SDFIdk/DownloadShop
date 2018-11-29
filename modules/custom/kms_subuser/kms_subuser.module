@@ -266,12 +266,9 @@ function kms_subuser_insert_form_submit(&$form, &$form_state) {
  *   Drupal form array.
  */
 function kms_subuser_update_form_submit(&$form, &$form_state) {
-
   $form_state['rebuild'] = FALSE;
   $values = $form_state['values'];
-
   $subuser = user_load($values['subuser_uid']);
-  
   $data = _kms_user_oracle_default_user_data($subuser);
 
   $suwrapper = entity_metadata_wrapper('user', $subuser);
@@ -1202,6 +1199,7 @@ function kms_subuser_update_form($form, &$form_state, $subuser) {
       $subuser->field_expire_date[LANGUAGE_NONE][0]['value']
     );
   }
+
   // User remark.
   if (!empty($subuser->field_user_remark[LANGUAGE_NONE][0]['value'])) {
     $form['user_remark']['#default_value']
@@ -1304,5 +1302,15 @@ function kms_subuser_uids_add_subuser_uids(&$uids) {
   if (!empty($uids_subusers)) {
     $uids = array_unique(array_merge($uids_subusers, $uids));
   }
+}
 
+/**
+ * Implements hook_mail_tokens().
+ */
+function kms_subuser_mail_tokens(&$replacements, $data, $options) {
+  if (isset($data['user'])) {
+    global $conf;
+    $replacements['[user:one-time-login-url]'] = kms_user_pass_reset_url($data['user']);
+    $replacements['[site:login-url]'] = $conf['kms_site_url_download'];
+  }
 }
