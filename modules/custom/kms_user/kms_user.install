@@ -13,7 +13,7 @@ function kms_user_install() {
 
 function kms_user_update_7002() {
   $vocabulary_name = 'user_type';
-  $vocabulary =  taxonomy_vocabulary_machine_name_load($vocabulary_name);
+  $vocabulary = taxonomy_vocabulary_machine_name_load($vocabulary_name);
   $term_tree = taxonomy_get_tree($vocabulary->vid);
 
   foreach ($term_tree as $entry => $term_entry) {
@@ -27,18 +27,31 @@ function kms_user_update_7002() {
  * Implements hook_schema().
  */
 function kms_user_schema() {
-  $schema['user_gdpr_consents'] = array(
+  $schema['user_gdpr_consents'] = [
     'description' => 'User approved consent and terms',
-    'fields' => array(
-      'ugcid'       => array('type' => 'serial'),
-      'uid'       => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
-      'consent_nid'       => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
-      'consent_vid'       => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
-      'terms_nid'       => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
-      'terms_vid'       => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE),
-      'timestamp' => array('type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE, 'default' => '0'),
-    ),
-  );
+    'fields' => [
+      'ugcid' => ['type' => 'serial'],
+      'uid' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE],
+      'consent_nid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'consent_vid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'terms_nid' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE],
+      'terms_vid' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE],
+      'timestamp' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => '0',
+      ],
+    ],
+  ];
 
   return $schema;
 }
