@@ -991,8 +991,11 @@ function kms_service_resources_resource() {
  */
 function _kms_services_resources_user_resource_create($account) {
   // We get all the info in the account var.
-  $gdpr = $account['gdpr'];
-  $account = $account['account'];
+  // Handle the new and old way to create an account.
+  if (key_exists('gdpr', $account)) {
+    $gdpr = $account['gdpr'];
+    $account = $account['account'];
+  }
 
   // Transfer field data.
   $account['email'] = $account['mail'];
