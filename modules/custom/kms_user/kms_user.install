@@ -13,7 +13,7 @@ function kms_user_install() {
 
 function kms_user_update_7002() {
   $vocabulary_name = 'user_type';
-  $vocabulary =  taxonomy_vocabulary_machine_name_load($vocabulary_name);
+  $vocabulary = taxonomy_vocabulary_machine_name_load($vocabulary_name);
   $term_tree = taxonomy_get_tree($vocabulary->vid);
 
   foreach ($term_tree as $entry => $term_entry) {
@@ -21,4 +21,44 @@ function kms_user_update_7002() {
     $term->field_user_type_id[LANGUAGE_NONE][0]['value'] = $entry;
     taxonomy_term_save($term);
   }
+}
+
+/**
+ * Implements hook_schema().
+ */
+function kms_user_schema() {
+  $schema['user_gdpr_consents'] = [
+    'description' => 'User approved consent and terms',
+    'fields' => [
+      'ugcid' => ['type' => 'serial'],
+      'uid' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE],
+      'consent_nid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'consent_vid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'terms_nid' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE],
+      'terms_vid' => ['type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE],
+      'timestamp' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => '0',
+      ],
+    ],
+  ];
+
+  return $schema;
+}
+
+/**
+ * Add user_gdpr_consents table.
+ */
+function kms_user_update_7005() {
+  drupal_install_schema('kms_user');
 }

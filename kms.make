@@ -5,7 +5,7 @@ api = 2
 
 ;hide_submit
 projects[hide_submit][subdir] = "contrib"
-projects[hide_submit][version] = "2.0"
+projects[hide_submit][version] = "2.4"
 projects[hide_submit][type] = "module"
 
 ;admin_views -- patched
@@ -51,16 +51,17 @@ projects[colorbox_node][subdir] = 'contrib'
 projects[colorbox_node][download][branch] = '7.x-3.x'
 projects[colorbox_node][download][type] = 'git'
 projects[colorbox_node][download][url] = 'http://git.drupal.org/project/colorbox_node.git'
-projects[colorbox_node][download][revision] = '898ec235c3d7fa43e8fb74edee2336dcbcba0957'
+projects[colorbox_node][download][revision] = 'dacbdbe0aa119c3a735a75ba3bd85731e95ff6c4'
+;projects[colorbox_node][download][revision] = '898ec235c3d7fa43e8fb74edee2336dcbcba0957'
 
 ;subuser
 projects[subuser][subdir] = "contrib"
-projects[subuser][version] = "2.0-alpha3"
+projects[subuser][version] = "2.0-alpha4"
 projects[subuser][type] = "module"
 
 ;addressfield
 projects[addressfield][subdir] = "contrib"
-projects[addressfield][version] = "1.2"
+projects[addressfield][version] = "1.3"
 projects[addressfield][type] = "module"
 
 ;admin_menu
@@ -70,12 +71,12 @@ projects[admin_menu][type] = "module"
 
 ;background_process
 projects[background_process][subdir] = "contrib"
-projects[background_process][version] = "1.16"
+projects[background_process][version] = "1.17"
 projects[background_process][type] = "module"
 
 ;beautytips
 projects[beautytips][subdir] = "contrib"
-projects[beautytips][version] = "2.0-beta2"
+projects[beautytips][version] = "2.2"
 projects[beautytips][type] = "module"
 
 ;better_exposed_filters
@@ -96,7 +97,7 @@ projects[commerce][patch][] = 'https://www.drupal.org/files/issues/2044231.check
 
 ;commerce_autosku
 projects[commerce_autosku][subdir] = "contrib"
-projects[commerce_autosku][version] = "1.1"
+projects[commerce_autosku][version] = "1.2"
 projects[commerce_autosku][type] = "module"
 
 ;commerce_extra
@@ -106,7 +107,7 @@ projects[commerce_extra][type] = "module"
 
 ;commerce_features
 projects[commerce_features][subdir] = "contrib"
-projects[commerce_features][version] = "1.0-rc1"
+projects[commerce_features][version] = "1.3"
 projects[commerce_features][type] = "module"
 
 ;commerce_file
@@ -126,7 +127,7 @@ projects[content_access][type] = "module"
 
 ;ctools
 projects[ctools][subdir] = "contrib"
-projects[ctools][version] = "1.12"
+projects[ctools][version] = "1.14"
 projects[ctools][type] = "module"
 
 ;date
@@ -146,7 +147,7 @@ projects[diff][type] = "module"
 
 ;email
 projects[email][subdir] = "contrib"
-projects[email][version] = "1.2"
+projects[email][version] = "1.3"
 projects[email][type] = "module"
 
 ;entity
@@ -161,7 +162,7 @@ projects[entityreference][type] = "module"
 
 ;features
 projects[features][subdir] = "contrib"
-projects[features][version] = "2.10"
+projects[features][version] = "2.11"
 projects[features][type] = "module"
 
 ;field_group
@@ -171,7 +172,7 @@ projects[field_group][type] = "module"
 
 ;field_permissions
 projects[field_permissions][subdir] = "contrib"
-projects[field_permissions][version] = "1.0-beta2"
+projects[field_permissions][version] = "1.0"
 projects[field_permissions][type] = "module"
 
 ;filefield_sources
@@ -184,6 +185,11 @@ projects[flood_control][subdir] = "contrib"
 projects[flood_control][version] = "1.0"
 projects[flood_control][type] = "module"
 
+;flood_unblock
+projects[flood_unblock][subdir] = "contrib"
+projects[flood_unblock][version] = "1.5"
+projects[flood_unblock][type] = "module"
+
 ;google_analytics
 projects[google_analytics][subdir] = "contrib"
 projects[google_analytics][version] = "1.2"
@@ -191,12 +197,12 @@ projects[google_analytics][type] = "module"
 
 ;gtm
 projects[google_tag][subdir] = "contrib"
-projects[google_tag][version] = "1.2"
+projects[google_tag][version] = "1.4"
 projects[google_tag][type] = "module"
 
 ;honeypot
 projects[honeypot][subdir] = "contrib"
-projects[honeypot][version] = "1.13"
+projects[honeypot][version] = "1.25"
 projects[honeypot][type] = "module"
 
 ;imce
@@ -216,11 +222,11 @@ projects[imce_wysiwyg][type] = "module"
 
 ;libraries
 projects[libraries][subdir] = "contrib"
-projects[libraries][version] = "2.0"
+projects[libraries][version] = "2.5"
 projects[libraries][type] = "module"
 ;link
 projects[link][subdir] = "contrib"
-projects[link][version] = "1.0"
+projects[link][version] = "1.5"
 projects[link][type] = "module"
 
 ;login_security
@@ -235,17 +241,17 @@ projects[masquerade][type] = "module"
 
 ;menu_block
 projects[menu_block][subdir] = "contrib"
-projects[menu_block][version] = "2.3"
+projects[menu_block][version] = "2.7"
 projects[menu_block][type] = "module"
 
 ;menu_per_role
 projects[menu_per_role][subdir] = "contrib"
-projects[menu_per_role][version] = "1.x-dev"
+projects[menu_per_role][version] = "1.0-beta1"
 projects[menu_per_role][type] = "module"
 
 ;menu_position
 projects[menu_position][subdir] = "contrib"
-projects[menu_position][version] = "1.1"
+projects[menu_position][version] = "1.2"
 projects[menu_position][type] = "module"
 
 ;metatag
@@ -255,7 +261,7 @@ projects[metatag][type] = "module"
 
 ;migrate
 projects[migrate][subdir] = "contrib"
-projects[migrate][version] = "2.8"
+projects[migrate][version] = "2.11"
 projects[migrate][type] = "module"
 
 ;password_policy
@@ -270,7 +276,7 @@ projects[references][type] = "module"
 
 ;panels
 projects[panels][subdir] = "contrib"
-projects[panels][version] = "3.8"
+projects[panels][version] = "3.9"
 projects[panels][type] = "module"
 
 ;pathauto
@@ -345,7 +351,7 @@ projects[themekey][type] = "module"
 
 ;token
 projects[token][subdir] = "contrib"
-projects[token][version] = "1.4"
+projects[token][version] = "1.7"
 projects[token][type] = "module"
 
 ;ultimate_cron
@@ -362,12 +368,12 @@ projects[views_bulk_operations][type] = "module"
 
 ;views_data_export
 projects[views_data_export][subdir] = "contrib"
-projects[views_data_export][version] = "3.1"
+projects[views_data_export][version] = "3.2"
 projects[views_data_export][type] = "module"
 
 ;wysiwyg
 projects[wysiwyg][subdir] = "contrib"
-projects[wysiwyg][version] = "2.2"
+projects[wysiwyg][version] = "2.5"
 projects[wysiwyg][type] = "module"
 
 ;xmlsitemap
@@ -398,8 +404,10 @@ libraries[ckeditor][destination] = "libraries"
 
 ;; Colorbox
 libraries[colorbox][download][type] = 'git'
-libraries[colorbox][download][url] = 'git://github.com/jackmoore/colorbox.git'
-libraries[colorbox][download][tag] =  1.5.14
+libraries[colorbox][download][url] = 'git@github.com:jackmoore/colorbox.git'
+libraries[colorbox][download][tag] =  1.6.4
+libraries[colorbox][directory_name] = "colorbox"
+libraries[colorbox][destination] = "libraries"
 
 ; Beautytips
 libraries[beautytips_ie_lib][download][type] = "get"
@@ -418,7 +426,7 @@ projects[adapt_theme][subdir] = "global"
 
 ;Remove after live
 projects[node_export][subdir] = "contrib"
-projects[node_export][version] = "3.0"
+projects[node_export][version] = "3.1"
 projects[node_export][type] = "module"
 
 projects[uuid][subdir] = "contrib"

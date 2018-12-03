@@ -1,0 +1,14 @@
+name = Services single sign-on endpoint
+description = The Services 3.0 REST endpoint needed for single sign-on functionality.
+core = 7.x
+package = Features
+version = 7.x-1.3+0-dev
+project = services_sso_server_helper
+dependencies[] = ctools
+dependencies[] = rest_server
+dependencies[] = services
+datestamp = 1331570565
+features[ctools][] = services:services:3
+features[features_api][] = api:2
+features[services_endpoint][] = basic_auth
+features[services_endpoint][] = profile_flag

@@ -20,7 +20,7 @@ function kms_services_feature_default_services_endpoint() {
     'services_api_key_auth' => array(
       'api_key' => '2jdAT3rg2IxbsMPDm1ioUw',
       'api_key_source' => 'header',
-      'user' => 'api',
+      'user' => 'kmsadmin',
     ),
   );
   $endpoint->server_settings = array(
@@ -162,6 +162,13 @@ function kms_services_feature_default_services_endpoint() {
           'enabled' => '1',
         ),
         'checkEmail' => array(
+          'enabled' => '1',
+        ),
+      ),
+    ),
+    'kms_password' => array(
+      'actions' => array(
+        'request_new_password' => array(
           'enabled' => '1',
         ),
       ),

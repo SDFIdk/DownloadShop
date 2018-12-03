@@ -22,7 +22,6 @@ function sdfe_greenland_permission_default_config_pages_type() {
         }
       }
     },
-    "metatags" : [],
     "rdf_mapping" : []
   }');
   return $items;
