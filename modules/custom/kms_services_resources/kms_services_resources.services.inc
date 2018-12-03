@@ -990,6 +990,12 @@ function kms_service_resources_resource() {
  *   The user object of the newly created user.
  */
 function _kms_services_resources_user_resource_create($account) {
+  // We get all the info in the account var.
+  // Handle the new and old way to create an account.
+  if (key_exists('gdpr', $account)) {
+    $gdpr = $account['gdpr'];
+    $account = $account['account'];
+  }
 
   // Transfer field data.
   $account['email'] = $account['mail'];
@@ -1045,6 +1051,30 @@ function _kms_services_resources_user_resource_create($account) {
   }
 
   _kms_services_resources_user_resource_create_user_mail_notify('register_no_approval_required', $user);
+
+  // Insert into the user_gdpr_consents if we got the the info.
+  if (!empty($user->uid) && isset($gdpr) && is_array($gdpr)) {
+    // Get the gdpr node ID.
+    $consent_node_nid = (key_exists('consent_node_nid', $gdpr)) ? $gdpr['consent_node_nid'] : 0;
+    $consent_node_vid = (key_exists('consent_node_vid', $gdpr)) ? $gdpr['consent_node_vid'] : 0;
+    $terms_node_nid = (key_exists('terms_node_nid', $gdpr)) ? $gdpr['terms_node_nid'] : 0;
+    $terms_node_vid = (key_exists('terms_node_vid', $gdpr)) ? $gdpr['terms_node_vid'] : 0;
+
+    // Setup fields and values.
+    $data = [
+      'uid' => $user->uid,
+      'consent_nid' => $consent_node_nid,
+      'consent_vid' => $consent_node_vid,
+      'terms_nid' => $terms_node_nid,
+      'terms_vid' => $terms_node_vid,
+      'timestamp' => time(),
+    ];
+
+    // Add entry in user_gdpr_consents table.
+    db_insert('user_gdpr_consents')
+      ->fields($data)
+      ->execute();
+  }
 
   return $user;
 }
@@ -1248,13 +1278,12 @@ function _kms_services_resources_ftp_scan_structure() {
  * Retrieve a user.
  */
 function _kms_services_resources_user_resource_retrieve($uid) {
-    module_load_include('inc', 'services', 'resources/user_resource');
+  module_load_include('inc', 'services', 'resources/user_resource');
 
-    $account = _user_resource_retrieve($uid);
+  $account = _user_resource_retrieve($uid);
 
-    return $account;
+  return $account;
 }
-
 
 
 /**
