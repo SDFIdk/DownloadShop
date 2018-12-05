@@ -1,0 +1,40 @@
+<?php
+
+/**
+ * Implements hook_schema().
+ */
+function kms_services_resources_schema() {
+  $schema['user_password_reset_checksum'] = [
+    'description' => 'User password reset checksum',
+    'fields' => [
+      'uprc_id' => [
+        'type' => 'serial',
+      ],
+      'uid' => [
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ],
+      'checksum' => [
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ],
+      'expires' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ],
+    ],
+  ];
+
+  return $schema;
+}
+
+/**
+ * Add user_password_reset_checksum table.
+ */
+function kms_services_resources_update_7001() {
+  drupal_install_schema('kms_services_resources');
+}

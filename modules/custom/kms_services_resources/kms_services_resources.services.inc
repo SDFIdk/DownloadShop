@@ -955,6 +955,41 @@ function kms_service_resources_resource() {
           ],
         ],
 
+        'resetPassword' => [
+          'file' => [
+            'type' => 'inc',
+            'module' => 'kms_services_resources',
+            'name' => 'kms_services_resources.services',
+          ],
+          'help' => t('Reset password'),
+          'access callback' => '_kms_services_resources_user_resource_access',
+          'access arguments append' => TRUE,
+          'callback' => '_kms_service_resources_reset_password',
+          'args' => [
+            [
+              'name' => 'uid',
+              'type' => 'string',
+              'description' => t('The uid for the user'),
+              'source' => ['data' => 'uid'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'password',
+              'type' => 'string',
+              'description' => t('The new password for the user'),
+              'source' => ['data' => 'password'],
+              'optional' => FALSE,
+            ],
+            [
+              'name' => 'checksum',
+              'type' => 'string',
+              'description' => t('The checksum for the operation'),
+              'source' => ['data' => 'checksum'],
+              'optional' => FALSE,
+            ],
+          ],
+        ],
+
       ],
     ],
   ];
@@ -1050,7 +1085,17 @@ function _kms_services_resources_user_resource_create($account) {
     return services_error($error_message, $http_error_code);
   }
 
-  _kms_services_resources_user_resource_create_user_mail_notify('register_no_approval_required', $user);
+  // Insert into password reset checksum and make valid for the next day.
+  $checksum = drupal_random_key(28);
+  db_insert('user_password_reset_checksum')
+    ->fields([
+      'uid' => $user->uid,
+      'checksum' => $checksum,
+      'expires' => time() + 86400,
+    ])
+    ->execute();
+
+  _kms_services_resources_user_resource_create_user_mail_notify('register_no_approval_required', $user, NULL, $checksum);
 
   // Insert into the user_gdpr_consents if we got the the info.
   if (!empty($user->uid) && isset($gdpr) && is_array($gdpr)) {
@@ -1079,8 +1124,9 @@ function _kms_services_resources_user_resource_create($account) {
   return $user;
 }
 
-function _kms_services_resources_user_resource_create_user_mail_notify($op, $account, $language = NULL) {
+function _kms_services_resources_user_resource_create_user_mail_notify($op, $account, $language = NULL, $checksum = NULL) {
   $params['account'] = $account;
+  $params['checksum'] = $checksum;
   $language = $language ? $language : user_preferred_language($account);
 
   $mail = drupal_mail('kms_user', $op, $account->mail, $language, $params);
@@ -2179,4 +2225,61 @@ function _kms_service_resources_check_email($email) {
   }
 
   return ['result' => FALSE];
+}
+
+/**
+ * Reset a password for a user
+ *
+ * @param integer $uid
+ *   Drupal User ID.
+ * @param string $new_password
+ *   The new password for the user.
+ * @param string $checksum
+ *   Checksum that should be checked
+ *
+ * @return array|mixed
+ * @throws \ServicesException
+ */
+function _kms_service_resources_reset_password($uid, $new_password, $checksum) {
+  // Check if we can load the user using the uid.
+  $user = user_load(intval($uid));
+  if (!$user) {
+    return services_error(t('User %uid could not be loaded.', ['uid' => $uid]), 404);
+  }
+
+  // Check if we have a reset checksum. Otherwise everyone could set the
+  // passwords using the API.
+  $uprc = db_select('user_password_reset_checksum', 'uprc')
+    ->fields('uprc', ['count(*)'])
+    ->condition('uprc.uid', $user->uid)
+    ->condition('uprc.checksum', $checksum)
+    ->condition('uprc.expires', time(), '>')
+    ->execute()
+    ->fetchAssoc();
+
+  if ($uprc['count'] == 0) {
+    return services_error(t('Checksum did not match.', ['uid' => $uid]), 422);
+  }
+
+  // Yes, we need to require this for some drupalistic reason as
+  // user_hash_password.
+  require_once DRUPAL_ROOT . '/includes/password.inc';
+  $password_hash = user_hash_password($new_password);
+  if (!$password_hash) {
+    // Password could not be hashed. Handle the error.
+    return services_error(t('Password could not be hashed.'), 500);
+  }
+
+  // Update the password for this user.
+  $update_pass = db_update('users')
+    ->fields(['pass' => $password_hash])
+    ->condition('uid', $user->uid, '=')
+    ->execute();
+
+  if (!$update_pass) {
+    // Password could not be hashed. Handle the error.
+    return services_error(t('Password could not be updated.'), 500);
+  }
+
+  return ['result' => $update_pass];
 }
