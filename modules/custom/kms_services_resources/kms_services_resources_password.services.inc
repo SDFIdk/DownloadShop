@@ -44,10 +44,6 @@ function _kms_services_resources_password_request_new_password($name) {
     ->execute();
 
   $mail = _kms_services_resources_password_user_mail_notify('password_reset', $account, $language, $checksum);
-
-  drupal_debug('Mailed: ');
-  drupal_debug($mail);
-
   if (!empty($mail)) {
     watchdog('user', 'Password reset instructions mailed to %name at %email.', array('%name' => $account->name, '%email' => $account->mail));
     return TRUE;
