@@ -317,7 +317,6 @@ function kms_user_register_form_remove_fields_steps() {
  * Implements hook_form_alter().
  */
 function kms_user_form_alter(&$form, &$form_state, $form_id) {
-
   global $user;
 
   if (in_array($form_id, ['user_register_form', 'user_profile_form'])) {
@@ -418,12 +417,13 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
         $form['#attached']['css'][] = drupal_get_path('module', 'kms_user') . '/css/kms_user.css';
 
         // Create the session key and get the step-stage we are currently on.
-        $session_key =  KMS_USER_LOGIN_SESSION_PREFIX . session_id();
+        $session_key = KMS_USER_LOGIN_SESSION_PREFIX . session_id();
 
         drupal_add_js(drupal_get_path('module', 'kms_user') . '/js/gdpr_scroll.js');
 
         // They do not want a fieldset title on address.
         $form['field_address'][LANGUAGE_NONE][0]['#title'] = '';
+
 
         // Newsletters are moved to mailchimp.
         // This field should be removed entirely.
@@ -450,10 +450,10 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
         $stage_part = $form_state['stage'];
 
         // Get the prefilled values.
-        $prefilled_name = (isset($_SESSION[$session_key]['user_info']['name'])) ?  $_SESSION[$session_key]['user_info']['name'] : '' ;
-        $prefilled_mail = (isset($_SESSION[$session_key]['user_info']['mail'])) ?  $_SESSION[$session_key]['user_info']['mail'] : '' ;
-        $prefilled_contact_me = (isset($_SESSION[$session_key]['user_info']['field_contact_me'][LANGUAGE_NONE][0]['value'])) ?  $_SESSION[$session_key]['user_info']['field_contact_me'][LANGUAGE_NONE][0]['value'] : '' ;
-        $prefilled_user_type = (isset($_SESSION[$session_key]['user_info']['field_user_type'][LANGUAGE_NONE][0]['tid'])) ?  $_SESSION[$session_key]['user_info']['field_user_type'][LANGUAGE_NONE][0]['tid'] : '' ;
+        $prefilled_name = (isset($_SESSION[$session_key]['user_info']['name'])) ? $_SESSION[$session_key]['user_info']['name'] : '';
+        $prefilled_mail = (isset($_SESSION[$session_key]['user_info']['mail'])) ? $_SESSION[$session_key]['user_info']['mail'] : '';
+        $prefilled_contact_me = (isset($_SESSION[$session_key]['user_info']['field_contact_me'][LANGUAGE_NONE][0]['value'])) ? $_SESSION[$session_key]['user_info']['field_contact_me'][LANGUAGE_NONE][0]['value'] : '';
+        $prefilled_user_type = (isset($_SESSION[$session_key]['user_info']['field_user_type'][LANGUAGE_NONE][0]['tid'])) ? $_SESSION[$session_key]['user_info']['field_user_type'][LANGUAGE_NONE][0]['tid'] : '';
 
         switch ($stage_part) {
           case 'user_info':
@@ -544,7 +544,7 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
               '#type' => 'checkbox',
               '#title' => t('Ja, jeg giver Styrelsen for Dataforsyning og Effektivisering mit samtykke.'),
               '#required' => TRUE,
-              '#attributes' => ['disabled' => 'disabled']
+              '#attributes' => ['disabled' => 'disabled'],
             ];
 
             // Continue button
@@ -554,14 +554,14 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
 
             // Go back button.
             // Removes the validation and
-            $form['actions']['goback'] = array(
+            $form['actions']['goback'] = [
               '#name' => 'goback',
               '#type' => 'submit',
               '#value' => t('Go back'),
               '#weight' => 1,
-              '#limit_validation_errors' => array(),
-              '#submit' => array('_kms_user_register_step_back_to_1'),
-            );
+              '#limit_validation_errors' => [],
+              '#submit' => ['_kms_user_register_step_back_to_1'],
+            ];
 
             // Register the submit call to the next multistep step.
             $form['#submit'] = [];
@@ -609,7 +609,7 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
               '#prefix' => '<div id="terms-body" class="terms-body" style="height:400px; overflow: auto; overflow-y:scroll;">',
               '#markup' => $node->body[LANGUAGE_NONE][0]['value'] . '<div id="scroll-to"></div><br />',
               '#suffix' => '</div>',
-              '#attributes' => array('disabled' => 'disabled'),
+              '#attributes' => ['disabled' => 'disabled'],
             ];
 
             $form['actions']['submit']['#attributes']['disabled'] = 'disabled';
@@ -618,19 +618,23 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
               '#type' => 'checkbox',
               '#title' => t('Jeg accepterer ovenstående rettigheder og vilkår'),
               '#required' => TRUE,
-              '#attributes' => array('class' => array('button-submit'), 'id' => 'term-check', 'disabled' => 'disabled'),
+              '#attributes' => [
+                'class' => ['button-submit'],
+                'id' => 'term-check',
+                'disabled' => 'disabled',
+              ],
             ];
 
             // Go back button.
             // Removes the validation and
-            $form['actions']['goback'] = array(
+            $form['actions']['goback'] = [
               '#name' => 'goback',
               '#type' => 'submit',
               '#value' => t('Go back'),
               '#weight' => -1,
-              '#limit_validation_errors' => array(),
-              '#submit' => array('_kms_user_register_step_back_to_2'),
-            );
+              '#limit_validation_errors' => [],
+              '#submit' => ['_kms_user_register_step_back_to_2'],
+            ];
 
             /// $form['actions']['submit']['#disabled'] = TRUE;
 
@@ -659,13 +663,13 @@ function kms_user_form_alter(&$form, &$form_state, $form_id) {
 
 function _kms_user_register_step_back_to_1(&$form, &$form_state) {
   $form_state['stage'] = 'user_info';
-  $session_key =  KMS_USER_LOGIN_SESSION_PREFIX . session_id();
+  $session_key = KMS_USER_LOGIN_SESSION_PREFIX . session_id();
   $_SESSION[$session_key]['next_stage'] = 'user_info';
 }
 
 function _kms_user_register_step_back_to_2(&$form, &$form_state) {
   $form_state['stage'] = 'consent';
-  $session_key =  KMS_USER_LOGIN_SESSION_PREFIX . session_id();
+  $session_key = KMS_USER_LOGIN_SESSION_PREFIX . session_id();
   $_SESSION[$session_key]['next_stage'] = 'consent';
 }
 
@@ -677,7 +681,7 @@ function _kms_user_register_step_back_to_2(&$form, &$form_state) {
  * @param $form_state
  */
 function _kms_user_register_step_2($form, &$form_state) {
-  $session_key =  KMS_USER_LOGIN_SESSION_PREFIX . session_id();
+  $session_key = KMS_USER_LOGIN_SESSION_PREFIX . session_id();
   $stage_part = $form_state['stage'];
 
   // Set the info on the session.
@@ -697,7 +701,7 @@ function _kms_user_register_step_2($form, &$form_state) {
  * @param $form_state
  */
 function _kms_user_register_step_3($form, &$form_state) {
-  $session_key =  KMS_USER_LOGIN_SESSION_PREFIX . session_id();
+  $session_key = KMS_USER_LOGIN_SESSION_PREFIX . session_id();
   $stage_part = $form_state['stage'];
 
   // Set the info on the session.
@@ -1033,7 +1037,7 @@ function _kms_user_insert_user_pass($form, &$form_state) {
  * @param $form_state
  */
 function _kms_user_insert_cleanup_session($form, &$form_state) {
-  $session_key =  KMS_USER_LOGIN_SESSION_PREFIX . session_id();
+  $session_key = KMS_USER_LOGIN_SESSION_PREFIX . session_id();
   unset($_SESSION[$session_key]);
 }
 
@@ -2272,10 +2276,13 @@ function _kms_user_return_predefined_datacollections_permissions_all() {
 function kms_user_mail($key, &$message, $params) {
   // Setup lang and params.
   $language = $message['language'];
-  $variables = ['user' => $params['account']];
+  $variables = [
+    'user' => $params['account'],
+    'checksum' => $params['checksum'],
+  ];
 
   $message['subject'] .= _kms_user_mail_text($key . '_subject', $language, $variables);
-  $message['body'][] =  _kms_user_mail_text($key . '_body', $language, $variables);
+  $message['body'][] = _kms_user_mail_text($key . '_body', $language, $variables);
 }
 
 /**
@@ -2336,7 +2343,15 @@ function kms_user_mail_tokens(&$replacements, $data, $options) {
   if (isset($data['user'])) {
 
     global $conf;
-    $replacements['[user:one-time-login-url]'] = kms_user_pass_reset_url($data['user']);
+
+    if (!isset($data['checksum'])) {
+      $replacements['[user:one-time-login-url]'] = kms_user_pass_reset_url($data['user']);
+    }
+    else {
+      kms_user_pass_reset_url($data['user'], $data['checksum']);
+    }
+
+
     $replacements['[site:login-url]'] = $conf['kms_site_url_download'];
   }
 }
@@ -2345,14 +2360,31 @@ function kms_user_mail_tokens(&$replacements, $data, $options) {
  * Return pass reset URL.
  *
  * @param $account
+ *   Drupal user object.
+ * @param $hash_value
+ *   Hash value used for checking validity of password change request.
  *
  * @return string
  */
-function kms_user_pass_reset_url($account) {
+function kms_user_pass_reset_url($account, $hash_value = NULL) {
   $timestamp = REQUEST_TIME;
   global $conf;
   $site_url = $conf['kms_site_url_download'] . '/';
-  $url = url( $site_url ."user/reset-password-from-link/$account->uid/$timestamp/" . user_pass_rehash($account->pass, $timestamp, $account->login, $account->uid), array('absolute' => FALSE));
+
+  if ($hash_value) {
+    $url = url(
+      $site_url
+      . "user/reset-password-from-link/$account->uid/$timestamp/"
+      . user_pass_rehash($account->pass, $timestamp, $account->login, $account->uid)
+      . "/" .$hash_value, ['absolute' => FALSE]);
+  } else {
+    $url = url(
+      $site_url
+      . "user/reset-password-from-link/$account->uid/$timestamp/"
+      . user_pass_rehash($account->pass, $timestamp, $account->login, $account->uid
+      ), ['absolute' => FALSE]);
+  }
+
   return $url;
 }
 
@@ -2381,7 +2413,7 @@ function _kms_user_get_user_type() {
 
 
   foreach ($user->field_user_type[LANGUAGE_NONE] as $term) {
-    $user_type[] = (int)$term['tid'];
+    $user_type[] = (int) $term['tid'];
   }
 
   return $user_type;

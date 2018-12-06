@@ -1,6 +1,6 @@
 name = KMS Services Resources
 description = Resources for the Services API
-version = 7.x-1.0
+version = 7.x-1.1
 core = 7.x
 
 dependencies[] = services
