@@ -59,7 +59,9 @@ function kms_services_resources_tokens($type, $tokens, array $data = array(), ar
  */
 function kms_services_resources_mail($key, &$message, $params) {
   $language = $message['language'];
-  $variables = array('user' => $params['account']);
+  $variables = array(
+    'user' => $params['account'],
+    'hash_value' => $params['hash_value']);
   $message['subject'] .= _kms_services_resources_mail_text($key . '_subject', $language, $variables);
   $message['body'][] = _kms_services_resources_mail_text($key . '_body', $language, $variables);
 }
@@ -252,18 +254,35 @@ Your account on [site:name] has been canceled.
  */
 function kms_services_resources_mail_tokens(&$replacements, $data, $options) {
   if (isset($data['user'])) {
-    $replacements['[user:one-time-login-url]'] = kms_services_resources_user_pass_reset_url($data['user']);
+    $replacements['[user:one-time-login-url]'] = kms_services_resources_user_pass_reset_url($data['user'], $data['hash_value']);
     $replacements['[user:cancel-url]'] = kms_services_resources_user_cancel_url($data['user']);
   }
 }
 
-function kms_services_resources_user_pass_reset_url($account) {
+function kms_services_resources_user_pass_reset_url($account, $hash_value = NULL) {
 
   global $conf;
   $base_url = $conf['kms_site_url_download'];
 
   $timestamp = REQUEST_TIME;
-  return url( $base_url . "/user/kms-reset-password/$account->uid/$timestamp/" . user_pass_rehash($account->pass, $timestamp, $account->login, $account->uid), array('absolute' => TRUE));
+
+  if ($hash_value) {
+    $url = url(
+      $base_url . "/user/reset-password-from-link/$account->uid/$timestamp/"
+      . user_pass_rehash($account->pass, $timestamp, $account->login, $account->uid)
+      . "/" . $hash_value,
+      array('absolute' => TRUE)
+    );
+  }
+  else {
+    $url = url(
+      $base_url . "/user/reset-password-from-link/$account->uid/$timestamp/"
+      . user_pass_rehash($account->pass, $timestamp, $account->login, $account->uid),
+      array('absolute' => TRUE)
+    );
+  }
+
+  return $url;
 }
 
 /**

@@ -2,6 +2,7 @@ name = KMS user
 package = KMS
 description = "Handles users"
 core = 7.x
+version = 7.x-1.1
 
 files[] = includes/handlers/views_handler_field_kms_user_link_edit.inc
 files[] = includes/handlers/kms_user_handler_filter_exposed_services.inc
