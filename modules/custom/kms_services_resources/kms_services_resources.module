@@ -46,7 +46,12 @@ function kms_services_resources_tokens($type, $tokens, array $data = array(), ar
     foreach ($tokens as $name => $original) {
       switch ($name) {
         case 'one-time-login-url':
-          $replacements[$original] = kms_services_resources_user_cancel_url($account);
+          if (isset($data['checksum'])) {
+            $replacements[$original] = kms_services_resources_user_pass_reset_url($account, $data['checksum']);
+          }
+          else {
+            $replacements[$original] = kms_services_resources_user_pass_reset_url($account);
+          }
           break;
       }
     }
