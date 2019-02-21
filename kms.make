@@ -226,7 +226,7 @@ projects[libraries][version] = "2.5"
 projects[libraries][type] = "module"
 ;link
 projects[link][subdir] = "contrib"
-projects[link][version] = "1.5"
+projects[link][version] = "1.6"
 projects[link][type] = "module"
 
 ;login_security
